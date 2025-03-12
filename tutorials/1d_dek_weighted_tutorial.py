@@ -1,0 +1,163 @@
+import numpy as np
+from numpy.linalg import cholesky, solve
+from scipy.optimize import minimize
+import matplotlib.pyplot as plt
+import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
+import random
+import itertools
+import pyoti.core as coti  # Core functionalities for OTI
+from oti_gp import (
+    oti_gp_weighted,
+)  # Weighted derivative-enhanced Gaussian Process class
+import utils  # Utility functions (e.g., to generate derivative indices, plotting submodels)
+
+# ---------------------------------------------------------------------
+# DEMO: Multi-dimensional Example with Separate Length Scales
+# Using a weighted Gaussian Process model with submodel construction based
+# on user-specified indices. Each submodel is constructed from a group of
+# training points defined by the 'index' variable.
+# ---------------------------------------------------------------------
+if __name__ == "__main__":
+    # Define the true function:
+    def true_function(X, alg=oti):
+        x = X[:, 0]
+        return alg.exp(-x) + alg.sin(x) + alg.cos(3 * x) + 0.2 * x + 1.0
+
+    # ----- Parameter Setup -----
+    n_order = 4  # Use second-order derivative information in the model.
+    n_bases = 1  # The function is one-dimensional (single input variable).
+    lb_x = 0.2  # Lower bound for the training input values.
+    ub_x = 6.0  # Upper bound for the training input values.
+
+    # 'index' specifies the grouping of training points for submodel construction.
+    # For example, with index = [[0], [1], [2], [3], [4]], each training point forms its own submodel.
+    # This flexible grouping allows the user to define arbitrary subsets for submodels.
+    # Note: For a global GP, the index must be a list of lists with length equal to the number of training points.
+    index = [[0], [1], [2], [3], [4]]
+
+    num_points = 5  # Number of training points along the x-axis.
+
+    # Use provided training values (non-uniform in this case).
+    X_train = np.array([0.3, 1.65, 3.1, 4.55, 5.5]).reshape(-1, 1)
+
+    # Generate indices for all derivatives up to n_order for a function with n_bases dimensions.
+    # Note that the derivatives used for each submodel can be different. In this particular case
+    # we assume that the derivative information used to construct each submodel is the same.
+    der_indices = [
+        utils.gen_OTI_indices(n_bases, n_order) for _ in range(len(X_train))
+    ]
+
+    # To use different derivative information fo each submodel one would supply derivative information as:
+    # Below each row corresponds to the derivative information that will be used to construct the submodel corresponding
+    # to a particular training point
+    der_indices = [
+        [[[[1, 1]], [[1, 2]]]],
+        [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
+        [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
+        [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
+        [[[[1, 1]], [[1, 2]]]],
+    ]
+
+    # ----- Assemble Training Data for Submodels -----
+    # y_train_data will hold the training outputs (function values + derivatives)
+    # for each submodel as defined by the groups in 'index'.
+    y_train_data = []
+    sigma_n_true = 0.0  # Known noise variance in the training data (set to 0 for simplicity)
+
+    # Loop over each group in 'index' to construct submodel training data.
+    for k, val in enumerate(index):
+        # For the current submodel, extract the training points based on indices in 'val'.
+        # Convert the selected training points to an OTI array to enable automatic derivative tracking.
+        X_train_pert = oti.array(X_train[val])
+
+        # Perturb each training point along the coordinate directions.
+        # This is necessary for computing derivatives via the OTI library.
+        for i in range(1, n_bases + 1):
+            for j in range(X_train_pert.shape[0]):
+                X_train_pert[j, i - 1] = X_train_pert[j, i - 1] + oti.e(
+                    i, order=n_order
+                )
+
+        # Evaluate the true function on the perturbed inputs to obtain hyper-complex outputs
+        # that include both function values and derivative information.
+        y_train_hc = oti.array(
+            [true_function(x, alg=oti) for x in X_train_pert]
+        )
+        # Also evaluate the true function on the original inputs (using numpy) to get the real values.
+        y_train_real = true_function(X_train, alg=np)
+
+        # Start building the training output for the submodel with the real function values.
+        y_train = y_train_real.reshape(-1, 1)
+        # Append derivative information extracted from the hyper-complex outputs.
+        for i in range(0, len(der_indices[k])):
+            for j in range(0, len(der_indices[k][i])):
+                y_train = np.vstack(
+                    (y_train, y_train_hc.get_deriv(der_indices[k][i][j]))
+                )
+
+        # Flatten the training data into a 1D array as required by the GP model.
+        y_train = y_train.flatten()
+
+        # Optionally add noise (none is added here since sigma_n_true is 0).
+        noise = sigma_n_true * np.random.randn(len(y_train))
+        y_train_noisy = y_train + noise
+
+        # Append the processed training output for this submodel.
+        y_train_data.append(y_train)
+
+    sigma_f = 1.0  # (Defined but not used; could be removed)
+    sigma_n = sigma_n_true  # (Same as above)
+
+    # ----- Weighted Gaussian Process Model Setup -----
+    # Create a weighted Gaussian Process model designed for submodel data.
+    # The 'index' parameter defines the grouping of training points for submodel construction.
+    gp = oti_gp_weighted(
+        X_train,  # The original (non-perturbed) training inputs.
+        y_train_data,  # List of training outputs (function values + derivatives) for each submodel.
+        n_order,  # Order of derivative information included.
+        n_bases,  # Dimensionality of the input space.
+        index,  # Grouping indices for submodel construction.
+        der_indices,
+        sigma_n=1e-8,  # Noise variance (set very small here for numerical stability).
+        nugget=1e-6,  # Nugget term for additional numerical stability.
+        kernel="SE",  # Use Squared Exponential (SE) kernel.
+        kernel_type="anisotropic",  # Anisotropic kernel allowing separate length scales per dimension.
+    )
+
+    # Optimize the GP hyperparameters (e.g., length scales, kernel variance) via likelihood maximization.
+    params = gp.optimize_hyperparameters()
+
+    # ----- Generate Test Data for Prediction -----
+    n_test_points = 250  # Number of test points for evaluation.
+    X_test = np.linspace(lb_x, ub_x, n_test_points).reshape(-1, 1)
+
+    # ----- GP Prediction -----
+    # Predict using the weighted GP model on the test inputs.
+    # The predict function returns:
+    #   - y_pred: The overall mean predictions for the test data.
+    #   - y_cov: The covariance matrix of the predictions.
+    #   - submodel_vals: Predicted values from each individual submodel.
+    #   - submodel_cov: Covariance for the individual submodel predictions.
+    y_pred, y_cov, submodel_vals, submodel_cov = gp.predict(
+        X_test, params, calc_cov=True, return_submodels=True
+    )
+
+    # ----- Plotting -----
+    # Visualize the GP predictions and submodel contributions.
+    # 'utils.make_submodel_plots' creates plots showing:
+    #   - The overall GP prediction and confidence intervals.
+    #   - The true function for comparison.
+    #   - The individual submodel predictions and their covariance.
+    utils.make_submodel_plots(
+        X_train,
+        y_train,
+        X_test,
+        y_pred,
+        true_function,
+        cov=y_cov,
+        n_order=n_order,
+        n_bases=n_bases,
+        plot_submodels=True,
+        submodel_vals=submodel_vals,
+        submodel_cov=submodel_cov,
+    )
