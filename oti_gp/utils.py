@@ -503,7 +503,7 @@ def make_plots(
         ), "Must pass derivative indices to plot derivative surrogates"
     # Standard deviation is the square root of the diagonal of the covariance matrix
 
-    assert X_train.shape[1] <= 2, "Plots not implemented for dimension >= 2"
+    assert X_train.shape[1] <= 400, "Plots not implemented for dimension >= 2"
 
     if isinstance(cov, int):
         cov = np.zeros((y_pred.shape[0], y_pred.shape[0]))
@@ -1026,7 +1026,7 @@ def make_submodel_plots(
                 )
     # Standard deviation is the square root of the diagonal of the covariance matrix
 
-    assert X_train.shape[1] <= 2, "Plots not implemented for dimension >= 2"
+    assert X_train.shape[1] <= 400, "Plots not implemented for dimension >= 2"
 
     if isinstance(cov, int):
         cov = np.zeros((y_pred.shape[0], y_pred.shape[0]))

@@ -1830,14 +1830,14 @@ class oti_gp_weighted:
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
                 self.bounds = (
-                    [(-5, 5)] * self.dim + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
+                    [(-6, 6)] * self.dim + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
                 )
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
                 self.bounds = (
-                    [(-5, 5)] * self.dim
+                    [(-6, 6)] * self.dim
                     + [(0, 5)]
-                    + [(1e-9, 1e2)]
+                    + [(1e-9, 1e3)]
                     + [(1e-16, 1e-3)]
                 )
 
