@@ -2451,6 +2451,7 @@ class oti_gp:
             try:
                 K += sigma_n**2 * np.eye(K.shape[0])
                 L = cholesky(K)
+                break
             except np.linalg.LinAlgError:
                 sigma_n *= 2  # Increase jitter if needed
 
@@ -2498,9 +2499,11 @@ class oti_gp:
             f_mean = K_s.T @ (alpha)
 
             if calc_cov:
+                diff_x_test_x_test = self.differences_by_dim_func(
+                    X_test, X_test, self.n_order
+                )
                 K_ss = utils.rbf_kernel(
-                    X_test,
-                    X_test,
+                    diff_x_test_x_test,
                     length_scales,
                     self.n_order,
                     self.n_bases,

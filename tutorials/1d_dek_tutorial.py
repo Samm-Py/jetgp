@@ -76,8 +76,6 @@ if __name__ == "__main__":
         n_order,  # Maximum derivative order used
         n_bases,  # Dimensionality of the input space
         der_indices,  # List of which derivatives to include
-        sigma_n=sigma_n_true,  # Noise level in the data (assumed known/estimated)
-        nugget=0.001,  # A small diagonal term added for numerical stability
         kernel="SE",  # Kernel choice: "SE" (squared exponential)
         kernel_type="anisotropic",  # Kernel is isotropic in the input space
     )
