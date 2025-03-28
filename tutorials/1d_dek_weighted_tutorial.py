@@ -122,7 +122,9 @@ if __name__ == "__main__":
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance) via likelihood maximization.
-    params = gp.optimize_hyperparameters(n_restart_optimizer=25, swarm_size=25)
+    params = gp.optimize_hyperparameters(
+        n_restart_optimizer=10, swarm_size=200
+    )
 
     # ----- Generate Test Data for Prediction -----
     n_test_points = 250  # Number of test points for evaluation.
