@@ -1,0 +1,239 @@
+  message: CONVERGENCE: REL_REDUCTION_OF_F_<=_FACTR*EPSMCH
+  success: True
+   status: 0
+      fun: 1340.4759823951247
+        x: [ 8.038e-01  8.138e-01  3.057e+01  1.000e-03]
+      nit: 63
+      jac: [ 1.715e-01 -1.178e+00 -1.571e-02 -1.538e-03]
+     nfev: 89
+     njev: 89
+ hess_inv: <4x4 LbfgsInvHessProduct with dtype=float64>
+[8.03791412e-01 8.13795396e-01 3.05691580e+01 1.00000000e-03]
+0.001
+NRMSE between model and true function: 0.32942331049992235
+[[0.32942331049992235]]
+Wrote profile results to benchmark_rast.py.lprof
+Timer unit: 1e-06 s
+
+Total time: 17.5844 s
+File: /home/sam/Research/github_oti_gp/oti_gp/oti_gp/oti_gp.py
+Function: se_kernel_anisotropic at line 2505
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+  2505                                               @profile
+  2506                                               def se_kernel_anisotropic(
+  2507                                                   self, differences_by_dim, length_scales, index=-1
+  2508                                               ):
+  2509                                                   # Distances scaled by each dimension's length scale
+  2510       358       3229.9      9.0      0.0          ell = oti.exp(length_scales[0:-1])
+  2511       358        965.2      2.7      0.0          sigma_f = length_scales[length_scales.shape[0] - 1]
+  2512       358        100.6      0.3      0.0          sqdist = 0
+  2513      1074       1442.3      1.3      0.0          for i in range(self.dim):
+  2514       716    2272376.4   3173.7     12.9              sqdist = sqdist + (ell[i, 0] * (differences_by_dim[i])) ** 2
+  2515                                           
+  2516       358   15306266.4  42754.9     87.0          return sigma_f[0, 0] ** 2 * oti.exp(-0.5 * sqdist)
+
+Total time: 17.4548 s
+File: /home/sam/Research/github_oti_gp/oti_gp/oti_gp/oti_gp.py
+Function: gradient_negative_log_marginal_likelihood at line 2735
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+  2735                                               @profile
+  2736                                               def gradient_negative_log_marginal_likelihood(
+  2737                                                   self, x0, x_train, sigma_n, n_order, n_bases, der_indices
+  2738                                               ):
+  2739                                                   """
+  2740                                                   NLL for standard GP in multiple dimensions.
+  2741                                           
+  2742                                                   NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi).
+  2743                                                   """
+  2744        89        262.4      2.9      0.0          y_train = self.y_train.reshape(-1, 1)
+  2745                                           
+  2746                                                   # K = utils.rbf_kernel(
+  2747                                                   #     x_train,
+  2748                                                   #     x_train,
+  2749                                                   #     ell,
+  2750                                                   #     n_order,
+  2751                                                   #     n_bases,
+  2752                                                   #     der_indices,
+  2753                                                   #     self.kernel_func,
+  2754                                                   # )
+  2755                                                   # K += sigma_n**2 * np.eye(len(K))
+  2756        89         59.9      0.7      0.0          grads = []
+  2757        89         32.7      0.4      0.0          if not self.Flag:
+  2758       356        353.3      1.0      0.0              for i in range(0, len(x0) - 1):
+  2759       267       5152.8     19.3      0.0                  ell = oti.array(x0[:-1])
+  2760       267       8926.8     33.4      0.1                  ell[i, 0] = ell[i, 0] + oti.array(oti.e(2 * n_bases + (2)))
+  2761       267        283.9      1.1      0.0                  sigma_n = x0[-1]
+  2762       534   14678530.0  27487.9     84.1                  K_ders = utils.rbf_kernel_der_params(
+  2763       267        262.7      1.0      0.0                      self.differences_by_dim_grad,
+  2764       267         68.5      0.3      0.0                      ell,
+  2765       267         72.2      0.3      0.0                      n_order,
+  2766       267         70.9      0.3      0.0                      n_bases,
+  2767       267        117.2      0.4      0.0                      der_indices,
+  2768       267        151.2      0.6      0.0                      self.kernel_func,
+  2769                                                           )
+  2770                                                           # L = cholesky(K)
+  2771                                                           # alpha = solve(L.T, solve(L, self.y_train)).reshape(-1, 1)
+  2772       267        526.4      2.0      0.0                  L = self.L_mat
+  2773       267        170.0      0.6      0.0                  alpha = self.alpha
+  2774                                           
+  2775                                                           # dK_dtheta = compute partial derivative of kernel matrix w.r.t. theta
+  2776       534     777229.7   1455.5      4.5                  inv_K = np.linalg.solve(
+  2777       267    1817777.1   6808.2     10.4                      L.T, np.linalg.solve(L, np.eye(L.shape[0]))
+  2778                                                           )
+  2779                                           
+  2780       534       9435.9     17.7      0.1                  grad_L_theta = 0.5 * np.trace(
+  2781       267     133669.3    500.6      0.8                      (alpha @ alpha.T - inv_K) @ K_ders
+  2782                                                           )
+  2783       267        301.2      1.1      0.0                  grads.append(grad_L_theta)
+  2784                                           
+  2785                                                       # Compute derivative dL/dsigma_n
+  2786        89        687.5      7.7      0.0              trace_term = np.trace(inv_K)
+  2787        89      18196.1    204.5      0.1              quad_term = y_train.T @ inv_K @ inv_K @ y_train
+  2788        89       1038.8     11.7      0.0              grad_sigma_n = sigma_n * (trace_term - quad_term)
+  2789        89        234.0      2.6      0.0              grads.append(grad_sigma_n[0, 0])
+  2790                                                       # print(grads)
+  2791        89       1109.6     12.5      0.0              self.last_grad = -1 * np.array(grads)
+  2792        89         38.6      0.4      0.0              return self.last_grad
+  2793                                                   else:
+  2794                                                       # try:
+  2795                                                       #     return self.last_grad
+  2796                                                       # except:
+  2797                                                       return np.ones_like(x0) * 1e6
+
+Total time: 6.7431 s
+File: /home/sam/Research/github_oti_gp/oti_gp/oti_gp/utils.py
+Function: rbf_kernel at line 90
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    90                                           @profile
+    91                                           def rbf_kernel(
+    92                                               differences,
+    93                                               length_scales,
+    94                                               n_order,
+    95                                               n_bases,
+    96                                               der_indices,
+    97                                               kernel_func,
+    98                                               index=-1,
+    99                                           ):
+   100                                               """
+   101                                               ARD RBF kernel for multi-dimensional inputs:
+   102                                                 k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+   103                                           
+   104                                               Parameters
+   105                                               ----------
+   106                                               X1 : array of shape (N, D)
+   107                                               X2 : array of shape (M, D)
+   108                                               length_scales : array of shape (D,), each dimension's length scale
+   109                                               sigma_f : float (signal amplitude)
+   110                                           
+   111                                               Returns
+   112                                               -------
+   113                                               K : array of shape (N, M)
+   114                                           
+   115                                           
+   116                                               """
+   117        91    4661253.9  51222.6     69.1      phi = kernel_func(differences, length_scales, index)
+   118                                           
+   119        91      13701.4    150.6      0.2      indices_row = transform_nested_list_row(der_indices)
+   120        91       8318.1     91.4      0.1      indices_column = transform_nested_list_column(der_indices)
+   121        91         36.1      0.4      0.0      rows = []
+   122        91         50.2      0.6      0.0      columns = []
+   123       364        358.9      1.0      0.0      for i in range(0, len(indices_row)):
+   124      1092        473.5      0.4      0.0          for j in range(0, len(indices_row[i])):
+   125       819        482.6      0.6      0.0              rows.append(indices_row[i][j])
+   126       819        398.7      0.5      0.0              columns.append(indices_column[i][j])
+   127                                           
+   128      1001        500.9      0.5      0.0      for i in range(0, len(rows) + 1):
+   129       910        427.8      0.5      0.0          row_j = 0
+   130     10010       7027.7      0.7      0.1          for j in range(0, len(columns) + 1):
+   131      9100       3495.3      0.4      0.1              if j == 0 and i == 0:
+   132        91       2066.0     22.7      0.0                  row_j = phi.real
+   133      9009       3819.2      0.4      0.1              elif j > 0 and i == 0:
+   134       819     151264.8    184.7      2.2                  row_j = np.hstack((row_j, phi.get_deriv(rows[j - 1])))
+   135      8190       2953.8      0.4      0.0              elif j == 0 and i > 0:
+   136       819     137176.5    167.5      2.0                  row_j = phi.get_deriv(columns[i - 1])
+   137                                                       else:
+   138     14742     160242.3     10.9      2.4                  row_j = np.hstack(
+   139      7371    1508350.4    204.6     22.4                      (row_j, phi.get_deriv(rows[j - 1] + columns[i - 1]))
+   140                                                           )
+   141       910        394.5      0.4      0.0          if i == 0:
+   142        91         33.1      0.4      0.0              K = row_j
+   143                                                   else:
+   144       819      80241.1     98.0      1.2              K = np.vstack((K, row_j))
+   145                                           
+   146        91         28.2      0.3      0.0      return K
+
+Total time: 14.4799 s
+File: /home/sam/Research/github_oti_gp/oti_gp/oti_gp/utils.py
+Function: rbf_kernel_der_params at line 149
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   149                                           @profile
+   150                                           def rbf_kernel_der_params(
+   151                                               differences,
+   152                                               length_scales,
+   153                                               n_order,
+   154                                               n_bases,
+   155                                               der_indices,
+   156                                               kernel_func,
+   157                                               index=-1,
+   158                                           ):
+   159                                               """
+   160                                               ARD RBF kernel for multi-dimensional inputs:
+   161                                                 k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+   162                                           
+   163                                               Parameters
+   164                                               ----------
+   165                                               X1 : array of shape (N, D)
+   166                                               X2 : array of shape (M, D)
+   167                                               length_scales : array of shape (D,), each dimension's length scale
+   168                                               sigma_f : float (signal amplitude)
+   169                                           
+   170                                               Returns
+   171                                               -------
+   172                                               K : array of shape (N, M)
+   173                                           
+   174                                           
+   175                                               """
+   176       267   12960840.8  48542.5     89.5      phi = kernel_func(differences, length_scales, index)
+   177                                           
+   178       267      48067.3    180.0      0.3      indices_row = transform_nested_list_row(der_indices)
+   179       267      25159.8     94.2      0.2      indices_column = transform_nested_list_column(der_indices)
+   180       267        177.1      0.7      0.0      rows = []
+   181       267        115.6      0.4      0.0      columns = []
+   182      1068       1210.5      1.1      0.0      for i in range(0, len(indices_row)):
+   183      3204       1483.8      0.5      0.0          for j in range(0, len(indices_row[i])):
+   184      2403       1838.3      0.8      0.0              rows.append(indices_row[i][j])
+   185      2403       1176.7      0.5      0.0              columns.append(indices_column[i][j])
+   186                                           
+   187       267        171.5      0.6      0.0      k = 2 * n_bases + 2
+   188      2937       1720.2      0.6      0.0      for i in range(0, len(rows) + 1):
+   189      2670       1171.8      0.4      0.0          row_j = 0
+   190     29370      17647.5      0.6      0.1          for j in range(0, len(columns) + 1):
+   191     26700      11805.5      0.4      0.1              if j == 0 and i == 0:
+   192       267      16907.4     63.3      0.1                  row_j = phi.get_deriv([[k, 1]])
+   193     26433      12222.0      0.5      0.1              elif j > 0 and i == 0:
+   194      4806      40694.0      8.5      0.3                  row_j = np.hstack(
+   195      2403      80514.9     33.5      0.6                      (row_j, phi.get_deriv(rows[j - 1] + [[k, 1]]))
+   196                                                           )
+   197     24030       8175.2      0.3      0.1              elif j == 0 and i > 0:
+   198      2403      65397.7     27.2      0.5                  row_j = phi.get_deriv(columns[i - 1] + [[k, 1]])
+   199                                                       else:
+   200     43254     308344.3      7.1      2.1                  row_j = np.hstack(
+   201     21627      10799.1      0.5      0.1                      (
+   202     21627       7936.6      0.4      0.1                          row_j,
+   203     21627     805880.2     37.3      5.6                          phi.get_deriv(rows[j - 1] + columns[i - 1] + [[k, 1]]),
+   204                                                               )
+   205                                                           )
+   206      2670       1339.2      0.5      0.0          if i == 0:
+   207       267        115.2      0.4      0.0              K = row_j
+   208                                                   else:
+   209      2403      48959.4     20.4      0.3              K = np.vstack((K, row_j))
+   210       267         77.0      0.3      0.0      return K
+

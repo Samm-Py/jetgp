@@ -3,6 +3,40 @@ import pyoti.core as coti
 from matplotlib import pyplot as plt
 import pyoti.sparse as oti
 import itertools
+from line_profiler import profile
+
+
+def nrmse(y_true, y_pred, norm_type="minmax"):
+    """
+    Compute the Normalized Root Mean Squared Error (NRMSE).
+
+    Parameters:
+        y_true (array-like): Ground truth values.
+        y_pred (array-like): Predicted values.
+        norm_type (str): Normalization type:
+                         - 'minmax': divide by (max - min) of y_true
+                         - 'mean': divide by mean of y_true
+                         - 'std': divide by standard deviation of y_true
+
+    Returns:
+        float: NRMSE value.
+    """
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    mse = np.mean((y_true - y_pred) ** 2)
+    rmse = np.sqrt(mse)
+
+    if norm_type == "minmax":
+        norm = np.max(y_true) - np.min(y_true)
+    elif norm_type == "mean":
+        norm = np.mean(y_true)
+    elif norm_type == "std":
+        norm = np.std(y_true)
+    else:
+        raise ValueError("norm_type must be 'minmax', 'mean', or 'std'")
+
+    return rmse / norm if norm != 0 else np.inf
 
 
 def transform_nested_list_row(nested_list):
@@ -86,8 +120,15 @@ def gen_OTI_indices(nvars, order):
     return ind
 
 
+# @profile
 def rbf_kernel(
-    X1, X2, length_scales, n_order, n_bases, der_indices, kernel_func, index=-1
+    differences,
+    length_scales,
+    n_order,
+    n_bases,
+    der_indices,
+    kernel_func,
+    index=-1,
 ):
     """
     ARD RBF kernel for multi-dimensional inputs:
@@ -106,7 +147,7 @@ def rbf_kernel(
 
 
     """
-    phi = kernel_func(X1, X2, length_scales, n_order, index)
+    phi = kernel_func(differences, length_scales, index)
 
     indices_row = transform_nested_list_row(der_indices)
     indices_column = transform_nested_list_column(der_indices)
@@ -138,8 +179,15 @@ def rbf_kernel(
     return K
 
 
-def rbf_kernel_weighted(
-    X1, X2, length_scales, n_order, n_bases, der_indices, kernel_func, index=-1
+# @profile
+def rbf_kernel_der_params(
+    differences,
+    length_scales,
+    n_order,
+    n_bases,
+    der_indices,
+    kernel_func,
+    index=-1,
 ):
     """
     ARD RBF kernel for multi-dimensional inputs:
@@ -158,7 +206,70 @@ def rbf_kernel_weighted(
 
 
     """
-    phi = kernel_func(X1, X2, length_scales, n_order, index)
+    phi = kernel_func(differences, length_scales, index)
+
+    indices_row = transform_nested_list_row(der_indices)
+    indices_column = transform_nested_list_column(der_indices)
+    rows = []
+    columns = []
+    for i in range(0, len(indices_row)):
+        for j in range(0, len(indices_row[i])):
+            rows.append(indices_row[i][j])
+            columns.append(indices_column[i][j])
+
+    k = 2 * n_bases + 2
+    for i in range(0, len(rows) + 1):
+        row_j = 0
+        for j in range(0, len(columns) + 1):
+            if j == 0 and i == 0:
+                row_j = phi.get_deriv([[k, 1]])
+            elif j > 0 and i == 0:
+                row_j = np.hstack(
+                    (row_j, phi.get_deriv(rows[j - 1] + [[k, 1]]))
+                )
+            elif j == 0 and i > 0:
+                row_j = phi.get_deriv(columns[i - 1] + [[k, 1]])
+            else:
+                row_j = np.hstack(
+                    (
+                        row_j,
+                        phi.get_deriv(rows[j - 1] + columns[i - 1] + [[k, 1]]),
+                    )
+                )
+        if i == 0:
+            K = row_j
+        else:
+            K = np.vstack((K, row_j))
+    return K
+
+
+def rbf_kernel_weighted(
+    differences,
+    length_scales,
+    n_order,
+    n_bases,
+    der_indices,
+    kernel_func,
+    index=-1,
+):
+    """
+    ARD RBF kernel for multi-dimensional inputs:
+      k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+
+    Parameters
+    ----------
+    X1 : array of shape (N, D)
+    X2 : array of shape (M, D)
+    length_scales : array of shape (D,), each dimension's length scale
+    sigma_f : float (signal amplitude)
+
+    Returns
+    -------
+    K : array of shape (N, M)
+
+
+    """
+    phi = kernel_func(differences, length_scales, index)
 
     indices_row = transform_nested_list_row(der_indices)
     indices_column = transform_nested_list_column(der_indices)
@@ -317,7 +428,10 @@ def determine_directional_weights(
 
 
 def determine_weights(
-    X1, x, length_scales, n_order, n_bases, der_indices, kernel_func
+    diffs_by_dim,
+    diffs_test,
+    length_scales,
+    kernel_func,
 ):
     """
     ARD RBF kernel for multi-dimensional inputs:
@@ -338,14 +452,12 @@ def determine_weights(
     """
     # Allocate the output array
 
-    X1 = np.array(X1)
-
-    n1, d = X1.shape
+    n1 = diffs_test[0].shape[0]
 
     index = [-1]
 
-    phi = kernel_func(X1, X1, length_scales, n_order, index)
-    r = kernel_func(X1, x, length_scales, n_order, index)
+    phi = kernel_func(diffs_by_dim, length_scales, index)
+    r = kernel_func(diffs_test, length_scales, index)
 
     K = phi.real
     F = np.ones((n1, 1))
@@ -459,15 +571,30 @@ def make_plots(
                     )
                 )
                 plt.show()
-                rmse = np.sqrt(
-                    np.mean(
-                        (y_pred[: X_test.shape[0]] - true_values.flatten())
-                        ** 2
-                    )
-                )
-                print("RMSE between model and true function: {}".format(rmse))
+                # rmse = np.sqrt(
+                #     np.mean(
+                #         (y_pred[: X_test.shape[0]] - true_values.flatten())
+                #         ** 2
+                #     )
+                # )
+                # print("RMSE between model and true function: {}".format(rmse))
         else:
             # Reshape the predicted mean back into a 2D grid for contour plotting.
+
+            # Compute the min and max values of the grids
+            x1_min, x1_max = np.min(X1_grid), np.max(X1_grid)
+            x2_min, x2_max = np.min(X2_grid), np.max(X2_grid)
+
+            # Create a mask for points within the grid bounds
+            mask = (
+                (X_train[:, 0] > x1_min)
+                & (X_train[:, 0] < x1_max)
+                & (X_train[:, 1] > x2_min)
+                & (X_train[:, 1] < x2_max)
+            )
+
+            # Filtered points
+            X_filtered = X_train[mask]
             N_grid = X1_grid.shape[0]
             num_points = X_test.shape[0]
             y_pred = y_pred[:num_points]
@@ -485,8 +612,11 @@ def make_plots(
             # ----- Plotting the Results -----
             # Create a figure with two subplots: one for the GP prediction and one for the true function.
             plt.figure(figsize=(12, 6))
+            plt.rcParams.update({"font.size": 12})
 
             # Subplot (a): GP Prediction
+            vmin = min(f_mean_2d.min(), true_values.min())
+            vmax = max(f_mean_2d.max(), true_values.max())
             plt.subplot(1, 2, 1)
             plt.title(
                 "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
@@ -494,38 +624,50 @@ def make_plots(
                 )
             )
             # Contour plot of the GP predicted mean
-            plt.contourf(
-                X1_grid, X2_grid, f_mean_2d, levels=50, cmap="viridis"
+            plt.subplot(1, 2, 1)
+            contour1 = plt.contourf(
+                X1_grid,
+                X2_grid,
+                f_mean_2d,
+                levels=25,
+                cmap="viridis",
+                vmin=vmin,
+                vmax=vmax,
             )
-            plt.colorbar()
-            # Overlay the training points on the prediction plot
+            plt.colorbar(contour1)
             plt.scatter(
-                X_train[:, 0],
-                X_train[:, 1],
+                X_filtered[:, 0],
+                X_filtered[:, 1],
                 c="white",
                 edgecolors="k",
                 label="Train pts",
             )
-            plt.xlabel("X1")
-            plt.ylabel("X2")
-            plt.legend()
+            # plt.xlabel("X1")
+            # plt.ylabel("X2")
+            plt.xticks([])  # no x ticks
+            plt.yticks([])  # no y ticks
+            # plt.legend()
             plt.tight_layout(pad=2.0)
 
-            # Subplot (b): True Function
+            # Subplot (b)
             plt.subplot(1, 2, 2)
-            title_str = r"True Function"
-            plt.title(title_str, fontsize=12)
-            # Contour plot of the true function values
-            plt.contourf(
-                X1_grid, X2_grid, true_values, levels=50, cmap="viridis"
+            plt.title("True Function", fontsize=12)
+            contour2 = plt.contourf(
+                X1_grid,
+                X2_grid,
+                true_values,
+                levels=25,
+                cmap="viridis",
+                vmin=vmin,
+                vmax=vmax,
             )
-            plt.colorbar()
-            # Overlay the training points on the true function plot
+            plt.colorbar(contour2)
+            # Overlay the training points on the prediction plot
             plt.scatter(
-                X_train[:, 0], X_train[:, 1], c="white", edgecolors="k"
+                X_filtered[:, 0], X_filtered[:, 1], c="white", edgecolors="k"
             )
-            plt.xlabel("X1")
-            plt.ylabel("X2")
+            plt.xticks([])  # no x ticks
+            plt.yticks([])  # no y ticks
             plt.show()
 
             plt.tight_layout(pad=2.0)
@@ -1182,8 +1324,10 @@ def make_submodel_plots(
 
             # ----- Performance Evaluation -----
             # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
-            rmse = np.sqrt(np.mean((f_mean_2d - true_values) ** 2))
-            print("RMSE between model and true function: {}".format(rmse))
+            nrmse_vals = nrmse(true_values, f_mean_2d)
+            print(
+                "NRMSE between model and true function: {}".format(nrmse_vals)
+            )
 
             for i in range(0, len(submodel_vals)):
                 sigma = np.sqrt(abs(np.diag(submodel_cov[i])))
@@ -1202,7 +1346,7 @@ def make_submodel_plots(
                 )
                 # Contour plot of the GP predicted mean
                 plt.contourf(
-                    X1_grid, X2_grid, f_mean_2d, levels=50, cmap="viridis"
+                    X1_grid, X2_grid, f_mean_2d, levels=25, cmap="viridis"
                 )
                 plt.colorbar()
                 # Overlay the training points on the prediction plot
@@ -1224,7 +1368,7 @@ def make_submodel_plots(
                 plt.title(title_str, fontsize=12)
                 # Contour plot of the true function values
                 plt.contourf(
-                    X1_grid, X2_grid, true_values, levels=50, cmap="viridis"
+                    X1_grid, X2_grid, true_values, levels=25, cmap="viridis"
                 )
                 plt.colorbar()
                 # Overlay the training points on the true function plot

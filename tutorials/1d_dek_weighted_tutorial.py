@@ -20,25 +20,24 @@ import utils  # Utility functions (e.g., to generate derivative indices, plottin
 if __name__ == "__main__":
     # Define the true function:
     def true_function(X, alg=oti):
-        x = X[:, 0]
-        return alg.exp(-x) + alg.sin(x) + alg.cos(3 * x) + 0.2 * x + 1.0
+        x1 = X[:, 0]
+        return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # ----- Parameter Setup -----
-    n_order = 4  # Use second-order derivative information in the model.
+    n_order = 3  # Use second-order derivative information in the model.
     n_bases = 1  # The function is one-dimensional (single input variable).
-    lb_x = 0.2  # Lower bound for the training input values.
-    ub_x = 6.0  # Upper bound for the training input values.
+    lb_x = 0.5  # Lower bound for the training input values.
+    ub_x = 2.5  # Upper bound for the training input values.
 
     # 'index' specifies the grouping of training points for submodel construction.
     # For example, with index = [[0], [1], [2], [3], [4]], each training point forms its own submodel.
     # This flexible grouping allows the user to define arbitrary subsets for submodels.
     # Note: For a global GP, the index must be a list of lists with length equal to the number of training points.
-    index = [[0], [1], [2], [3], [4]]
-
-    num_points = 5  # Number of training points along the x-axis.
+    num_points = 20  # Number of training points along the x-axis.
+    index = [[i] for i in range(num_points)]
 
     # Use provided training values (non-uniform in this case).
-    X_train = np.array([0.3, 1.65, 3.1, 4.55, 5.5]).reshape(-1, 1)
+    X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
 
     # Generate indices for all derivatives up to n_order for a function with n_bases dimensions.
     # Note that the derivatives used for each submodel can be different. In this particular case
@@ -50,13 +49,13 @@ if __name__ == "__main__":
     # To use different derivative information fo each submodel one would supply derivative information as:
     # Below each row corresponds to the derivative information that will be used to construct the submodel corresponding
     # to a particular training point
-    der_indices = [
-        [[[[1, 1]], [[1, 2]]]],
-        [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
-        [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
-        [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
-        [[[[1, 1]], [[1, 2]]]],
-    ]
+    # der_indices = [
+    #     [[[[1, 1]], [[1, 2]]]],
+    #     [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
+    #     [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
+    #     [[[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]]]],
+    #     [[[[1, 1]], [[1, 2]]]],
+    # ]
 
     # ----- Assemble Training Data for Submodels -----
     # y_train_data will hold the training outputs (function values + derivatives)
@@ -118,14 +117,12 @@ if __name__ == "__main__":
         n_bases,  # Dimensionality of the input space.
         index,  # Grouping indices for submodel construction.
         der_indices,
-        sigma_n=1e-8,  # Noise variance (set very small here for numerical stability).
-        nugget=1e-6,  # Nugget term for additional numerical stability.
         kernel="SE",  # Use Squared Exponential (SE) kernel.
         kernel_type="anisotropic",  # Anisotropic kernel allowing separate length scales per dimension.
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance) via likelihood maximization.
-    params = gp.optimize_hyperparameters()
+    params = gp.optimize_hyperparameters(n_restart_optimizer=25, swarm_size=25)
 
     # ----- Generate Test Data for Prediction -----
     n_test_points = 250  # Number of test points for evaluation.
@@ -141,7 +138,9 @@ if __name__ == "__main__":
     y_pred, y_cov, submodel_vals, submodel_cov = gp.predict(
         X_test, params, calc_cov=True, return_submodels=True
     )
-
+    # true_values = true_function(X_train, alg=np)
+    # rmse = np.sqrt(np.mean((y_pred - true_values) ** 2))
+    # print("RMSE between model and true function: {}".format(rmse))
     # ----- Plotting -----
     # Visualize the GP predictions and submodel contributions.
     # 'utils.make_submodel_plots' creates plots showing:
