@@ -78,10 +78,10 @@ if __name__ == "__main__":
     # Set the random seed for reproducibility
     np.random.seed(1354)
     n_bases = 4
-    n_order = 1
+    n_order = 4
 
     num_points_test = 5000
-    num_points_train = 40
+    num_points_train = 80
     quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
 
     lower_bounds = [-2.048 for i in range(4)]
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     upper_bounds = [2.048 for i in range(4)]
 
     # Number of points per axis (keep small for manageability)
-    num_points_per_axis = 3  # adjust as needed
+    num_points_per_axis = 4  # adjust as needed
 
     # Create linspace for each dimension
     axes = [
@@ -124,6 +124,8 @@ if __name__ == "__main__":
     mesh = np.meshgrid(*axes, indexing="ij")
     X_train = np.stack(mesh, axis=-1).reshape(-1, 4)
 
+    quasi = sb.create_sobol_samples(num_points_train, n_bases, 1).T
+    X_train = scale_samples(quasi, lower_bounds, upper_bounds)
     # Generate indices for all derivatives up to n_order for a function with n_bases dimensions.
     # Note that the derivatives used for each submodel can be different. In this particular case
     # we assume that the derivative information used to construct each submodel is the same.
@@ -211,12 +213,12 @@ if __name__ == "__main__":
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance).
-    params = gp.optimize_hyperparameters(n_restart_optimizer=25, swarm_size=25)
+    params = gp.optimize_hyperparameters(n_restart_optimizer=5, swarm_size=400)
 
     # ----- Generate Test Data for Prediction -----
     # Create a grid of test points over the same ranges as the training data.
 
-    N_grid = 15  # Number of grid points per axis for test data
+    N_grid = 20  # Number of grid points per axis for test data
     X_test = np.zeros((N_grid * N_grid, 4))
     x_lin = np.linspace(-2.048, 2.048, N_grid)
     y_lin = np.linspace(-2.048, 2.048, N_grid)
@@ -226,7 +228,9 @@ if __name__ == "__main__":
 
     # ----- GP Prediction -----
     # Predict the function values on the test data using the optimized GP model.
-    y_pred = gp.predict(X_test, params, calc_cov=False, return_submodels=False)
+    y_pred, y_cov = gp.predict(
+        X_test, params, calc_cov=True, return_submodels=False
+    )
     y_true = true_function(X_test, alg=np)
     nrmse = nrmse(y_true, y_pred, norm_type="minmax")
     print("nrmse: {}".format(nrmse))

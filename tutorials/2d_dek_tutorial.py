@@ -104,8 +104,6 @@ if __name__ == "__main__":
         n_order,  # Order of derivative information used
         n_bases,  # Dimensionality of the input space
         der_indices,  # List of which derivatives to include
-        sigma_n=1e-6,  # Noise variance (set to 0.0 here)
-        nugget=1e-6,  # Small regularization term for numerical stability
         kernel="RQ",  # Kernel choice: Rational Quadratic (RQ) kernel
         kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
     )
