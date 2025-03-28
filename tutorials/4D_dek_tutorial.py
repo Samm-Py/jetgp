@@ -1,21 +1,108 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
-import itertools
 from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
 import utils  # Utility functions, including one to generate derivative indices
+import modules.sobol as sb
+import modules.lhs as lhs
+import pickle
+
+
+# Zhis function will generate random samples for parameters.
+# Zhese samples will be used for MC simulation
+def scale_samples(samples, lower_bounds, upper_bounds):
+    """
+    Scale each column of samples from [0, 1] to [lb_j, ub_j].
+
+    Parameters:
+        samples (ndarray): A (d, n) array of samples in [0, 1]^n.
+        lower_bounds (array-like): Length-n array of lower bounds.
+        upper_bounds (array-like): Length-n array of upper bounds.
+
+    Returns:
+        ndarray: A (d, n) array with each column scaled to its corresponding bounds.
+    """
+    samples = np.asarray(samples)
+    lower_bounds = np.asarray(lower_bounds)
+    upper_bounds = np.asarray(upper_bounds)
+
+    # Ensure correct shapes
+    assert (
+        samples.shape[1] == len(lower_bounds) == len(upper_bounds)
+    ), "Dimension mismatch between samples and bounds"
+
+    # Reshape bounds to broadcast across rows
+    lb = lower_bounds[np.newaxis, :]
+    ub = upper_bounds[np.newaxis, :]
+
+    return lb + samples * (ub - lb)
+
+
+def nrmse(y_true, y_pred, norm_type="minmax"):
+    """
+    Compute the Normalized Root Mean Squared Error (NRMSE).
+
+    Parameters:
+        y_true (array-like): Ground truth values.
+        y_pred (array-like): Predicted values.
+        norm_type (str): Normalization type:
+                         - 'minmax': divide by (max - min) of y_true
+                         - 'mean': divide by mean of y_true
+                         - 'std': divide by standard deviation of y_true
+
+    Returns:
+        float: NRMSE value.
+    """
+    y_true = np.asarray(y_true)
+    y_pred = np.asarray(y_pred)
+
+    mse = np.mean((y_true - y_pred) ** 2)
+    rmse = np.sqrt(mse)
+
+    if norm_type == "minmax":
+        norm = np.max(y_true) - np.min(y_true)
+    elif norm_type == "mean":
+        norm = np.mean(y_true)
+    elif norm_type == "std":
+        norm = np.std(y_true)
+    else:
+        raise ValueError("norm_type must be 'minmax', 'mean', or 'std'")
+
+    return rmse / norm if norm != 0 else np.inf
+
 
 if __name__ == "__main__":
     # Set the random seed for reproducibility
-    np.random.seed(0)
+    np.random.seed(1354)
+    n_bases = 4
+    n_order = 2
 
-    # ----- Parameter Setup -----
-    n_order = 2  # Use 4th-order derivative information in the model
-    n_bases = 2  # The function is two-dimensional (two input variables)
-    lb_x = -1  # Lower bound for the first input variable (x1)
-    ub_x = 1  # Upper bound for the first input variable (x1)
-    lb_y = -1  # Lower bound for the second input variable (x2)
-    ub_y = 1  # Upper bound for the second input variable (x2)
+    num_points_test = 5000
+    num_points_train = 26
+    quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
+
+    lower_bounds = [-2.048 for i in range(4)]
+    upper_bounds = [2.048 for i in range(4)]
+
+    X_test = scale_samples(quasi, lower_bounds, upper_bounds)
+
+    def true_function(X, alg=oti):
+        x1 = X[:, 0]
+        x2 = X[:, 1]
+        x3 = X[:, 2]
+        x4 = X[:, 3]
+
+        f = (
+            100 * (x2 - x1**2) ** 2
+            + (1 - x1) ** 2
+            + 100 * (x3 - x2**2) ** 2
+            + (1 - x2) ** 2
+            + 100 * (x4 - x3**2) ** 2
+            + (1 - x3) ** 2
+        )
+
+        return f
+
+    rmse_data = []
 
     # Generate indices for all derivatives up to the specified order
     # in a function with n_bases input dimensions.
@@ -35,16 +122,16 @@ if __name__ == "__main__":
     #     [[[1, 1]], [[2, 1]]],
     #     [[[1, 2]], [[2, 2]]],
     # ]
-    # # We use 5 points for this simple example. In a real case, choose
+    # We use 5 points for this simple example. In a real case, choose
     # more or fewer points depending on the function's complexity.
 
     # ----- Generate Training Data -----
-    num_points = 5  # Number of points per axis for training data
-    x_vals = np.linspace(lb_x, ub_x, num_points)  # Uniform grid for x1 values
-    y_vals = np.linspace(lb_y, ub_y, num_points)  # Uniform grid for x2 values
+    quasi = sb.create_sobol_samples(num_points_train, n_bases, 1).T
 
-    # Create the Cartesian product of x_vals and y_vals to get a grid of training points
-    X_train = np.array(list(itertools.product(x_vals, y_vals)))
+    lower_bounds = [-2.048 for i in range(4)]
+    upper_bounds = [2.048 for i in range(4)]
+
+    X_train = scale_samples(quasi, lower_bounds, upper_bounds)
 
     # Convert training data to an OTI array that supports derivative tracking
     X_train_pert = oti.array(X_train)
@@ -55,15 +142,6 @@ if __name__ == "__main__":
         X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(
             i, order=n_order
         )
-
-    # ----- Define the True Function -----
-    # This is an arbitrarily chosen polynomial function in two variables.
-    # It has nonlinear behavior and is used here for demonstration.
-    def true_function(X, alg=oti):
-        x1 = X[:, 0]
-        x2 = X[:, 1]
-        f = x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
-        return f
 
     # Evaluate the true function on the perturbed training data.
     # The output is hyper-complex, containing both function value and derivative information.
@@ -85,15 +163,6 @@ if __name__ == "__main__":
     # Flatten the training output into a 1D array (required format for many GP implementations)
     y_train = y_train.flatten()
 
-    # ----- Noise Handling -----
-    # sigma_n_true represents the known noise variance in the training outputs.
-    # Here, it is set to zero (i.e., no noise is added) for simplicity.
-    sigma_n_true = 0.0000
-    noise = sigma_n_true * np.random.randn(len(y_train))
-    y_train_noisy = (
-        y_train + noise
-    )  # Although no noise is added in this example
-
     # ----- Gaussian Process Model Setup -----
     # Create the derivative-enhanced Gaussian Process model.
     # We pass the original training inputs (X_train) along with the training outputs (y_train)
@@ -104,27 +173,30 @@ if __name__ == "__main__":
         n_order,  # Order of derivative information used
         n_bases,  # Dimensionality of the input space
         der_indices,  # List of which derivatives to include
-        sigma_n=1e-6,  # Noise variance (set to 0.0 here)
-        nugget=1e-6,  # Small regularization term for numerical stability
-        kernel="RQ",  # Kernel choice: Rational Quadratic (RQ) kernel
+        kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
         kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
     )
 
     # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
-    params = gp.optimize_hyperparameters()
+    params = gp.optimize_hyperparameters(n_restart_optimizer=25, swarm_size=25)
 
     # ----- Generate Test Data for Prediction -----
     # Create a grid of test points over the same ranges as the training data.
+    X_test = np.zeros((25 * 25, 4))
     N_grid = 25  # Number of grid points per axis for test data
-    x_lin = np.linspace(lb_x, ub_x, N_grid)
-    y_lin = np.linspace(lb_y, ub_y, N_grid)
+    x_lin = np.linspace(-2.048, 2.048, N_grid)
+    y_lin = np.linspace(-2.048, 2.048, N_grid)
     X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
     # Combine the grid coordinates into a 2D array of test points.
-    X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
+    X_test[:, 0:2] = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
 
     # ----- GP Prediction -----
     # Predict the function values on the test data using the optimized GP model.
-    y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=True)
+    y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=False)
+    y_true = true_function(X_test, alg=np)
+    nrmse = nrmse(y_true, y_pred, norm_type="minmax")
+    print("nrmse: {}".format(nrmse))
+
     utils.make_plots(
         X_train,
         y_train,
@@ -135,6 +207,6 @@ if __name__ == "__main__":
         X2_grid=X2_grid,
         n_order=n_order,
         n_bases=n_bases,
-        plot_derivative_surrogates=True,
+        plot_derivative_surrogates=False,
         der_indices=der_indices,
     )
