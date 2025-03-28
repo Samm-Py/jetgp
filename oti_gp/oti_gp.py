@@ -3,6 +3,8 @@ from numpy.linalg import cholesky, solve
 from scipy.optimize import minimize
 import pyoti.sparse as oti
 import utils
+from line_profiler import profile
+from pyswarm import pso
 
 
 class oti_gp_directional_weighted_pts:
@@ -132,11 +134,13 @@ class oti_gp_directional_weighted_pts:
                                 * rays[m][k, l]
                             )
                         if i in index and j in index:
-                            diffs_k[i, j] = (
-                                (X1[i, k] + dire1)) - (X2[j, k] + dire2)
+                            diffs_k[i, j] = ((X1[i, k] + dire1)) - (
+                                X2[j, k] + dire2
+                            )
                         elif i in index and j not in index:
                             diffs_k[i, j] = diffs_k[i, j] = (
-                                (X1[i, k] + dire1)) - (X2[j, k])
+                                (X1[i, k] + dire1)
+                            ) - (X2[j, k])
                         elif i not in index and j in index:
                             diffs_k[i, j] = ((X1[i, k])) - (X2[j, k] + dire2)
                         else:
@@ -159,7 +163,7 @@ class oti_gp_directional_weighted_pts:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim:])
+        alpha = np.exp(length_scales[self.dim :])
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -214,7 +218,7 @@ class oti_gp_directional_weighted_pts:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim: -1]
+        p = length_scales[self.dim : -1]
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -533,7 +537,7 @@ class oti_gp_directional_weighted_pts:
                 index=self.index[i],
             )
 
-            K_s = K_s[:, 0: len(X_test)]
+            K_s = K_s[:, 0 : len(X_test)]
             f_mean = K_s.T @ (alpha)
             y_val = y_val + (weights_matrix[:, i] * f_mean)
             if return_submodels:
@@ -552,7 +556,7 @@ class oti_gp_directional_weighted_pts:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
                 y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
                 if return_submodels:
                     submodel_cov.append(f_cov)
@@ -776,7 +780,7 @@ class oti_gp_directional_weighted:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim:])
+        alpha = np.exp(length_scales[self.dim :])
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -824,7 +828,7 @@ class oti_gp_directional_weighted:
         self, rays, x, length_scales, n_order, index=-1
     ):
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim: -1])
+        alpha = np.exp(length_scales[self.dim : -1])
         sigma_f = length_scales[-1]
 
         n1 = rays.shape[1]
@@ -879,7 +883,7 @@ class oti_gp_directional_weighted:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim: -1]
+        p = length_scales[self.dim : -1]
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -923,7 +927,7 @@ class oti_gp_directional_weighted:
         self, rays, x, length_scales, n_order, index=-1
     ):
         ell = np.exp(length_scales[: self.dim])
-        p = np.exp(length_scales[self.dim: -1])
+        p = np.exp(length_scales[self.dim : -1])
         sigma_f = length_scales[-1]
 
         n1 = rays.shape[1]
@@ -1239,7 +1243,7 @@ class oti_gp_directional_weighted:
                 self.kernel_func,
                 index=self.index[i],
             )
-            K_s = K_s[:, 0: len(X_test)]
+            K_s = K_s[:, 0 : len(X_test)]
             f_mean = K_s.T @ (alpha)
             if return_submodels:
                 submodel_vals.append(f_mean)
@@ -1259,7 +1263,7 @@ class oti_gp_directional_weighted:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
                 y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
                 if return_submodels:
                     submodel_cov.append(f_cov)
@@ -1417,7 +1421,7 @@ class oti_gp_directional:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim:])
+        alpha = np.exp(length_scales[self.dim :])
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -1472,7 +1476,7 @@ class oti_gp_directional:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim:]
+        p = length_scales[self.dim :]
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -1743,7 +1747,7 @@ class oti_gp_directional:
         )
 
         if not return_deriv:
-            K_s = K_s[:, 0: len(X_test)]
+            K_s = K_s[:, 0 : len(X_test)]
 
             f_mean = K_s.T @ (alpha)
 
@@ -1759,7 +1763,7 @@ class oti_gp_directional:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
 
                 return f_mean, f_cov
             else:
@@ -1796,14 +1800,12 @@ class oti_gp_weighted:
         index,
         der_indices,
         sigma_n=0.0,
-        nugget=1e-6,
         kernel="SE",
         kernel_type="anisotropic",
     ):
         self.x_train = x_train
         self.y_train = y_train
         self.sigma_n = sigma_n
-        self.nugget = nugget
         self.n_order = n_order
         self.n_bases = n_bases
         self.index = index
@@ -1812,33 +1814,40 @@ class oti_gp_weighted:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.kernel_func = self.create_kernel_function()
+        self.differences_by_dim_submodels = []
+        for i in range(0, len(self.index)):
+            self.submodel_index = self.index[i]
+            self.differences_by_dim_submodels.append(
+                self.differences_by_dim_func(
+                    self.x_train,
+                    self.x_train,
+                    self.n_order,
+                    self.submodel_index,
+                )
+            )
 
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                theta_0 = np.zeros((self.dim,))
-                self.init = np.concatenate((theta_0, np.array([1])))
-                self.bounds = [(-4, 1e2)] * (len(theta_0)) + [(1e-4, None)]
+                self.bounds = (
+                    [(-5, 5)] * self.dim + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
+                )
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
-                theta_0 = np.zeros((self.dim,))
-                alpha_0 = np.zeros((self.dim,))
-                self.init = np.concatenate((theta_0, alpha_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(alpha_0))
-                    + [(1e-4, None)]
+                    [(-5, 5)] * self.dim
+                    + [(0, 5)]
+                    + [(1e-9, 1e2)]
+                    + [(1e-16, 1e-3)]
                 )
 
                 return self.rq_kernel_anisotropic
             elif self.kernel == "SineExp":
-                theta_0 = np.zeros((self.dim,))
-                p_0 = 10 * np.ones((self.dim,))
-                self.init = np.concatenate((theta_0, p_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(p_0))
-                    + [(1e-4, None)]
+                    [(-5, 5)] * (self.dim)
+                    + [(0.0001, 1e2)] * (self.dim)
+                    + [(1e-9, 1e2)]
+                    + [(1e-16, 1e-3)]
                 )
 
                 return self.sine_exp_kernel_anisotropic
@@ -1846,43 +1855,28 @@ class oti_gp_weighted:
                 raise Exception("Kernel Not Implemented")
         else:
             if self.kernel == "SE":
-                theta_0 = np.zeros((1,))
-                self.init = np.concatenate((theta_0, np.array([1])))
-                self.bounds = [(-4, 1e2)] * (len(theta_0)) + [(1e-4, None)]
+                self.bounds = [(-5, 5)] + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
                 return self.se_kernel_isotropic
             elif self.kernel == "RQ":
-                theta_0 = np.zeros((1,))
-                alpha_0 = np.zeros((1,))
-                self.init = np.concatenate((theta_0, alpha_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(alpha_0))
-                    + [(1e-4, None)]
+                    [(-4, 1e2)] + [(0, 5)] + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
                 )
                 return self.rq_kernel_isotropic
             elif self.kernel == "SineExp":
-                theta_0 = np.zeros((1,))
-                p_0 = 10 * np.ones((1,))
-                self.init = np.concatenate((theta_0, p_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(p_0))
-                    + [(1e-4, None)]
+                    [(-4, 1e2)] + [(0, 1e2)] + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
                 )
                 return self.sine_exp_kernel_isotropic
             else:
                 raise Exception("Kernel Not Implemented")
 
-    def se_kernel_anisotropic(self, X1, X2, length_scales, n_order, index):
+    def differences_by_dim_func(self, X1, X2, n_order, index=-1):
         X1 = oti.array(X1)
         X2 = oti.array(X2)
 
         n1, d = X1.shape
-
         n2, d = X2.shape
 
-        ell = np.exp(length_scales[0:-1])
-        sigma_f = length_scales[-1]
         # Prepare the output: a list of d arrays, each of shape (n, m)
         differences_by_dim = []
 
@@ -1910,253 +1904,76 @@ class oti_gp_weighted:
                         diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
             # Append to our list
             differences_by_dim.append(diffs_k)
+        return differences_by_dim
 
+    def se_kernel_anisotropic(self, differences_by_dim, length_scales, index):
         # Distances scaled by each dimension's length scale
+        ell = np.exp(length_scales[0:-1])
+        sigma_f = length_scales[length_scales.shape[0] - 1]
         sqdist = 0
-        for i in range(d):
+        for i in range(self.dim):
             sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
         return sigma_f**2 * oti.exp(-0.5 * sqdist)
 
-    def rq_kernel_anisotropic(self, X1, X2, length_scales, n_order, index):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
+    def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index):
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim:])
-        sigma_f = length_scales[-1]
-
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n1))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    if i == index and j == index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    elif i == index and j != index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k])
-                    elif i != index and j == index:
-                        diffs_k[i, j] = ((X1[i, k])) - (
-                            X2[j, k] + oti.e(2 * k + 1, order=2 * n_order)
-                        )
-                    else:
-                        diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-            # Distances scaled by each dimension's length scale
-
-        # Distances scaled by each dimension's length scale
+        alpha = np.exp(length_scales[self.dim : self.dim + 1])[0]
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 1
-        for i in range(d):
-            sqdist *= (
-                1 + (ell[i] * differences_by_dim[i]) ** 2 / (2 * alpha[i])
-            ) ** (-alpha[i])
+        for i in range(self.dim):
+            sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * sqdist
+        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_anisotropic(
-        self, X1, X2, length_scales, n_order, index
+        self, differences_by_dim, length_scales, index
     ):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim:]
-        sigma_f = length_scales[-1]
+        p = length_scales[self.dim : -1]
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
+        sqdist = 1
+        for i in range(self.dim):
+            sqdist = (
+                sqdist
+                + (ell[i] * oti.sin((np.pi / p[i]) * differences_by_dim[i]))
+                ** 2
+            )
 
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n1))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    if i == index and j == index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    elif i == index and j != index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k])
-                    elif i != index and j == index:
-                        diffs_k[i, j] = ((X1[i, k])) - (
-                            X2[j, k] + oti.e(2 * k + 1, order=2 * n_order)
-                        )
-                    else:
-                        diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
-
-        sqdist = np.sum(
-            (ell[i] * oti.sin(np.pi / p[i] * differences_by_dim[i])) ** 2
-            for i in range(d)
-        )
         return sigma_f**2 * oti.exp(-2 * sqdist)
 
-    def se_kernel_isotropic(self, X1, X2, length_scales, n_order, index):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
+    def se_kernel_isotropic(self, differences_by_dim, length_scales, index):
+        ell = oti.exp(length_scales[0])
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
-        ell = np.exp(length_scales[0])
-        sigma_f = length_scales[-1]
-
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n1))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    if i == index and j == index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    elif i == index and j != index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k])
-                    elif i != index and j == index:
-                        diffs_k[i, j] = ((X1[i, k])) - (
-                            X2[j, k] + oti.e(2 * k + 1, order=2 * n_order)
-                        )
-                    else:
-                        diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
         sqdist = 0
-        for i in range(d):
+        for i in range(self.dim):
             sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
         return sigma_f**2 * oti.exp(-0.5 * sqdist)
 
-    def rq_kernel_isotropic(self, X1, X2, length_scales, n_order, index):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
+    def rq_kernel_isotropic(self, differences_by_dim, length_scales, index):
         ell = np.exp(length_scales[0])
         alpha = np.exp(length_scales[1])
-        sigma_f = length_scales[-1]
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n1))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    if i == index and j == index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    elif i == index and j != index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k])
-                    elif i != index and j == index:
-                        diffs_k[i, j] = ((X1[i, k])) - (
-                            X2[j, k] + oti.e(2 * k + 1, order=2 * n_order)
-                        )
-                    else:
-                        diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
         sqdist = 1
-        for i in range(d):
-            sqdist *= (
-                1 + (ell * differences_by_dim[i]) ** 2 / (2 * alpha)
-            ) ** (-alpha)
+        for i in range(self.dim):
+            sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * sqdist
+        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
-    def sine_exp_kernel_isotropic(self, X1, X2, length_scales, n_order, index):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
+    def sine_exp_kernel_isotropic(
+        self, differences_by_dim, length_scales, index
+    ):
         ell = np.exp(length_scales[0])
         p = length_scales[1]
         sigma_f = length_scales[-1]
 
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n1))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    if i == index and j == index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    elif i == index and j != index:
-                        diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k])
-                    elif i != index and j == index:
-                        diffs_k[i, j] = ((X1[i, k])) - (
-                            X2[j, k] + oti.e(2 * k + 1, order=2 * n_order)
-                        )
-                    else:
-                        diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
         sqdist = 0
-        for i in range(d):
+        for i in range(self.dim):
             sqdist = sqdist + (
                 ell**2 * (oti.sin(np.pi * differences_by_dim[i] / p)) ** 2
             )
@@ -2165,7 +1982,7 @@ class oti_gp_weighted:
 
     def negative_log_marginal_likelihood(
         self,
-        ell,
+        x0,
         x_train,
         y_train,
         sigma_n,
@@ -2179,61 +1996,77 @@ class oti_gp_weighted:
 
         NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi).
         """
-        K = utils.rbf_kernel_weighted(
-            x_train,
-            x_train,
-            ell,
-            n_order,
-            n_bases,
-            der_indices,
-            self.kernel_func,
-            index=index,
-        )
-        K += self.nugget * np.eye(len(K))
-
-        try:
-            L = cholesky(K)
-            alpha = solve(L.T, solve(L, y_train))
-
-            data_fit = 0.5 * np.dot(y_train, alpha)
-            log_det_K = np.sum(np.log(np.diag(L)))
-            complexity = log_det_K
-
-            N = len(y_train)
-            const = 0.5 * N * np.log(2 * np.pi)
-
-            return data_fit + complexity + const
-        except:
-            return 1000
-
-    def optimize_hyperparameters(self):
-        res_submodel = []
-
+        ell = x0[:-1]
+        sigma_n = x0[-1]
+        llhood = 0
         for i in range(0, len(self.index)):
-            print(
-                "Optimizing Parameters for submodel {0} out of {1}".format(
-                    i + 1, len(self.index)
-                )
+            y_train_submodel = self.y_train[i]
+            der_indices_submodel = self.der_indices[i]
+            submodel_index = self.index[i]
+            differences_by_dim_submodel = self.differences_by_dim_submodels[i]
+
+            K = utils.rbf_kernel_weighted(
+                differences_by_dim_submodel,
+                ell,
+                n_order,
+                n_bases,
+                der_indices_submodel,
+                self.kernel_func,
+                index=submodel_index,
             )
-            y_train = self.y_train[i]
-            der_indices = self.der_indices[i]
-            res = minimize(
-                fun=self.negative_log_marginal_likelihood,
-                x0=self.init,
-                args=(
-                    self.x_train,
-                    y_train,
-                    self.sigma_n,
-                    self.n_order,
-                    self.n_bases,
-                    der_indices,
-                    self.index[i],
-                ),
-                method="L-BFGS-B",
-                bounds=self.bounds,
-            )
-            res_submodel.append(res.x)
-        return res_submodel
+
+            K += sigma_n**2 * np.eye(len(K))
+
+            try:
+                L = cholesky(K)
+                alpha = solve(L.T, solve(L, y_train_submodel))
+
+                data_fit = 0.5 * np.dot(y_train_submodel, alpha)
+                log_det_K = np.sum(np.log(np.diag(L)))
+                complexity = log_det_K
+
+                N = len(y_train)
+                const = 0.5 * N * np.log(2 * np.pi)
+
+                llhood = llhood + data_fit + complexity + const
+            except:
+                llhood = llhood + 1e6
+            return llhood
+
+    def nll_wrapper(self, x0):
+        return self.negative_log_marginal_likelihood(
+            x0,
+            self.x_train,
+            self.y_train,
+            self.sigma_n,  # note: this may be unused in your method since x0[-1] is sigma_n
+            self.n_order,
+            self.n_bases,
+            self.der_indices,
+            self.submodel_index,
+        )
+
+    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20):
+        res_submodel = []
+        lb = [b[0] for b in self.bounds]
+        ub = [b[1] for b in self.bounds]
+
+        # Run PSO to minimize the NLL
+        best_x, best_nll = pso(
+            self.nll_wrapper,
+            lb,
+            ub,
+            swarmsize=swarm_size,
+            maxiter=n_restart_optimizer,
+            debug=False,  # shows progress of the swarm
+        )
+
+        # Optionally: update model attributes with optimized values
+        self.opt_x0 = best_x
+        self.opt_nll = best_nll
+
+        print("Best solution:", best_x)
+        print("Objective value:", best_nll)
+        return best_x
 
     def predict(
         self,
@@ -2246,17 +2079,20 @@ class oti_gp_weighted:
         Compute posterior predictive mean and covariance at X_test
         under an ARD RBF kernel with given length_scales.
         """
-
-        weights_matrix = np.zeros((X_test.shape[0], len(length_scales)))
-
+        ell = length_scales[:-1]
+        sigma_n = length_scales[-1]
+        weights_matrix = np.zeros((X_test.shape[0], self.x_train.shape[0]))
+        diffs_by_dim = self.differences_by_dim_func(
+            self.x_train, self.x_train, 0, index=[-1]
+        )
         for k in range(0, X_test.shape[0]):
+            diffs_by_dim_submodel = self.differences_by_dim_func(
+                self.x_train, X_test[k].reshape(1, -1), 0, index=[-1]
+            )
             weights = utils.determine_weights(
-                self.x_train,
-                X_test[k],
-                length_scales[-1],
-                self.n_order,
-                self.n_bases,
-                self.der_indices,
+                diffs_by_dim,
+                diffs_by_dim_submodel,
+                ell,
                 self.kernel_func,
             )
             weights_matrix[k, :] = weights[:, 0]
@@ -2265,18 +2101,27 @@ class oti_gp_weighted:
         y_var = 0
         submodel_vals = []
         submodel_cov = []
-        for i in range(0, len(length_scales)):
+
+        for i in range(0, self.x_train.shape[0]):
+            differences_by_dim_train_test = self.differences_by_dim_func(
+                self.x_train, X_test, self.n_order, index=self.index[i]
+            )
+
+            differences_by_dim_test_test = self.differences_by_dim_func(
+                X_test, X_test, self.n_order, index=self.index[i]
+            )
+
+            diffs_by_dim = self.differences_by_dim_submodels[i]
             K = utils.rbf_kernel_weighted(
-                self.x_train,
-                self.x_train,
-                length_scales[i],
+                diffs_by_dim,
+                ell,
                 self.n_order,
                 self.n_bases,
                 self.der_indices[i],
                 self.kernel_func,
                 index=self.index[i],
             )
-            K += self.sigma_n**2 * np.eye(len(K))
+            K += sigma_n**2 * np.eye(len(K))
             L = cholesky(K)
 
             # alpha = K^-1 y
@@ -2284,9 +2129,8 @@ class oti_gp_weighted:
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
             K_s = utils.rbf_kernel_weighted(
-                self.x_train,
-                X_test,
-                length_scales[i],
+                differences_by_dim_train_test,
+                ell,
                 self.n_order,
                 self.n_bases,
                 self.der_indices[i],
@@ -2294,7 +2138,7 @@ class oti_gp_weighted:
                 index=self.index[i],
             )
 
-            K_s = K_s[:, 0: len(X_test)]
+            K_s = K_s[:, 0 : len(X_test)]
             f_mean = K_s.T @ (alpha)
             y_val = y_val + (weights_matrix[:, i] * f_mean)
             if return_submodels:
@@ -2302,9 +2146,8 @@ class oti_gp_weighted:
 
             if calc_cov:
                 K_ss = utils.rbf_kernel_weighted(
-                    X_test,
-                    X_test,
-                    length_scales[i],
+                    differences_by_dim_test_test,
+                    ell,
                     self.n_order,
                     self.n_bases,
                     self.der_indices[i],
@@ -2313,7 +2156,7 @@ class oti_gp_weighted:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
                 y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
                 if return_submodels:
                     submodel_cov.append(f_cov)
@@ -2354,33 +2197,61 @@ class oti_gp:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.kernel_func = self.create_kernel_function()
+        self.differences_by_dim = self.differences_by_dim_func(
+            self.x_train, self.x_train, n_order
+        )
+
+    def differences_by_dim_func(self, X1, X2, n_order, index=-1):
+        X1 = oti.array(X1)
+        X2 = oti.array(X2)
+
+        n1, d = X1.shape
+
+        n2, d = X2.shape
+
+        # Prepare the output: a list of d arrays, each of shape (n, m)
+        differences_by_dim = []
+
+        # Loop over each dimension k
+        for k in range(d):
+            # Create an empty (n, m) array for this dimension
+            diffs_k = oti.zeros((n1, n2))
+
+            # Nested loops to fill diffs_k
+            for i in range(n1):
+                for j in range(n2):
+                    diffs_k[i, j] = (
+                        X1[i, k]
+                        + oti.e(2 * k + 2, order=2 * n_order)
+                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
+                    )
+
+            # Append to our list
+            differences_by_dim.append(diffs_k)
+        return differences_by_dim
 
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                theta_0 = np.zeros((self.dim,))
-                self.init = np.concatenate((theta_0, np.array([1])))
-                self.bounds = [(-4, 1e2)] * (len(theta_0)) + [(1e-4, None)]
+                self.bounds = (
+                    [(-5, 5)] * self.dim + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
+                )
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
-                theta_0 = np.zeros((self.dim,))
-                alpha_0 = np.zeros((self.dim,))
-                self.init = np.concatenate((theta_0, alpha_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(alpha_0))
-                    + [(1e-4, None)]
+                    [(-5, 5)] * self.dim
+                    + [(0, 5)]
+                    + [(1e-9, 1e4)]
+                    + [(1e-16, 1e-3)]
                 )
 
                 return self.rq_kernel_anisotropic
             elif self.kernel == "SineExp":
-                theta_0 = np.zeros((self.dim,))
-                p_0 = 10 * np.ones((self.dim,))
-                self.init = np.concatenate((theta_0, p_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(p_0))
-                    + [(1e-4, None)]
+                    [(-5, 5)] * (self.dim)
+                    + [(0.0001, 1e2)] * (self.dim)
+                    + [(1e-9, 1e4)]
+                    + [(1e-16, 1e-3)]
                 )
 
                 return self.sine_exp_kernel_anisotropic
@@ -2388,270 +2259,96 @@ class oti_gp:
                 raise Exception("Kernel Not Implemented")
         else:
             if self.kernel == "SE":
-                theta_0 = np.zeros((1,))
-                self.init = np.concatenate((theta_0, np.array([1])))
-                self.bounds = [(-4, 1e2)] * (len(theta_0)) + [(1e-4, None)]
+                self.bounds = [(-5, 5)] + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
                 return self.se_kernel_isotropic
             elif self.kernel == "RQ":
-                theta_0 = np.zeros((1,))
-                alpha_0 = np.zeros((1,))
-                self.init = np.concatenate((theta_0, alpha_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(alpha_0))
-                    + [(1e-4, None)]
+                    [(-4, 1e2)] + [(0, 5)] + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
                 )
                 return self.rq_kernel_isotropic
             elif self.kernel == "SineExp":
-                theta_0 = np.zeros((1,))
-                p_0 = 10 * np.ones((1,))
-                self.init = np.concatenate((theta_0, p_0, np.array([1])))
                 self.bounds = (
-                    [(-4, 1e2)] * (len(theta_0))
-                    + [(0, 1e2)] * (len(p_0))
-                    + [(1e-4, None)]
+                    [(-4, 1e2)] + [(0, 1e2)] + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
                 )
                 return self.sine_exp_kernel_isotropic
             else:
                 raise Exception("Kernel Not Implemented")
 
-    def se_kernel_anisotropic(self, X1, X2, length_scales, n_order, index=-1):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
-        ell = np.exp(length_scales[0:-1])
-        sigma_f = length_scales[-1]
-
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n2))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    diffs_k[i, j] = (
-                        X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    )
-
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
+    # @profile
+    def se_kernel_anisotropic(
+        self, differences_by_dim, length_scales, index=-1
+    ):
         # Distances scaled by each dimension's length scale
+        ell = np.exp(length_scales[0:-1])
+        sigma_f = length_scales[length_scales.shape[0] - 1]
         sqdist = 0
-        for i in range(d):
+        for i in range(self.dim):
             sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
         return sigma_f**2 * oti.exp(-0.5 * sqdist)
 
-    def rq_kernel_anisotropic(self, X1, X2, length_scales, n_order, index=-1):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
+    def rq_kernel_anisotropic(
+        self, differences_by_dim, length_scales, n_order, index=-1
+    ):
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim:])
-        sigma_f = length_scales[-1]
-
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n2))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    diffs_k[i, j] = (
-                        X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    )
-
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
+        alpha = np.exp(length_scales[self.dim : self.dim + 1])[0]
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 1
-        for i in range(d):
-            sqdist *= (
-                1 + (ell[i] * differences_by_dim[i]) ** 2 / (2 * alpha[i])
-            ) ** (-alpha[i])
+        for i in range(self.dim):
+            sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * sqdist
+        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_anisotropic(
-        self, X1, X2, length_scales, n_order, index=-1
+        self, differences_by_dim, length_scales, n_order, index=-1
     ):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim:]
-        sigma_f = length_scales[-1]
+        p = length_scales[self.dim : -1]
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
+        sqdist = 1
+        for i in range(self.dim):
+            sqdist = (
+                sqdist
+                + (ell[i] * oti.sin((np.pi / p[i]) * differences_by_dim[i]))
+                ** 2
+            )
 
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n2))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    diffs_k[i, j] = (
-                        X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    )
-
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
-
-        sqdist = np.sum(
-            (ell[i] * oti.sin(np.pi / p[i] * differences_by_dim[i])) ** 2
-            for i in range(d)
-        )
         return sigma_f**2 * oti.exp(-2 * sqdist)
 
-    def se_kernel_isotropic(self, X1, X2, length_scales, n_order, index=-1):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
+    def se_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
+        ell = oti.exp(length_scales[0])
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
-        ell = np.exp(length_scales[0])
-        sigma_f = length_scales[-1]
-
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n2))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    diffs_k[i, j] = (
-                        X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    )
-
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
         sqdist = 0
-        for i in range(d):
+        for i in range(self.dim):
             sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
         return sigma_f**2 * oti.exp(-0.5 * sqdist)
 
-    def rq_kernel_isotropic(self, X1, X2, length_scales, n_order, index=-1):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
+    def rq_kernel_isotropic(
+        self, differences_by_dim, length_scales, n_order, index=-1
+    ):
         ell = np.exp(length_scales[0])
         alpha = np.exp(length_scales[1])
-        sigma_f = length_scales[-1]
+        sigma_f = length_scales[length_scales.shape[0] - 1]
 
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n2))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    diffs_k[i, j] = (
-                        X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    )
-
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
-        # Distances scaled by each dimension's length scale
         sqdist = 1
-        for i in range(d):
-            sqdist *= (
-                1 + (ell * differences_by_dim[i]) ** 2 / (2 * alpha)
-            ) ** (-alpha)
+        for i in range(self.dim):
+            sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * sqdist
+        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_isotropic(
-        self, X1, X2, length_scales, n_order, index=-1
+        self, differences_by_dim, length_scales, n_order, index=-1
     ):
-        X1 = oti.array(X1)
-        X2 = oti.array(X2)
-
-        n1, d = X1.shape
-
-        n2, d = X2.shape
-
         ell = np.exp(length_scales[0])
         p = length_scales[1]
         sigma_f = length_scales[-1]
 
-        # Prepare the output: a list of d arrays, each of shape (n, m)
-        differences_by_dim = []
-
-        # Loop over each dimension k
-        for k in range(d):
-            # Create an empty (n, m) array for this dimension
-            diffs_k = oti.zeros((n1, n2))
-
-            # Nested loops to fill diffs_k
-            for i in range(n1):
-                for j in range(n2):
-                    diffs_k[i, j] = (
-                        X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
-                    )
-
-            # Append to our list
-            differences_by_dim.append(diffs_k)
-
         sqdist = 0
-        for i in range(d):
+        for i in range(self.dim):
             sqdist = sqdist + (
                 ell**2 * (oti.sin(np.pi * differences_by_dim[i] / p)) ** 2
             )
@@ -2659,23 +2356,25 @@ class oti_gp:
         return sigma_f**2 * oti.exp(-2 * sqdist)
 
     def negative_log_marginal_likelihood(
-        self, ell, x_train, sigma_n, n_order, n_bases, der_indices
+        self, x0, x_train, sigma_n, n_order, n_bases, der_indices
     ):
         """
         NLL for standard GP in multiple dimensions.
 
         NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi).
         """
+
+        ell = x0[:-1]
+        sigma_n = x0[-1]
         K = utils.rbf_kernel(
-            x_train,
-            x_train,
+            self.differences_by_dim,
             ell,
             n_order,
             n_bases,
             der_indices,
             self.kernel_func,
         )
-        K += self.nugget * np.eye(len(K))
+        K += sigma_n**2 * np.eye(len(K))
 
         try:
             L = cholesky(K)
@@ -2687,54 +2386,83 @@ class oti_gp:
 
             N = len(self.y_train)
             const = 0.5 * N * np.log(2 * np.pi)
-
             return data_fit + complexity + const
         except:
-            return 1000
+            return 1e6
 
-    def optimize_hyperparameters(self):
-        res = minimize(
-            fun=self.negative_log_marginal_likelihood,
-            x0=self.init,
-            args=(
-                self.x_train,
-                self.sigma_n,
-                self.n_order,
-                self.n_bases,
-                self.der_indices,
-            ),
-            method="L-BFGS-B",
-            bounds=self.bounds,
+    def nll_wrapper(self, x0):
+        return self.negative_log_marginal_likelihood(
+            x0,
+            self.x_train,
+            self.sigma_n,  # note: this may be unused in your method since x0[-1] is sigma_n
+            self.n_order,
+            self.n_bases,
+            self.der_indices,
         )
-        return res.x
+
+    # @profile
+    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20):
+        lb = [b[0] for b in self.bounds]
+        ub = [b[1] for b in self.bounds]
+
+        # Run PSO to minimize the NLL
+        best_x, best_nll = pso(
+            self.nll_wrapper,
+            lb,
+            ub,
+            swarmsize=swarm_size,
+            maxiter=n_restart_optimizer,
+            debug=False,  # shows progress of the swarm
+        )
+
+        # Optionally: update model attributes with optimized values
+        self.opt_x0 = best_x
+        self.opt_nll = best_nll
+
+        print("Best solution:", best_x)
+        print("Objective value:", best_nll)
+
+        return best_x
 
     def predict(
-        self, X_test, length_scales, calc_cov=False, return_deriv=False
+        self,
+        X_test,
+        params,
+        calc_cov=False,
+        return_deriv=False,
+        n_restart_optimizer=100,
     ):
         """
         Compute posterior predictive mean and covariance at X_test
         under an ARD RBF kernel with given length_scales.
         """
         # Build K (train-train) and factor
+        length_scales = params[0:-1]
+        sigma_n = params[-1]
         K = utils.rbf_kernel(
-            self.x_train,
-            self.x_train,
+            self.differences_by_dim,
             length_scales,
             self.n_order,
             self.n_bases,
             self.der_indices,
             self.kernel_func,
         )
-        K += self.sigma_n**2 * np.eye(len(K))
-        L = cholesky(K)
+        for i in range(n_restart_optimizer):
+            try:
+                K += sigma_n**2 * np.eye(K.shape[0])
+                L = cholesky(K)
+            except np.linalg.LinAlgError:
+                sigma_n *= 2  # Increase jitter if needed
 
         # alpha = K^-1 y
-
+        print(sigma_n)
         alpha = solve(L.T, solve(L, self.y_train))
 
+        diff_x_test_x_train = self.differences_by_dim_func(
+            self.x_train, X_test, self.n_order
+        )
         K_s = utils.rbf_kernel(
-            self.x_train,
-            X_test,
+            diff_x_test_x_train,
             length_scales,
             self.n_order,
             self.n_bases,
@@ -2743,14 +2471,16 @@ class oti_gp:
         )
 
         if not return_deriv:
-            K_s = K_s[:, 0: len(X_test)]
+            K_s = K_s[:, 0 : len(X_test)]
 
             f_mean = K_s.T @ (alpha)
 
             if calc_cov:
+                diff_x_test_x_test = self.differences_by_dim_func(
+                    X_test, X_test, self.n_order
+                )
                 K_ss = utils.rbf_kernel(
-                    X_test,
-                    X_test,
+                    diff_x_test_x_test,
                     length_scales,
                     self.n_order,
                     self.n_bases,
@@ -2759,7 +2489,7 @@ class oti_gp:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
 
                 return f_mean, f_cov
             else:
@@ -2784,3 +2514,98 @@ class oti_gp:
                 return f_mean, f_cov
             else:
                 return f_mean
+
+    # def gradient_negative_log_marginal_likelihood(
+    #     self, x0, x_train, sigma_n, n_order, n_bases, der_indices
+    # ):
+    #     """
+    #     NLL for standard GP in multiple dimensions.
+
+    #     NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi).
+    #     """
+    #     y_train = self.y_train.reshape(-1, 1)
+
+    #     # K = utils.rbf_kernel(
+    #     #     x_train,
+    #     #     x_train,
+    #     #     ell,
+    #     #     n_order,
+    #     #     n_bases,
+    #     #     der_indices,
+    #     #     self.kernel_func,
+    #     # )
+    #     # K += sigma_n**2 * np.eye(len(K))
+    #     grads = []
+    #     if not self.Flag:
+    #         for i in range(0, len(x0) - 1):
+    #             ell = oti.array(x0[:-1])
+    #             ell[i, 0] = ell[i, 0] + oti.array(oti.e(2 * n_bases + (2)))
+    #             sigma_n = x0[-1]
+    #             K_ders = utils.rbf_kernel_der_params(
+    #                 self.differences_by_dim_grad,
+    #                 ell,
+    #                 n_order,
+    #                 n_bases,
+    #                 der_indices,
+    #                 self.kernel_func,
+    #             )
+    #             # L = cholesky(K)
+    #             # alpha = solve(L.T, solve(L, self.y_train)).reshape(-1, 1)
+    #             L = self.L_mat
+    #             alpha = self.alpha
+
+    #             # dK_dtheta = compute partial derivative of kernel matrix w.r.t. theta
+    #             inv_K = np.linalg.solve(
+    #                 L.T, np.linalg.solve(L, np.eye(L.shape[0]))
+    #             )
+
+    #             grad_L_theta = 0.5 * np.trace(
+    #                 (alpha @ alpha.T - inv_K) @ K_ders
+    #             )
+    #             grads.append(grad_L_theta)
+
+    #         # Compute derivative dL/dsigma_n
+    #         trace_term = np.trace(inv_K)
+    #         quad_term = y_train.T @ inv_K @ inv_K @ y_train
+    #         grad_sigma_n = sigma_n * (trace_term - quad_term)
+    #         grads.append(grad_sigma_n[0, 0])
+    #         # print(grads)
+    #         self.last_grad = -1 * np.array(grads)
+    #         return self.last_grad
+    #     else:
+    #         try:
+    #             return self.last_grad
+    #         except:
+    #             return np.ones_like(x0) * 1e6
+
+    # def differences_by_dim_grad_func(self, X1, X2, n_order, index=-1):
+    #     X1 = oti.array(X1)
+    #     X2 = oti.array(X2)
+
+    #     n1, d = X1.shape
+
+    #     n2, d = X2.shape
+
+    #     # Prepare the output: a list of d arrays, each of shape (n, m)
+    #     differences_by_dim = []
+
+    #     # Loop over each dimension k
+    #     for k in range(d):
+    #         # Create an empty (n, m) array for this dimension
+    #         diffs_k = oti.zeros((n1, n2))
+
+    #         # Nested loops to fill diffs_k
+    #         for i in range(n1):
+    #             for j in range(n2):
+    #                 diffs_k[i, j] = (
+    #                     X1[i, k]
+    #                     + oti.e(2 * k + 2, order=2 * n_order + 1)
+    #                     - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order + 1))
+    #                 )
+
+    #         # Append to our list
+    #         differences_by_dim.append(diffs_k)
+    #     return differences_by_dim
+    # self.differences_by_dim_grad = self.differences_by_dim_grad_func(
+    #     self.x_train, self.x_train, n_order
+    # )

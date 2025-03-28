@@ -5,26 +5,59 @@ from oti_gp import (
     oti_gp_weighted,
 )  # Weighted derivative-enhanced Gaussian Process class
 import utils  # Utility functions (e.g., generating derivative indices, plotting submodels)
+import modules.sobol as sb
 
 # ---------------------------------------------------------------------
 # DEMO: Multi-dimensional Example with Separate Length Scales (2D)
 # Using a weighted Gaussian Process model with submodel construction.
 # ---------------------------------------------------------------------
+
+
+def scale_samples(samples, lower_bounds, upper_bounds):
+    """
+    Scale each column of samples from [0, 1] to [lb_j, ub_j].
+
+    Parameters:
+        samples (ndarray): A (d, n) array of samples in [0, 1]^n.
+        lower_bounds (array-like): Length-n array of lower bounds.
+        upper_bounds (array-like): Length-n array of upper bounds.
+
+    Returns:
+        ndarray: A (d, n) array with each column scaled to its corresponding bounds.
+    """
+    samples = np.asarray(samples)
+    lower_bounds = np.asarray(lower_bounds)
+    upper_bounds = np.asarray(upper_bounds)
+
+    # Ensure correct shapes
+    assert (
+        samples.shape[1] == len(lower_bounds) == len(upper_bounds)
+    ), "Dimension mismatch between samples and bounds"
+
+    # Reshape bounds to broadcast across rows
+    lb = lower_bounds[np.newaxis, :]
+    ub = upper_bounds[np.newaxis, :]
+
+    return lb + samples * (ub - lb)
+
+
 if __name__ == "__main__":
     # Set random seed for reproducibility
     np.random.seed(0)
 
     # ----- Parameter Setup -----
-    n_order = 2  # Use first-order derivative information
+    n_order = 1  # Use first-order derivative information
     n_bases = 2  # The function is two-dimensional (x1 and x2)
     lb_x = -1  # Lower bound for x1
     ub_x = 1  # Upper bound for x1
     lb_y = -1  # Lower bound for x2
     ub_y = 1  # Upper bound for x2
 
-    num_points = 3  # Number of points along each axis (total training points = num_points^2)
+    num_points = 4  # Number of points along each axis (total training points = num_points^2)
 
     # Generate a grid of training points over the square region.
+    quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
+
     x_vals = np.linspace(lb_x, ub_x, num_points)
     y_vals = np.linspace(lb_y, ub_y, num_points)
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
@@ -59,7 +92,14 @@ if __name__ == "__main__":
     def true_function(X, alg=oti):
         x1 = X[:, 0]
         x2 = X[:, 1]
-        return alg.sin(np.pi * x1) + alg.cos(np.pi * x2)
+
+        f = (
+            (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
+            + x1 * x2
+            + (-4 + 4 * x2**2) * x2**2
+        )
+
+        return f
 
     # ----- Assemble Training Data for Submodels -----
     # The 'index' variable specifies which training points form each submodel.
@@ -68,7 +108,6 @@ if __name__ == "__main__":
     y_train_data = (
         []
     )  # List to hold training outputs (function values + derivatives) for each submodel
-    sigma_n_true = 1e-8  # Known noise variance (set very small)
 
     # Loop over each group of indices in 'index'
     for k, val in enumerate(index):
@@ -102,9 +141,7 @@ if __name__ == "__main__":
         # Flatten the assembled training data into a 1D array.
         y_train = y_train.flatten()
 
-        # Optionally add noise (here, sigma_n_true is very small).
-        noise = sigma_n_true * np.random.randn(len(y_train))
-        y_train_noisy = y_train + noise
+        y_train_noisy = y_train
 
         # Append the processed training output for this submodel.
         y_train_data.append(y_train)
@@ -118,14 +155,12 @@ if __name__ == "__main__":
         n_bases,  # Dimensionality of the input space.
         index,  # Grouping of training points for submodel construction.
         der_indices,
-        sigma_n=1e-6,  # Noise variance (set very low).
-        nugget=1e-6,  # Nugget term for numerical stability.
         kernel="SE",  # Use Squared Exponential (SE) kernel.
         kernel_type="anisotropic",  # Anisotropic kernel (separate length scales per dimension).
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance).
-    params = gp.optimize_hyperparameters()
+    params = gp.optimize_hyperparameters(n_restart_optimizer=50, swarm_size=50)
 
     # ----- Generate Test Data for Prediction -----
     N_grid = 25  # Number of test points per axis.
@@ -140,7 +175,9 @@ if __name__ == "__main__":
     y_pred, submodel_vals = gp.predict(
         X_test, params, calc_cov=False, return_submodels=True
     )
-
+    # true_values = true_function(X_train, alg=np)
+    # rmse = np.sqrt(np.mean((y_pred - true_values) ** 2))
+    # print("RMSE between model and true function: {}".format(rmse))
     # ----- Plotting via Utility Function -----
     # Instead of manually plotting, call the utility function to generate submodel plots.
     # The plotting function compares the GP prediction (and submodel contributions) with the true function.
@@ -154,6 +191,6 @@ if __name__ == "__main__":
         X2_grid=X2_grid,
         n_order=n_order,  # Order of derivative information.
         n_bases=n_bases,  # Dimensionality of the input space.
-        plot_submodels=True,  # Flag to plot individual submodel predictions.
+        plot_submodels=False,  # Flag to plot individual submodel predictions.
         submodel_vals=submodel_vals,  # Predicted values from each submodel.
     )
