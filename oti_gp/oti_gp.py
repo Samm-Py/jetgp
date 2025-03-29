@@ -1829,16 +1829,11 @@ class oti_gp_weighted:
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                self.bounds = (
-                    [(-6, 6)] * self.dim + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
-                )
+                self.bounds = [(-6, 6)] * self.dim + [(-9, 4)] + [(-16, -3)]
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
                 self.bounds = (
-                    [(-6, 6)] * self.dim
-                    + [(0, 5)]
-                    + [(1e-9, 1e3)]
-                    + [(1e-16, 1e-3)]
+                    [(-6, 6)] * self.dim + [(0, 5)] + [(-9, 3)] + [(-16, -3)]
                 )
 
                 return self.rq_kernel_anisotropic
@@ -1855,16 +1850,14 @@ class oti_gp_weighted:
                 raise Exception("Kernel Not Implemented")
         else:
             if self.kernel == "SE":
-                self.bounds = [(-5, 5)] + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
+                self.bounds = [(-5, 5)] + [(-9, 4)] + [(-16, -3)]
                 return self.se_kernel_isotropic
             elif self.kernel == "RQ":
-                self.bounds = (
-                    [(-4, 1e2)] + [(0, 5)] + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
-                )
+                self.bounds = [(-4, 1e2)] + [(0, 5)] + [(-9, 2)] + [(-16, -3)]
                 return self.rq_kernel_isotropic
             elif self.kernel == "SineExp":
                 self.bounds = (
-                    [(-4, 1e2)] + [(0, 1e2)] + [(1e-9, 1e2)] + [(1e-16, 1e-3)]
+                    [(-4, 1e2)] + [(0, 1e2)] + [(-9, 2)] + [(-16, -3)]
                 )
                 return self.sine_exp_kernel_isotropic
             else:
@@ -1914,7 +1907,7 @@ class oti_gp_weighted:
         for i in range(self.dim):
             sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * oti.exp(-0.5 * sqdist)
+        return (10**sigma_f) ** 2 * oti.exp(-0.5 * sqdist)
 
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index):
         ell = np.exp(length_scales[: self.dim])
@@ -1925,7 +1918,7 @@ class oti_gp_weighted:
         for i in range(self.dim):
             sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
+        return (10**sigma_f) ** 2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_anisotropic(
         self, differences_by_dim, length_scales, index
@@ -1942,7 +1935,7 @@ class oti_gp_weighted:
                 ** 2
             )
 
-        return sigma_f**2 * oti.exp(-2 * sqdist)
+        return (10**sigma_f) ** 2 * oti.exp(-2 * sqdist)
 
     def se_kernel_isotropic(self, differences_by_dim, length_scales, index):
         ell = oti.exp(length_scales[0])
@@ -1952,7 +1945,7 @@ class oti_gp_weighted:
         for i in range(self.dim):
             sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * oti.exp(-0.5 * sqdist)
+        return (10**sigma_f) ** 2 * oti.exp(-0.5 * sqdist)
 
     def rq_kernel_isotropic(self, differences_by_dim, length_scales, index):
         ell = np.exp(length_scales[0])
@@ -1963,7 +1956,7 @@ class oti_gp_weighted:
         for i in range(self.dim):
             sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
+        return (10**sigma_f) ** 2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_isotropic(
         self, differences_by_dim, length_scales, index
@@ -1978,7 +1971,7 @@ class oti_gp_weighted:
                 ell**2 * (oti.sin(np.pi * differences_by_dim[i] / p)) ** 2
             )
 
-        return sigma_f**2 * oti.exp(-2 * sqdist)
+        return (10**sigma_f) ** 2 * oti.exp(-2 * sqdist)
 
     def negative_log_marginal_likelihood(
         self,
@@ -2015,7 +2008,7 @@ class oti_gp_weighted:
                 index=submodel_index,
             )
 
-            K += sigma_n**2 * np.eye(len(K))
+            K += (10**sigma_n) ** 2 * np.eye(len(K))
 
             try:
                 L = cholesky(K)
@@ -2046,7 +2039,6 @@ class oti_gp_weighted:
         )
 
     def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20):
-        res_submodel = []
         lb = [b[0] for b in self.bounds]
         ub = [b[1] for b in self.bounds]
 
@@ -2121,7 +2113,7 @@ class oti_gp_weighted:
                 self.kernel_func,
                 index=self.index[i],
             )
-            K += sigma_n**2 * np.eye(len(K))
+            K += (10**sigma_n) ** 2 * np.eye(len(K))
             L = cholesky(K)
 
             # alpha = K^-1 y
@@ -2233,25 +2225,20 @@ class oti_gp:
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                self.bounds = (
-                    [(-5, 5)] * self.dim + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
-                )
+                self.bounds = [(-5, 5)] * self.dim + [(-9, 4)] + [(-16, -3)]
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
                 self.bounds = (
-                    [(-5, 5)] * self.dim
-                    + [(0, 5)]
-                    + [(1e-9, 1e4)]
-                    + [(1e-16, 1e-3)]
+                    [(-5, 5)] * self.dim + [(0, 10)] + [(-9, 4)] + [(-16, -3)]
                 )
 
                 return self.rq_kernel_anisotropic
             elif self.kernel == "SineExp":
                 self.bounds = (
                     [(-5, 5)] * (self.dim)
-                    + [(0.0001, 1e2)] * (self.dim)
-                    + [(1e-9, 1e4)]
-                    + [(1e-16, 1e-3)]
+                    + [(0.0, 1e2)] * (self.dim)
+                    + [(-9, 4)]
+                    + [(-16, -3)]
                 )
 
                 return self.sine_exp_kernel_anisotropic
@@ -2259,16 +2246,14 @@ class oti_gp:
                 raise Exception("Kernel Not Implemented")
         else:
             if self.kernel == "SE":
-                self.bounds = [(-5, 5)] + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
+                self.bounds = [(-5, 5)] + [(-9, 1e4)] + [(-16, -3)]
                 return self.se_kernel_isotropic
             elif self.kernel == "RQ":
-                self.bounds = (
-                    [(-4, 1e2)] + [(0, 5)] + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
-                )
+                self.bounds = [(-5, 5)] + [(0, 5)] + [(-9, 4)] + [(-16, -3)]
                 return self.rq_kernel_isotropic
             elif self.kernel == "SineExp":
                 self.bounds = (
-                    [(-4, 1e2)] + [(0, 1e2)] + [(1e-9, 1e4)] + [(1e-16, 1e-3)]
+                    [(-5, 5)] + [(0.0, 1e2)] + [(-9, 4)] + [(-16, -3)]
                 )
                 return self.sine_exp_kernel_isotropic
             else:
@@ -2285,7 +2270,7 @@ class oti_gp:
         for i in range(self.dim):
             sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * oti.exp(-0.5 * sqdist)
+        return ((10**sigma_f) ** 2) * oti.exp(-0.5 * sqdist)
 
     def rq_kernel_anisotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
@@ -2298,7 +2283,7 @@ class oti_gp:
         for i in range(self.dim):
             sqdist = sqdist + (ell[i] * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
+        return ((10**sigma_f) ** 2) * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_anisotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
@@ -2315,7 +2300,7 @@ class oti_gp:
                 ** 2
             )
 
-        return sigma_f**2 * oti.exp(-2 * sqdist)
+        return ((10**sigma_f) ** 2) * oti.exp(-2 * sqdist)
 
     def se_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
         ell = oti.exp(length_scales[0])
@@ -2325,7 +2310,7 @@ class oti_gp:
         for i in range(self.dim):
             sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * oti.exp(-0.5 * sqdist)
+        return ((10**sigma_f) ** 2) * oti.exp(-0.5 * sqdist)
 
     def rq_kernel_isotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
@@ -2338,7 +2323,7 @@ class oti_gp:
         for i in range(self.dim):
             sqdist = sqdist + (ell * (differences_by_dim[i])) ** 2
 
-        return sigma_f**2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
+        return ((10**sigma_f) ** 2) * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
     def sine_exp_kernel_isotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
@@ -2353,7 +2338,7 @@ class oti_gp:
                 ell**2 * (oti.sin(np.pi * differences_by_dim[i] / p)) ** 2
             )
 
-        return sigma_f**2 * oti.exp(-2 * sqdist)
+        return ((10**sigma_f) ** 2) * oti.exp(-2 * sqdist)
 
     def negative_log_marginal_likelihood(
         self, x0, x_train, sigma_n, n_order, n_bases, der_indices
@@ -2374,7 +2359,7 @@ class oti_gp:
             der_indices,
             self.kernel_func,
         )
-        K += sigma_n**2 * np.eye(len(K))
+        K += ((10**sigma_n) ** 2) * np.eye(len(K))
 
         try:
             L = cholesky(K)
@@ -2449,7 +2434,7 @@ class oti_gp:
         )
         for i in range(n_restart_optimizer):
             try:
-                K += sigma_n**2 * np.eye(K.shape[0])
+                K += ((10**sigma_n) ** 2) * np.eye(K.shape[0])
                 L = cholesky(K)
                 break
             except np.linalg.LinAlgError:

@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # Set the random seed for reproducibility
     np.random.seed(1354)
     n_bases = 4
-    n_order = 2
+    n_order = 3
 
     num_points_test = 5000
     num_points_train = 26
@@ -178,7 +178,7 @@ if __name__ == "__main__":
     )
 
     # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
-    params = gp.optimize_hyperparameters(n_restart_optimizer=25, swarm_size=25)
+    params = gp.optimize_hyperparameters(n_restart_optimizer=5, swarm_size=100)
 
     # ----- Generate Test Data for Prediction -----
     # Create a grid of test points over the same ranges as the training data.

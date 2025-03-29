@@ -78,10 +78,10 @@ if __name__ == "__main__":
     # Set the random seed for reproducibility
     np.random.seed(1354)
     n_bases = 4
-    n_order = 4
+    n_order = 3
 
     num_points_test = 5000
-    num_points_train = 80
+    num_points_train = 26
     quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
 
     lower_bounds = [-2.048 for i in range(4)]
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     params = gp.optimize_hyperparameters(n_restart_optimizer=5, swarm_size=400)
 
     # ----- Generate Test Data for Prediction -----
-    # Create a grid of test points over the same ranges as the training data.
+    # Create a grid of test points over the same ranges as the training data.    n_order = 3
 
     N_grid = 20  # Number of grid points per axis for test data
     X_test = np.zeros((N_grid * N_grid, 4))
