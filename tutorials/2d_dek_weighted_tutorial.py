@@ -53,7 +53,7 @@ if __name__ == "__main__":
     lb_y = -1  # Lower bound for x2
     ub_y = 1  # Upper bound for x2
 
-    num_points = 4  # Number of points along each axis (total training points = num_points^2)
+    num_points = 5  # Number of points along each axis (total training points = num_points^2)
 
     # Generate a grid of training points over the square region.
     quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
