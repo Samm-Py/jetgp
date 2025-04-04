@@ -76,26 +76,27 @@ def nrmse(y_true, y_pred, norm_type="minmax"):
 
 
 if __name__ == "__main__":
-
     def true_function(X, alg=oti):
         x1 = X[:, 0]
         x2 = X[:, 1]
 
         f = (
-            (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
-            + x1 * x2
-            + (-4 + 4 * x2**2) * x2**2
+            10 * 2
+            + x1**2
+            - 10 * alg.cos(2 * np.pi * x1)
+            + x2**2
+            - 10 * alg.cos(2 * np.pi * x2)
         )
 
         return f
 
     # Set the random seed for reproducibility
-    np.random.seed(1)
+    np.random.seed(1354)
     n_bases = 2
     lb_x = -2
     ub_x = 2
-    lb_y = -1
-    ub_y = 1
+    lb_y = -2
+    ub_y = 2
 
     num_points_test = 5000
     quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
@@ -108,7 +109,7 @@ if __name__ == "__main__":
     max_error_data = []
     pt_data = []
     min_val_rmse = 0
-    for order in range(0, 7):
+    for order in range(9, 10):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
@@ -137,7 +138,7 @@ if __name__ == "__main__":
         if order == 0:
             pts = [2] + [10 * i for i in range(1, 11)]
         elif order == 1 or order == 2 or order == 3:
-            pts = [2] + [5 * i for i in range(1, 11)]
+            pts = [2] + [5 * i for i in range(1, 16)]
         elif order == 4:
             pts = [2 * i for i in range(1, 13)]
         else:
@@ -148,10 +149,6 @@ if __name__ == "__main__":
         for pt in pts:
             num_pts_i.append(pt)
             num_points = pt  # Number of points per axis for training data
-            lb_x = -2
-            ub_x = 2
-            lb_y = -1
-            ub_y = 1
             quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
 
             lower_bounds = [lb_x, lb_y]
@@ -206,8 +203,15 @@ if __name__ == "__main__":
             )
 
             # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
+            # if pt == 80:
+            #     print(pt)
+            #     params = gp.optimize_hyperparameters(
+            #         n_restart_optimizer=25, swarm_size=250
+            #     )
+            # else:
+            print(pt)
             params = gp.optimize_hyperparameters(
-                n_restart_optimizer=50, swarm_size=1000
+                n_restart_optimizer=2, swarm_size=10
             )
             print(params)
 
@@ -291,7 +295,7 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
-    plt.savefig("rmse_plot_2d_camel.pdf", bbox_inches="tight")  # Save as PDF
+    plt.savefig("rmse_plot_2d_ackley.pdf", bbox_inches="tight")  # Save as PDF
 
     plt.tight_layout()
     plt.show()
@@ -316,16 +320,16 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
-    plt.savefig("max_error_plot_2d_camel.pdf",
+    plt.savefig("max_error_plot_2d_ackley.pdf",
                 bbox_inches="tight")  # Save as PDF
 
     plt.tight_layout()
     plt.show()
-    with open("2d_rmse_benchmark_camel_data.pkl", "wb") as f:
+    with open("2d_rmse_benchmark_ackley_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
 
-    with open("2d_max_error_benchmark_camel_data.pkl", "wb") as f:
+    with open("2d_max_error_benchmark_ackley_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
 
-    with open("2d_rmse_benchmark_camel_data_pts.pkl", "wb") as f:
+    with open("2d_rmse_benchmark_camel_ackley_pts.pkl", "wb") as f:
         pickle.dump(pt_data, f)

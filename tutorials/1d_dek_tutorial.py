@@ -18,11 +18,11 @@ if __name__ == "__main__":
 
     # generates all derivative indices up to n_order
     # for a function of dimension n_bases
-    der_indices = utils.gen_OTI_indices(n_bases, n_order)
+    # der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     # If the use wants only to use for example 4th order derivatives in the
     # training process set der_indices = [[[[1, 4]]]] i.e
-    # der_indices = [[[[1, 4]]]]
+    der_indices = [[[[1, 1]]], [[[1, 4]]]]
     # We use 5 points for this simple example. In a real case, choose
     # more or fewer points depending on the function's complexity.
     num_points = 5

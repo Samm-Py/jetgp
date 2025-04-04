@@ -2,9 +2,10 @@ import numpy as np
 import pyoti.sparse as oti  # For automatic differentiation using hyper-complex numbers
 import itertools
 from oti_gp import (
-    oti_gp_weighted,
+    oti_gp_weighted
 )  # Weighted derivative-enhanced Gaussian Process class
-import utils  # Utility functions (e.g., generating derivative indices, plotting submodels)
+# Utility functions (e.g., generating derivative indices, plotting submodels)
+import utils
 import modules.sobol as sb
 
 # ---------------------------------------------------------------------
@@ -46,14 +47,15 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # ----- Parameter Setup -----
-    n_order = 1  # Use first-order derivative information
+    n_order = 2  # Use first-order derivative information
     n_bases = 2  # The function is two-dimensional (x1 and x2)
     lb_x = -1  # Lower bound for x1
     ub_x = 1  # Upper bound for x1
     lb_y = -1  # Lower bound for x2
     ub_y = 1  # Upper bound for x2
 
-    num_points = 5  # Number of points along each axis (total training points = num_points^2)
+    # Number of points along each axis (total training points = num_points^2)
+    num_points = 2
 
     # Generate a grid of training points over the square region.
     quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
@@ -150,13 +152,15 @@ if __name__ == "__main__":
     # Create a weighted GP model that handles submodel data.
     gp = oti_gp_weighted(
         X_train,  # Original training inputs.
-        y_train_data,  # List of training outputs (function values and derivatives) for each submodel.
+        # List of training outputs (function values and derivatives) for each submodel.
+        y_train_data,
         n_order,  # Order of derivative information.
         n_bases,  # Dimensionality of the input space.
         index,  # Grouping of training points for submodel construction.
         der_indices,
         kernel="SE",  # Use Squared Exponential (SE) kernel.
-        kernel_type="anisotropic",  # Anisotropic kernel (separate length scales per dimension).
+        # Anisotropic kernel (separate length scales per dimension).
+        kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance).

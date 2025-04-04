@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
+# Library for automatic differentiation using hyper-complex numbers
+import pyoti.sparse as oti
 import itertools
 from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
 import utils  # Utility functions, including one to generate derivative indices
@@ -10,7 +11,7 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # ----- Parameter Setup -----
-    n_order = 2  # Use 4th-order derivative information in the model
+    n_order = 3  # Use 4th-order derivative information in the model
     n_bases = 2  # The function is two-dimensional (two input variables)
     lb_x = -1  # Lower bound for the first input variable (x1)
     ub_x = 1  # Upper bound for the first input variable (x1)
@@ -28,18 +29,23 @@ if __name__ == "__main__":
     #     [[[1, 2]], [[2, 2]]],
     #     [[[1, 3]], [[2, 3]]],
     #     [[[1, 4]], [[2, 4]]],
+    #     [[[1, 5]], [[2, 5]]],
+    #     [[[1, 6]], [[2, 6]]],
+    #     [[[1, 7]], [[2, 7]]],
+    #     [[[1, 8]], [[2, 8]]],
+    #     [[[1, 9]], [[2, 9]]],
     # ]
     # If the use wants only to use for example first and highest order derivatives in the
     # training process set der_indices as:
     # der_indices = [
     #     [[[1, 1]], [[2, 1]]],
-    #     [[[1, 2]], [[2, 2]]],
+    #     # [[[1, 2]], [[2, 2]]],
     # ]
     # # We use 5 points for this simple example. In a real case, choose
     # more or fewer points depending on the function's complexity.
 
     # ----- Generate Training Data -----
-    num_points = 5  # Number of points per axis for training data
+    num_points = 3  # Number of points per axis for training data
     x_vals = np.linspace(lb_x, ub_x, num_points)  # Uniform grid for x1 values
     y_vals = np.linspace(lb_y, ub_y, num_points)  # Uniform grid for x2 values
 
@@ -104,8 +110,9 @@ if __name__ == "__main__":
         n_order,  # Order of derivative information used
         n_bases,  # Dimensionality of the input space
         der_indices,  # List of which derivatives to include
-        kernel="RQ",  # Kernel choice: Rational Quadratic (RQ) kernel
-        kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
+        kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
+        # Anisotropic kernel to allow different length-scales per dimension
+        kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood

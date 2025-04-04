@@ -2,14 +2,16 @@ import numpy as np
 from numpy.linalg import cholesky, solve
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
-import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
+# Library for automatic differentiation using hyper-complex numbers
+import pyoti.sparse as oti
 import random
 import itertools
 import pyoti.core as coti  # Core functionalities for OTI
 from oti_gp import (
     oti_gp_weighted,
 )  # Weighted derivative-enhanced Gaussian Process class
-import utils  # Utility functions (e.g., to generate derivative indices, plotting submodels)
+# Utility functions (e.g., to generate derivative indices, plotting submodels)
+import utils
 
 # ---------------------------------------------------------------------
 # DEMO: Multi-dimensional Example with Separate Length Scales
@@ -24,7 +26,7 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # ----- Parameter Setup -----
-    n_order = 3  # Use second-order derivative information in the model.
+    n_order = 1  # Use second-order derivative information in the model.
     n_bases = 1  # The function is one-dimensional (single input variable).
     lb_x = 0.5  # Lower bound for the training input values.
     ub_x = 2.5  # Upper bound for the training input values.
@@ -61,7 +63,8 @@ if __name__ == "__main__":
     # y_train_data will hold the training outputs (function values + derivatives)
     # for each submodel as defined by the groups in 'index'.
     y_train_data = []
-    sigma_n_true = 0.0  # Known noise variance in the training data (set to 0 for simplicity)
+    # Known noise variance in the training data (set to 0 for simplicity)
+    sigma_n_true = 0.0
 
     # Loop over each group in 'index' to construct submodel training data.
     for k, val in enumerate(index):
@@ -112,17 +115,20 @@ if __name__ == "__main__":
     # The 'index' parameter defines the grouping of training points for submodel construction.
     gp = oti_gp_weighted(
         X_train,  # The original (non-perturbed) training inputs.
-        y_train_data,  # List of training outputs (function values + derivatives) for each submodel.
+        # List of training outputs (function values + derivatives) for each submodel.
+        y_train_data,
         n_order,  # Order of derivative information included.
         n_bases,  # Dimensionality of the input space.
         index,  # Grouping indices for submodel construction.
         der_indices,
         kernel="SE",  # Use Squared Exponential (SE) kernel.
-        kernel_type="anisotropic",  # Anisotropic kernel allowing separate length scales per dimension.
+        # Anisotropic kernel allowing separate length scales per dimension.
+        kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance) via likelihood maximization.
-    params = gp.optimize_hyperparameters(n_restart_optimizer=20, swarm_size=20)
+    params = gp.optimize_hyperparameters(
+        n_restart_optimizer=10, swarm_size=1000)
 
     # ----- Generate Test Data for Prediction -----
     n_test_points = 250  # Number of test points for evaluation.

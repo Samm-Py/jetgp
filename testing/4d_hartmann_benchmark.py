@@ -1,6 +1,5 @@
 import numpy as np
-# Library for automatic differentiation using hyper-complex numbers
-import pyoti.sparse as oti
+import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
 from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
 import utils  # Utility functions, including one to generate derivative indices
 import modules.sobol as sb
@@ -12,8 +11,6 @@ import pickle
 
 # Zhis function will generate random samples for parameters.
 # Zhese samples will be used for MC simulation
-
-
 def scale_samples(samples, lower_bounds, upper_bounds):
     """
     Scale each column of samples from [0, 1] to [lb_j, ub_j].
@@ -75,40 +72,43 @@ def nrmse(y_true, y_pred, norm_type="minmax"):
     return rmse / norm if norm != 0 else np.inf
 
 
-if __name__ == "__main__":
 
-    def true_function(X, alg=oti):
+    
+if __name__ == "__main__":
+    def true_function(X, alg=np):
         x1 = X[:, 0]
         x2 = X[:, 1]
-
-        f = (
-            (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
-            + x1 * x2
-            + (-4 + 4 * x2**2) * x2**2
-        )
-
+        x3 = X[:, 2]
+    
+        a = 7
+        b = 0.1
+    
+        f = alg.sin(x1) + a * alg.sin(x2)**2 + b * x3**4 * alg.sin(x1)
+    
         return f
 
+    
     # Set the random seed for reproducibility
-    np.random.seed(1)
-    n_bases = 2
-    lb_x = -2
-    ub_x = 2
-    lb_y = -1
-    ub_y = 1
+    np.random.seed(1354)
+    n_bases = 3
+    lb_x = -np.pi
+    ub_x = np.pi
+    lb_y = -np.pi
+    ub_y = np.pi
+    lb_z = -np.pi
+    ub_z = np.pi
 
     num_points_test = 5000
     quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
 
-    lower_bounds = [lb_x, lb_y]
-    upper_bounds = [ub_x, ub_y]
+    lower_bounds = [lb_x, lb_y, lb_z]
+    upper_bounds = [ub_x, ub_y, ub_z]
 
     X_test = scale_samples(quasi, lower_bounds, upper_bounds)
     rmse_data = []
-    max_error_data = []
     pt_data = []
-    min_val_rmse = 0
-    for order in range(0, 7):
+    min_val = 0
+    for order in range(0, 6):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
@@ -135,27 +135,28 @@ if __name__ == "__main__":
 
        # ----- Generate Training Data -----
         if order == 0:
-            pts = [2] + [10 * i for i in range(1, 11)]
+            pts = [10 * i + 2 for i in range(0, 10)]
         elif order == 1 or order == 2 or order == 3:
-            pts = [2] + [5 * i for i in range(1, 11)]
+            pts = [5 * i + 2 for i in range(0, 11)]
         elif order == 4:
-            pts = [2 * i for i in range(1, 13)]
+            pts = [2 * i + 2 for i in range(0, 13)]
         else:
-            pts = [i for i in range(1, 16)]
+            pts = [i for i in range(2, 16)]
         rmse_data_i = []
-        max_error_data_i = []
         num_pts_i = []
         for pt in pts:
             num_pts_i.append(pt)
             num_points = pt  # Number of points per axis for training data
-            lb_x = -2
-            ub_x = 2
-            lb_y = -1
-            ub_y = 1
+            lb_x = -np.pi
+            ub_x = np.pi
+            lb_y = -np.pi
+            ub_y = np.pi
+            lb_z = -np.pi
+            ub_z = np.pi
             quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
 
-            lower_bounds = [lb_x, lb_y]
-            upper_bounds = [ub_x, ub_y]
+            lower_bounds = [lb_x, lb_y, lb_z]
+            upper_bounds = [ub_x, ub_y, ub_z]
 
             X_train = scale_samples(quasi, lower_bounds, upper_bounds)
 
@@ -168,6 +169,7 @@ if __name__ == "__main__":
                 X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(
                     i, order=n_order
                 )
+
 
             # Evaluate the true function on the perturbed training data.
             # The output is hyper-complex, containing both function value and derivative information.
@@ -201,13 +203,12 @@ if __name__ == "__main__":
                 n_bases,  # Dimensionality of the input space
                 der_indices,  # List of which derivatives to include
                 kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
-                # Anisotropic kernel to allow different length-scales per dimension
-                kernel_type="anisotropic",
+                kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
             )
 
             # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
             params = gp.optimize_hyperparameters(
-                n_restart_optimizer=50, swarm_size=1000
+                n_restart_optimizer=30, swarm_size=100
             )
             print(params)
 
@@ -219,33 +220,25 @@ if __name__ == "__main__":
             )
 
             nrmse_vals = nrmse(y_pred.flatten(), true_values.flatten())
-            max_error = max(abs(y_pred.flatten() - true_values.flatten()))
             print(
                 "NRMSE between model and true function: {}".format(nrmse_vals)
             )
-            print(
-                "Max Error between model and true function: {}".format(
-                    max_error)
-            )
             rmse_data_i.append(nrmse_vals)
-            max_error_data_i.append(max_error)
 
-            if nrmse_vals < min_val_rmse:
+            if nrmse_vals < min_val:
                 break
         pt_data.append(num_pts_i)
         rmse_data.append(rmse_data_i)
-        max_error_data.append(max_error_data_i)
         print(rmse_data)
-        min_val_rmse = np.min(rmse_data[0])
-        min_val_max_error = np.min(max_error_data[0])
+        min_val = np.min(rmse_data[0])
         plt.rcParams.update({"font.size": 12})
         plt.figure(12, figsize=(8, 6))
 
         # Find the first index where rmse_data < min_val
-        cutoff_idx = np.argmax(rmse_data[order] <= min_val_rmse)
+        cutoff_idx = np.argmax(rmse_data[order] <= min_val)
 
         # If no value is less than min_val, plot all
-        if not np.any(rmse_data[order] <= min_val_rmse):
+        if not np.any(rmse_data[order] <= min_val):
             cutoff_idx = len(rmse_data[order])
 
         # Plot up to that index
@@ -255,26 +248,9 @@ if __name__ == "__main__":
             label="Derivative Enhanced GP\nOrder {}".format(order),
         )
 
-        plt.figure(13, figsize=(8, 6))
-
-        # Find the first index where rmse_data < min_val
-        cutoff_idx = np.argmax(max_error_data[order] <= min_val_max_error)
-
-        # If no value is less than min_val, plot all
-        if not np.any(max_error_data[order] <= min_val_max_error):
-            cutoff_idx = len(max_error_data[order])
-
-        # Plot up to that index
-        plt.semilogy(
-            pt_data[order],
-            max_error_data[order],
-            label="Derivative Enhanced GP\nOrder {}".format(order),
-        )
-
-    plt.figure(12)
-    min_val_rmse = np.min(rmse_data[0])
+    min_val = np.min(rmse_data[0])
     plt.axhline(
-        min_val_rmse,
+        min_val,
         linestyle="--",
         color="gray",
         linewidth=1.5,
@@ -295,37 +271,7 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.show()
-
-    plt.figure(13)
-    min_val_max_error = np.min(max_error_data[0])
-    plt.axhline(
-        min_val_max_error,
-        linestyle="--",
-        color="gray",
-        linewidth=1.5,
-        label="Min Max Error (Order 0)",
-    )
-
-    plt.xlabel("Number of Sample Points")
-    plt.ylabel("Max Error (log scale)")
-    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
-    plt.minorticks_on()  # Ensure minor ticks are activated
-    plt.legend(
-        loc="upper left",
-        bbox_to_anchor=(1.000, 1.00),
-        borderaxespad=0,
-        frameon=False,
-    )
-    plt.savefig("max_error_plot_2d_camel.pdf",
-                bbox_inches="tight")  # Save as PDF
-
-    plt.tight_layout()
-    plt.show()
-    with open("2d_rmse_benchmark_camel_data.pkl", "wb") as f:
+    with open("3d_rmse_benchmark_ishigami_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
-
-    with open("2d_max_error_benchmark_camel_data.pkl", "wb") as f:
-        pickle.dump(rmse_data, f)
-
-    with open("2d_rmse_benchmark_camel_data_pts.pkl", "wb") as f:
+    with open("3d_rmse_benchmark_ishigami_data_pts.pkl", "wb") as f:
         pickle.dump(pt_data, f)
