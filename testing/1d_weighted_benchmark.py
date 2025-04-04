@@ -1,7 +1,8 @@
 import numpy as np
-# Library for automatic differentiation using hyper-complex numbers
-import pyoti.sparse as oti
-from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
+import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
+from oti_gp import (
+    oti_gp_weighted,
+)  # Weighted derivative-enhanced Gaussian Process class
 import utils  # Utility functions, including one to generate derivative indices
 import modules.sobol as sb
 import modules.lhs as lhs
@@ -12,8 +13,6 @@ import pickle
 
 # Zhis function will generate random samples for parameters.
 # Zhese samples will be used for MC simulation
-
-
 def scale_samples(samples, lower_bounds, upper_bounds):
     """
     Scale each column of samples from [0, 1] to [lb_j, ub_j].
@@ -75,45 +74,32 @@ def nrmse(y_true, y_pred, norm_type="minmax"):
     return rmse / norm if norm != 0 else np.inf
 
 
-if __name__ == "__main__":
 
+    
+if __name__ == "__main__":
+    
     def true_function(X, alg=oti):
         x1 = X[:, 0]
-        x2 = X[:, 1]
+        return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
-        f = (
-            (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
-            + x1 * x2
-            + (-4 + 4 * x2**2) * x2**2
-        )
-
-        return f
-
+    
     # Set the random seed for reproducibility
-    np.random.seed(1)
-    n_bases = 2
-    lb_x = -2
-    ub_x = 2
-    lb_y = -1
-    ub_y = 1
-
+    np.random.seed(1354)
+    n_bases = 1
+    lb_x = 0.5
+    ub_x = 2.5
+    X_test = np.linspace(lb_x, ub_x, 250).reshape(-1,1)
     num_points_test = 5000
-    quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
-
-    lower_bounds = [lb_x, lb_y]
-    upper_bounds = [ub_x, ub_y]
-
-    X_test = scale_samples(quasi, lower_bounds, upper_bounds)
     rmse_data = []
     max_error_data = []
     pt_data = []
     min_val_rmse = 0
-    for order in range(0, 7):
+    for order in range(0, 1):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
         # in a function with n_bases input dimensions.
-        der_indices = utils.gen_OTI_indices(n_bases, n_order)
+        # der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
         # If the use wants only to use for example main derivatives in the
         # training process set der_indices as:
@@ -135,97 +121,111 @@ if __name__ == "__main__":
 
        # ----- Generate Training Data -----
         if order == 0:
-            pts = [2] + [10 * i for i in range(1, 11)]
-        elif order == 1 or order == 2 or order == 3:
-            pts = [2] + [5 * i for i in range(1, 11)]
-        elif order == 4:
+            pts = [2] + [5 * i for i in range(1, 12)]
+        elif order == 1:
+            pts =[2] + [5 * i for i in range(1, 13)]
+        elif order == 2:
             pts = [2 * i for i in range(1, 13)]
         else:
-            pts = [i for i in range(1, 16)]
+            pts = [i for i in range(2, 15)]
         rmse_data_i = []
         max_error_data_i = []
         num_pts_i = []
         for pt in pts:
             num_pts_i.append(pt)
+            index = [[i] for i in range(pt)]
             num_points = pt  # Number of points per axis for training data
-            lb_x = -2
-            ub_x = 2
-            lb_y = -1
-            ub_y = 1
-            quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
 
-            lower_bounds = [lb_x, lb_y]
-            upper_bounds = [ub_x, ub_y]
+            X_train = np.linspace(lb_x, ub_x, pt).reshape(-1,1)
+            
+            der_indices = [utils.gen_OTI_indices(n_bases, n_order) for _ in range(len(X_train))]
 
-            X_train = scale_samples(quasi, lower_bounds, upper_bounds)
-
-            # Convert training data to an OTI array that supports derivative tracking
-            X_train_pert = oti.array(X_train)
-
-            # Perturb the training inputs along each coordinate direction to enable derivative computation.
-            # For each input dimension, add the elementary perturbation defined by oti.e
-            for i in range(1, n_bases + 1):
-                X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(
-                    i, order=n_order
+            # Loop over each group in 'index' to construct submodel training data.
+            y_train_data = []
+            for k, val in enumerate(index):
+                # For the current submodel, extract the training points based on indices in 'val'.
+                # Convert the selected training points to an OTI array to enable automatic derivative tracking.
+                X_train_pert = oti.array(X_train[val])
+        
+                # Perturb each training point along the coordinate directions.
+                # This is necessary for computing derivatives via the OTI library.
+                for i in range(1, n_bases + 1):
+                    for j in range(X_train_pert.shape[0]):
+                        X_train_pert[j, i - 1] = X_train_pert[j, i - 1] + oti.e(
+                            i, order=n_order
+                        )
+        
+                # Evaluate the true function on the perturbed inputs to obtain hyper-complex outputs
+                # that include both function values and derivative information.
+                y_train_hc = oti.array(
+                    [true_function(x, alg=oti) for x in X_train_pert]
                 )
-
-            # Evaluate the true function on the perturbed training data.
-            # The output is hyper-complex, containing both function value and derivative information.
-            y_train_hc = true_function(X_train_pert)
-            y_train_real = y_train_hc.real
-
-            y_train = y_train_real
-            for i in range(0, len(der_indices)):
-                for j in range(0, len(der_indices[i])):
-                    y_train = np.vstack(
-                        (y_train, y_train_hc.get_deriv(der_indices[i][j]))
-                    )
-            # ----- Noise Handling -----
-            # sigma_n_true represents the known noise variance in the training outputs.
-            # Here, it is set to zero (i.e., no noise is added) for simplicity.
-            sigma_n_true = 0.0
-            y_train = y_train.flatten()
-            noise = sigma_n_true * np.random.randn(len(y_train))
-            y_train_noisy = (
-                y_train + noise
-            )  # Although no noise is added in this example
-
+                # Also evaluate the true function on the original inputs (using numpy) to get the real values.
+                y_train_real = true_function(X_train, alg=np)
+        
+                # Start building the training output for the submodel with the real function values.
+                y_train = y_train_real.reshape(-1, 1)
+                # Append derivative information extracted from the hyper-complex outputs.
+                for i in range(0, len(der_indices[k])):
+                    for j in range(0, len(der_indices[k][i])):
+                        y_train = np.vstack(
+                            (y_train, y_train_hc.get_deriv(der_indices[k][i][j]))
+                        )
+        
+                # Flatten the training data into a 1D array as required by the GP model.
+                y_train = y_train.flatten()
+    
+                y_train_data.append(y_train)
+    
             # ----- Gaussian Process Model Setup -----
             # Create the derivative-enhanced Gaussian Process model.
             # We pass the original training inputs (X_train) along with the training outputs (y_train)
             # that include both function values and derivative information.
-            gp = oti_gp(
+            gp = oti_gp_weighted(
                 X_train,  # Unperturbed training inputs
-                y_train,  # Training outputs (function values and derivatives)
+                y_train_data,  # Training outputs (function values and derivatives)
                 n_order,  # Order of derivative information used
                 n_bases,  # Dimensionality of the input space
+                index,
                 der_indices,  # List of which derivatives to include
                 kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
-                # Anisotropic kernel to allow different length-scales per dimension
-                kernel_type="anisotropic",
+                kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
             )
 
-            # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
-            params = gp.optimize_hyperparameters(
-                n_restart_optimizer=50, swarm_size=1000
-            )
-            print(params)
+            # Optimize the GP hyperparameters (e.g., length scales, kernel variance) via likelihood maximization.
+            params = gp.optimize_hyperparameters(n_restart_optimizer=10, swarm_size=200)
 
-            true_values = true_function(X_test, alg=np)
-            # ----- Predict with the GP Model -----
-            # This returns both the mean prediction (y_pred) and the covariance (cov)
+            # ----- Generate Test Data for Prediction -----
+            n_test_points = 250  # Number of test points for evaluation.
+            X_test = np.linspace(lb_x, ub_x, n_test_points).reshape(-1, 1)
+
+            # ----- GP Prediction -----
+            # Predict using the weighted GP model on the test inputs.
+            # The predict function returns:
+            #   - y_pred: The overall mean predictions for the test data.
+            #   - y_cov: The covariance matrix of the predictions.
+            #   - submodel_vals: Predicted values from each individual submodel.
+            #   - submodel_cov: Covariance for the individual submodel predictions.
             y_pred = gp.predict(
-                X_test, params, calc_cov=False, return_deriv=False
+                X_test, params, calc_cov=False, return_submodels=False
             )
-
+            # true_values = true_function(X_train, alg=np)
+            # rmse = np.sqrt(np.mean((y_pred - true_values) ** 2))
+            # print("RMSE between model and true function: {}".format(rmse))
+            # ----- Plotting -----
+            # Visualize the GP predictions and submodel contributions.
+            # 'utils.make_submodel_plots' creates plots showing:
+            #   - The overall GP prediction and confidence intervals.
+            #   - The true function for comparison.
+            #   - The individual submodel predictions and their covariance.
+            true_values = true_function(X_test, alg=np)
             nrmse_vals = nrmse(y_pred.flatten(), true_values.flatten())
-            max_error = max(abs(y_pred.flatten() - true_values.flatten()))
+            max_error= max(abs(y_pred.flatten() - true_values.flatten()))
             print(
                 "NRMSE between model and true function: {}".format(nrmse_vals)
             )
             print(
-                "Max Error between model and true function: {}".format(
-                    max_error)
+                "Max Error between model and true function: {}".format(max_error)
             )
             rmse_data_i.append(nrmse_vals)
             max_error_data_i.append(max_error)
@@ -237,7 +237,7 @@ if __name__ == "__main__":
         max_error_data.append(max_error_data_i)
         print(rmse_data)
         min_val_rmse = np.min(rmse_data[0])
-        min_val_max_error = np.min(max_error_data[0])
+        min_val_max_error = np.min(max_error_data[0]) 
         plt.rcParams.update({"font.size": 12})
         plt.figure(12, figsize=(8, 6))
 
@@ -254,7 +254,7 @@ if __name__ == "__main__":
             rmse_data[order],
             label="Derivative Enhanced GP\nOrder {}".format(order),
         )
-
+        
         plt.figure(13, figsize=(8, 6))
 
         # Find the first index where rmse_data < min_val
@@ -270,7 +270,7 @@ if __name__ == "__main__":
             max_error_data[order],
             label="Derivative Enhanced GP\nOrder {}".format(order),
         )
-
+    
     plt.figure(12)
     min_val_rmse = np.min(rmse_data[0])
     plt.axhline(
@@ -291,11 +291,14 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
-    plt.savefig("rmse_plot_2d_camel.pdf", bbox_inches="tight")  # Save as PDF
+    plt.savefig("rmse_plot_1d_gl_weighted.pdf", bbox_inches="tight")  # Save as PDF
+    
+    
 
     plt.tight_layout()
     plt.show()
-
+    
+    
     plt.figure(13)
     min_val_max_error = np.min(max_error_data[0])
     plt.axhline(
@@ -316,16 +319,17 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
-    plt.savefig("max_error_plot_2d_camel.pdf",
-                bbox_inches="tight")  # Save as PDF
+    plt.savefig("max_error_plot_1d_gl_weighted.pdf", bbox_inches="tight")  # Save as PDF
+    
+    
 
     plt.tight_layout()
     plt.show()
-    with open("2d_rmse_benchmark_camel_data.pkl", "wb") as f:
+    with open("1d_rmse_benchmark_gl_weighted_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
-
-    with open("2d_max_error_benchmark_camel_data.pkl", "wb") as f:
+        
+    with open("1d_max_error_benchmark_gl_weighted_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
-
-    with open("2d_rmse_benchmark_camel_data_pts.pkl", "wb") as f:
+        
+    with open("1d_rmse_benchmark_gl_weighted_data_pts.pkl", "wb") as f:
         pickle.dump(pt_data, f)

@@ -163,7 +163,7 @@ class oti_gp_directional_weighted_pts:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim :])
+        alpha = np.exp(length_scales[self.dim:])
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -218,7 +218,7 @@ class oti_gp_directional_weighted_pts:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim : -1]
+        p = length_scales[self.dim: -1]
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -537,7 +537,7 @@ class oti_gp_directional_weighted_pts:
                 index=self.index[i],
             )
 
-            K_s = K_s[:, 0 : len(X_test)]
+            K_s = K_s[:, 0: len(X_test)]
             f_mean = K_s.T @ (alpha)
             y_val = y_val + (weights_matrix[:, i] * f_mean)
             if return_submodels:
@@ -556,7 +556,7 @@ class oti_gp_directional_weighted_pts:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
                 y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
                 if return_submodels:
                     submodel_cov.append(f_cov)
@@ -780,7 +780,7 @@ class oti_gp_directional_weighted:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim :])
+        alpha = np.exp(length_scales[self.dim:])
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -828,7 +828,7 @@ class oti_gp_directional_weighted:
         self, rays, x, length_scales, n_order, index=-1
     ):
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim : -1])
+        alpha = np.exp(length_scales[self.dim: -1])
         sigma_f = length_scales[-1]
 
         n1 = rays.shape[1]
@@ -883,7 +883,7 @@ class oti_gp_directional_weighted:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim : -1]
+        p = length_scales[self.dim: -1]
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -927,7 +927,7 @@ class oti_gp_directional_weighted:
         self, rays, x, length_scales, n_order, index=-1
     ):
         ell = np.exp(length_scales[: self.dim])
-        p = np.exp(length_scales[self.dim : -1])
+        p = np.exp(length_scales[self.dim: -1])
         sigma_f = length_scales[-1]
 
         n1 = rays.shape[1]
@@ -1243,7 +1243,7 @@ class oti_gp_directional_weighted:
                 self.kernel_func,
                 index=self.index[i],
             )
-            K_s = K_s[:, 0 : len(X_test)]
+            K_s = K_s[:, 0: len(X_test)]
             f_mean = K_s.T @ (alpha)
             if return_submodels:
                 submodel_vals.append(f_mean)
@@ -1263,7 +1263,7 @@ class oti_gp_directional_weighted:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
                 y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
                 if return_submodels:
                     submodel_cov.append(f_cov)
@@ -1421,7 +1421,7 @@ class oti_gp_directional:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim :])
+        alpha = np.exp(length_scales[self.dim:])
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -1476,7 +1476,7 @@ class oti_gp_directional:
         n2, d = X2.shape
 
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim :]
+        p = length_scales[self.dim:]
         sigma_f = length_scales[-1]
 
         # Prepare the output: a list of d arrays, each of shape (n, m)
@@ -1747,7 +1747,7 @@ class oti_gp_directional:
         )
 
         if not return_deriv:
-            K_s = K_s[:, 0 : len(X_test)]
+            K_s = K_s[:, 0: len(X_test)]
 
             f_mean = K_s.T @ (alpha)
 
@@ -1763,7 +1763,7 @@ class oti_gp_directional:
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
 
                 return f_mean, f_cov
             else:
@@ -1826,6 +1826,17 @@ class oti_gp_weighted:
                 )
             )
 
+        self.flattened_der_indicies = []
+        self.powers = []
+        for k in range(0, len(der_indices)):
+            indices = utils.transform_nested_list(der_indices[k])
+            self.powers.append(utils.build_companion_array(der_indices[k]))
+            tmp = []
+            for i in range(0, len(indices)):
+                for j in range(0, len(indices[i])):
+                    tmp.append(indices[i][j])
+            self.flattened_der_indicies.append(tmp)
+
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
@@ -1883,15 +1894,15 @@ class oti_gp_weighted:
                 for j in range(n2):
                     if i in index and j in index:
                         diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
-                        ) - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
+                            (X1[i, k] + oti.e(k + 1, order=2 * n_order))
+                        ) - (X2[j, k])
                     elif i in index and j not in index:
                         diffs_k[i, j] = (
-                            (X1[i, k] + oti.e(2 * k + 2, order=2 * n_order))
+                            (X1[i, k] + oti.e(k + 1, order=2 * n_order))
                         ) - (X2[j, k])
                     elif i not in index and j in index:
-                        diffs_k[i, j] = ((X1[i, k])) - (
-                            X2[j, k] + oti.e(2 * k + 1, order=2 * n_order)
+                        diffs_k[i, j] = ((X1[i, k] + oti.e(k + 1, order=2 * n_order))) - (
+                            X2[j, k]
                         )
                     else:
                         diffs_k[i, j] = ((X1[i, k])) - (X2[j, k])
@@ -1911,7 +1922,7 @@ class oti_gp_weighted:
 
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index):
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim : self.dim + 1])[0]
+        alpha = np.exp(length_scales[self.dim: self.dim + 1])[0]
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 1
@@ -1924,7 +1935,7 @@ class oti_gp_weighted:
         self, differences_by_dim, length_scales, index
     ):
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim : -1]
+        p = length_scales[self.dim: -1]
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 1
@@ -1994,7 +2005,8 @@ class oti_gp_weighted:
         llhood = 0
         for i in range(0, len(self.index)):
             y_train_submodel = self.y_train[i]
-            der_indices_submodel = self.der_indices[i]
+            der_indices_submodel = self.flattened_der_indicies[i]
+            powers = self.powers[i]
             submodel_index = self.index[i]
             differences_by_dim_submodel = self.differences_by_dim_submodels[i]
 
@@ -2003,8 +2015,9 @@ class oti_gp_weighted:
                 ell,
                 n_order,
                 n_bases,
-                der_indices_submodel,
                 self.kernel_func,
+                der_indices_submodel,
+                powers,
                 index=submodel_index,
             )
 
@@ -2031,7 +2044,8 @@ class oti_gp_weighted:
             x0,
             self.x_train,
             self.y_train,
-            self.sigma_n,  # note: this may be unused in your method since x0[-1] is sigma_n
+            # note: this may be unused in your method since x0[-1] is sigma_n
+            self.sigma_n,
             self.n_order,
             self.n_bases,
             self.der_indices,
@@ -2109,8 +2123,9 @@ class oti_gp_weighted:
                 ell,
                 self.n_order,
                 self.n_bases,
-                self.der_indices[i],
                 self.kernel_func,
+                self.flattened_der_indicies[i],
+                self.powers[i],
                 index=self.index[i],
             )
             K += (10**sigma_n) ** 2 * np.eye(len(K))
@@ -2125,12 +2140,13 @@ class oti_gp_weighted:
                 ell,
                 self.n_order,
                 self.n_bases,
-                self.der_indices[i],
                 self.kernel_func,
+                self.flattened_der_indicies[i],
+                self.powers[i],
                 index=self.index[i],
             )
 
-            K_s = K_s[:, 0 : len(X_test)]
+            K_s = K_s[:, 0: len(X_test)]
             f_mean = K_s.T @ (alpha)
             y_val = y_val + (weights_matrix[:, i] * f_mean)
             if return_submodels:
@@ -2142,13 +2158,14 @@ class oti_gp_weighted:
                     ell,
                     self.n_order,
                     self.n_bases,
-                    self.der_indices[i],
                     self.kernel_func,
+                    self.flattened_der_indicies[i],
+                    self.powers[i],
                     index=self.index[i],
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
                 y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
                 if return_submodels:
                     submodel_cov.append(f_cov)
@@ -2192,6 +2209,14 @@ class oti_gp:
         self.differences_by_dim = self.differences_by_dim_func(
             self.x_train, self.x_train, n_order
         )
+        indices = utils.transform_nested_list(der_indices)
+        self.flattened_der_indicies = []
+        for i in range(0, len(indices)):
+            for j in range(0, len(indices[i])):
+                self.flattened_der_indicies.append(indices[i][j])
+
+        self.powers = utils.build_companion_array(
+            n_bases, n_order, der_indices)
 
     def differences_by_dim_func(self, X1, X2, n_order, index=-1):
         X1 = oti.array(X1)
@@ -2214,8 +2239,8 @@ class oti_gp:
                 for j in range(n2):
                     diffs_k[i, j] = (
                         X1[i, k]
-                        + oti.e(2 * k + 2, order=2 * n_order)
-                        - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order))
+                        + oti.e(k + 1, order=2 * n_order)
+                        - (X2[j, k])
                     )
 
             # Append to our list
@@ -2225,11 +2250,12 @@ class oti_gp:
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                self.bounds = [(-5, 5)] * self.dim + [(-9, 4)] + [(-16, -3)]
+                self.bounds = [(-5, 5)]*self.dim + \
+                    [(-1, 6)] + [(-16, -3)]
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
                 self.bounds = (
-                    [(-5, 5)] * self.dim + [(0, 10)] + [(-9, 4)] + [(-16, -3)]
+                    [(-5, 5)] * self.dim + [(0, 10)] + [(-9, 6)] + [(-16, -3)]
                 )
 
                 return self.rq_kernel_anisotropic
@@ -2237,7 +2263,7 @@ class oti_gp:
                 self.bounds = (
                     [(-5, 5)] * (self.dim)
                     + [(0.0, 1e2)] * (self.dim)
-                    + [(-9, 4)]
+                    + [(-9, 5)]
                     + [(-16, -3)]
                 )
 
@@ -2246,7 +2272,8 @@ class oti_gp:
                 raise Exception("Kernel Not Implemented")
         else:
             if self.kernel == "SE":
-                self.bounds = [(-5, 5)] + [(-9, 1e4)] + [(-16, -3)]
+                self.bounds = [(-4, 1)] + \
+                    [(-1, 6)] + [(-16, -3)]
                 return self.se_kernel_isotropic
             elif self.kernel == "RQ":
                 self.bounds = [(-5, 5)] + [(0, 5)] + [(-9, 4)] + [(-16, -3)]
@@ -2276,7 +2303,7 @@ class oti_gp:
         self, differences_by_dim, length_scales, n_order, index=-1
     ):
         ell = np.exp(length_scales[: self.dim])
-        alpha = np.exp(length_scales[self.dim : self.dim + 1])[0]
+        alpha = np.exp(length_scales[self.dim: self.dim + 1])[0]
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 1
@@ -2289,7 +2316,7 @@ class oti_gp:
         self, differences_by_dim, length_scales, n_order, index=-1
     ):
         ell = np.exp(length_scales[: self.dim])
-        p = length_scales[self.dim : -1]
+        p = length_scales[self.dim: -1]
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 1
@@ -2356,8 +2383,9 @@ class oti_gp:
             ell,
             n_order,
             n_bases,
-            der_indices,
             self.kernel_func,
+            self.flattened_der_indicies,
+            self.powers
         )
         K += ((10**sigma_n) ** 2) * np.eye(len(K))
 
@@ -2379,7 +2407,8 @@ class oti_gp:
         return self.negative_log_marginal_likelihood(
             x0,
             self.x_train,
-            self.sigma_n,  # note: this may be unused in your method since x0[-1] is sigma_n
+            # note: this may be unused in your method since x0[-1] is sigma_n
+            self.sigma_n,
             self.n_order,
             self.n_bases,
             self.der_indices,
@@ -2398,6 +2427,7 @@ class oti_gp:
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
             debug=False,  # shows progress of the swarm
+            minfunc=1e-5,
         )
 
         # Optionally: update model attributes with optimized values
@@ -2429,8 +2459,9 @@ class oti_gp:
             length_scales,
             self.n_order,
             self.n_bases,
-            self.der_indices,
             self.kernel_func,
+            self.flattened_der_indicies,
+            self.powers
         )
         for i in range(n_restart_optimizer):
             try:
@@ -2452,12 +2483,13 @@ class oti_gp:
             length_scales,
             self.n_order,
             self.n_bases,
-            self.der_indices,
             self.kernel_func,
+            self.flattened_der_indicies,
+            self.powers
         )
 
         if not return_deriv:
-            K_s = K_s[:, 0 : len(X_test)]
+            K_s = K_s[:, 0: len(X_test)]
 
             f_mean = K_s.T @ (alpha)
 
@@ -2470,12 +2502,13 @@ class oti_gp:
                     length_scales,
                     self.n_order,
                     self.n_bases,
-                    self.der_indices,
                     self.kernel_func,
+                    self.flattened_der_indicies,
+                    self.powers
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)
-                f_cov = K_ss[0 : len(X_test), 0 : len(X_test)] - v.T.dot(v)
+                f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
 
                 return f_mean, f_cov
             else:
@@ -2492,8 +2525,9 @@ class oti_gp:
                     length_scales,
                     self.n_order,
                     self.n_bases,
-                    self.der_indices,
                     self.kernel_func,
+                    self.flattened_der_indicies,
+                    self.powers
                 )  # shape (N_test, N_test)
 
                 v = solve(L, K_s)

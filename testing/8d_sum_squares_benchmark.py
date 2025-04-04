@@ -77,38 +77,46 @@ def nrmse(y_true, y_pred, norm_type="minmax"):
 
 if __name__ == "__main__":
 
+    # Set the random seed for reproducibility
+    np.random.seed(1354)
+    n_bases = 8
+
+    num_points_test = 500
+    quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
+
+    lower_bounds = [-1 for i in range(n_bases)]
+    upper_bounds = [1 for i in range(n_bases)]
+
+    X_test = scale_samples(quasi, lower_bounds, upper_bounds)
+
     def true_function(X, alg=oti):
         x1 = X[:, 0]
         x2 = X[:, 1]
+        x3 = X[:, 2]
+        x4 = X[:, 3]
+        x5 = X[:, 4]
+        x6 = X[:, 5]
+        x7 = X[:, 6]
+        x8 = X[:, 7]
 
         f = (
-            (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
-            + x1 * x2
-            + (-4 + 4 * x2**2) * x2**2
+            1 * x1**2 +
+            2 * x2**2 +
+            3 * x3**2 +
+            4 * x4**2 +
+            5 * x5**2 +
+            6 * x6**2 +
+            7 * x7**2 +
+            8 * x8**2
         )
-
         return f
-
-    # Set the random seed for reproducibility
-    np.random.seed(1)
-    n_bases = 2
-    lb_x = -2
-    ub_x = 2
-    lb_y = -1
-    ub_y = 1
-
-    num_points_test = 5000
-    quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
-
-    lower_bounds = [lb_x, lb_y]
-    upper_bounds = [ub_x, ub_y]
 
     X_test = scale_samples(quasi, lower_bounds, upper_bounds)
     rmse_data = []
     max_error_data = []
     pt_data = []
     min_val_rmse = 0
-    for order in range(0, 7):
+    for order in range(3, 4):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
@@ -135,27 +143,20 @@ if __name__ == "__main__":
 
        # ----- Generate Training Data -----
         if order == 0:
-            pts = [2] + [10 * i for i in range(1, 11)]
+            pts = [2] + [20 * i for i in range(1, 9)]
         elif order == 1 or order == 2 or order == 3:
-            pts = [2] + [5 * i for i in range(1, 11)]
+            pts = [2] + [2 * i for i in range(2, 21)]
         elif order == 4:
-            pts = [2 * i for i in range(1, 13)]
+            pts = [i for i in range(1, 13)]
         else:
-            pts = [i for i in range(1, 16)]
+            pts = [10*i for i in range(1, 16)]
         rmse_data_i = []
         max_error_data_i = []
         num_pts_i = []
         for pt in pts:
             num_pts_i.append(pt)
             num_points = pt  # Number of points per axis for training data
-            lb_x = -2
-            ub_x = 2
-            lb_y = -1
-            ub_y = 1
             quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
-
-            lower_bounds = [lb_x, lb_y]
-            upper_bounds = [ub_x, ub_y]
 
             X_train = scale_samples(quasi, lower_bounds, upper_bounds)
 
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 
             # Evaluate the true function on the perturbed training data.
             # The output is hyper-complex, containing both function value and derivative information.
-            y_train_hc = true_function(X_train_pert)
+            y_train_hc = true_function(X_train_pert, alg=oti)
             y_train_real = y_train_hc.real
 
             y_train = y_train_real
@@ -206,8 +207,9 @@ if __name__ == "__main__":
             )
 
             # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
+            print(pt)
             params = gp.optimize_hyperparameters(
-                n_restart_optimizer=50, swarm_size=1000
+                n_restart_optimizer=5, swarm_size=50
             )
             print(params)
 
@@ -291,7 +293,8 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
-    plt.savefig("rmse_plot_2d_camel.pdf", bbox_inches="tight")  # Save as PDF
+    plt.savefig("rmse_plot_8d_sum_square.pdf",
+                bbox_inches="tight")  # Save as PDF
 
     plt.tight_layout()
     plt.show()
@@ -316,16 +319,16 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
-    plt.savefig("max_error_plot_2d_camel.pdf",
+    plt.savefig("max_error_plot_8d_sum_square.pdf",
                 bbox_inches="tight")  # Save as PDF
 
     plt.tight_layout()
     plt.show()
-    with open("2d_rmse_benchmark_camel_data.pkl", "wb") as f:
+    with open("8d_rmse_benchmark_sum_square_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
 
-    with open("2d_max_error_benchmark_camel_data.pkl", "wb") as f:
+    with open("8d_max_error_benchmark_sum_square_data.pkl", "wb") as f:
         pickle.dump(rmse_data, f)
 
-    with open("2d_rmse_benchmark_camel_data_pts.pkl", "wb") as f:
+    with open("8d_rmse_benchmark_sum_square_data_pts.pkl", "wb") as f:
         pickle.dump(pt_data, f)

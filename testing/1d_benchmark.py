@@ -7,7 +7,7 @@ import modules.lhs as lhs
 import pickle
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Not always needed but helps IDEs
-
+import pickle
 
 # Zhis function will generate random samples for parameters.
 # Zhese samples will be used for MC simulation
@@ -72,21 +72,27 @@ def nrmse(y_true, y_pred, norm_type="minmax"):
     return rmse / norm if norm != 0 else np.inf
 
 
+
+    
 if __name__ == "__main__":
+    
+    def true_function(X, alg=oti):
+        x1 = X[:, 0]
+        return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
+
+    
     # Set the random seed for reproducibility
+    np.random.seed(1354)
     n_bases = 1
     lb_x = 0.5
     ub_x = 2.5
-
+    X_test = np.linspace(lb_x, ub_x, 250).reshape(-1,1)
     num_points_test = 5000
-    quasi = sb.create_sobol_samples(num_points_test, n_bases, 1).T
-
-    lower_bounds = [lb_x]
-    upper_bounds = [ub_x]
-
-    X_test = scale_samples(quasi, lower_bounds, upper_bounds)
     rmse_data = []
-    for order in range(1, 2):
+    max_error_data = []
+    pt_data = []
+    min_val_rmse = 0
+    for order in range(0, 10):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
@@ -111,28 +117,23 @@ if __name__ == "__main__":
         # We use 5 points for this simple example. In a real case, choose
         # more or fewer points depending on the function's complexity.
 
-        # ----- Generate Training Data -----
+       # ----- Generate Training Data -----
         if order == 0:
-            pts = [5 * i + 2 for i in range(0, 12)]
+            pts = [2] + [5 * i for i in range(1, 11)]
         elif order == 1:
-            pts = [5 * i + 2 for i in range(0, 6)]
+            pts =[2] + [5 * i for i in range(1, 13)]
         elif order == 2:
-            pts = [2 * i + 2 for i in range(0, 8)]
-        elif order == 3:
-            pts = [i for i in range(2, 15)]
+            pts = [2 * i for i in range(1, 13)]
         else:
-            pts = [i for i in range(2, 12)]
+            pts = [i for i in range(2, 15)]
         rmse_data_i = []
+        max_error_data_i = []
+        num_pts_i = []
         for pt in pts:
+            num_pts_i.append(pt)
             num_points = pt  # Number of points per axis for training data
-            lb_x = 0.5
-            ub_x = 2.5
-            quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
 
-            lower_bounds = [lb_x]
-            upper_bounds = [ub_x]
-
-            X_train = np.linspace(lb_x, ub_x, pt).reshape(-1, 1)
+            X_train = np.linspace(lb_x, ub_x, pt).reshape(-1,1)
 
             # Convert training data to an OTI array that supports derivative tracking
             X_train_pert = oti.array(X_train)
@@ -144,12 +145,6 @@ if __name__ == "__main__":
                     i, order=n_order
                 )
 
-            # ----- Define the True Function -----
-            # This is an arbitrarily chosen polynomial function in two variables.
-            # It has nonlinear behavior and is used here for demonstration.
-            def true_function(X, alg=oti):
-                x1 = X[:, 0]
-                return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
             # Evaluate the true function on the perturbed training data.
             # The output is hyper-complex, containing both function value and derivative information.
@@ -182,57 +177,83 @@ if __name__ == "__main__":
                 n_order,  # Order of derivative information used
                 n_bases,  # Dimensionality of the input space
                 der_indices,  # List of which derivatives to include
-                kernel="RQ",  # Kernel choice: Rational Quadratic (RQ) kernel
+                kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
                 kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
             )
 
             # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
-            params = gp.optimize_hyperparameters()
+            params = gp.optimize_hyperparameters(
+                n_restart_optimizer=50, swarm_size=50
+            )
             print(params)
-
-            N_grid = 250
-            X_test = (np.linspace(lb_x, ub_x, N_grid)).reshape(-1, 1)
+            
             true_values = true_function(X_test, alg=np)
             # ----- Predict with the GP Model -----
             # This returns both the mean prediction (y_pred) and the covariance (cov)
-            y_pred, y_cov = gp.predict(
-                X_test, params, calc_cov=True, return_deriv=False
+            y_pred = gp.predict(
+                X_test, params, calc_cov=False, return_deriv=False
             )
-            # utils.make_plots(
-            #     X_train,
-            #     y_train,
-            #     X_test,
-            #     y_pred,
-            #     true_function,
-            #     cov=y_cov,
-            #     n_order=n_order,
-            #     n_bases=n_bases,
-            #     plot_derivative_surrogates=False,
-            #     der_indices=der_indices,
-            # )
 
             nrmse_vals = nrmse(y_pred.flatten(), true_values.flatten())
+            max_error= max(abs(y_pred.flatten() - true_values.flatten()))
             print(
                 "NRMSE between model and true function: {}".format(nrmse_vals)
             )
+            print(
+                "Max Error between model and true function: {}".format(max_error)
+            )
             rmse_data_i.append(nrmse_vals)
-        rmse_data.append(rmse_data_i)
-        print(rmse_data)
-        plt.rcParams.update({"font.size": 12})
-        plt.figure(12, figsize=(8, 4))
+            max_error_data_i.append(max_error)
 
+            if nrmse_vals < min_val_rmse:
+                break
+        pt_data.append(num_pts_i)
+        rmse_data.append(rmse_data_i)
+        max_error_data.append(max_error_data_i)
+        print(rmse_data)
+        min_val_rmse = np.min(rmse_data[0])
+        min_val_max_error = np.min(max_error_data[0]) 
+        plt.rcParams.update({"font.size": 12})
+        plt.figure(12, figsize=(8, 6))
+
+        # Find the first index where rmse_data < min_val
+        cutoff_idx = np.argmax(rmse_data[order] <= min_val_rmse)
+
+        # If no value is less than min_val, plot all
+        if not np.any(rmse_data[order] <= min_val_rmse):
+            cutoff_idx = len(rmse_data[order])
+
+        # Plot up to that index
         plt.semilogy(
-            pts,
+            pt_data[order],
             rmse_data[order],
-            label=" Derivative Enhanced GP\nOrder {}".format(order),
+            label="Derivative Enhanced GP\nOrder {}".format(order),
         )
-    min_val = np.min(rmse_data[0])
+        
+        plt.figure(13, figsize=(8, 6))
+
+        # Find the first index where rmse_data < min_val
+        cutoff_idx = np.argmax(max_error_data[order] <= min_val_max_error)
+
+        # If no value is less than min_val, plot all
+        if not np.any(max_error_data[order] <= min_val_max_error):
+            cutoff_idx = len(max_error_data[order])
+
+        # Plot up to that index
+        plt.semilogy(
+            pt_data[order],
+            max_error_data[order],
+            label="Derivative Enhanced GP\nOrder {}".format(order),
+        )
+    
+    plt.figure(12)
+    min_val_rmse = np.min(rmse_data[0])
     plt.axhline(
-        min_val,
+        min_val_rmse,
         linestyle="--",
         color="gray",
         linewidth=1.5,
-        label="Min RMSE (Order 0)",
+        label="Min NRMSE (Order 0)",
     )
 
     plt.xlabel("Number of Sample Points")
@@ -245,8 +266,45 @@ if __name__ == "__main__":
         borderaxespad=0,
         frameon=False,
     )
+    plt.savefig("rmse_plot_1d_gl.pdf", bbox_inches="tight")  # Save as PDF
+    
+    
 
     plt.tight_layout()
     plt.show()
-    # with open("my_list.pkl", "wb") as f:
-    #     pickle.dump(rmse_data, f)
+    
+    
+    plt.figure(13)
+    min_val_max_error = np.min(max_error_data[0])
+    plt.axhline(
+        min_val_max_error,
+        linestyle="--",
+        color="gray",
+        linewidth=1.5,
+        label="Min Max Error (Order 0)",
+    )
+
+    plt.xlabel("Number of Sample Points")
+    plt.ylabel("Max Error (log scale)")
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.minorticks_on()  # Ensure minor ticks are activated
+    plt.legend(
+        loc="upper left",
+        bbox_to_anchor=(1.000, 1.00),
+        borderaxespad=0,
+        frameon=False,
+    )
+    plt.savefig("max_error_plot_1d_gl.pdf", bbox_inches="tight")  # Save as PDF
+    
+    
+
+    plt.tight_layout()
+    plt.show()
+    with open("1d_rmse_benchmark_gl_data.pkl", "wb") as f:
+        pickle.dump(rmse_data, f)
+        
+    with open("1d_max_error_benchmark_gl_data.pkl", "wb") as f:
+        pickle.dump(rmse_data, f)
+        
+    with open("1d_rmse_benchmark_gl_data_pts.pkl", "wb") as f:
+        pickle.dump(pt_data, f)

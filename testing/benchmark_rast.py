@@ -7,7 +7,7 @@ import modules.lhs as lhs
 import pickle
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D  # Not always needed but helps IDEs
-
+import pickle
 
 # Zhis function will generate random samples for parameters.
 # Zhese samples will be used for MC simulation
@@ -72,7 +72,24 @@ def nrmse(y_true, y_pred, norm_type="minmax"):
     return rmse / norm if norm != 0 else np.inf
 
 
+
+    
 if __name__ == "__main__":
+    
+    def true_function(X, alg=oti):
+        x1 = X[:, 0]
+        x2 = X[:, 1]
+
+        f = (
+            10 * 2
+            + x1**2
+            - 10 * alg.cos(2 * np.pi * x1)
+            + x2**2
+            - 10 * alg.cos(2 * np.pi * x2)
+        )
+
+        return f
+    
     # Set the random seed for reproducibility
     np.random.seed(1354)
     n_bases = 2
@@ -89,7 +106,9 @@ if __name__ == "__main__":
 
     X_test = scale_samples(quasi, lower_bounds, upper_bounds)
     rmse_data = []
-    for order in range(2, 3):
+    pt_data = []
+    min_val = 0
+    for order in range(0, 10):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
@@ -114,16 +133,24 @@ if __name__ == "__main__":
         # We use 5 points for this simple example. In a real case, choose
         # more or fewer points depending on the function's complexity.
 
-        # ----- Generate Training Data -----
-        pts = [80]
+       # ----- Generate Training Data -----
+        if order == 0:
+            pts = [10 * i + 2 for i in range(0, 10)]
+        elif order == 1 or order == 2 or order == 3:
+            pts = [5 * i + 2 for i in range(0, 11)]
+        elif order == 4:
+            pts = [2 * i + 2 for i in range(0, 13)]
+        else:
+            pts = [i for i in range(2, 16)]
         rmse_data_i = []
+        num_pts_i = []
         for pt in pts:
+            num_pts_i.append(pt)
             num_points = pt  # Number of points per axis for training data
             lb_x = -5.12
             ub_x = 5.12
             lb_y = -5.12
             ub_y = 5.12
-
             quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
 
             lower_bounds = [lb_x, lb_y]
@@ -141,22 +168,6 @@ if __name__ == "__main__":
                     i, order=n_order
                 )
 
-            # ----- Define the True Function -----
-            # This is an arbitrarily chosen polynomial function in two variables.
-            # It has nonlinear behavior and is used here for demonstration.
-            def true_function(X, alg=oti):
-                x1 = X[:, 0]
-                x2 = X[:, 1]
-
-                f = (
-                    10 * 2
-                    + x1**2
-                    - 10 * alg.cos(2 * np.pi * x1)
-                    + x2**2
-                    - 10 * alg.cos(2 * np.pi * x2)
-                )
-
-                return f
 
             # Evaluate the true function on the perturbed training data.
             # The output is hyper-complex, containing both function value and derivative information.
@@ -189,130 +200,76 @@ if __name__ == "__main__":
                 n_order,  # Order of derivative information used
                 n_bases,  # Dimensionality of the input space
                 der_indices,  # List of which derivatives to include
-                kernel="SineExp",  # Kernel choice: Rational Quadratic (RQ) kernel
+                kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
                 kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
             )
 
             # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
-            params = gp.optimize_hyperparameters(n_restart_optimizer=20)
+            params = gp.optimize_hyperparameters(
+                n_restart_optimizer=30, swarm_size=100
+            )
             print(params)
 
-            # ----- Generate Test Data for Prediction -----
-            # Create a grid of test points over the same ranges as the training data.
-            N_grid = 100  # Number of grid points per axis for test data
-            # ----- Generate Test Data for Prediction -----
-            # Create a grid of test points over the same ranges as the training data.
-            x_lin = np.linspace(-5.12, 5.12, N_grid)
-            y_lin = np.linspace(-5.12, 5.12, N_grid)
-            X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
-            # Combine the grid coordinates into a 2D array of test points.
-            X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
-
-            y_pred = gp.predict(
-                X_test,
-                params,
-                calc_cov=False,
-                return_deriv=False,
-                n_restart_optimizer=50,
-            )
-            # ----- Plotting the Results -----
-            # Create a figure with two subplots: one for the GP prediction and one for the true function.
-            plt.figure(figsize=(6, 6))
-            plt.rcParams.update({"font.size": 12})
-
-            # Subplot (a): GP Prediction
-            # plt.subplot(1, 2, 1)
-            # plt.title(
-            #     "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
-            #         n_order
-            #     )
-            # )
-            # # Contour plot of the GP predicted mean
-            plt.figure(123412)
-            plt.contourf(
-                X1_grid,
-                X2_grid,
-                y_pred.reshape(N_grid, N_grid),
-                levels=25,
-                cmap="viridis",
-            )
-            plt.colorbar()
-            # Compute the min and max values of the grids
-            x1_min, x1_max = np.min(X1_grid), np.max(X1_grid)
-            x2_min, x2_max = np.min(X2_grid), np.max(X2_grid)
-
-            # Create a mask for points within the grid bounds
-            mask = (
-                (X_train[:, 0] > x1_min)
-                & (X_train[:, 0] < x1_max)
-                & (X_train[:, 1] > x2_min)
-                & (X_train[:, 1] < x2_max)
-            )
-
-            # Filtered points
-            X_filtered = X_train[mask]
-            # # Overlay the training points on the prediction plot
-            # plt.scatter(
-            #     X_filtered[:, 0],
-            #     X_filtered[:, 1],
-            #     c="white",
-            #     edgecolors="k",
-            #     label="Train pts",
-            # )
-            # # plt.xlabel("X1")
-            # # plt.ylabel("X2")
-            # plt.xticks([])  # no x ticks
-            # plt.yticks([])  # no y ticks
-            # # plt.legend()
-            # plt.tight_layout(pad=2.0)
-
-            # # ----- GP Prediction -----
-            # # Predict the function values on the test data using the optimized GP model.
-            # utils.make_plots(
-            #     X_train,
-            #     y_train,
-            #     X_test,
-            #     y_pred,
-            #     true_function,
-            #     X1_grid=X1_grid,
-            #     X2_grid=X2_grid,
-            #     n_order=n_order,
-            #     n_bases=n_bases,
-            #     plot_derivative_surrogates=False,
-            #     der_indices=der_indices,
-            # )
             true_values = true_function(X_test, alg=np)
-            plt.figure(123414)
-            plt.contourf(
-                X1_grid,
-                X2_grid,
-                true_values.reshape(N_grid, N_grid),
-                levels=25,
-                cmap="viridis",
+            # ----- Predict with the GP Model -----
+            # This returns both the mean prediction (y_pred) and the covariance (cov)
+            y_pred = gp.predict(
+                X_test, params, calc_cov=False, return_deriv=False
             )
-            plt.colorbar()
-            # # Overlay the training points on the true function plot
-            plt.scatter(
-                X_filtered[:, 0], X_filtered[:, 1], c="white", edgecolors="k"
-            )
-            plt.xticks([])  # no x ticks
-            plt.yticks([])  # no y ticks
-            # plt.legend()
-            plt.tight_layout(pad=2.0)
 
             nrmse_vals = nrmse(y_pred.flatten(), true_values.flatten())
             print(
                 "NRMSE between model and true function: {}".format(nrmse_vals)
             )
             rmse_data_i.append(nrmse_vals)
+
+            if nrmse_vals < min_val:
+                break
+        pt_data.append(num_pts_i)
         rmse_data.append(rmse_data_i)
         print(rmse_data)
-    # plt.semilogy(rmse_data)
-    # plt.xlabel("Order of Derivative")
-    # plt.ylabel("NRMSE (log scale)")
-    # plt.grid(True, which="both", linestyle="--", linewidth=0.5)
-    # plt.minorticks_on()  # Ensure minor ticks are activated
-    # plt.tight_layout()
-    # plt.show()
-    # with open("my_list.pkl", "wb") as f:
-    #     pickle.dump(rmse_data, f)
+        min_val = np.min(rmse_data[0])
+        plt.rcParams.update({"font.size": 12})
+        plt.figure(12, figsize=(8, 6))
+
+        # Find the first index where rmse_data < min_val
+        cutoff_idx = np.argmax(rmse_data[order] <= min_val)
+
+        # If no value is less than min_val, plot all
+        if not np.any(rmse_data[order] <= min_val):
+            cutoff_idx = len(rmse_data[order])
+
+        # Plot up to that index
+        plt.semilogy(
+            pt_data[order],
+            rmse_data[order],
+            label="Derivative Enhanced GP\nOrder {}".format(order),
+        )
+
+    min_val = np.min(rmse_data[0])
+    plt.axhline(
+        min_val,
+        linestyle="--",
+        color="gray",
+        linewidth=1.5,
+        label="Min NRMSE (Order 0)",
+    )
+
+    plt.xlabel("Number of Sample Points")
+    plt.ylabel("NRMSE (log scale)")
+    plt.grid(True, which="both", linestyle="--", linewidth=0.5)
+    plt.minorticks_on()  # Ensure minor ticks are activated
+    plt.legend(
+        loc="upper left",
+        bbox_to_anchor=(1.000, 1.00),
+        borderaxespad=0,
+        frameon=False,
+    )
+    plt.savefig("rmse_plot_2d_camel.pdf", bbox_inches="tight")  # Save as PDF
+
+    plt.tight_layout()
+    plt.show()
+    with open("2d_rmse_benchmark_camel_data.pkl", "wb") as f:
+        pickle.dump(rmse_data, f)
+    with open("2d_rmse_benchmark_camel_data_pts.pkl", "wb") as f:
+        pickle.dump(pt_data, f)

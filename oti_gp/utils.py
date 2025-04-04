@@ -82,6 +82,27 @@ def transform_nested_list_column(nested_list):
     return [transform_nested_list_column(item) for item in nested_list]
 
 
+def transform_nested_list(nested_list):
+    """
+    Recursively traverse a nested list. Whenever we encounter
+    a two-element list [k, v] with both k and v as integers,
+    transform k -> 2*k.
+    """
+    # If it's not a list, return it as is.
+    if not isinstance(nested_list, list):
+        return nested_list
+
+    # If it's exactly two integers [k, v], apply the transformation.
+    if len(nested_list) == 2 and all(
+        (isinstance(x, np.uint16) or isinstance(x, int)) for x in nested_list
+    ):
+        k, v = nested_list
+        return [k, v]  # Transform k -> 2*k
+
+    # Otherwise, apply the transformation to each element recursively.
+    return [transform_nested_list(item) for item in nested_list]
+
+
 def convert_index_to_exponent_form(lst):
     compressed = []
     current_num = None
@@ -102,6 +123,36 @@ def convert_index_to_exponent_form(lst):
     return compressed
 
 
+def build_companion_array(nvars, order, der_indices):
+    len_array = 0
+    companion_list = [0]
+    for i in range(len(der_indices)):
+        for j in range(0, len(der_indices[i])):
+            companion_list.append(
+                compare_OTI_indices(nvars, order, der_indices[i][j]))
+
+    companion_array = np.array(companion_list)
+    return companion_array
+
+
+def compare_OTI_indices(nvars, order, term_check):
+    """
+    Generate list of lists that contain indices of bases in an OTI number
+    """
+
+    dH = coti.get_dHelp()
+
+    ind = [0] * order
+
+    for ordi in range(1, order + 1):
+        nterms = coti.ndir_order(nvars, ordi)
+        for idx in range(nterms):
+            term = convert_index_to_exponent_form(dH.get_fulldir(idx, ordi))
+            if term == term_check:
+                return ordi
+    return -1
+
+
 def gen_OTI_indices(nvars, order):
     """
     Generate list of lists that contain indices of bases in an OTI number
@@ -120,14 +171,14 @@ def gen_OTI_indices(nvars, order):
     return ind
 
 
-# @profile
 def rbf_kernel(
     differences,
     length_scales,
     n_order,
     n_bases,
-    der_indices,
     kernel_func,
+    der_indices,
+    powers,
     index=-1,
 ):
     """
@@ -149,27 +200,20 @@ def rbf_kernel(
     """
     phi = kernel_func(differences, length_scales, index)
 
-    indices_row = transform_nested_list_row(der_indices)
-    indices_column = transform_nested_list_column(der_indices)
-    rows = []
-    columns = []
-    for i in range(0, len(indices_row)):
-        for j in range(0, len(indices_row[i])):
-            rows.append(indices_row[i][j])
-            columns.append(indices_column[i][j])
-
-    for i in range(0, len(rows) + 1):
+    for i in range(0, len(der_indices) + 1):
         row_j = 0
-        for j in range(0, len(columns) + 1):
+        for j in range(0, len(der_indices) + 1):
             if j == 0 and i == 0:
-                row_j = phi.real
+                row_j = phi.real * (-1)**(powers[j])
             elif j > 0 and i == 0:
-                row_j = np.hstack((row_j, phi.get_deriv(rows[j - 1])))
+                row_j = np.hstack(
+                    (row_j,  (-1)**(powers[j]) * phi.get_deriv(der_indices[j - 1])))
             elif j == 0 and i > 0:
-                row_j = phi.get_deriv(columns[i - 1])
+                row_j = phi.get_deriv(der_indices[i - 1])
             else:
                 row_j = np.hstack(
-                    (row_j, phi.get_deriv(rows[j - 1] + columns[i - 1]))
+                    (row_j, (-1)**(powers[j]) *
+                     phi.get_deriv(der_indices[j - 1] + der_indices[i - 1]))
                 )
         if i == 0:
             K = row_j
@@ -243,7 +287,7 @@ def rbf_kernel_der_params(
     return K
 
 
-def rbf_kernel_weighted(
+def rbf_kernel_weighted_testing(
     differences,
     length_scales,
     n_order,
@@ -289,13 +333,13 @@ def rbf_kernel_weighted(
                 row_j = np.hstack(
                     (
                         row_j,
-                        phi[:, index[0] : index[-1] + 1].get_deriv(
+                        phi[:, index[0]: index[-1] + 1].get_deriv(
                             rows[j - 1]
                         ),
                     )
                 )
             elif j == 0 and i > 0:
-                row_j = phi[index[0] : index[-1] + 1, :].get_deriv(
+                row_j = phi[index[0]: index[-1] + 1, :].get_deriv(
                     columns[i - 1]
                 )
             else:
@@ -304,9 +348,76 @@ def rbf_kernel_weighted(
                         row_j,
                         np.array(
                             phi[
-                                index[0] : index[-1] + 1,
-                                index[0] : index[-1] + 1,
+                                index[0]: index[-1] + 1,
+                                index[0]: index[-1] + 1,
                             ].get_deriv(rows[j - 1] + columns[i - 1])
+                        ),
+                    )
+                )
+        if i == 0:
+            K = row_j
+        else:
+            K = np.vstack((K, row_j))
+
+    return K
+
+
+def rbf_kernel_weighted(
+    differences,
+    length_scales,
+    n_order,
+    n_bases,
+    kernel_func,
+    der_indices,
+    powers,
+    index=-1,
+):
+    """
+    ARD RBF kernel for multi-dimensional inputs:
+      k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+
+    Parameters
+    ----------
+    X1 : array of shape (N, D)
+    X2 : array of shape (M, D)
+    length_scales : array of shape (D,), each dimension's length scale
+    sigma_f : float (signal amplitude)
+
+    Returns
+    -------
+    K : array of shape (N, M)
+
+
+    """
+    phi = kernel_func(differences, length_scales, index)
+
+    for i in range(0, len(der_indices) + 1):
+        row_j = 0
+        for j in range(0, len(der_indices) + 1):
+            if j == 0 and i == 0:
+                row_j = phi.real * (-1)**(powers[j])
+            elif j > 0 and i == 0:
+                row_j = np.hstack(
+                    (
+                        row_j,
+                        (-1)**(powers[j]) * phi[:, index[0]: index[-1] + 1].get_deriv(
+                            der_indices[j - 1]
+                        ),
+                    )
+                )
+            elif j == 0 and i > 0:
+                row_j = phi[index[0]: index[-1] + 1, :].get_deriv(
+                    der_indices[i-1]
+                )
+            else:
+                row_j = np.hstack(
+                    (
+                        row_j,
+                        (-1)**(powers[j]) * np.array(
+                            phi[
+                                index[0]: index[-1] + 1,
+                                index[0]: index[-1] + 1,
+                            ].get_deriv(der_indices[j - 1] + der_indices[i - 1])
                         ),
                     )
                 )
@@ -549,10 +660,10 @@ def make_plots(
                 # 95% confidence interval (approx. ±1.96 * std dev)
                 plt.fill_between(
                     X_test.ravel(),
-                    y_pred[0 : X_test.shape[0]]
-                    - 1.96 * sigma[0 : X_test.shape[0]],
-                    y_pred[0 : X_test.shape[0]]
-                    + 1.96 * sigma[0 : X_test.shape[0]],
+                    y_pred[0: X_test.shape[0]]
+                    - 1.96 * sigma[0: X_test.shape[0]],
+                    y_pred[0: X_test.shape[0]]
+                    + 1.96 * sigma[0: X_test.shape[0]],
                     color="b",
                     alpha=0.2,
                     label="95% Confidence Interval",
@@ -611,25 +722,25 @@ def make_plots(
 
             # ----- Plotting the Results -----
             # Create a figure with two subplots: one for the GP prediction and one for the true function.
-            plt.figure(figsize=(12, 6))
+            plt.figure(figsize=(8, 6))
             plt.rcParams.update({"font.size": 12})
 
             # Subplot (a): GP Prediction
             vmin = min(f_mean_2d.min(), true_values.min())
             vmax = max(f_mean_2d.max(), true_values.max())
-            plt.subplot(1, 2, 1)
-            plt.title(
-                "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
-                    n_order
-                )
-            )
+            # plt.subplot(1, 2, 1)
+            # plt.title(
+            #     "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
+            #         n_order
+            #     )
+            # )
             # Contour plot of the GP predicted mean
-            plt.subplot(1, 2, 1)
+            # plt.subplot(1, 2, 1)
             contour1 = plt.contourf(
                 X1_grid,
                 X2_grid,
                 f_mean_2d,
-                levels=25,
+                levels=50,
                 cmap="viridis",
                 vmin=vmin,
                 vmax=vmax,
@@ -649,28 +760,28 @@ def make_plots(
             # plt.legend()
             plt.tight_layout(pad=2.0)
 
-            # Subplot (b)
-            plt.subplot(1, 2, 2)
-            plt.title("True Function", fontsize=12)
-            contour2 = plt.contourf(
-                X1_grid,
-                X2_grid,
-                true_values,
-                levels=25,
-                cmap="viridis",
-                vmin=vmin,
-                vmax=vmax,
-            )
-            plt.colorbar(contour2)
-            # Overlay the training points on the prediction plot
-            plt.scatter(
-                X_filtered[:, 0], X_filtered[:, 1], c="white", edgecolors="k"
-            )
-            plt.xticks([])  # no x ticks
-            plt.yticks([])  # no y ticks
-            plt.show()
+            # # Subplot (b)
+            # plt.subplot(1, 2, 2)
+            # plt.title("True Function", fontsize=12)
+            # contour2 = plt.contourf(
+            #     X1_grid,
+            #     X2_grid,
+            #     true_values,
+            #     levels=25,
+            #     cmap="viridis",
+            #     vmin=vmin,
+            #     vmax=vmax,
+            # )
+            # plt.colorbar(contour2)
+            # # Overlay the training points on the prediction plot
+            # plt.scatter(
+            #     X_filtered[:, 0], X_filtered[:, 1], c="white", edgecolors="k"
+            # )
+            # plt.xticks([])  # no x ticks
+            # plt.yticks([])  # no y ticks
+            # plt.show()
 
-            plt.tight_layout(pad=2.0)
+            # plt.tight_layout(pad=2.0)
 
             # ----- Performance Evaluation -----
             # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
@@ -714,10 +825,10 @@ def make_plots(
             # 95% confidence interval (approx. ±1.96 * std dev)
             plt.fill_between(
                 X_test.ravel(),
-                y_pred[0 : X_test.shape[0]]
-                - 1.96 * sigma[0 : X_test.shape[0]],
-                y_pred[0 : X_test.shape[0]]
-                + 1.96 * sigma[0 : X_test.shape[0]],
+                y_pred[0: X_test.shape[0]]
+                - 1.96 * sigma[0: X_test.shape[0]],
+                y_pred[0: X_test.shape[0]]
+                + 1.96 * sigma[0: X_test.shape[0]],
                 color="b",
                 alpha=0.2,
                 label="95% Confidence Interval",
@@ -766,7 +877,7 @@ def make_plots(
                         X_train,
                         y_train[
                             (i + 1)
-                            * X_train.shape[0] : (i + 2)
+                            * X_train.shape[0]: (i + 2)
                             * X_train.shape[0]
                         ],
                         color="k",
@@ -778,7 +889,7 @@ def make_plots(
                         X_test,
                         y_pred[
                             (i + 1)
-                            * X_test.shape[0] : (i + 2)
+                            * X_test.shape[0]: (i + 2)
                             * X_test.shape[0]
                         ],
                         "b",
@@ -790,24 +901,24 @@ def make_plots(
                         X_test.ravel(),
                         y_pred[
                             (i + 1)
-                            * X_test.shape[0] : (i + 2)
+                            * X_test.shape[0]: (i + 2)
                             * X_test.shape[0]
                         ]
                         - 1.96
                         * sigma[
                             (i + 1)
-                            * X_test.shape[0] : (i + 2)
+                            * X_test.shape[0]: (i + 2)
                             * X_test.shape[0]
                         ],
                         y_pred[
                             (i + 1)
-                            * X_test.shape[0] : (i + 2)
+                            * X_test.shape[0]: (i + 2)
                             * X_test.shape[0]
                         ]
                         + 1.96
                         * sigma[
                             (i + 1)
-                            * X_test.shape[0] : (i + 2)
+                            * X_test.shape[0]: (i + 2)
                             * X_test.shape[0]
                         ],
                         color="b",
@@ -834,7 +945,7 @@ def make_plots(
                             (
                                 y_pred[
                                     (i + 1)
-                                    * X_test.shape[0] : (i + 2)
+                                    * X_test.shape[0]: (i + 2)
                                     * X_test.shape[0]
                                 ]
                                 - true_values.flatten()
@@ -922,7 +1033,7 @@ def make_plots(
                 for j in range(len(der_indices[i])):
                     predicted_values = y_pred[
                         (der_index_counter + 1)
-                        * X_test.shape[0] : (der_index_counter + 2)
+                        * X_test.shape[0]: (der_index_counter + 2)
                         * X_test.shape[0]
                     ]
                     f_mean_2d = predicted_values.reshape(N_grid, N_grid)
@@ -1065,10 +1176,10 @@ def make_submodel_plots(
                 # 95% confidence interval (approx. ±1.96 * std dev)
                 plt.fill_between(
                     X_test.ravel(),
-                    y_pred[0 : X_test.shape[0]]
-                    - 1.96 * sigma[0 : X_test.shape[0]],
-                    y_pred[0 : X_test.shape[0]]
-                    + 1.96 * sigma[0 : X_test.shape[0]],
+                    y_pred[0: X_test.shape[0]]
+                    - 1.96 * sigma[0: X_test.shape[0]],
+                    y_pred[0: X_test.shape[0]]
+                    + 1.96 * sigma[0: X_test.shape[0]],
                     color="b",
                     alpha=0.2,
                     label="95% Confidence Interval",
@@ -1184,10 +1295,10 @@ def make_submodel_plots(
             # 95% confidence interval (approx. ±1.96 * std dev)
             plt.fill_between(
                 X_test.ravel(),
-                y_pred[0 : X_test.shape[0]]
-                - 1.96 * sigma[0 : X_test.shape[0]],
-                y_pred[0 : X_test.shape[0]]
-                + 1.96 * sigma[0 : X_test.shape[0]],
+                y_pred[0: X_test.shape[0]]
+                - 1.96 * sigma[0: X_test.shape[0]],
+                y_pred[0: X_test.shape[0]]
+                + 1.96 * sigma[0: X_test.shape[0]],
                 color="b",
                 alpha=0.2,
                 label="95% Confidence Interval",
@@ -1244,10 +1355,10 @@ def make_submodel_plots(
                 # 95% confidence interval (approx. ±1.96 * std dev)
                 plt.fill_between(
                     X_test.ravel(),
-                    y_pred[0 : X_test.shape[0]]
-                    - 1.96 * sigma[0 : X_test.shape[0]],
-                    y_pred[0 : X_test.shape[0]]
-                    + 1.96 * sigma[0 : X_test.shape[0]],
+                    y_pred[0: X_test.shape[0]]
+                    - 1.96 * sigma[0: X_test.shape[0]],
+                    y_pred[0: X_test.shape[0]]
+                    + 1.96 * sigma[0: X_test.shape[0]],
                     color="b",
                     alpha=0.2,
                     label="95% Confidence Interval",
@@ -1875,7 +1986,7 @@ def make_directional_plots(
                 )
                 # Contour plot of the GP predicted mean
                 f_mean_2d = y_pred[
-                    (i + 1) * num_points : (i + 2) * num_points
+                    (i + 1) * num_points: (i + 2) * num_points
                 ].reshape(N_grid, N_grid)
                 plt.contourf(
                     X1_grid, X2_grid, f_mean_2d, levels=50, cmap="viridis"
