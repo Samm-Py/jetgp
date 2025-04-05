@@ -24,17 +24,11 @@ if __name__ == "__main__":
 
     # If the use wants only to use for example main derivatives in the
     # training process set der_indices as:
-    # der_indices = [
-    #     [[[1, 1]], [[2, 1]]],
-    #     [[[1, 2]], [[2, 2]]],
-    #     [[[1, 3]], [[2, 3]]],
-    #     [[[1, 4]], [[2, 4]]],
-    #     [[[1, 5]], [[2, 5]]],
-    #     [[[1, 6]], [[2, 6]]],
-    #     [[[1, 7]], [[2, 7]]],
-    #     [[[1, 8]], [[2, 8]]],
-    #     [[[1, 9]], [[2, 9]]],
-    # ]
+    der_indices = [
+        [[[1, 1]], [[2, 1]]],
+        [[[1, 2]], [[2, 2]]],
+        [[[1, 3]], [[2, 3]]],
+    ]
     # If the use wants only to use for example first and highest order derivatives in the
     # training process set der_indices as:
     # der_indices = [
@@ -45,7 +39,7 @@ if __name__ == "__main__":
     # more or fewer points depending on the function's complexity.
 
     # ----- Generate Training Data -----
-    num_points = 3  # Number of points per axis for training data
+    num_points = 4  # Number of points per axis for training data
     x_vals = np.linspace(lb_x, ub_x, num_points)  # Uniform grid for x1 values
     y_vals = np.linspace(lb_y, ub_y, num_points)  # Uniform grid for x2 values
 
@@ -79,18 +73,13 @@ if __name__ == "__main__":
 
     # ----- Assemble Training Data with Derivative Information -----
     # Start with the real function values
-    y_train = y_train_real
-    # For each derivative index generated, extract the corresponding derivative
-    # from the hyper-complex output and vertically stack it with the function values.
-    for i in range(0, len(der_indices)):
-        for j in range(0, len(der_indices[i])):
-            y_train = np.vstack(
-                (y_train, y_train_hc.get_deriv(der_indices[i][j]))
-            )
+    y_train_hc = true_function(X_train_pert)
+    y_train_real = y_train_hc.real  # Extract just the real part
 
-    # Flatten the training output into a 1D array (required format for many GP implementations)
-    y_train = y_train.flatten()
-
+    y_train = [y_train_real]
+    for i in range(len(der_indices)):
+        for j in range(len(der_indices[i])):
+            y_train.append(y_train_hc.get_deriv(der_indices[i][j]))
     # ----- Noise Handling -----
     # sigma_n_true represents the known noise variance in the training outputs.
     # Here, it is set to zero (i.e., no noise is added) for simplicity.
@@ -110,13 +99,15 @@ if __name__ == "__main__":
         n_order,  # Order of derivative information used
         n_bases,  # Dimensionality of the input space
         der_indices,  # List of which derivatives to include
+        normalize=True,
         kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
         # Anisotropic kernel to allow different length-scales per dimension
         kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
-    params = gp.optimize_hyperparameters()
+    params = gp.optimize_hyperparameters(
+        n_restart_optimizer=50, swarm_size=50)
 
     # ----- Generate Test Data for Prediction -----
     # Create a grid of test points over the same ranges as the training data.
