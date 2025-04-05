@@ -56,7 +56,7 @@ if __name__ == "__main__":
     global_time = time.time()
 
 # ----- Parameter Setup -----
-    n_order = 3
+    n_order = 2
     n_samples = 24  # For now I am using 24 samples.
 
     # Load all MC inputs
@@ -95,16 +95,16 @@ if __name__ == "__main__":
 
     # Generate indices for all derivatives up to the specified order
     # in a function with n_bases input dimensions.
-    # der_indices = utils.gen_OTI_indices(n_bases, n_order)
-    der_indices = [[[[2, 1]], [[3, 1]], [[4, 1]]],
-                   [
-        [[2, 2]],
-        [[3, 2]],
-        [[4, 2]]],
-        [
-        [[2, 3]],
-        [[3, 3]],
-        [[4, 3]]]]
+    der_indices = utils.gen_OTI_indices(n_bases, n_order)
+    # der_indices = [[[[2, 1]], [[3, 1]], [[4, 1]]],
+    #                [
+    #     [[2, 2]],
+    #     [[3, 2]],
+    #     [[4, 2]]],
+    #     [
+    #     [[2, 3]],
+    #     [[3, 3]],
+    #     [[4, 3]]]]
     # If the use wants only to use for example main derivatives in the
     # training process set der_indices as:
     # der_indices = [
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # For now lets make a GP for the 150th time increment,
     # but eventually we will have to loop through all time
     # increments to create N GP regressions
-    tincs = [20*i for i in range(50)]
+    tincs = [100*i for i in range(1, 10)]
     val = []
     val_lb = []
     val_ub = []
@@ -153,17 +153,15 @@ if __name__ == "__main__":
         # ----- Assemble Training Data with Derivative Information -----
         # Start with the real function values
         Y_oti_current = Y_oti[tinc, :]
-        y_train = Y_oti_current.real
+        y_train_real = Y_oti_current.real  # Extract just the real part
 
-        # For each derivative index generated, extract the corresponding derivative
-        # from the hyper-complex output and vertically stack it with the function values.
-        for i in range(0, len(der_indices)):
-            for j in range(0, len(der_indices[i])):
-                y_train = np.vstack(
-                    (y_train, Y_oti_current.get_deriv(der_indices[i][j])))
+        y_train = [y_train_real.reshape(-1, 1)]
+        for i in range(len(der_indices)):
+            for j in range(len(der_indices[i])):
+                y_train.append(Y_oti_current.get_deriv(
+                    der_indices[i][j]).reshape(-1, 1))
 
         # Flatten the training output into a 1D array (required format for many GP implementations)
-        y_train = y_train.flatten()
 
         # ----- Gaussian Process Model Setup -----
         # Create the derivative-enhanced Gaussian Process model.
@@ -183,7 +181,7 @@ if __name__ == "__main__":
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=40, swarm_size=200
+            n_restart_optimizer=40, swarm_size=20
         )
         print(params)
 
