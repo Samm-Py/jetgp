@@ -52,7 +52,8 @@ if __name__ == "__main__":
     y_train = [y_train_real]
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
-            y_train.append(y_train_hc.get_deriv(der_indices[i][j]))
+            y_train.append(y_train_hc.get_deriv(
+                der_indices[i][j]).reshape(-1, 1))
 
     # ----- Create and Configure the Gaussian Process (GP) Model -----
     gp = oti_gp(
