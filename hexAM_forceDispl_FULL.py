@@ -56,7 +56,7 @@ if __name__ == "__main__":
     global_time = time.time()
 
 # ----- Parameter Setup -----
-    n_order = 2
+    n_order = 3
     n_samples = 24  # For now I am using 24 samples.
 
     # Load all MC inputs
@@ -95,8 +95,16 @@ if __name__ == "__main__":
 
     # Generate indices for all derivatives up to the specified order
     # in a function with n_bases input dimensions.
-    der_indices = utils.gen_OTI_indices(n_bases, n_order)
-
+    # der_indices = utils.gen_OTI_indices(n_bases, n_order)
+    der_indices = [[[[2, 1]], [[3, 1]], [[4, 1]]],
+                   [
+        [[2, 2]],
+        [[3, 2]],
+        [[4, 2]]],
+        [
+        [[2, 3]],
+        [[3, 3]],
+        [[4, 3]]]]
     # If the use wants only to use for example main derivatives in the
     # training process set der_indices as:
     # der_indices = [
@@ -125,8 +133,12 @@ if __name__ == "__main__":
     # For now lets make a GP for the 150th time increment,
     # but eventually we will have to loop through all time
     # increments to create N GP regressions
-    tincs = [500]
+    tincs = [20*i for i in range(50)]
+    val = []
+    val_lb = []
+    val_ub = []
     for tinc in tincs:
+
         y_true = force_imported[:, tinc]
         # spacing = 25
         # force_true = force_imported[:,range(0, n_tincs, spacing)]
@@ -171,43 +183,67 @@ if __name__ == "__main__":
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=25, swarm_size=25
+            n_restart_optimizer=40, swarm_size=200
         )
         print(params)
 
         # ----- GP Prediction -----
         # Predict the function values on the test data using the optimized GP model.
-        y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=True)
+        y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=False)
+
+        # Assuming y_pred is a NumPy array
+        mean = np.mean(y_pred)
+        std = np.std(y_pred)
+
+        lower_bound = mean - 2 * std
+        upper_bound = mean + 2 * std
         # force_pred[:,count] = y_pred
         # count += 1
 
         time_iteration = time.time() - global_time
         print((tinc+1), '/', n_tincs, ' : Cumulative time ', time_iteration)
         time_stamps.append(time_iteration)
+        val.append(mean)
+        val_lb.append(lower_bound)
+        val_ub.append(upper_bound)
 
-        # utils.make_plots(
-        #     X_train,
-        #     y_train,
-        #     X_test,
-        #     y_pred,
-        #     true_function,
-        #     X1_grid=X1_grid,
-        #     X2_grid=X2_grid,
-        #     n_order=n_order,
-        #     n_bases=n_bases,
-        #     plot_derivative_surrogates=True,
-        #     der_indices=der_indices,
-        # )
+    plt.figure(figsize=(10, 6))
+    plt.plot(tincs, val, label='Mean Prediction', color='blue')
+    plt.fill_between(tincs, val_lb, val_ub, color='blue',
+                     alpha=0.3, label='±2 Std Dev')
+    plt.xlabel('Time')
+    plt.ylabel('Prediction')
+    plt.title('Prediction with ±2 Std Dev Interval')
 
-        # end
+    for i in range(force_imported.shape[0]):
+        plt.plot(force_imported[i, :])
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+    # utils.make_plots(
+    #     X_train,
+    #     y_train,
+    #     X_test,
+    #     y_pred,
+    #     true_function,
+    #     X1_grid=X1_grid,
+    #     X2_grid=X2_grid,
+    #     n_order=n_order,
+    #     n_bases=n_bases,
+    #     plot_derivative_surrogates=True,
+    #     der_indices=der_indices,
+    # )
 
-        # plt.figure()
-        # plt.plot(force_true.flatten(), force_pred.flatten(), 'r.')
-        # for j in range(0, n_tincs, spacing):
-        #     plt.plot(Y_oti[j,:].real, Y_oti[j,:].real, 'b.')
-        # plt.show()
+    # end
 
-        plt.figure(tinc)
-        plt.plot(y_true.flatten(), y_pred[: X_test.shape[0]].flatten(), 'r.')
-        plt.plot(Y_oti[tinc, :].real, Y_oti[tinc, :].real, 'b.')
-        plt.show()
+    # plt.figure()
+    # plt.plot(force_true.flatten(), force_pred.flatten(), 'r.')
+    # for j in range(0, n_tincs, spacing):
+    #     plt.plot(Y_oti[j,:].real, Y_oti[j,:].real, 'b.')
+    # plt.show()
+
+    # plt.figure(tinc)
+    # plt.plot(y_true.flatten(), y_pred[: X_test.shape[0]].flatten(), 'r.')
+    # plt.plot(Y_oti[tinc, :].real, Y_oti[tinc, :].real, 'b.')
+    # plt.show()

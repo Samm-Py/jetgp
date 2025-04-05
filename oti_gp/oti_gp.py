@@ -2190,13 +2190,13 @@ class oti_gp:
         n_order,
         n_bases,
         der_indices,
+        normalize=True,
         sigma_n=0.0,
         nugget=1e-6,
         kernel="SE",
         kernel_type="anisotropic",
     ):
-        self.x_train = x_train
-        self.y_train = y_train
+
         self.sigma_n = sigma_n
         self.nugget = nugget
         self.n_order = n_order
@@ -2206,9 +2206,8 @@ class oti_gp:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.kernel_func = self.create_kernel_function()
-        self.differences_by_dim = self.differences_by_dim_func(
-            self.x_train, self.x_train, n_order
-        )
+        self.normalize = normalize
+
         indices = utils.transform_nested_list(der_indices)
         self.flattened_der_indicies = []
         for i in range(0, len(indices)):
@@ -2217,6 +2216,18 @@ class oti_gp:
 
         self.powers = utils.build_companion_array(
             n_bases, n_order, der_indices)
+
+        if normalize:
+            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data(
+                x_train, y_train, self.flattened_der_indicies)
+            self.x_train = utils.normalize_x_data_train(x_train)
+        else:
+            self.x_train = x_train
+            self.y_train = utils.reshape_y_train(y_train)
+
+        self.differences_by_dim = self.differences_by_dim_func(
+            self.x_train, self.x_train, n_order
+        )
 
     def differences_by_dim_func(self, X1, X2, n_order, index=-1):
         X1 = oti.array(X1)
@@ -2250,8 +2261,8 @@ class oti_gp:
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                self.bounds = [(-5, 5)]*self.dim + \
-                    [(-1, 6)] + [(-16, -3)]
+                self.bounds = [(-3, 3)]*self.dim + \
+                    [(-1, 3)] + [(-16, -3)]
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
                 self.bounds = (
@@ -2291,7 +2302,7 @@ class oti_gp:
         self, differences_by_dim, length_scales, index=-1
     ):
         # Distances scaled by each dimension's length scale
-        ell = np.exp(length_scales[0:-1])
+        ell = 10**(length_scales[0:-1])
         sigma_f = length_scales[length_scales.shape[0] - 1]
         sqdist = 0
         for i in range(self.dim):
@@ -2302,7 +2313,7 @@ class oti_gp:
     def rq_kernel_anisotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
     ):
-        ell = np.exp(length_scales[: self.dim])
+        ell = 10**(length_scales[: self.dim])
         alpha = np.exp(length_scales[self.dim: self.dim + 1])[0]
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
@@ -2315,7 +2326,7 @@ class oti_gp:
     def sine_exp_kernel_anisotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
     ):
-        ell = np.exp(length_scales[: self.dim])
+        ell = 10**(length_scales[: self.dim])
         p = length_scales[self.dim: -1]
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
@@ -2330,7 +2341,7 @@ class oti_gp:
         return ((10**sigma_f) ** 2) * oti.exp(-2 * sqdist)
 
     def se_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
-        ell = oti.exp(length_scales[0])
+        ell = 10**(length_scales[0])
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
         sqdist = 0
@@ -2342,7 +2353,7 @@ class oti_gp:
     def rq_kernel_isotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
     ):
-        ell = np.exp(length_scales[0])
+        ell = 10**(length_scales[0])
         alpha = np.exp(length_scales[1])
         sigma_f = length_scales[length_scales.shape[0] - 1]
 
@@ -2355,7 +2366,7 @@ class oti_gp:
     def sine_exp_kernel_isotropic(
         self, differences_by_dim, length_scales, n_order, index=-1
     ):
-        ell = np.exp(length_scales[0])
+        ell = 10**(length_scales[0])
         p = length_scales[1]
         sigma_f = length_scales[-1]
 
@@ -2427,7 +2438,7 @@ class oti_gp:
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
             debug=False,  # shows progress of the swarm
-            minfunc=1e-5,
+            minfunc=1e-8,
         )
 
         # Optionally: update model attributes with optimized values
@@ -2475,6 +2486,10 @@ class oti_gp:
         print(sigma_n)
         alpha = solve(L.T, solve(L, self.y_train))
 
+        if self.normalize:
+            X_test = utils.normalize_x_data_test(
+                X_test, self.sigmas_x, self.mus_x)
+
         diff_x_test_x_train = self.differences_by_dim_func(
             self.x_train, X_test, self.n_order
         )
@@ -2493,6 +2508,9 @@ class oti_gp:
 
             f_mean = K_s.T @ (alpha)
 
+            if self.normalize:
+                f_mean = self.mu_y + f_mean*self.sigma_y
+
             if calc_cov:
                 diff_x_test_x_test = self.differences_by_dim_func(
                     X_test, X_test, self.n_order
@@ -2510,11 +2528,21 @@ class oti_gp:
                 v = solve(L, K_s)
                 f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
 
-                return f_mean, f_cov
+                if self.normalize:
+                    f_var = np.diag(np.abs(f_cov))
+                    return f_mean, self.sigma_y**2 * f_var
+                else:
+                    f_var = np.diag(np.abs(f_cov))
+                    return f_mean, f_cov
             else:
+
                 return f_mean
         else:
             f_mean = K_s.T @ (alpha)
+
+            if self.normalize:
+                f_mean = utils.transform_predictions(
+                    f_mean, self.mu_y, self.sigma_y, self.sigmas_x, self.flattened_der_indicies, X_test)
 
             if calc_cov:
                 diff_x_test_x_test = self.differences_by_dim_func(
@@ -2533,7 +2561,13 @@ class oti_gp:
                 v = solve(L, K_s)
                 f_cov = K_ss - v.T.dot(v)
 
-                return f_mean, f_cov
+                if self.normalize:
+                    f_var = utils.transform_cov(
+                        f_cov, self.sigma_y, self.sigmas_x, self.flattened_der_indicies, X_test)
+                    return f_mean, f_var
+                else:
+                    f_var = np.diag(np.abs(f_cov))
+                    return f_mean, f_var
             else:
                 return f_mean
 

@@ -115,7 +115,7 @@ if __name__ == "__main__":
     max_error_data = []
     pt_data = []
     min_val_rmse = 0
-    for order in range(0, 3):
+    for order in range(5, 6):
         n_order = order
 
         # Generate indices for all derivatives up to the specified order
@@ -208,7 +208,7 @@ if __name__ == "__main__":
             # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
             print(pt)
             params = gp.optimize_hyperparameters(
-                n_restart_optimizer=10, swarm_size=50
+                n_restart_optimizer=20, swarm_size=75
             )
             print(params)
 
