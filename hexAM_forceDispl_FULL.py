@@ -133,10 +133,37 @@ if __name__ == "__main__":
     # For now lets make a GP for the 150th time increment,
     # but eventually we will have to loop through all time
     # increments to create N GP regressions
-    tincs = [100*i for i in range(1, 10)]
+    tincs = [50*i for i in range(1, 20)]
     val = []
     val_lb = []
     val_ub = []
+
+    # visulaize training data
+
+    # Set global font size
+    plt.rcParams.update({'font.size': 12})
+
+    plt.figure(1, figsize=(9, 5))
+
+    # Plot OTI training data
+    for i in range(Y_oti.shape[1]):
+        Y_vals = Y_oti[:, i].real
+        label = 'Training Data' if i == 0 else None
+        plt.plot(np.arange(0, 1001), Y_vals.flatten(),
+                 color='tab:blue', zorder=2, label=label)
+
+    # Plot Monte Carlo training data
+    for i in range(force_imported.shape[0]):
+        val_mc = force_imported[i, :]
+        label = 'Monte Carlo Data' if i == 0 else None
+        plt.plot(np.arange(0, 1001), val_mc,
+                 color='tab:red', zorder=0, label=label)
+
+    # Plot mean of Monte Carlo data
+    vals_mc = np.mean(force_imported, axis=0)
+    plt.plot(np.arange(0, 1001), vals_mc, color='black',
+             ls='--', lw=2, label='MC Mean Force', zorder=4)
+
     for tinc in tincs:
 
         y_true = force_imported[:, tinc]
@@ -181,7 +208,7 @@ if __name__ == "__main__":
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=40, swarm_size=20
+            n_restart_optimizer=20, swarm_size=50
         )
         print(params)
 
@@ -193,8 +220,8 @@ if __name__ == "__main__":
         mean = np.mean(y_pred)
         std = np.std(y_pred)
 
-        lower_bound = mean - 2 * std
-        upper_bound = mean + 2 * std
+        lower_bound = mean - 2*std
+        upper_bound = mean + 2*std
         # force_pred[:,count] = y_pred
         # count += 1
 
@@ -204,21 +231,25 @@ if __name__ == "__main__":
         val.append(mean)
         val_lb.append(lower_bound)
         val_ub.append(upper_bound)
+        plt.figure(tinc)
+        plt.plot(y_true.flatten(), y_pred[: X_test.shape[0]].flatten(), 'r.')
+        plt.plot(Y_oti[tinc, :].real, Y_oti[tinc, :].real, 'b.')
+        plt.show()
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(tincs, val, label='Mean Prediction', color='blue')
-    plt.fill_between(tincs, val_lb, val_ub, color='blue',
-                     alpha=0.3, label='±2 Std Dev')
+    plt.figure(1)
+    plt.plot(tincs, val, label='Mean Prediction',
+             color='tab:pink', lw=2, zorder=11)
+    plt.fill_between(tincs, val_lb, val_ub, color='tab:pink',
+                     alpha=0.3, label=r'Mean GP prediction $\pm 2 \sigma$', zorder=10)
     plt.xlabel('Time')
     plt.ylabel('Prediction')
-    plt.title('Prediction with ±2 Std Dev Interval')
 
-    for i in range(force_imported.shape[0]):
-        plt.plot(force_imported[i, :])
-    plt.legend()
+    # Move legend to right margin
+    plt.legend(loc='center left', bbox_to_anchor=(1.01, .90), borderaxespad=0.)
+
+    # Adjust layout to make room for legen
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
     # utils.make_plots(
     #     X_train,
     #     y_train,
@@ -241,7 +272,7 @@ if __name__ == "__main__":
     #     plt.plot(Y_oti[j,:].real, Y_oti[j,:].real, 'b.')
     # plt.show()
 
-    # plt.figure(tinc)
-    # plt.plot(y_true.flatten(), y_pred[: X_test.shape[0]].flatten(), 'r.')
-    # plt.plot(Y_oti[tinc, :].real, Y_oti[tinc, :].real, 'b.')
-    # plt.show()
+    plt.figure(tinc)
+    plt.plot(y_true.flatten(), y_pred[: X_test.shape[0]].flatten(), 'r.')
+    plt.plot(Y_oti[tinc, :].real, Y_oti[tinc, :].real, 'b.')
+    plt.show()

@@ -171,7 +171,8 @@ def gen_OTI_indices(nvars, order):
 def reshape_y_train(y_train):
     y_train_flattened = y_train[0]
     for i in range(1, len(y_train)):
-        y_train_flattened = np.vstack((y_train_flattened, y_train[i]))
+        y_train_flattened = np.vstack(
+            (y_train_flattened.reshape(-1, 1), y_train[i].reshape(-1, 1)))
     return y_train_flattened.flatten()
 
 
@@ -235,7 +236,7 @@ def normalize_y_data(X_train, y_train, der_indices):
                 (std_vec_x[0][der_indices[i][j][0] - 1]
                  )**(der_indices[i][j][1])
         y_train_normalized = np.vstack(
-            (y_train_normalized, y_train[i + 1] * factor[0, 0]))
+            (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x
 
 
@@ -1209,10 +1210,10 @@ def make_submodel_plots(
 
     if isinstance(cov, int):
         cov = np.zeros((y_pred.shape[0], y_pred.shape[0]))
-    sigma = np.sqrt(abs(np.diag(cov)))
+    sigma = np.sqrt(cov)
     if not plot_submodels:
         if X_train.shape[1] == 1:
-            sigma = np.sqrt(abs(np.diag(cov)))
+            sigma = np.sqrt(cov)
 
             if X_train.shape[1] == 1:
                 true_values = true_function(X_test, alg=np)
@@ -1331,7 +1332,7 @@ def make_submodel_plots(
             rmse = np.sqrt(np.mean((f_mean_2d - true_values) ** 2))
             print("RMSE between model and true function: {}".format(rmse))
     else:
-        sigma = np.sqrt(abs(np.diag(cov)))
+        sigma = np.sqrt(cov)
 
         if X_train.shape[1] == 1:
             true_values = true_function(X_test, alg=np)
@@ -1347,7 +1348,7 @@ def make_submodel_plots(
             # the original function values (as opposed to the stacked derivative entries).
             plt.scatter(
                 X_train,
-                y_train[: X_train.shape[0]],
+                y_train[0][: X_train.shape[0]],
                 color="k",
                 label="Training points",
             )
@@ -1355,7 +1356,7 @@ def make_submodel_plots(
             # GP mean prediction
             plt.plot(
                 X_test,
-                y_pred[: X_test.shape[0]],
+                y_pred.flatten(),
                 "b",
                 label="Weighted GP Prediction",
             )
@@ -1363,9 +1364,9 @@ def make_submodel_plots(
             # 95% confidence interval (approx. ±1.96 * std dev)
             plt.fill_between(
                 X_test.ravel(),
-                y_pred[0: X_test.shape[0]]
+                y_pred.flatten()
                 - 1.96 * sigma[0: X_test.shape[0]],
-                y_pred[0: X_test.shape[0]]
+                y_pred.flatten()
                 + 1.96 * sigma[0: X_test.shape[0]],
                 color="b",
                 alpha=0.2,
@@ -1393,7 +1394,7 @@ def make_submodel_plots(
             print("RMSE between model and true function: {}".format(rmse))
 
             for i in range(0, len(submodel_vals)):
-                sigma = np.sqrt(abs(np.diag(submodel_cov[i])))
+                sigma = np.sqrt(submodel_cov[i])
                 y_pred = submodel_vals[i]
                 plt.figure(i + 1, figsize=(12, 6))
                 plt.plot(
@@ -1407,7 +1408,7 @@ def make_submodel_plots(
                 # the original function values (as opposed to the stacked derivative entries).
                 plt.scatter(
                     X_train,
-                    y_train[: X_train.shape[0]],
+                    y_train[0][: X_train.shape[0]],
                     color="k",
                     label="Training points",
                 )
@@ -1415,7 +1416,7 @@ def make_submodel_plots(
                 # GP mean prediction
                 plt.plot(
                     X_test,
-                    submodel_vals[i],
+                    submodel_vals[i].flatten(),
                     "b",
                     label="GP Prediction",
                 )
@@ -1423,9 +1424,9 @@ def make_submodel_plots(
                 # 95% confidence interval (approx. ±1.96 * std dev)
                 plt.fill_between(
                     X_test.ravel(),
-                    y_pred[0: X_test.shape[0]]
+                    y_pred.flatten()
                     - 1.96 * sigma[0: X_test.shape[0]],
-                    y_pred[0: X_test.shape[0]]
+                    y_pred.flatten()
                     + 1.96 * sigma[0: X_test.shape[0]],
                     color="b",
                     alpha=0.2,

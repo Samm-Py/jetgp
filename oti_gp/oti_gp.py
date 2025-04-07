@@ -1799,6 +1799,7 @@ class oti_gp_weighted:
         n_bases,
         index,
         der_indices,
+        normalize=True,
         sigma_n=0.0,
         kernel="SE",
         kernel_type="anisotropic",
@@ -1815,6 +1816,33 @@ class oti_gp_weighted:
         self.der_indices = der_indices
         self.kernel_func = self.create_kernel_function()
         self.differences_by_dim_submodels = []
+        self.normalize = normalize
+
+        self.flattened_der_indicies = []
+        self.powers = []
+        for k in range(0, len(der_indices)):
+            indices = utils.transform_nested_list(der_indices[k])
+            self.powers.append(utils.build_companion_array(
+                n_bases, n_order, der_indices[k]))
+            tmp = []
+            for i in range(0, len(indices)):
+                for j in range(0, len(indices[i])):
+                    tmp.append(indices[i][j])
+            self.flattened_der_indicies.append(tmp)
+        if normalize:
+            y_train_normalized = []
+            for k in range(0, len(der_indices)):
+                y_train_k, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data(
+                    x_train, y_train[k], self.flattened_der_indicies[k])
+                y_train_normalized.append(y_train_k)
+            self.y_train = y_train_normalized
+            self.x_train = utils.normalize_x_data_train(x_train)
+        else:
+            y_train_flattened = []
+            for k in range(0, len(der_indices)):
+                y_train_flattened.append(utils.reshape_y_train(y_train[k]))
+            self.x_train = x_train
+            self.y_train = y_train_flattened
         for i in range(0, len(self.index)):
             self.submodel_index = self.index[i]
             self.differences_by_dim_submodels.append(
@@ -1826,21 +1854,11 @@ class oti_gp_weighted:
                 )
             )
 
-        self.flattened_der_indicies = []
-        self.powers = []
-        for k in range(0, len(der_indices)):
-            indices = utils.transform_nested_list(der_indices[k])
-            self.powers.append(utils.build_companion_array(der_indices[k]))
-            tmp = []
-            for i in range(0, len(indices)):
-                for j in range(0, len(indices[i])):
-                    tmp.append(indices[i][j])
-            self.flattened_der_indicies.append(tmp)
-
     def create_kernel_function(self):
         if self.kernel_type == "anisotropic":
             if self.kernel == "SE":
-                self.bounds = [(-6, 6)] * self.dim + [(-9, 4)] + [(-16, -3)]
+                self.bounds = self.bounds = [(-3, 3)]*self.dim + \
+                    [(-1, 3)] + [(-16, -3)]
                 return self.se_kernel_anisotropic
             elif self.kernel == "RQ":
                 self.bounds = (
@@ -2091,6 +2109,9 @@ class oti_gp_weighted:
         diffs_by_dim = self.differences_by_dim_func(
             self.x_train, self.x_train, 0, index=[-1]
         )
+        if self.normalize:
+            X_test = utils.normalize_x_data_test(
+                X_test, self.sigmas_x, self.mus_x)
         for k in range(0, X_test.shape[0]):
             diffs_by_dim_submodel = self.differences_by_dim_func(
                 self.x_train, X_test[k].reshape(1, -1), 0, index=[-1]
@@ -2148,6 +2169,8 @@ class oti_gp_weighted:
 
             K_s = K_s[:, 0: len(X_test)]
             f_mean = K_s.T @ (alpha)
+            if self.normalize:
+                f_mean = self.mu_y + f_mean*self.sigma_y
             y_val = y_val + (weights_matrix[:, i] * f_mean)
             if return_submodels:
                 submodel_vals.append(f_mean)
@@ -2166,9 +2189,15 @@ class oti_gp_weighted:
 
                 v = solve(L, K_s)
                 f_cov = K_ss[0: len(X_test), 0: len(X_test)] - v.T.dot(v)
-                y_var = y_var + (weights_matrix[:, i] ** 2 * f_cov)
+                if self.normalize:
+                    f_var = utils.transform_cov(
+                        f_cov, self.sigma_y, self.sigmas_x, self.flattened_der_indicies[i], X_test)
+                    y_var = y_var + (weights_matrix[:, i] ** 2 * f_var)
+                else:
+                    f_var = np.diag(np.abs(f_cov))
+                    y_var = y_var + (weights_matrix[:, i] ** 2 * f_var)
                 if return_submodels:
-                    submodel_cov.append(f_cov)
+                    submodel_cov.append(f_var)
 
         if return_submodels:
             if calc_cov:
