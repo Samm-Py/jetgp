@@ -26,7 +26,7 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # ----- Parameter Setup -----
-    n_order = 1  # Use second-order derivative information in the model.
+    n_order = 4  # Use second-order derivative information in the model.
     n_bases = 1  # The function is one-dimensional (single input variable).
     lb_x = 0.5  # Lower bound for the training input values.
     ub_x = 2.5  # Upper bound for the training input values.
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     # For example, with index = [[0], [1], [2], [3], [4]], each training point forms its own submodel.
     # This flexible grouping allows the user to define arbitrary subsets for submodels.
     # Note: For a global GP, the index must be a list of lists with length equal to the number of training points.
-    num_points = 20  # Number of training points along the x-axis.
+    num_points = 5  # Number of training points along the x-axis.
     index = [[i] for i in range(num_points)]
 
     # Use provided training values (non-uniform in this case).
@@ -89,20 +89,12 @@ if __name__ == "__main__":
         y_train_real = true_function(X_train, alg=np)
 
         # Start building the training output for the submodel with the real function values.
-        y_train = y_train_real.reshape(-1, 1)
+        y_train = [y_train_real]
         # Append derivative information extracted from the hyper-complex outputs.
         for i in range(0, len(der_indices[k])):
             for j in range(0, len(der_indices[k][i])):
-                y_train = np.vstack(
-                    (y_train, y_train_hc.get_deriv(der_indices[k][i][j]))
-                )
-
-        # Flatten the training data into a 1D array as required by the GP model.
-        y_train = y_train.flatten()
-
-        # Optionally add noise (none is added here since sigma_n_true is 0).
-        noise = sigma_n_true * np.random.randn(len(y_train))
-        y_train_noisy = y_train + noise
+                y_train.append(y_train_hc.get_deriv(
+                    der_indices[k][i][j]).reshape(-1, 1))
 
         # Append the processed training output for this submodel.
         y_train_data.append(y_train)
@@ -114,8 +106,7 @@ if __name__ == "__main__":
     # Create a weighted Gaussian Process model designed for submodel data.
     # The 'index' parameter defines the grouping of training points for submodel construction.
     gp = oti_gp_weighted(
-        X_train,  # The original (non-perturbed) training inputs.
-        # List of training outputs (function values + derivatives) for each submodel.
+        X_train,
         y_train_data,
         n_order,  # Order of derivative information included.
         n_bases,  # Dimensionality of the input space.
