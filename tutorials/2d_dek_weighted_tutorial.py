@@ -1,9 +1,7 @@
 import numpy as np
 import pyoti.sparse as oti  # For automatic differentiation using hyper-complex numbers
 import itertools
-from oti_gp import (
-    oti_gp_weighted
-)  # Weighted derivative-enhanced Gaussian Process class
+from wdegp.wdegp import wdegp
 # Utility functions (e.g., generating derivative indices, plotting submodels)
 import utils
 import modules.sobol as sb
@@ -47,7 +45,7 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # ----- Parameter Setup -----
-    n_order = 2  # Use first-order derivative information
+    n_order = 3  # Use first-order derivative information
     n_bases = 2  # The function is two-dimensional (x1 and x2)
     lb_x = -1  # Lower bound for x1
     ub_x = 1  # Upper bound for x1
@@ -55,7 +53,7 @@ if __name__ == "__main__":
     ub_y = 1  # Upper bound for x2
 
     # Number of points along each axis (total training points = num_points^2)
-    num_points = 2
+    num_points = 4
 
     # Generate a grid of training points over the square region.
     quasi = sb.create_sobol_samples(num_points, n_bases, 1).T
@@ -67,8 +65,9 @@ if __name__ == "__main__":
     # Generate indices for all derivatives up to n_order for a function with n_bases dimensions.
     # Note that the derivatives used for each submodel can be different. In this particular case
     # we assume that the derivative information used to construct each submodel is the same.
+    index = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15]]
     der_indices = [
-        utils.gen_OTI_indices(n_bases, n_order) for _ in range(len(X_train))
+        utils.gen_OTI_indices(n_bases, n_order) for _ in range(len(index))
     ]
 
     # To use different derivative information fo each submodel one would supply derivative information as:
@@ -91,6 +90,7 @@ if __name__ == "__main__":
 
     # Define the true function outside of the loop (common for all submodels)
     # Here, f(x1,x2) = sin(pi*x1) + cos(pi*x2)
+
     def true_function(X, alg=oti):
         x1 = X[:, 0]
         x2 = X[:, 1]
@@ -106,51 +106,47 @@ if __name__ == "__main__":
     # ----- Assemble Training Data for Submodels -----
     # The 'index' variable specifies which training points form each submodel.
     # For a global model, we require one submodel per training point.
-    index = [[i] for i in range(len(X_train))]
+
     y_train_data = (
         []
     )  # List to hold training outputs (function values + derivatives) for each submodel
 
     # Loop over each group of indices in 'index'
     for k, val in enumerate(index):
-        # Extract the training points corresponding to the current index group.
-        X_train_subset = X_train[val]
+        # For the current submodel, extract the training points based on indices in 'val'.
+        # Convert the selected training points to an OTI array to enable automatic derivative tracking.
+        X_train_pert = oti.array(X_train[val])
 
-        # Convert these training points to an OTI array to enable automatic derivative tracking.
-        X_train_pert = oti.array(X_train_subset)
-
-        # Perturb each training point along each coordinate direction.
+        # Perturb each training point along the coordinate directions.
+        # This is necessary for computing derivatives via the OTI library.
         for i in range(1, n_bases + 1):
             for j in range(X_train_pert.shape[0]):
                 X_train_pert[j, i - 1] = X_train_pert[j, i - 1] + oti.e(
                     i, order=n_order
                 )
 
-        # Evaluate the true function on the perturbed inputs using OTI to capture derivative information.
-        y_train_hc = oti.array([true_function(x) for x in X_train_pert])
-        # Also evaluate the true function on the original inputs (using numpy) for real function values.
+        # Evaluate the true function on the perturbed inputs to obtain hyper-complex outputs
+        # that include both function values and derivative information.
+        y_train_hc = oti.array(
+            [true_function(x, alg=oti) for x in X_train_pert]
+        )
+        # Also evaluate the true function on the original inputs (using numpy) to get the real values.
         y_train_real = true_function(X_train, alg=np)
 
-        # Begin with the real function values.
-        y_train = y_train_real.reshape(-1, 1)
+        # Start building the training output for the submodel with the real function values.
+        y_train = [y_train_real]
         # Append derivative information extracted from the hyper-complex outputs.
-        for i in range(len(der_indices[k])):
-            for j in range(len(der_indices[k][i])):
-                y_train = np.vstack(
-                    (y_train, y_train_hc.get_deriv(der_indices[k][i][j]))
-                )
-
-        # Flatten the assembled training data into a 1D array.
-        y_train = y_train.flatten()
-
-        y_train_noisy = y_train
+        for i in range(0, len(der_indices[k])):
+            for j in range(0, len(der_indices[k][i])):
+                y_train.append(y_train_hc.get_deriv(
+                    der_indices[k][i][j]).reshape(-1, 1))
 
         # Append the processed training output for this submodel.
         y_train_data.append(y_train)
 
     # ----- Weighted Gaussian Process Model Setup -----
     # Create a weighted GP model that handles submodel data.
-    gp = oti_gp_weighted(
+    gp = wdegp(
         X_train,  # Original training inputs.
         # List of training outputs (function values and derivatives) for each submodel.
         y_train_data,
@@ -158,13 +154,14 @@ if __name__ == "__main__":
         n_bases,  # Dimensionality of the input space.
         index,  # Grouping of training points for submodel construction.
         der_indices,
+        normalize=True,
         kernel="SE",  # Use Squared Exponential (SE) kernel.
         # Anisotropic kernel (separate length scales per dimension).
         kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance).
-    params = gp.optimize_hyperparameters(n_restart_optimizer=50, swarm_size=50)
+    params = gp.optimize_hyperparameters(n_restart_optimizer=25, swarm_size=50)
 
     # ----- Generate Test Data for Prediction -----
     N_grid = 25  # Number of test points per axis.
@@ -195,6 +192,6 @@ if __name__ == "__main__":
         X2_grid=X2_grid,
         n_order=n_order,  # Order of derivative information.
         n_bases=n_bases,  # Dimensionality of the input space.
-        plot_submodels=False,  # Flag to plot individual submodel predictions.
+        plot_submodels=True,  # Flag to plot individual submodel predictions.
         submodel_vals=submodel_vals,  # Predicted values from each submodel.
     )

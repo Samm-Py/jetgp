@@ -56,7 +56,7 @@ if __name__ == "__main__":
     global_time = time.time()
 
 # ----- Parameter Setup -----
-    n_order = 2
+    n_order = 1
     n_samples = 24  # For now I am using 24 samples.
 
     # Load all MC inputs

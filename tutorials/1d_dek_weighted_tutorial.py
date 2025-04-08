@@ -1,16 +1,7 @@
 import numpy as np
-from numpy.linalg import cholesky, solve
-from scipy.optimize import minimize
-import matplotlib.pyplot as plt
 # Library for automatic differentiation using hyper-complex numbers
 import pyoti.sparse as oti
-import random
-import itertools
-import pyoti.core as coti  # Core functionalities for OTI
-from oti_gp import (
-    oti_gp_weighted,
-)  # Weighted derivative-enhanced Gaussian Process class
-# Utility functions (e.g., to generate derivative indices, plotting submodels)
+from wdegp.wdegp import wdegp
 import utils
 
 # ---------------------------------------------------------------------
@@ -26,7 +17,7 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # ----- Parameter Setup -----
-    n_order = 4  # Use second-order derivative information in the model.
+    n_order = 3  # Use second-order derivative information in the model.
     n_bases = 1  # The function is one-dimensional (single input variable).
     lb_x = 0.5  # Lower bound for the training input values.
     ub_x = 2.5  # Upper bound for the training input values.
@@ -35,8 +26,8 @@ if __name__ == "__main__":
     # For example, with index = [[0], [1], [2], [3], [4]], each training point forms its own submodel.
     # This flexible grouping allows the user to define arbitrary subsets for submodels.
     # Note: For a global GP, the index must be a list of lists with length equal to the number of training points.
-    num_points = 5  # Number of training points along the x-axis.
-    index = [[i] for i in range(num_points)]
+    num_points = 10  # Number of training points along the x-axis.
+    index = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
 
     # Use provided training values (non-uniform in this case).
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
@@ -45,7 +36,7 @@ if __name__ == "__main__":
     # Note that the derivatives used for each submodel can be different. In this particular case
     # we assume that the derivative information used to construct each submodel is the same.
     der_indices = [
-        utils.gen_OTI_indices(n_bases, n_order) for _ in range(len(X_train))
+        utils.gen_OTI_indices(n_bases, n_order) for _ in range(len(index))
     ]
 
     # To use different derivative information fo each submodel one would supply derivative information as:
@@ -105,13 +96,14 @@ if __name__ == "__main__":
     # ----- Weighted Gaussian Process Model Setup -----
     # Create a weighted Gaussian Process model designed for submodel data.
     # The 'index' parameter defines the grouping of training points for submodel construction.
-    gp = oti_gp_weighted(
+    gp = wdegp(
         X_train,
         y_train_data,
         n_order,  # Order of derivative information included.
         n_bases,  # Dimensionality of the input space.
         index,  # Grouping indices for submodel construction.
         der_indices,
+        normalize=True,
         kernel="SE",  # Use Squared Exponential (SE) kernel.
         # Anisotropic kernel allowing separate length scales per dimension.
         kernel_type="anisotropic",
@@ -119,7 +111,7 @@ if __name__ == "__main__":
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance) via likelihood maximization.
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=10, swarm_size=1000)
+        n_restart_optimizer=40, swarm_size=200)
 
     # ----- Generate Test Data for Prediction -----
     n_test_points = 250  # Number of test points for evaluation.
