@@ -5,7 +5,7 @@ import numpy as np
 # Library for automatic differentiation using hyper-complex numbers
 import pyoti.sparse as oti
 import itertools
-from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
+from full_degp.degp import degp
 import utils  # Utility functions, including one to generate derivative indices
 import time
 from scipy.io import loadmat
@@ -133,7 +133,7 @@ if __name__ == "__main__":
     # For now lets make a GP for the 150th time increment,
     # but eventually we will have to loop through all time
     # increments to create N GP regressions
-    tincs = [50*i for i in range(1, 20)]
+    tincs = [500]
     val = []
     val_lb = []
     val_ub = []
@@ -194,7 +194,7 @@ if __name__ == "__main__":
         # Create the derivative-enhanced Gaussian Process model.
         # We pass the original training inputs (X_train) along with the training outputs (y_train)
         # that include both function values and derivative information.
-        gp = oti_gp(
+        gp = degp(
             X_train,  # Unperturbed training inputs
             y_train,  # Training outputs (function values and derivatives)
             n_order,  # Order of derivative information used
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=20, swarm_size=50
+            n_restart_optimizer=20, swarm_size=100
         )
         print(params)
 
