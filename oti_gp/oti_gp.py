@@ -2129,7 +2129,7 @@ class oti_gp_weighted:
         submodel_vals = []
         submodel_cov = []
 
-        for i in range(0, self.x_train.shape[0]):
+        for i in range(0, len(self.index)):
             differences_by_dim_train_test = self.differences_by_dim_func(
                 self.x_train, X_test, self.n_order, index=self.index[i]
             )

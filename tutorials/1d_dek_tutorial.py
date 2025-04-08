@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti
-from oti_gp import oti_gp
+from full_degp.degp import degp
 import utils
 
 
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # the function (and its derivatives) at those points, and then use them
     # to train our model.
 
-    n_order = 1  # The order of derivative information used by the GP model
+    n_order = 2  # The order of derivative information used by the GP model
     n_bases = 1  # The dimensionality of the function (1D in this demo)
     lb_x = 0.2  # Lower bound for sampling
     ub_x = 6  # Upper bound for sampling
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # der_indices = [[[[1, 1]]], [[[1, 4]]]]
     # We use 5 points for this simple example. In a real case, choose
     # more or fewer points depending on the function's complexity.
-    num_points = 5
+    num_points = 6
 
     # Create a uniform mesh from lb_x to ub_x
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 der_indices[i][j]).reshape(-1, 1))
 
     # ----- Create and Configure the Gaussian Process (GP) Model -----
-    gp = oti_gp(
+    gp = degp(
         X_train,  # Training inputs
         y_train,  # Training targets (function values + derivatives)
         n_order,  # Maximum derivative order used

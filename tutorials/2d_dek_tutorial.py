@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 # Library for automatic differentiation using hyper-complex numbers
 import pyoti.sparse as oti
 import itertools
-from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
+from full_degp.degp import degp
 import utils  # Utility functions, including one to generate derivative indices
 
 if __name__ == "__main__":
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # Create the derivative-enhanced Gaussian Process model.
     # We pass the original training inputs (X_train) along with the training outputs (y_train)
     # that include both function values and derivative information.
-    gp = oti_gp(
+    gp = degp(
         X_train,  # Unperturbed training inputs
         y_train,  # Training outputs (function values and derivatives)
         n_order,  # Order of derivative information used

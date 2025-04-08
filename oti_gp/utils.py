@@ -6,6 +6,14 @@ import itertools
 from line_profiler import profile
 
 
+def flatten_der_indices(indices):
+    flattened_indices = []
+    for i in range(0, len(indices)):
+        for j in range(0, len(indices[i])):
+            flattened_indices.append(indices[i][j])
+    return flattened_indices
+
+
 def nrmse(y_true, y_pred, norm_type="minmax"):
     """
     Compute the Normalized Root Mean Squared Error (NRMSE).
