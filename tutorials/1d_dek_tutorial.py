@@ -11,7 +11,7 @@ if __name__ == "__main__":
     # the function (and its derivatives) at those points, and then use them
     # to train our model.
 
-    n_order = 2  # The order of derivative information used by the GP model
+    n_order = 0  # The order of derivative information used by the GP model
     n_bases = 1  # The dimensionality of the function (1D in this demo)
     lb_x = 0.2  # Lower bound for sampling
     ub_x = 6  # Upper bound for sampling
@@ -25,7 +25,7 @@ if __name__ == "__main__":
     # der_indices = [[[[1, 1]]], [[[1, 4]]]]
     # We use 5 points for this simple example. In a real case, choose
     # more or fewer points depending on the function's complexity.
-    num_points = 6
+    num_points = 20
 
     # Create a uniform mesh from lb_x to ub_x
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     # ----- Predict with the GP Model -----
     # This returns both the mean prediction (y_pred) and the covariance (cov)
     y_pred, y_var = gp.predict(
-        X_test, params, calc_cov=True, return_deriv=True
+        X_test, params, calc_cov=True, return_deriv=False
     )
     utils.make_plots(
         X_train,
@@ -92,6 +92,6 @@ if __name__ == "__main__":
         cov=y_var,
         n_order=n_order,
         n_bases=n_bases,
-        plot_derivative_surrogates=True,
+        plot_derivative_surrogates=False,
         der_indices=der_indices,
     )

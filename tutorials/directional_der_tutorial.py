@@ -3,10 +3,10 @@ from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti  # For automatic differentiation using hyper-complex numbers
 import itertools
-from oti_gp import (
-    oti_gp_directional,
-)  # Directional derivative enhanced GP model
-import utils  # Utility functions (e.g., to generate derivative indices, plotting submodels)
+from full_ddegp.ddegp import ddegp
+# Directional derivative enhanced GP model
+# Utility functions (e.g., to generate derivative indices, plotting submodels)
+import utils
 
 # ---------------------------------------------------------------------
 # DEMO: Multi-dimensional Example with Directional Derivatives (2D)
@@ -17,12 +17,13 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # ----- Parameter Setup -----
-    n_order = 4  # Order of directional derivatives to be calculated (up to 4th order)
+    # Order of directional derivatives to be calculated (up to 4th order)
+    n_order = 4
     n_bases = 2  # Dimension of the problem (2D: x₁ and x₂)
-    lb_x = -np.pi  # Lower bound for x₁ (using -π to π covers a full period)
-    ub_x = np.pi  # Upper bound for x₁
-    lb_y = -np.pi  # Lower bound for x₂
-    ub_y = np.pi  # Upper bound for x₂
+    lb_x = -1  # Lower bound for x₁ (using -π to π covers a full period)
+    ub_x = 1  # Upper bound for x₁
+    lb_y = -1  # Lower bound for x₂
+    ub_y = 1  # Upper bound for x₂
 
     # der_indices describes the directional derivative information:
     # For example:
@@ -50,8 +51,8 @@ if __name__ == "__main__":
     num_points = (
         3  # Number of points along each axis (total training points = 3x3 = 9)
     )
-    x_vals = np.linspace(-np.pi, np.pi, num_points)
-    y_vals = np.linspace(-np.pi, np.pi, num_points)
+    x_vals = np.linspace(-1, 1, num_points)
+    y_vals = np.linspace(-1, 1, num_points)
     # Create a grid of 2D training points using the Cartesian product
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
     # Convert the training data to an OTI array to enable automatic differentiation
@@ -62,16 +63,14 @@ if __name__ == "__main__":
     # f(x₁,x₂) = cos(x₁) + cos(x₂) + cos(2*x₁) + cos(2*x₂)
     # This function is chosen due to its periodic behavior and multiple frequency components.
     def true_function(X, alg=oti):
-        f = (
-            alg.cos(X[:, 0])
-            + alg.cos(X[:, 1])
-            + alg.cos(2 * X[:, 0])
-            + alg.cos(2 * X[:, 1])
-        )
+        x1 = X[:, 0]
+        x2 = X[:, 1]
+        f = x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
         return f
 
     # ----- Directional Derivative Setup -----
-    nrays = 3  # Number of directional perturbations (rays) to be used per training point.
+    # Number of directional perturbations (rays) to be used per training point.
+    nrays = 3
     ndim = 2  # Dimensionality of the problem (2D: x₁ and x₂)
     order = n_order  # Set the derivative order for directional perturbations
 
@@ -109,47 +108,35 @@ if __name__ == "__main__":
     # ----- Assemble the Training Output -----
     # Extract the real part (function values) from the hyper-complex output.
     y_train_real = y_train_hc.real
-    y_train = y_train_real
-    # Append the derivative information as specified by der_indices.
+
+    y_train = [y_train_real]
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
-            y_train = np.vstack(
-                (y_train, y_train_hc.get_deriv(der_indices[i][j]))
-            )
-    # Flatten the assembled data into a 1D array for training the GP.
-    y_train = y_train.flatten()
-
-    # Optionally add noise (here sigma_n_true is set to 0.0)
-    sigma_n_true = 0.0000
-    noise = sigma_n_true * np.random.randn(len(y_train))
-    y_train_noisy = y_train + noise
-
-    # ----- GP Model Setup -----
-    # Set fixed hyperparameters.
-    sigma_f = 1.0
-    sigma_n = sigma_n_true  # Matching the noise level used above
+            y_train.append(y_train_hc.get_deriv(
+                der_indices[i][j]).reshape(-1, 1))
+     # Flatten the assembled data into a 1D array for training the GP.
 
     # Create the directional derivative enhanced GP model.
-    gp = oti_gp_directional(
+    gp = ddegp(
         X_train,  # Training inputs
-        y_train,  # Flattened training outputs (function values + directional derivatives)
+        # Flattened training outputs (function values + directional derivatives)
+        y_train,
         n_order,  # Order of directional derivatives used
         n_bases,  # Input dimension (2D)
         der_indices,  # Specification of directional derivatives to include
         rays,  # Array of directional perturbation vectors used to compute derivatives
-        sigma_n=1e-6,  # Noise variance (set very low)
-        nugget=1e-6,  # Nugget for numerical stability
         kernel="SE",  # Squared Exponential kernel
         kernel_type="anisotropic",  # Allow separate length scales per dimension
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance)
-    params = gp.optimize_hyperparameters()
+    params = gp.optimize_hyperparameters(
+        n_restart_optimizer=25, swarm_size=100)
 
     # ----- Generate Test Data for Prediction -----
     N_grid = 40  # Number of test points per axis
-    x_lin = np.linspace(lb_x - 1, ub_x + 1, N_grid)
-    y_lin = np.linspace(lb_y - 1, ub_y + 1, N_grid)
+    x_lin = np.linspace(lb_x, ub_x, N_grid)
+    y_lin = np.linspace(lb_y, ub_y, N_grid)
     X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
     X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
 
