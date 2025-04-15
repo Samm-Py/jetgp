@@ -137,7 +137,7 @@ class degp:
         v = solve(L, K_s)
         f_cov = K_ss - \
             v.T @ v if return_deriv else K_ss[:len(X_test),
-                                              :len(X_test)] - v.T @ v
+                                              :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
 
         # Normalize or return raw covariance
         if self.normalize:
