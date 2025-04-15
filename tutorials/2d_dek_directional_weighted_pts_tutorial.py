@@ -78,42 +78,58 @@ if __name__ == "__main__":
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
+            ]
+        ],
+        [
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 2]],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[2, 1]],
                 [[3, 1]],
-            ],
-            [
-                [[1, 1]],
-                [[2, 1]],
-                [[3, 1]],
-            ],
+            ]
+        ],
+        [
             [
                 [[1, 1]],
                 [[1, 2]],
@@ -123,7 +139,6 @@ if __name__ == "__main__":
                 [[3, 2]],
             ]
         ]
-        for _ in range(len(index))
     ]
     lb_x = -1  # Lower bound for x₁ (using -π to π covers a full period)
     ub_x = 1  # Upper bound for x₁
@@ -155,6 +170,8 @@ if __name__ == "__main__":
         x2 = X[:, 1]
         f = x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
         return f
+
+    y_train_real = true_function(X_train, alg=np)
 
     # ----- Assemble Training Data for Submodels -----
     # The 'index' variable specifies which training points form each submodel.
@@ -215,16 +232,12 @@ if __name__ == "__main__":
 
         # ----- Assemble the Training Output -----
         # Extract the real part (function values) from the hyper-complex output.
-        y_train_real = true_function(X_train, alg=np)
-        y_train = y_train_real.reshape(-1, 1)
-        # Append the derivative information as specified by der_indices.
-        for i in range(len(der_indices[k])):
-            for j in range(len(der_indices[k][i])):
-                y_train = np.vstack(
-                    (y_train, y_train_hc.get_deriv(der_indices[k][i][j]))
-                )
-        # Flatten the assembled data into a 1D array for training the GP.
-        y_train = y_train.flatten()
+        y_train = [y_train_real]
+        # Append derivative information extracted from the hyper-complex outputs.
+        for i in range(0, len(der_indices[k])):
+            for j in range(0, len(der_indices[k][i])):
+                y_train.append(y_train_hc.get_deriv(
+                    der_indices[k][i][j]).reshape(-1, 1))
 
         # Append the processed training output for this submodel.
         y_train_data.append(y_train)
@@ -240,7 +253,7 @@ if __name__ == "__main__":
         index,  # Grouping of training points for submodel construction.
         der_indices,
         rays_data,
-        normalize=False,
+        normalize=True,
         kernel="SE",  # Use Squared Exponential (SE) kernel.
         # Anisotropic kernel (separate length scales per dimension).
         kernel_type="anisotropic",
