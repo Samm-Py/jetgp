@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # ----- Generate Training Data -----
     num_points = (
-        3  # Number of points along each axis (total training points = 3x3 = 9)
+        4  # Number of points along each axis (total training points = 3x3 = 9)
     )
     x_vals = np.linspace(-1, 1, num_points)
     y_vals = np.linspace(-1, 1, num_points)
@@ -70,14 +70,15 @@ if __name__ == "__main__":
 
     # ----- Directional Derivative Setup -----
     # Number of directional perturbations (rays) to be used per training point.
-    nrays = 3
+
     ndim = 2  # Dimensionality of the problem (2D: x₁ and x₂)
     order = n_order  # Set the derivative order for directional perturbations
 
     # Initialize an array to store the directional rays (unit vectors)
 
     # thetas_list provides a list of angles (in radians) for each training point.
-    thetas = [np.pi / 4, np.pi / 2, 3 * np.pi / 4]
+    thetas = [2 * np.pi / i for i in range(1, 4)]
+    nrays = len(thetas)
     rays = np.zeros((ndim, len(thetas)))
 
     # For each training point (indexed by thetas_list), compute the directional perturbations.
@@ -125,6 +126,7 @@ if __name__ == "__main__":
         n_bases,  # Input dimension (2D)
         der_indices,  # Specification of directional derivatives to include
         rays,  # Array of directional perturbation vectors used to compute derivatives
+        normalize=True,
         kernel="SE",  # Squared Exponential kernel
         kernel_type="anisotropic",  # Allow separate length scales per dimension
     )

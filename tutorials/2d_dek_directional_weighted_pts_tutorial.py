@@ -1,11 +1,7 @@
 import numpy as np
 import pyoti.sparse as oti  # For automatic differentiation using hyper-complex numbers
 import itertools
-from oti_gp import (
-    oti_gp_weighted,
-    oti_gp_directional_weighted_pts,
-)  # Weighted derivative-enhanced Gaussian Process class
-
+from wddegp.wddegp import wddegp
 # Utility functions (e.g., generating derivative indices, plotting submodels)
 import utils
 
@@ -18,22 +14,60 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     # ----- Parameter Setup -----
-    n_order = 4  # Use first-order derivative information
+    n_order = 2  # Use first-order derivative information
     n_bases = 2  # The function is two-dimensional (x1 and x2)
     lb_x = (
-        -np.pi / 2
+        -1
     )  # Lower bound for x₁ (using -π to π covers a full period)
-    ub_x = np.pi / 2  # Upper bound for x₁
-    lb_y = -np.pi / 2  # Lower bound for x₂
-    ub_y = np.pi / 2  # Upper bound for x₂
+    ub_x = 1  # Upper bound for x₁
+    lb_y = -1  # Lower bound for x₂
+    ub_y = 1  # Upper bound for x₂
 
     # Number of points along each axis (total training points = num_points^2)
-    num_points = 3
+    num_points = 5
 
     # Generate a grid of training points over the square region.
     x_vals = np.linspace(lb_x, ub_x, num_points)
     y_vals = np.linspace(lb_y, ub_y, num_points)
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
+
+    old_index = [
+        [1, 2, 3],
+        [5, 10, 15],
+        [9, 14, 19],
+        [21, 22, 23],
+        [0],
+        [4],
+        [20],
+        [24],
+        [6, 7, 8, 11, 12, 13, 16, 17, 18]
+    ]
+
+    index = [
+        [0, 1, 2],
+        [3, 4, 5],
+        [6, 7, 8],
+        [9, 10, 11],
+        [12],
+        [13],
+        [14],
+        [15],
+        [16, 17, 18, 19, 20, 21, 22, 23, 24]
+    ]
+
+    # 2) Flatten both
+    old_flat = list(itertools.chain.from_iterable(old_index))
+    new_flat = list(itertools.chain.from_iterable(index))
+
+    # 3) Build reorder array
+    reorder = np.zeros(25, dtype=int)
+    for i in range(25):
+        reorder[new_flat[i]] = old_flat[i]
+
+    # 4) Shuffle X_train
+    X_train = X_train[reorder]
+
+# Now, X_train_shuffled[new_index[g][j]] == X_train[old_index[g][j]]
 
     # Generate indices for all derivatives up to n_order for a function with n_bases dimensions.
     # Note that the derivatives used for each submodel can be different. In this particular case
@@ -42,33 +76,59 @@ if __name__ == "__main__":
         [
             [
                 [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
+                [[2, 1]],
+                [[3, 1]],
+            ],
+            [
+                [[1, 1]],
                 [[1, 2]],
-                [[1, 3]],
-                [[1, 4]],
                 [[2, 1]],
                 [[2, 2]],
-                [[2, 3]],
-                [[2, 4]],
                 [[3, 1]],
                 [[3, 2]],
-                [[3, 3]],
-                [[3, 4]],
-                [[4, 1]],
-                [[4, 2]],
-                [[4, 3]],
-                [[4, 4]],
-                [[5, 1]],
-                [[5, 2]],
-                [[5, 3]],
-                [[5, 4]],
             ]
         ]
-        for _ in range(len(X_train))
+        for _ in range(len(index))
     ]
-    lb_x = -np.pi  # Lower bound for x₁ (using -π to π covers a full period)
-    ub_x = np.pi  # Upper bound for x₁
-    lb_y = -np.pi  # Lower bound for x₂
-    ub_y = np.pi  # Upper bound for x₂
+    lb_x = -1  # Lower bound for x₁ (using -π to π covers a full period)
+    ub_x = 1  # Upper bound for x₁
+    lb_y = -1  # Lower bound for x₂
+    ub_y = 1  # Upper bound for x₂
 
     # To use different derivative information fo each submodel one would supply derivative information as:
     # Below each row corresponds to the derivative information that will be used to construct the submodel corresponding
@@ -91,26 +151,30 @@ if __name__ == "__main__":
     # Define the true function outside of the loop (common for all submodels)
     # Here, f(x1,x2) = sin(pi*x1) + cos(pi*x2)
     def true_function(X, alg=oti):
-        f = (
-            alg.cos(X[:, 0])
-            + alg.cos(X[:, 1])
-            + alg.cos(2 * X[:, 0])
-            + alg.cos(2 * X[:, 1])
-        )
+        x1 = X[:, 0]
+        x2 = X[:, 1]
+        f = x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
         return f
 
     # ----- Assemble Training Data for Submodels -----
     # The 'index' variable specifies which training points form each submodel.
     # For a global model, we require one submodel per training point.
-    index = [[i] for i in range(len(X_train))]
+
     y_train_data = (
         []
     )  # List to hold training outputs (function values + derivatives) for each submodel
     rays_data = []
-    sigma_n_true = 1e-8  # Known noise variance (set very small)
     thetas = [
-        [0.0, np.pi / 6, np.pi / 2, np.pi / 4 + np.pi / 2, np.pi / 4]
-        for _ in range(len(X_train))
+        [-np.pi/2, 0, np.pi/2],
+        [-np.pi, -np.pi/2, 0],
+        [-np.pi, np.pi/2, 0],
+        [-np.pi/2, -np.pi, np.pi/2],
+        [-np.pi/2, 0, -np.pi/4],
+        [np.pi/2, 0, np.pi/4],
+        [np.pi/2, 0, np.pi/4],
+        [-np.pi/2, -np.pi, -np.pi/4 - np.pi/2],
+        [np.pi/2, -np.pi, np.pi/4 + np.pi/2],
+        [np.pi/4, np.pi/2 + np.pi/4, np.pi/2],
     ]
 
     # Loop over each group of indices in 'index'
@@ -162,17 +226,12 @@ if __name__ == "__main__":
         # Flatten the assembled data into a 1D array for training the GP.
         y_train = y_train.flatten()
 
-        # Optionally add noise (here sigma_n_true is set to 0.0)
-        sigma_n_true = 1e-5
-        noise = sigma_n_true * np.random.randn(len(y_train))
-        y_train_noisy = y_train + noise
-
         # Append the processed training output for this submodel.
         y_train_data.append(y_train)
 
     # ----- Weighted Gaussian Process Model Setup -----
     # Create a weighted GP model that handles submodel data.
-    gp = oti_gp_directional_weighted_pts(
+    gp = wddegp(
         X_train,  # Original training inputs.
         # List of training outputs (function values and derivatives) for each submodel.
         y_train_data,
@@ -181,15 +240,15 @@ if __name__ == "__main__":
         index,  # Grouping of training points for submodel construction.
         der_indices,
         rays_data,
-        sigma_n=1e-5,  # Noise variance (set very low).
-        nugget=1e-6,  # Nugget term for numerical stability.
+        normalize=False,
         kernel="SE",  # Use Squared Exponential (SE) kernel.
         # Anisotropic kernel (separate length scales per dimension).
         kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length scales, kernel variance).
-    params = gp.optimize_hyperparameters()
+    params = gp.optimize_hyperparameters(
+        n_restart_optimizer=20, swarm_size=50)
 
     # ----- Generate Test Data for Prediction -----
     N_grid = 25  # Number of test points per axis.

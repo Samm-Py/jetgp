@@ -152,6 +152,17 @@ def transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test):
     return y_var_normalized
 
 
+def transform_cov_directrional(cov, sigma_y, sigmas_x, der_indices, X_test):
+    var = abs(np.diag(cov))
+    y_var_normalized = np.zeros((var.shape[0],))
+    y_var_normalized[0:X_test.shape[0]] = var[0:X_test.shape[0]]*sigma_y**2
+    for i in range(len(der_indices)):
+        factor = sigma_y**2
+        y_var_normalized[(i+1) * X_test.shape[0]: (i+2) * X_test.shape[0]
+                         ] = var[(i+1) * X_test.shape[0]: (i+2) * X_test.shape[0]]*factor
+    return y_var_normalized
+
+
 def transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test):
     y_train_normalized = (
         mu_y + y_pred[0:X_test.shape[0]]*sigma_y).reshape(-1, 1)
@@ -160,6 +171,16 @@ def transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test):
         for j in range(len(der_indices[i])):
             factor = factor / \
                 (sigmas_x[0][der_indices[i][j][0] - 1])**(der_indices[i][j][1])
+        y_train_normalized = np.vstack((y_train_normalized, (y_pred[(
+            i + 1) * X_test.shape[0]: (i + 2) * X_test.shape[0]] * factor[0, 0]).reshape(-1, 1)))
+    return y_train_normalized
+
+
+def transform_predictions_directional(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test):
+    y_train_normalized = (
+        mu_y + y_pred[0:X_test.shape[0]]*sigma_y).reshape(-1, 1)
+    for i in range(len(der_indices)):
+        factor = sigma_y
         y_train_normalized = np.vstack((y_train_normalized, (y_pred[(
             i + 1) * X_test.shape[0]: (i + 2) * X_test.shape[0]] * factor[0, 0]).reshape(-1, 1)))
     return y_train_normalized
@@ -181,6 +202,13 @@ def normalize_x_data_train(X_train):
     return X_train_normalized
 
 
+def normalize_directions(sigmas_x, rays):
+    transformed_rays = np.zeros(rays.shape)
+    for i in range(rays.shape[1]):
+        transformed_rays[:, i] = np.diag(1/sigmas_x.flatten()) @ rays[:, i]
+    return transformed_rays
+
+
 def normalize_y_data(X_train, y_train, der_indices):
     mean_vec_x = np.mean(X_train, axis=0).reshape(1, -1)  # shape: (m, 1)
     std_vec_x = np.std(X_train, axis=0).reshape(1, -1)    # shape: (m, 1)
@@ -196,6 +224,22 @@ def normalize_y_data(X_train, y_train, der_indices):
             factor = factor * \
                 (std_vec_x[0][der_indices[i][j][0] - 1]
                  )**(der_indices[i][j][1])
+        y_train_normalized = np.vstack(
+            (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
+    return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x
+
+
+def normalize_y_data_directional(X_train, y_train, der_indices):
+    mean_vec_x = np.mean(X_train, axis=0).reshape(1, -1)  # shape: (m, 1)
+    std_vec_x = np.std(X_train, axis=0).reshape(1, -1)    # shape: (m, 1)
+
+    mean_vec_y = np.mean(y_train[0], axis=0).reshape(-1, 1)  # shape: (m, 1)
+    std_vec_y = np.std(y_train[0], axis=0).reshape(-1, 1)    # shape: (m, 1)
+
+    y_train_normalized = (y_train[0] - mean_vec_y)/std_vec_y
+
+    for i in range(len(der_indices)):
+        factor = 1/std_vec_y
         y_train_normalized = np.vstack(
             (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x

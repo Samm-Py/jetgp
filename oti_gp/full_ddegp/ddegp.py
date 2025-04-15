@@ -15,7 +15,7 @@ class ddegp:
         n_bases,
         der_indices,
         rays,
-        normalize=False,
+        normalize=True,
         sigma_n=0.0,
         kernel="SE",
         kernel_type="anisotropic",
@@ -35,8 +35,9 @@ class ddegp:
         indices = utils.transform_nested_list(der_indices)
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
         if normalize:
-            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data(
+            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data_directional(
                 x_train, y_train, self.flattened_der_indicies)
+            self.rays = utils.normalize_directions(self.sigmas_x, self.rays)
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.x_train = x_train
@@ -113,7 +114,7 @@ class ddegp:
 
         if self.normalize:
             if return_deriv:
-                f_mean = utils.transform_predictions(
+                f_mean = utils.transform_predictions_directional(
                     f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
                     self.flattened_der_indicies, X_test
                 )
@@ -146,7 +147,7 @@ class ddegp:
         # Normalize or return raw covariance
         if self.normalize:
             if return_deriv:
-                f_var = utils.transform_cov(
+                f_var = utils.transform_cov_directional(
                     f_cov, self.sigma_y, self.sigmas_x,
                     self.flattened_der_indicies, X_test
                 )

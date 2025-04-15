@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 from pyswarm import pso
-from full_degp import degp_utils as utils
+from full_ddegp import ddegp_utils as utils
 
 
 class Optimizer:
