@@ -1,8 +1,7 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 from full_degp import degp_utils
-import utils2 as utils
-from pyswarm import pso
+import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from full_degp.optimizer import Optimizer
 

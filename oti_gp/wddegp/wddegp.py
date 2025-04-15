@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 from wddegp import wddegp_utils as wddegp_utils
-import utils2 as utils
+import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from wddegp.optimizer import Optimizer
 
@@ -123,7 +123,7 @@ class wddegp:
             index_i = self.index[i]
 
             diffs_train_test = wddegp_utils.differences_by_dim_func(
-                self.x_train, X_test, self.rays, self.n_order, index=i, index_list = index_i)
+                self.x_train, X_test, self.rays, self.n_order, index=i, index_list=index_i)
             diffs_train_train = self.differences_by_dim_submodels[i]
 
             # Kernel matrix (train/train) and Cholesky factor
@@ -152,7 +152,7 @@ class wddegp:
             # Predictive covariance (optional)
             if calc_cov:
                 diffs_test_test = wddegp_utils.differences_by_dim_func(
-                    X_test, X_test, self.rays, self.n_order,  index=i, index_list = index_i)
+                    X_test, X_test, self.rays, self.n_order,  index=i, index_list=index_i)
                 K_ss = wddegp_utils.rbf_kernel(
                     diffs_test_test, ell, self.n_order, self.n_bases, self.kernel_func,
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
