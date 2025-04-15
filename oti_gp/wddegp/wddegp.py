@@ -50,7 +50,7 @@ class wddegp:
             self.y_train = []
             self.rays = []
             for k, ders in enumerate(self.der_indices):
-                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data(
+                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data_directional(
                     x_train, y_train[k], self.flattened_der_indicies[k]
                 )
                 rays_norm = utils.normalize_directions(self.sigmas_x, rays[k])
