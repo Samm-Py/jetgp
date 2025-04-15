@@ -1528,8 +1528,8 @@ def make_submodel_plots(
                 # Subplot (a): GP Prediction
                 plt.subplot(1, 2, 1)
                 plt.title(
-                    "Order {0} Enhanced Gaussian Process\nSubmodel {1}, Datapoint {2}".format(
-                        n_order, i + 1, X_train[i]
+                    "Order {0} Enhanced Gaussian Process\nSubmodel {1}, Index Set {2}".format(
+                        n_order, i + 1, i
                     )
                 )
                 # Contour plot of the GP predicted mean
