@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 from wdegp import wdegp_utils as wdegp_utils
-import utils2 as utils
+import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from wdegp.optimizer import Optimizer
 

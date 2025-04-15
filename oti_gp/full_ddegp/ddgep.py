@@ -3,8 +3,6 @@ from numpy.linalg import cholesky, solve
 from scipy.optimize import minimize
 import pyoti.sparse as oti
 import utils
-from line_profiler import profile
-from pyswarm import pso
 from kernel_funcs.kernel_funcs import KernelFactory
 from full_ddegp.optimizer import Optimizer
 
