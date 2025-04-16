@@ -96,3 +96,8 @@ if __name__ == "__main__":
         submodel_vals=submodel_vals,
         submodel_cov=submodel_cov,
     )
+    
+    y_true = true_function(X_test, alg=np)
+    nrmse = utils.nrmse(y_true, y_pred)
+
+    print("NRMSE between model and true function: {}".format(nrmse))
