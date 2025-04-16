@@ -10,29 +10,38 @@ import plotting_helper
 
 
 def true_function(X, alg=oti):
-    """True function with directional structure."""
-    x1, x2 = X[:, 0], X[:, 1]
-    return x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
+    """True 3D polynomial function of degree 4."""
+    x1, x2, x3 = X[:, 0], X[:, 1], X[:, 2]
+    return (
+        x1**2 * x2
+        + x2**2 * x3
+        + x3**2 * x1
+        + x1**2 * x2**2
+    )
 
 
-def generate_rays(order, ndim=2):
+def generate_rays(order):
     """Generate unit vectors (rays) and their hypercomplex perturbations."""
-    thetas = [2 * np.pi / i for i in range(1, 4)]
-    rays = np.column_stack([[np.cos(t), np.sin(t)] for t in thetas])
+    rays = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
     e = [oti.e(i + 1, order=order) for i in range(rays.shape[1])]
     perts = np.dot(rays, e)
-    return rays, perts, thetas
+    return rays, perts
 
 
-def generate_training_data(n_order, n_bases, num_points=4):
+def generate_training_data(n_order, num_points=3):
     x_vals = np.linspace(-1, 1, num_points)
     y_vals = np.linspace(-1, 1, num_points)
-    X_train = np.array(list(itertools.product(x_vals, y_vals)))
+    z_vals = np.linspace(-1, 1, num_points)
+
+    # Cartesian product for 3D grid
+    X_train = np.array(list(itertools.product(x_vals, y_vals, z_vals)))
+
+    # Convert to OTI array for hypercomplex perturbation
     X_train_pert = oti.array(X_train)
 
     # Apply directional perturbations
-    rays, perts, thetas = generate_rays(n_order, ndim=n_bases)
-    for j in range(n_bases):
+    rays, perts = generate_rays(n_order)
+    for j in range(rays.shape[1]):
         X_train_pert[:, j] += perts[j]
 
     y_train_hc = true_function(X_train_pert, alg=oti)
@@ -54,21 +63,20 @@ def generate_training_data(n_order, n_bases, num_points=4):
             y_train.append(y_train_hc.get_deriv(
                 der_indices[i][j]).reshape(-1, 1))
 
-    return X_train, y_train, der_indices, rays, thetas
+    return X_train, y_train, der_indices, rays
 
 
 def main():
     np.random.seed(0)
-    n_order, n_bases = 4, 2
+    n_order = 4
 
-    X_train, y_train, der_indices, rays, thetas = generate_training_data(
-        n_order, n_bases)
+    X_train, y_train, der_indices, rays = generate_training_data(
+        n_order)
 
     gp = ddegp(
         X_train,
         y_train,
         n_order=n_order,
-        n_bases=n_bases,
         der_indices=der_indices,
         rays=rays,
         normalize=True,
@@ -77,17 +85,23 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=100, verbose=True)
+        n_restart_optimizer=15, swarm_size=50, verbose=True)
 
-    # Test data grid
-    N_grid = 40
-    x_lin = np.linspace(-1, 1, N_grid)
-    y_lin = np.linspace(-1, 1, N_grid)
-    X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
-    X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
+    # 2D grid for x1 and x2
+    N_grid = 20
+    x1_lin = np.linspace(-1, 1, N_grid)
+    x2_lin = np.linspace(-1, 1, N_grid)
+    X1_grid, X2_grid = np.meshgrid(x1_lin, x2_lin)
+
+    # Fixed x3 value
+    x3_fixed = 0.5
+
+    # Flatten and stack with fixed x3
+    X_test = np.column_stack(
+        [X1_grid.ravel(), X2_grid.ravel(), np.full(X1_grid.size, x3_fixed)])
 
     # Predict with directional derivatives
-    y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=True)
+    y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=False)
 
     plotting_helper.make_plots(
         X_train,
@@ -98,10 +112,14 @@ def main():
         X1_grid=X1_grid,
         X2_grid=X2_grid,
         n_order=n_order,
-        n_bases=n_bases,
         plot_derivative_surrogates=False,
         der_indices=der_indices,
     )
+
+    y_true = true_function(X_test, alg=np).flatten()
+    nrmse = utils.nrmse(y_true, y_pred)
+
+    print("NRMSE between model and true function: {}".format(nrmse))
 
 
 if __name__ == "__main__":

@@ -21,18 +21,22 @@ def generate_rays(order, ndim=2):
     rays = np.column_stack([[np.cos(t), np.sin(t)] for t in thetas])
     e = [oti.e(i + 1, order=order) for i in range(rays.shape[1])]
     perts = np.dot(rays, e)
-    return rays, perts, thetas
+    return rays, perts
 
 
-def generate_training_data(n_order, n_bases, num_points=4):
+def generate_training_data(n_order, num_points=4):
     x_vals = np.linspace(-1, 1, num_points)
     y_vals = np.linspace(-1, 1, num_points)
+
+    # Cartesian product for 3D grid
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
+
+    # Convert to OTI array for hypercomplex perturbation
     X_train_pert = oti.array(X_train)
 
     # Apply directional perturbations
-    rays, perts, thetas = generate_rays(n_order, ndim=n_bases)
-    for j in range(n_bases):
+    rays, perts = generate_rays(n_order)
+    for j in range(rays.shape[0]):
         X_train_pert[:, j] += perts[j]
 
     y_train_hc = true_function(X_train_pert, alg=oti)
@@ -54,21 +58,20 @@ def generate_training_data(n_order, n_bases, num_points=4):
             y_train.append(y_train_hc.get_deriv(
                 der_indices[i][j]).reshape(-1, 1))
 
-    return X_train, y_train, der_indices, rays, thetas
+    return X_train, y_train, der_indices, rays
 
 
 def main():
     np.random.seed(0)
-    n_order, n_bases = 4, 2
+    n_order = 4
 
-    X_train, y_train, der_indices, rays, thetas = generate_training_data(
-        n_order, n_bases)
+    X_train, y_train, der_indices, rays = generate_training_data(
+        n_order)
 
     gp = ddegp(
         X_train,
         y_train,
         n_order=n_order,
-        n_bases=n_bases,
         der_indices=der_indices,
         rays=rays,
         normalize=True,
@@ -77,7 +80,7 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=100, verbose=True)
+        n_restart_optimizer=15, swarm_size=50, verbose=True)
 
     # Test data grid
     N_grid = 40
@@ -98,10 +101,14 @@ def main():
         X1_grid=X1_grid,
         X2_grid=X2_grid,
         n_order=n_order,
-        n_bases=n_bases,
         plot_derivative_surrogates=False,
         der_indices=der_indices,
     )
+
+    y_true = true_function(X_test, alg=np).flatten()
+    nrmse = utils.nrmse(y_true, y_pred)
+
+    print("NRMSE between model and true function: {}".format(nrmse))
 
 
 if __name__ == "__main__":
