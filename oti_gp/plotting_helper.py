@@ -666,7 +666,7 @@ def make_submodel_plots(
             # the original function values (as opposed to the stacked derivative entries).
             plt.scatter(
                 X_train,
-                y_train[0][: X_train.shape[0]],
+                y_train[0][0][: X_train.shape[0]],
                 color="k",
                 label="Training points",
             )
@@ -704,15 +704,8 @@ def make_submodel_plots(
                 )
             )
             plt.show()
-            rmse = np.sqrt(
-                np.mean(
-                    (y_pred[: X_test.shape[0]] - true_values.flatten()) ** 2
-                )
-            )
-            print("RMSE between model and true function: {}".format(rmse))
 
             for i in range(0, len(submodel_vals)):
-                sigma = np.sqrt(submodel_cov[i])
                 y_pred = submodel_vals[i]
                 plt.figure(i + 1, figsize=(12, 6))
                 plt.plot(
@@ -726,7 +719,7 @@ def make_submodel_plots(
                 # the original function values (as opposed to the stacked derivative entries).
                 plt.scatter(
                     X_train,
-                    y_train[0][: X_train.shape[0]],
+                    y_train[0][0][: X_train.shape[0]],
                     color="k",
                     label="Training points",
                 )
@@ -823,9 +816,6 @@ def make_submodel_plots(
             # ----- Performance Evaluation -----
             # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
             nrmse_vals = nrmse(true_values, f_mean_2d)
-            print(
-                "NRMSE between model and true function: {}".format(nrmse_vals)
-            )
 
             for i in range(0, len(submodel_vals)):
                 sigma = np.sqrt(abs(np.diag(submodel_cov[i])))
