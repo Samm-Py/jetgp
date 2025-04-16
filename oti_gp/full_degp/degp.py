@@ -15,7 +15,7 @@ class degp:
         n_bases,
         der_indices,
         normalize=True,
-        sigma_n=0.0,
+        sigma_n=None,
         kernel="SE",
         kernel_type="anisotropic",
     ):
@@ -44,9 +44,10 @@ class degp:
             self.x_train, self.x_train, n_order
         )
         self.kernel_factory = KernelFactory(
-            dim=self.dim,
-            normalize=self.normalize,
-            differences_by_dim=self.differences_by_dim
+            dim=n_bases,
+            normalize=True,
+            differences_by_dim=self.differences_by_dim,
+            true_noise_std=sigma_n  # <-- Based on the noise you injected into training data
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
