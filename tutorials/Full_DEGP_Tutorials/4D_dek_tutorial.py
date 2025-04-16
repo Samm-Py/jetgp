@@ -1,73 +1,9 @@
 import numpy as np
-import pyoti.sparse as oti  # Library for automatic differentiation using hyper-complex numbers
+# Library for automatic differentiation using hyper-complex numbers
+import pyoti.sparse as oti
 from oti_gp import oti_gp  # Derivative-enhanced Gaussian Process class
 import utils  # Utility functions, including one to generate derivative indices
 import modules.sobol as sb
-import modules.lhs as lhs
-import pickle
-
-
-# Zhis function will generate random samples for parameters.
-# Zhese samples will be used for MC simulation
-def scale_samples(samples, lower_bounds, upper_bounds):
-    """
-    Scale each column of samples from [0, 1] to [lb_j, ub_j].
-
-    Parameters:
-        samples (ndarray): A (d, n) array of samples in [0, 1]^n.
-        lower_bounds (array-like): Length-n array of lower bounds.
-        upper_bounds (array-like): Length-n array of upper bounds.
-
-    Returns:
-        ndarray: A (d, n) array with each column scaled to its corresponding bounds.
-    """
-    samples = np.asarray(samples)
-    lower_bounds = np.asarray(lower_bounds)
-    upper_bounds = np.asarray(upper_bounds)
-
-    # Ensure correct shapes
-    assert (
-        samples.shape[1] == len(lower_bounds) == len(upper_bounds)
-    ), "Dimension mismatch between samples and bounds"
-
-    # Reshape bounds to broadcast across rows
-    lb = lower_bounds[np.newaxis, :]
-    ub = upper_bounds[np.newaxis, :]
-
-    return lb + samples * (ub - lb)
-
-
-def nrmse(y_true, y_pred, norm_type="minmax"):
-    """
-    Compute the Normalized Root Mean Squared Error (NRMSE).
-
-    Parameters:
-        y_true (array-like): Ground truth values.
-        y_pred (array-like): Predicted values.
-        norm_type (str): Normalization type:
-                         - 'minmax': divide by (max - min) of y_true
-                         - 'mean': divide by mean of y_true
-                         - 'std': divide by standard deviation of y_true
-
-    Returns:
-        float: NRMSE value.
-    """
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
-
-    mse = np.mean((y_true - y_pred) ** 2)
-    rmse = np.sqrt(mse)
-
-    if norm_type == "minmax":
-        norm = np.max(y_true) - np.min(y_true)
-    elif norm_type == "mean":
-        norm = np.mean(y_true)
-    elif norm_type == "std":
-        norm = np.std(y_true)
-    else:
-        raise ValueError("norm_type must be 'minmax', 'mean', or 'std'")
-
-    return rmse / norm if norm != 0 else np.inf
 
 
 if __name__ == "__main__":
@@ -83,7 +19,7 @@ if __name__ == "__main__":
     lower_bounds = [-2.048 for i in range(4)]
     upper_bounds = [2.048 for i in range(4)]
 
-    X_test = scale_samples(quasi, lower_bounds, upper_bounds)
+    X_test = utils.scale_samples(quasi, lower_bounds, upper_bounds)
 
     def true_function(X, alg=oti):
         x1 = X[:, 0]
@@ -131,7 +67,7 @@ if __name__ == "__main__":
     lower_bounds = [-2.048 for i in range(4)]
     upper_bounds = [2.048 for i in range(4)]
 
-    X_train = scale_samples(quasi, lower_bounds, upper_bounds)
+    X_train = utils.scale_samples(quasi, lower_bounds, upper_bounds)
 
     # Convert training data to an OTI array that supports derivative tracking
     X_train_pert = oti.array(X_train)
@@ -174,7 +110,8 @@ if __name__ == "__main__":
         n_bases,  # Dimensionality of the input space
         der_indices,  # List of which derivatives to include
         kernel="SE",  # Kernel choice: Rational Quadratic (RQ) kernel
-        kernel_type="anisotropic",  # Anisotropic kernel to allow different length-scales per dimension
+        # Anisotropic kernel to allow different length-scales per dimension
+        kernel_type="anisotropic",
     )
 
     # Optimize the GP hyperparameters (e.g., length-scales, kernel variance) by maximizing the likelihood

@@ -8,7 +8,7 @@ import  numpy as np
 cimport numpy as np
 cimport libc.math as cmath # Import c- math libraries.
 import math 
-from Sequences.sobol_constants import DIM_MAX, LOG_MAX, POLY, SOURCE_SAMPLES
+from SOBOL_SEQUENCES import DIM_MAX, LOG_MAX, POLY, SOURCE_SAMPLES
 from cython.parallel import prange
 cimport openmp
 @cython.boundscheck(False)

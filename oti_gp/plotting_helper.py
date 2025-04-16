@@ -135,71 +135,52 @@ def make_plots(
 
             # ----- Plotting the Results -----
             # Create a figure with two subplots: one for the GP prediction and one for the true function.
-            plt.figure(figsize=(8, 6))
-            plt.rcParams.update({"font.size": 12})
+            plt.figure(0, figsize=(12, 6))
 
             # Subplot (a): GP Prediction
-            vmin = min(f_mean_2d.min(), true_values.min())
-            vmax = max(f_mean_2d.max(), true_values.max())
-            # plt.subplot(1, 2, 1)
-            # plt.title(
-            #     "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
-            #         n_order
-            #     )
-            # )
-            # Contour plot of the GP predicted mean
-            # plt.subplot(1, 2, 1)
-            contour1 = plt.contourf(
-                X1_grid,
-                X2_grid,
-                f_mean_2d,
-                levels=50,
-                cmap="viridis",
-                vmin=vmin,
-                vmax=vmax,
+            plt.subplot(1, 2, 1)
+            plt.title(
+                "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
+                    n_order
+                )
             )
-            plt.colorbar(contour1)
+            # Contour plot of the GP predicted mean
+            plt.contourf(
+                X1_grid, X2_grid, f_mean_2d, levels=50, cmap="viridis"
+            )
+            plt.colorbar()
+            # Overlay the training points on the prediction plot
             plt.scatter(
-                X_filtered[:, 0],
-                X_filtered[:, 1],
+                X_train[:, 0],
+                X_train[:, 1],
                 c="white",
                 edgecolors="k",
                 label="Train pts",
             )
-            # plt.xlabel("X1")
-            # plt.ylabel("X2")
-            plt.xticks([])  # no x ticks
-            plt.yticks([])  # no y ticks
-            # plt.legend()
+            plt.xlabel("X1")
+            plt.ylabel("X2")
+            plt.legend()
             plt.tight_layout(pad=2.0)
 
-            # # Subplot (b)
-            # plt.subplot(1, 2, 2)
-            # plt.title("True Function", fontsize=12)
-            # contour2 = plt.contourf(
-            #     X1_grid,
-            #     X2_grid,
-            #     true_values,
-            #     levels=25,
-            #     cmap="viridis",
-            #     vmin=vmin,
-            #     vmax=vmax,
-            # )
-            # plt.colorbar(contour2)
-            # # Overlay the training points on the prediction plot
-            # plt.scatter(
-            #     X_filtered[:, 0], X_filtered[:, 1], c="white", edgecolors="k"
-            # )
-            # plt.xticks([])  # no x ticks
-            # plt.yticks([])  # no y ticks
-            # plt.show()
+            # Subplot (b): True Function
+            plt.subplot(1, 2, 2)
+            title_str = r"True Function"
+            plt.title(title_str, fontsize=12)
+            # Contour plot of the true function values
+            plt.contourf(
+                X1_grid, X2_grid, true_values, levels=50, cmap="viridis"
+            )
+            plt.colorbar()
+            # Overlay the training points on the true function plot
+            plt.scatter(
+                X_train[:, 0], X_train[:, 1], c="white", edgecolors="k"
+            )
+            plt.xlabel("X1")
+            plt.ylabel("X2")
+            plt.show()
 
-            # plt.tight_layout(pad=2.0)
+            plt.tight_layout(pad=2.0)
 
-            # ----- Performance Evaluation -----
-            # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
-            rmse = np.sqrt(np.mean((f_mean_2d - true_values) ** 2))
-            print("RMSE between model and true function: {}".format(rmse))
     else:
         sigma = np.sqrt(cov)
 
@@ -260,13 +241,6 @@ def make_plots(
                 )
             )
             plt.show()
-
-            rmse = np.sqrt(
-                np.mean(
-                    (y_pred[: X_test.shape[0]] - true_values.flatten()) ** 2
-                )
-            )
-            print("RMSE between model and true function: {}".format(rmse))
 
             # Plot the true function (using the non-OTI version of exp, sin, cos, etc.)
             for i in range(len(der_indices)):

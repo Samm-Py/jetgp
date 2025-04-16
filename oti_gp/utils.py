@@ -2,6 +2,34 @@ import numpy as np
 import pyoti.core as coti
 
 
+def scale_samples(samples, lower_bounds, upper_bounds):
+    """
+    Scale each column of samples from [0, 1] to [lb_j, ub_j].
+
+    Parameters:
+        samples (ndarray): A (d, n) array of samples in [0, 1]^n.
+        lower_bounds (array-like): Length-n array of lower bounds.
+        upper_bounds (array-like): Length-n array of upper bounds.
+
+    Returns:
+        ndarray: A (d, n) array with each column scaled to its corresponding bounds.
+    """
+    samples = np.asarray(samples)
+    lower_bounds = np.asarray(lower_bounds)
+    upper_bounds = np.asarray(upper_bounds)
+
+    # Ensure correct shapes
+    assert (
+        samples.shape[1] == len(lower_bounds) == len(upper_bounds)
+    ), "Dimension mismatch between samples and bounds"
+
+    # Reshape bounds to broadcast across rows
+    lb = lower_bounds[np.newaxis, :]
+    ub = upper_bounds[np.newaxis, :]
+
+    return lb + samples * (ub - lb)
+
+
 def flatten_der_indices(indices):
     flattened_indices = []
     for i in range(0, len(indices)):
