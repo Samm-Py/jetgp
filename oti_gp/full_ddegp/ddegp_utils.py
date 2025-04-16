@@ -39,7 +39,6 @@ def rbf_kernel(
     differences,
     length_scales,
     n_order,
-    n_bases,
     kernel_func,
     der_indices,
     powers,

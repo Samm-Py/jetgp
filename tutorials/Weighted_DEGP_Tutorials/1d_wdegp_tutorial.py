@@ -70,7 +70,7 @@ if __name__ == "__main__":
     # Hyperparameter optimization
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=25,
-        swarm_size=200
+        swarm_size=100
     )
 
     # Generate test inputs and make predictions
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         submodel_vals=submodel_vals,
         submodel_cov=submodel_cov,
     )
-    
+
     y_true = true_function(X_test, alg=np)
     nrmse = utils.nrmse(y_true, y_pred)
 

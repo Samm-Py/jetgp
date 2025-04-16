@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
-import utils2 as utils
+import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from full_ddegp.optimizer import Optimizer
 from full_ddegp import ddegp_utils
@@ -12,7 +12,6 @@ class ddegp:
         x_train,
         y_train,
         n_order,
-        n_bases,
         der_indices,
         rays,
         normalize=True,
@@ -24,7 +23,6 @@ class ddegp:
         self.y_train = y_train
         self.sigma_n = sigma_n
         self.n_order = n_order
-        self.n_bases = n_bases
         self.rays = rays
         self.n_rays = rays.shape[1]
         self.dim = x_train.shape[1]
@@ -81,7 +79,6 @@ class ddegp:
             self.differences_by_dim,
             length_scales,
             self.n_order,
-            self.n_bases,
             self.kernel_func,
             self.flattened_der_indicies,
             self.powers
@@ -102,7 +99,6 @@ class ddegp:
             diff_x_test_x_train,
             length_scales,
             self.n_order,
-            self.n_bases,
             self.kernel_func,
             self.flattened_der_indicies,
             self.powers
@@ -133,7 +129,6 @@ class ddegp:
             diff_x_test_x_test,
             length_scales,
             self.n_order,
-            self.n_bases,
             self.kernel_func,
             self.flattened_der_indicies,
             self.powers

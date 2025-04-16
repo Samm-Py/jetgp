@@ -22,7 +22,6 @@ class Optimizer:
             self.model.differences_by_dim,
             ell,
             self.model.n_order,
-            self.model.n_bases,
             self.model.kernel_func,
             self.model.flattened_der_indicies,
             self.model.powers
@@ -45,7 +44,7 @@ class Optimizer:
     def nll_wrapper(self, x0):
         return self.negative_log_marginal_likelihood(x0)
 
-    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20):
+    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
         bounds = self.model.bounds
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
@@ -56,7 +55,7 @@ class Optimizer:
             ub,
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
-            debug=False,
+            debug=verbose,
             minfunc=1e-8,
         )
 
