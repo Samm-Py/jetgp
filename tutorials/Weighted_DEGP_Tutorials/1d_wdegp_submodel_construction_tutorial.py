@@ -1,10 +1,15 @@
+
 """
 --------------------------------------------------------------------------------
 This script demonstrates a weighted, derivative-enhanced Gaussian Process (GP)
-model using pyOTI-based automatic differentiation. Each training point forms its
-own submodel, and all submodels use the same full set of directional derivatives
-up to a specified order. The final prediction is obtained by combining these
-submodels through a weighted GP framework.
+model using pyOTI-based automatic differentiation. Here, m submodels are built
+from n training points (with m < n). Each submodel aggregates multiple points,
+and all submodels use the same full set of derivatives up to a 
+specified order. Submodels are combined using a weighted GP framework.
+
+Note:
+- In the current implementation, **repetition of points across submodels is not supported**.
+  Each training point should be assigned to one and only one submodel.
 --------------------------------------------------------------------------------
 """
 
@@ -26,35 +31,36 @@ if __name__ == "__main__":
     lb_x, ub_x = 0.5, 2.5
     num_points = 10
 
-    # Create training inputs and define submodel structure (1 point per submodel)
+    # Create training inputs
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
-    index = [[i] for i in range(num_points)]
 
-    # Each submodel uses the same full derivative index structure
+    # Define 2 submodels using grouped training points
+    index = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
+
+    # All submodels use the same full derivative structure
     base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
-    der_indices = [base_der_indices for _ in range(num_points)]
+    der_indices = [base_der_indices for _ in index]
 
-    # Construct training data for each submodel
+    # Assemble training data for each submodel
     y_train_data = []
-    y_train_real = true_function(X_train, alg=np)
+    y_real = true_function(X_train, alg=np)
     for k, val in enumerate(index):
-        X_train_pert = oti.array(X_train[val])
+        X_sub = oti.array(X_train[val])
         for i in range(n_bases):
-            for j in range(X_train_pert.shape[0]):
-                X_train_pert[j, i] += oti.e(i + 1, order=n_order)
+            for j in range(X_sub.shape[0]):
+                X_sub[j, i] += oti.e(i + 1, order=n_order)
 
-        y_train_hc = oti.array([true_function(x, alg=oti)
-                               for x in X_train_pert])
-        y_train = [y_train_real]
+        y_hc = oti.array([true_function(x, alg=oti) for x in X_sub])
+
+        y_sub = [y_real]
         for i in range(len(base_der_indices)):
             for j in range(len(base_der_indices[i])):
-                deriv = y_train_hc.get_deriv(
-                    base_der_indices[i][j]).reshape(-1, 1)
-                y_train.append(deriv)
+                deriv = y_hc.get_deriv(base_der_indices[i][j]).reshape(-1, 1)
+                y_sub.append(deriv)
 
-        y_train_data.append(y_train)
+        y_train_data.append(y_sub)
 
-    # Create weighted GP model
+    # Build the weighted GP model
     gp = wdegp(
         X_train,
         y_train_data,
@@ -67,13 +73,13 @@ if __name__ == "__main__":
         kernel_type="anisotropic",
     )
 
-    # Hyperparameter optimization
+    # Optimize hyperparameters
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=25,
         swarm_size=200
     )
 
-    # Generate test inputs and make predictions
+    # Generate test inputs and predict
     X_test = np.linspace(lb_x, ub_x, 250).reshape(-1, 1)
     y_pred, y_cov, submodel_vals, submodel_cov = gp.predict(
         X_test,
@@ -82,7 +88,7 @@ if __name__ == "__main__":
         return_submodels=True
     )
 
-    # Plot predictions and submodel contributions
+    # Plot results
     plotting_helper.make_submodel_plots(
         X_train,
         y_train_data,
