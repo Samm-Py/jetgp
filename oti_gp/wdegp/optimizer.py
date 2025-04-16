@@ -68,7 +68,7 @@ class Optimizer:
             self.model.index,
         )
 
-    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20):
+    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
         bounds = self.model.bounds
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
@@ -80,7 +80,7 @@ class Optimizer:
             ub,
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
-            debug=False,
+            debug=verbose,
         )
 
         # Optionally: store results
