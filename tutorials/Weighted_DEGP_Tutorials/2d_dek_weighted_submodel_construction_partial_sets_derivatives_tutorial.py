@@ -1,12 +1,18 @@
-"""
+'''
 --------------------------------------------------------------------------------
 This script demonstrates a weighted, derivative-enhanced Gaussian Process (GP)
-model using pyOTI-based automatic differentiation in 2D. Each of the `num_points`
-training points is used to construct its own submodel. Every submodel uses the
-full set of derivatives up to a user-specified order. Submodel predictions are
-combined using a weighted GP framework.
+model using pyOTI-based automatic differentiation in 2D. This example shows how
+submodels can be constructed from **multiple training points**. Each submodel may
+use a different set of  derivatives depending on local behavior. Since
+the weighted GP framework requires numerically ordered training indices, we remap
+the desired point groupings to an ordered index before model construction.
+
+Note:
+- Submodels near the domain boundary use only first-order derivatives.
+- Interior submodels use full derivatives up to the specified order.
+- **Repetition of points across submodels is not currently supported**.
 --------------------------------------------------------------------------------
-"""
+'''
 
 import numpy as np
 import pyoti.sparse as oti
@@ -18,7 +24,7 @@ import plotting_helper
 if __name__ == "__main__":
     np.random.seed(0)
 
-    n_order = 3
+    n_order = 4
     n_bases = 2
     lb_x, ub_x = -1, 1
     lb_y, ub_y = -1, 1
@@ -28,9 +34,43 @@ if __name__ == "__main__":
     y_vals = np.linspace(lb_y, ub_y, num_points)
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
 
-    index = [[i] for i in range(len(X_train))]
-    base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
-    der_indices = [base_der_indices for _ in index]
+    old_index = [
+        [1, 2],
+        [4, 8],
+        [7, 11],
+        [13, 14],
+        [0],
+        [3],
+        [12],
+        [15],
+        [5, 6, 9, 10]  # Interior submodel
+    ]
+
+    index = [
+        [0, 1],
+        [2, 3],
+        [4, 5],
+        [6, 7],
+        [8],
+        [9],
+        [10],
+        [11],
+        [12, 13, 14, 15]
+    ]
+
+    old_flat = list(itertools.chain.from_iterable(old_index))
+    new_flat = list(itertools.chain.from_iterable(index))
+    reorder = np.zeros(num_points**2, dtype=int)
+    for i in range(num_points**2):
+        reorder[new_flat[i]] = old_flat[i]
+
+    X_train = X_train[reorder]
+
+    der_indices = [
+        utils.gen_OTI_indices(n_bases, 1) for _ in range(len(index) - 1)
+    ]
+
+    der_indices.append(utils.gen_OTI_indices(2, 3))
 
     def true_function(X, alg=oti):
         x1 = X[:, 0]
@@ -50,13 +90,11 @@ if __name__ == "__main__":
                 X_sub[j, i] += oti.e(i + 1, order=n_order)
 
         y_hc = oti.array([true_function(x, alg=oti) for x in X_sub])
-        y_real = true_function(X_train, alg=np)
-
         y_sub = [y_real]
-        for i in range(len(base_der_indices)):
-            for j in range(len(base_der_indices[i])):
+        for i in range(len(der_indices[k])):
+            for j in range(len(der_indices[k][i])):
                 y_sub.append(y_hc.get_deriv(
-                    base_der_indices[i][j]).reshape(-1, 1))
+                    der_indices[k][i][j]).reshape(-1, 1))
 
         y_train_data.append(y_sub)
 
@@ -100,5 +138,4 @@ if __name__ == "__main__":
 
     y_true = true_function(X_test, alg=np)
     nrmse = utils.nrmse(y_true, y_pred)
-
     print("NRMSE between model and true function: {}".format(nrmse))

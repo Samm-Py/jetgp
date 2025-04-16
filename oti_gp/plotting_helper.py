@@ -587,7 +587,6 @@ def make_submodel_plots(
                         ** 2
                     )
                 )
-                print("RMSE between model and true function: {}".format(rmse))
         else:
             # Reshape the predicted mean back into a 2D grid for contour plotting.
             N_grid = X1_grid.shape[0]
@@ -647,8 +646,6 @@ def make_submodel_plots(
 
             # ----- Performance Evaluation -----
             # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
-            rmse = np.sqrt(np.mean((f_mean_2d - true_values) ** 2))
-            print("RMSE between model and true function: {}".format(rmse))
     else:
         sigma = np.sqrt(cov)
 
@@ -815,7 +812,6 @@ def make_submodel_plots(
 
             # ----- Performance Evaluation -----
             # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
-            nrmse_vals = nrmse(true_values, f_mean_2d)
 
             for i in range(0, len(submodel_vals)):
                 sigma = np.sqrt(abs(np.diag(submodel_cov[i])))
