@@ -28,7 +28,8 @@ if __name__ == "__main__":
     # Only include main directional derivatives up to second order for x₁, x₂, x₃
     der_indices = [
         [[[1, 1]], [[2, 1]], [[3, 1]], [[4, 1]]],   # ∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃
-        [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],   # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃²
+        # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃²
+        [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],
     ]
 
     # ----- Define True Function -----
@@ -69,7 +70,8 @@ if __name__ == "__main__":
     # ----- Hyperparameter Optimization -----
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=10,
-        swarm_size=25
+        swarm_size=25,
+        verbose=True
     )
 
     # ----- Generate 2D Slice Test Data (x₁-x₂ plane) -----
