@@ -99,7 +99,7 @@ if __name__ == "__main__":
     # The returned 'params' contains the final best hyperparameter values found.
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=25,
-        swarm_size=500
+        swarm_size=100
     )
 
     # Create a grid of test points for prediction
@@ -111,16 +111,29 @@ if __name__ == "__main__":
         X_test, params, calc_cov=True, return_deriv=False
     )
 
-    # Plot the results
-    plotting_helper.make_plots(
-        X_train,
-        y_train,
-        X_test,
-        y_pred.flatten(),
-        true_function,
-        cov=y_var,
-        n_order=n_order,
-        n_bases=n_bases,
-        plot_derivative_surrogates=False,
-        der_indices=der_indices,
-    )
+
+# Generate and display plots of the GP training data and predictions.
+# - X_train, y_train: the training inputs and observed function/derivative values.
+# - X_test, y_pred: the test inputs and predicted function values from the GP.
+# - true_function: the actual function used for data generation (for reference in the plot).
+# - cov=y_var: the predictive variance for plotting confidence intervals.
+# - n_order, n_bases, and der_indices inform the plotting routine about the derivative orders.
+# - plot_derivative_surrogates controls whether the GP’s derivative predictions are also plotted.
+plotting_helper.make_plots(
+    X_train,
+    y_train,
+    X_test,
+    y_pred.flatten(),
+    true_function,
+    cov=y_var,
+    n_order=n_order,
+    n_bases=n_bases,
+    # Set to True to visualize derivative predictions
+    plot_derivative_surrogates=False,
+    der_indices=der_indices,
+)
+
+y_true = true_function(X_test, alg=np)
+nrmse = utils.nrmse(y_true, y_pred)
+
+print("NRMSE between model and true function: {}".format(nrmse))

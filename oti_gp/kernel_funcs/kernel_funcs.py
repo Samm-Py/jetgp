@@ -1,14 +1,24 @@
-# kernel_funcs.py
-
 import numpy as np
 import pyoti.sparse as oti
 
 
+def adjust_sigma_n_bound(base_bounds, true_noise_std=None, cushion=.5):
+    """
+    Adjust the log10 bounds of sigma_n based on known noise in the data.
+    """
+    lower, upper = base_bounds
+    if true_noise_std is not None:
+        log_sigma = np.log10(true_noise_std)
+        return (log_sigma - cushion, log_sigma + cushion)
+    return base_bounds
+
+
 class KernelFactory:
-    def __init__(self, dim, normalize, differences_by_dim):
+    def __init__(self, dim, normalize, differences_by_dim, true_noise_std=None):
         self.dim = dim
         self.normalize = normalize
         self.differences_by_dim = differences_by_dim
+        self.true_noise_std = true_noise_std  # Optional true noise info
         self.bounds = []
 
     def get_bounds_from_data(self):
@@ -30,19 +40,28 @@ class KernelFactory:
             raise ValueError("Invalid kernel_type")
 
     def _create_anisotropic(self, kernel):
+        base_sigma_n_bound = (-16, -3)
+        sigma_n_bound = adjust_sigma_n_bound(
+            base_sigma_n_bound, self.true_noise_std)
+
         if kernel == "SE":
-            self._add_bounds([(-1, 3), (-16, -3)])
+            self._add_bounds([(-1, 3), sigma_n_bound])
             return self.se_kernel_anisotropic
         elif kernel == "RQ":
-            self._add_bounds([(0, 10), (-9, 6), (-16, -3)])
+            self._add_bounds([(0, 10), (-9, 6), sigma_n_bound])
             return self.rq_kernel_anisotropic
         elif kernel == "SineExp":
-            self._add_bounds([(0.0, 1e2)] * self.dim + [(-9, 5), (-16, -3)])
+            self._add_bounds([(0.0, 1e2)] * self.dim +
+                             [(-9, 5), sigma_n_bound])
             return self.sine_exp_kernel_anisotropic
         else:
             raise NotImplementedError("Anisotropic kernel not implemented")
 
     def _create_isotropic(self, kernel):
+        base_sigma_n_bound = (-16, -3)
+        sigma_n_bound = adjust_sigma_n_bound(
+            base_sigma_n_bound, self.true_noise_std)
+
         if self.normalize:
             core_bounds = [(-3, 3)]
         else:
@@ -53,13 +72,13 @@ class KernelFactory:
             )]
 
         if kernel == "SE":
-            self.bounds = core_bounds + [(-1, 3), (-16, -3)]
+            self.bounds = core_bounds + [(-1, 3), sigma_n_bound]
             return self.se_kernel_isotropic
         elif kernel == "RQ":
-            self.bounds = core_bounds + [(0, 10), (-9, 6), (-16, -3)]
+            self.bounds = core_bounds + [(0, 10), (-9, 6), sigma_n_bound]
             return self.rq_kernel_isotropic
         elif kernel == "SineExp":
-            self.bounds = core_bounds + [(0.0, 1e2), (-9, 4), (-16, -3)]
+            self.bounds = core_bounds + [(0.0, 1e2), (-9, 4), sigma_n_bound]
             return self.sine_exp_kernel_isotropic
         else:
             raise NotImplementedError("Isotropic kernel not implemented")
@@ -91,8 +110,8 @@ class KernelFactory:
         ell = 10 ** (length_scales[:self.dim])
         p = length_scales[self.dim:-1]
         sigma_f = length_scales[-1]
-        sqdist = 1 + sum((ell[i] * oti.sin((np.pi / p[i]) *
-                         differences_by_dim[i])) ** 2 for i in range(self.dim))
+        sqdist = 1 + sum((ell[i] * oti.sin((np.pi / p[i]) * differences_by_dim[i])) ** 2
+                         for i in range(self.dim))
         return (10 ** sigma_f) ** 2 * oti.exp(-2 * sqdist)
 
     def se_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
@@ -114,6 +133,6 @@ class KernelFactory:
         ell = 10 ** length_scales[0]
         p = length_scales[1]
         sigma_f = length_scales[-1]
-        sqdist = sum((ell ** 2 * oti.sin(np.pi *
-                     differences_by_dim[i] / p)) ** 2 for i in range(self.dim))
+        sqdist = sum((ell ** 2 * oti.sin(np.pi * differences_by_dim[i] / p)) ** 2
+                     for i in range(self.dim))
         return (10 ** sigma_f) ** 2 * oti.exp(-2 * sqdist)
