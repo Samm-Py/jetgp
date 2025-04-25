@@ -19,7 +19,7 @@ import plotting_helper
 
 if __name__ == "__main__":
     # n_order: the maximum derivative order to include in the GP model
-    n_order = 1
+    n_order = 2
 
     # n_bases: the dimensionality of the input space (here 1D)
     n_bases = 1
@@ -86,7 +86,7 @@ if __name__ == "__main__":
         # If True, automatically normalizes/scales the inputs and outputs for numerical stability
         normalize=True,
         # Kernel choice; "SE" means the Squared Exponential (RBF) kernel
-        kernel="Matern",
+        kernel="SE",
 
         # How the kernel handles different input dimensions; "anisotropic" allows dimension-specific length scales
         kernel_type="anisotropic",

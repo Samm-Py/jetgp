@@ -27,7 +27,7 @@ class degp:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.normalize = normalize
-        indices = utils.transform_nested_list(der_indices)
+        indices = der_indices
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
         self.powers = utils.build_companion_array(
             n_bases, n_order, der_indices)
