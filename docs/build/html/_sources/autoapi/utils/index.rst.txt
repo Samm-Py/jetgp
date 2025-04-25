@@ -1,0 +1,198 @@
+utils
+=====
+
+.. py:module:: utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   utils.scale_samples
+   utils.flatten_der_indices
+   utils.nrmse
+   utils.transform_nested_list
+   utils.convert_index_to_exponent_form
+   utils.build_companion_array
+   utils.compare_OTI_indices
+   utils.gen_OTI_indices
+   utils.reshape_y_train
+   utils.transform_cov
+   utils.transform_cov_directrional
+   utils.transform_predictions
+   utils.transform_predictions_directional
+   utils.normalize_x_data_test
+   utils.normalize_x_data_train
+   utils.normalize_directions
+   utils.normalize_y_data
+   utils.normalize_y_data_directional
+
+
+Module Contents
+---------------
+
+.. py:function:: scale_samples(samples, lower_bounds, upper_bounds)
+
+   
+   Scale each column of samples from [0, 1] to [lb_j, ub_j].
+
+   :param samples: A (d, n) array of samples in [0, 1]^n.
+   :type samples: ndarray
+   :param lower_bounds: Length-n array of lower bounds.
+   :type lower_bounds: array-like
+   :param upper_bounds: Length-n array of upper bounds.
+   :type upper_bounds: array-like
+
+   :returns: A (d, n) array with each column scaled to its corresponding bounds.
+   :rtype: ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: flatten_der_indices(indices)
+
+.. py:function:: nrmse(y_true, y_pred, norm_type='minmax')
+
+   
+   Compute the Normalized Root Mean Squared Error (NRMSE).
+
+   :param y_true: Ground truth values.
+   :type y_true: array-like
+   :param y_pred: Predicted values.
+   :type y_pred: array-like
+   :param norm_type: Normalization type:
+                     - 'minmax': divide by (max - min) of y_true
+                     - 'mean': divide by mean of y_true
+                     - 'std': divide by standard deviation of y_true
+   :type norm_type: str
+
+   :returns: NRMSE value.
+   :rtype: float
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: transform_nested_list(nested_list)
+
+   
+   Recursively traverse a nested list. Whenever we encounter
+   a two-element list [k, v] with both k and v as integers,
+   transform k -> 2*k.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: convert_index_to_exponent_form(lst)
+
+.. py:function:: build_companion_array(nvars, order, der_indices)
+
+.. py:function:: compare_OTI_indices(nvars, order, term_check)
+
+   
+   Generate list of lists that contain indices of bases in an OTI number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: gen_OTI_indices(nvars, order)
+
+   
+   Generate list of lists that contain indices of bases in an OTI number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: reshape_y_train(y_train)
+
+.. py:function:: transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test)
+
+.. py:function:: transform_cov_directrional(cov, sigma_y, sigmas_x, der_indices, X_test)
+
+.. py:function:: transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test)
+
+.. py:function:: transform_predictions_directional(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test)
+
+.. py:function:: normalize_x_data_test(X_test, sigmas_x, mus_x)
+
+.. py:function:: normalize_x_data_train(X_train)
+
+.. py:function:: normalize_directions(sigmas_x, rays)
+
+.. py:function:: normalize_y_data(X_train, y_train, der_indices)
+
+.. py:function:: normalize_y_data_directional(X_train, y_train, der_indices)
+

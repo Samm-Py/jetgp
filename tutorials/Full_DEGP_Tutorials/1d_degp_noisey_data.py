@@ -79,8 +79,8 @@ if __name__ == "__main__":
 
     # Optimize GP hyperparameters using particle swarm
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=50,
-        swarm_size=200
+        n_restart_optimizer=25,
+        swarm_size=100
     )
 
     # Create test points and make predictions

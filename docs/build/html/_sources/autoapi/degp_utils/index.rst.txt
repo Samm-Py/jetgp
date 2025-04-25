@@ -1,0 +1,192 @@
+degp_utils
+==========
+
+.. py:module:: degp_utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   degp_utils.flatten_der_indices
+   degp_utils.differences_by_dim_func
+   degp_utils.nrmse
+   degp_utils.transform_nested_list
+   degp_utils.convert_index_to_exponent_form
+   degp_utils.build_companion_array
+   degp_utils.compare_OTI_indices
+   degp_utils.gen_OTI_indices
+   degp_utils.reshape_y_train
+   degp_utils.transform_cov
+   degp_utils.transform_predictions
+   degp_utils.normalize_x_data_test
+   degp_utils.normalize_x_data_train
+   degp_utils.normalize_y_data
+   degp_utils.rbf_kernel
+
+
+Module Contents
+---------------
+
+.. py:function:: flatten_der_indices(indices)
+
+.. py:function:: differences_by_dim_func(X1, X2, n_order, index=-1)
+
+.. py:function:: nrmse(y_true, y_pred, norm_type='minmax')
+
+   
+   Compute the Normalized Root Mean Squared Error (NRMSE).
+
+   :param y_true: Ground truth values.
+   :type y_true: array-like
+   :param y_pred: Predicted values.
+   :type y_pred: array-like
+   :param norm_type: Normalization type:
+                     - 'minmax': divide by (max - min) of y_true
+                     - 'mean': divide by mean of y_true
+                     - 'std': divide by standard deviation of y_true
+   :type norm_type: str
+
+   :returns: NRMSE value.
+   :rtype: float
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: transform_nested_list(nested_list)
+
+   
+   Recursively traverse a nested list. Whenever we encounter
+   a two-element list [k, v] with both k and v as integers,
+   transform k -> 2*k.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: convert_index_to_exponent_form(lst)
+
+.. py:function:: build_companion_array(nvars, order, der_indices)
+
+.. py:function:: compare_OTI_indices(nvars, order, term_check)
+
+   
+   Generate list of lists that contain indices of bases in an OTI number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: gen_OTI_indices(nvars, order)
+
+   
+   Generate list of lists that contain indices of bases in an OTI number
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: reshape_y_train(y_train)
+
+.. py:function:: transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test)
+
+.. py:function:: transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test)
+
+.. py:function:: normalize_x_data_test(X_test, sigmas_x, mus_x)
+
+.. py:function:: normalize_x_data_train(X_train)
+
+.. py:function:: normalize_y_data(X_train, y_train, der_indices)
+
+.. py:function:: rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1)
+
+   
+   ARD RBF kernel for multi-dimensional inputs:
+     k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+
+   :param X1:
+   :type X1: array of shape (N, D)
+   :param X2:
+   :type X2: array of shape (M, D)
+   :param length_scales:
+   :type length_scales: array of shape (D,), each dimension's length scale
+   :param sigma_f:
+   :type sigma_f: float (signal amplitude)
+
+   :returns: **K**
+   :rtype: array of shape (N, M)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+

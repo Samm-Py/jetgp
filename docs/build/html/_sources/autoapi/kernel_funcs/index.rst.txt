@@ -1,0 +1,172 @@
+kernel_funcs
+============
+
+.. py:module:: kernel_funcs
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   kernel_funcs.KernelFactory
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   kernel_funcs.adjust_sigma_n_bound
+   kernel_funcs._double_factorial
+   kernel_funcs.matern_prefactor
+
+
+Module Contents
+---------------
+
+.. py:function:: adjust_sigma_n_bound(base_bounds, true_noise_std=None, cushion=0.5)
+
+   
+   Adjust the log10 bounds of sigma_n based on known noise in the data.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: _double_factorial(n: int) -> int
+
+   
+   Returns (2n-1)!! for n ≥ 0.  By convention (-1)!! = 1.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: matern_prefactor(r, nu, length_scale=1.0)
+
+   
+   Evaluate the polynomial prefactor P_p(z) * exp(-z)
+   for half‑integer ν = p + 0.5.
+
+   :param r: Pairwise Euclidean distance(s).
+   :type r: array_like
+   :param nu: Smoothness parameter (must be half‑integer).
+   :type nu: float
+   :param length_scale: Characteristic length ℓ.
+   :type length_scale: float, default 1.0
+
+   :returns: The value of exp(-z) * P_p(z) at each r.
+   :rtype: ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:class:: KernelFactory(dim, normalize, differences_by_dim, n_order, true_noise_std=None)
+
+   .. py:attribute:: dim
+
+
+   .. py:attribute:: normalize
+
+
+   .. py:attribute:: differences_by_dim
+
+
+   .. py:attribute:: true_noise_std
+      :value: None
+
+
+
+   .. py:attribute:: bounds
+      :value: []
+
+
+
+   .. py:attribute:: nu
+
+
+   .. py:attribute:: n_order
+
+
+   .. py:method:: get_bounds_from_data()
+
+
+   .. py:method:: create_kernel(kernel_name, kernel_type)
+
+
+   .. py:method:: _create_anisotropic(kernel)
+
+
+   .. py:method:: _create_isotropic(kernel)
+
+
+   .. py:method:: _add_bounds(extra_bounds)
+
+
+   .. py:method:: se_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: rq_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: sine_exp_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: matern_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: se_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: rq_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: sine_exp_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+
+
+   .. py:method:: metern_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+
+

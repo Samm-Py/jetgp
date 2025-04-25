@@ -1,0 +1,407 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>degp &mdash; degp 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            degp
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">degp</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">degp</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for degp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">solve</span>
+<span class="kn">from</span> <span class="nn">full_degp</span> <span class="kn">import</span> <span class="n">degp_utils</span>
+<span class="kn">import</span> <span class="nn">utils</span> <span class="k">as</span> <span class="nn">utils</span>
+<span class="kn">from</span> <span class="nn">kernel_funcs.kernel_funcs</span> <span class="kn">import</span> <span class="n">KernelFactory</span>
+<span class="kn">from</span> <span class="nn">full_degp.optimizer</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+
+
+<div class="viewcode-block" id="degp">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp">[docs]</a>
+<span class="k">class</span> <span class="nc">degp</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x_train</span><span class="p">,</span>
+        <span class="n">y_train</span><span class="p">,</span>
+        <span class="n">n_order</span><span class="p">,</span>
+        <span class="n">n_bases</span><span class="p">,</span>
+        <span class="n">der_indices</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">sigma_n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+        <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+
+<div class="viewcode-block" id="degp.sigma_n">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.sigma_n">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_n</span> <span class="o">=</span> <span class="n">sigma_n</span></div>
+
+<div class="viewcode-block" id="degp.n_order">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.n_order">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">=</span> <span class="n">n_order</span></div>
+
+<div class="viewcode-block" id="degp.n_bases">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.n_bases">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="n">n_bases</span></div>
+
+<div class="viewcode-block" id="degp.dim">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="degp.kernel">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.kernel">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span></div>
+
+<div class="viewcode-block" id="degp.kernel_type">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.kernel_type">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">=</span> <span class="n">kernel_type</span></div>
+
+<div class="viewcode-block" id="degp.der_indices">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.der_indices">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">der_indices</span> <span class="o">=</span> <span class="n">der_indices</span></div>
+
+<div class="viewcode-block" id="degp.normalize">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.normalize">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span></div>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_nested_list</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
+<div class="viewcode-block" id="degp.flattened_der_indicies">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.flattened_der_indicies">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">flatten_der_indices</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="degp.powers">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.powers">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">powers</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">build_companion_array</span><span class="p">(</span>
+            <span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">)</span></div>
+
+
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data</span><span class="p">(</span>
+                <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_train</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span> <span class="o">=</span> <span class="n">x_train</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">reshape_y_train</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<div class="viewcode-block" id="degp.differences_by_dim">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.differences_by_dim">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">n_order</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="degp.kernel_factory">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.kernel_factory">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span> <span class="o">=</span> <span class="n">KernelFactory</span><span class="p">(</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">n_bases</span><span class="p">,</span>
+            <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">differences_by_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span>
+            <span class="n">n_order</span><span class="o">=</span><span class="n">n_order</span><span class="p">,</span>
+            <span class="n">true_noise_std</span><span class="o">=</span><span class="n">sigma_n</span>  <span class="c1"># &lt;-- Based on the noise you injected into training data</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="degp.kernel_func">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.kernel_func">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span><span class="o">.</span><span class="n">create_kernel</span><span class="p">(</span>
+            <span class="n">kernel_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
+            <span class="n">kernel_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="degp.bounds">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.bounds">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span><span class="o">.</span><span class="n">bounds</span></div>
+
+<div class="viewcode-block" id="degp.optimizer">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.optimizer">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="degp.optimize_hyperparameters">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.optimize_hyperparameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">optimize_hyperparameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="degp.predict">
+<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.predict">[docs]</a>
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">X_test</span><span class="p">,</span>
+        <span class="n">params</span><span class="p">,</span>
+        <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute posterior predictive mean and (optionally) covariance at X_test.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">length_scales</span> <span class="o">=</span> <span class="n">params</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">sigma_n</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Compute training kernel matrix and its Cholesky factor</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span>
+            <span class="n">length_scales</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">powers</span>
+        <span class="p">)</span>
+        <span class="n">K</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">L</span> <span class="o">=</span> <span class="n">cholesky</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="n">X_test</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_test</span><span class="p">(</span>
+                <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">)</span>
+
+        <span class="c1"># Compute train-test kernel</span>
+        <span class="n">diff_x_test_x_train</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span>
+        <span class="p">)</span>
+        <span class="n">K_s</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+            <span class="n">diff_x_test_x_train</span><span class="p">,</span>
+            <span class="n">length_scales</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">powers</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Compute posterior mean</span>
+        <span class="n">f_mean</span> <span class="o">=</span> <span class="p">(</span><span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span>
+                  <span class="n">alpha</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="p">(</span><span class="n">K_s</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">alpha</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">return_deriv</span><span class="p">:</span>
+                <span class="n">f_mean</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_predictions</span><span class="p">(</span>
+                    <span class="n">f_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span> <span class="n">X_test</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span> <span class="o">+</span> <span class="n">f_mean</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span>
+
+        <span class="c1"># If covariance is not requested, return mean only</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">calc_cov</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f_mean</span>
+
+        <span class="c1"># Compute test-test kernel and covariance</span>
+        <span class="n">diff_x_test_x_test</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+            <span class="n">X_test</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span>
+        <span class="p">)</span>
+        <span class="n">K_ss</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+            <span class="n">diff_x_test_x_test</span><span class="p">,</span>
+            <span class="n">length_scales</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">powers</span>
+        <span class="p">)</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">K_s</span><span class="p">)</span>
+        <span class="n">f_cov</span> <span class="o">=</span> <span class="n">K_ss</span> <span class="o">-</span> \
+            <span class="n">v</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">v</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="n">K_ss</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span>
+                                              <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span> <span class="o">-</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span>
+
+        <span class="c1"># Normalize or return raw covariance</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">return_deriv</span><span class="p">:</span>
+                <span class="n">f_var</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_cov</span><span class="p">(</span>
+                    <span class="n">f_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span> <span class="n">X_test</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">f_mean</span><span class="p">,</span> <span class="n">f_var</span></div>
+</div>
+
+
+    <span class="c1"># def gradient_negative_log_marginal_likelihood(</span>
+    <span class="c1">#     self, x0, x_train, sigma_n, n_order, n_bases, der_indices</span>
+    <span class="c1"># ):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     NLL for standard GP in multiple dimensions.</span>
+
+    <span class="c1">#     NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi).</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     y_train = self.y_train.reshape(-1, 1)</span>
+
+    <span class="c1">#     # K = utils.rbf_kernel(</span>
+    <span class="c1">#     #     x_train,</span>
+    <span class="c1">#     #     x_train,</span>
+    <span class="c1">#     #     ell,</span>
+    <span class="c1">#     #     n_order,</span>
+    <span class="c1">#     #     n_bases,</span>
+    <span class="c1">#     #     der_indices,</span>
+    <span class="c1">#     #     self.kernel_func,</span>
+    <span class="c1">#     # )</span>
+    <span class="c1">#     # K += sigma_n**2 * np.eye(len(K))</span>
+    <span class="c1">#     grads = []</span>
+    <span class="c1">#     if not self.Flag:</span>
+    <span class="c1">#         for i in range(0, len(x0) - 1):</span>
+    <span class="c1">#             ell = oti.array(x0[:-1])</span>
+    <span class="c1">#             ell[i, 0] = ell[i, 0] + oti.array(oti.e(2 * n_bases + (2)))</span>
+    <span class="c1">#             sigma_n = x0[-1]</span>
+    <span class="c1">#             K_ders = utils.rbf_kernel_der_params(</span>
+    <span class="c1">#                 self.differences_by_dim_grad,</span>
+    <span class="c1">#                 ell,</span>
+    <span class="c1">#                 n_order,</span>
+    <span class="c1">#                 n_bases,</span>
+    <span class="c1">#                 der_indices,</span>
+    <span class="c1">#                 self.kernel_func,</span>
+    <span class="c1">#             )</span>
+    <span class="c1">#             # L = cholesky(K)</span>
+    <span class="c1">#             # alpha = solve(L.T, solve(L, self.y_train)).reshape(-1, 1)</span>
+    <span class="c1">#             L = self.L_mat</span>
+    <span class="c1">#             alpha = self.alpha</span>
+
+    <span class="c1">#             # dK_dtheta = compute partial derivative of kernel matrix w.r.t. theta</span>
+    <span class="c1">#             inv_K = np.linalg.solve(</span>
+    <span class="c1">#                 L.T, np.linalg.solve(L, np.eye(L.shape[0]))</span>
+    <span class="c1">#             )</span>
+
+    <span class="c1">#             grad_L_theta = 0.5 * np.trace(</span>
+    <span class="c1">#                 (alpha @ alpha.T - inv_K) @ K_ders</span>
+    <span class="c1">#             )</span>
+    <span class="c1">#             grads.append(grad_L_theta)</span>
+
+    <span class="c1">#         # Compute derivative dL/dsigma_n</span>
+    <span class="c1">#         trace_term = np.trace(inv_K)</span>
+    <span class="c1">#         quad_term = y_train.T @ inv_K @ inv_K @ y_train</span>
+    <span class="c1">#         grad_sigma_n = sigma_n * (trace_term - quad_term)</span>
+    <span class="c1">#         grads.append(grad_sigma_n[0, 0])</span>
+    <span class="c1">#         # print(grads)</span>
+    <span class="c1">#         self.last_grad = -1 * np.array(grads)</span>
+    <span class="c1">#         return self.last_grad</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         try:</span>
+    <span class="c1">#             return self.last_grad</span>
+    <span class="c1">#         except:</span>
+    <span class="c1">#             return np.ones_like(x0) * 1e6</span>
+
+    <span class="c1"># def differences_by_dim_grad_func(self, X1, X2, n_order, index=-1):</span>
+    <span class="c1">#     X1 = oti.array(X1)</span>
+    <span class="c1">#     X2 = oti.array(X2)</span>
+
+    <span class="c1">#     n1, d = X1.shape</span>
+
+    <span class="c1">#     n2, d = X2.shape</span>
+
+    <span class="c1">#     # Prepare the output: a list of d arrays, each of shape (n, m)</span>
+    <span class="c1">#     differences_by_dim = []</span>
+
+    <span class="c1">#     # Loop over each dimension k</span>
+    <span class="c1">#     for k in range(d):</span>
+    <span class="c1">#         # Create an empty (n, m) array for this dimension</span>
+    <span class="c1">#         diffs_k = oti.zeros((n1, n2))</span>
+
+    <span class="c1">#         # Nested loops to fill diffs_k</span>
+    <span class="c1">#         for i in range(n1):</span>
+    <span class="c1">#             for j in range(n2):</span>
+    <span class="c1">#                 diffs_k[i, j] = (</span>
+    <span class="c1">#                     X1[i, k]</span>
+    <span class="c1">#                     + oti.e(2 * k + 2, order=2 * n_order + 1)</span>
+    <span class="c1">#                     - (X2[j, k] + oti.e(2 * k + 1, order=2 * n_order + 1))</span>
+    <span class="c1">#                 )</span>
+
+    <span class="c1">#         # Append to our list</span>
+    <span class="c1">#         differences_by_dim.append(diffs_k)</span>
+    <span class="c1">#     return differences_by_dim</span>
+    <span class="c1"># self.differences_by_dim_grad = self.differences_by_dim_grad_func(</span>
+    <span class="c1">#     self.x_train, self.x_train, n_order</span>
+    <span class="c1"># )</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Samuel Roberts.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

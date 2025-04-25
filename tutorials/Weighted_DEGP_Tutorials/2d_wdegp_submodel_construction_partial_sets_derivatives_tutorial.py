@@ -24,7 +24,7 @@ import plotting_helper
 if __name__ == "__main__":
     np.random.seed(0)
 
-    n_order = 4
+    n_order = 3
     n_bases = 2
     lb_x, ub_x = -1, 1
     lb_y, ub_y = -1, 1
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         utils.gen_OTI_indices(n_bases, 1) for _ in range(len(index) - 1)
     ]
 
-    der_indices.append(utils.gen_OTI_indices(2, 3))
+    der_indices.append(utils.gen_OTI_indices(n_bases, n_order))
 
     def true_function(X, alg=oti):
         x1 = X[:, 0]
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         X2_grid=X2_grid,
         n_order=n_order,
         n_bases=n_bases,
-        plot_submodels=False,
+        plot_submodels=True,
         submodel_vals=submodel_vals,
     )
 

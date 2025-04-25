@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=25,
-        swarm_size=200
+        swarm_size=50
     )
 
     X_test = np.linspace(lb_x, ub_x, 250).reshape(-1, 1)

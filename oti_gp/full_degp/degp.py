@@ -47,6 +47,7 @@ class degp:
             dim=n_bases,
             normalize=True,
             differences_by_dim=self.differences_by_dim,
+            n_order=n_order,
             true_noise_std=sigma_n  # <-- Based on the noise you injected into training data
         )
         self.kernel_func = self.kernel_factory.create_kernel(

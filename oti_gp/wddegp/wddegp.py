@@ -72,6 +72,7 @@ class wddegp:
         self.kernel_factory = KernelFactory(
             dim=self.dim,
             normalize=self.normalize,
+            n_order=self.n_order,
             differences_by_dim=self.differences_by_dim_submodels[0],
         )
         self.kernel_func = self.kernel_factory.create_kernel(
