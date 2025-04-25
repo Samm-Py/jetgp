@@ -1,0 +1,52 @@
+optimizer
+=========
+
+.. py:module:: optimizer
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   optimizer.Optimizer
+
+
+Module Contents
+---------------
+
+.. py:class:: Optimizer(model)
+
+   .. py:attribute:: model
+
+
+   .. py:method:: negative_log_marginal_likelihood(x0, x_train, y_train, sigma_n, n_order, n_bases, der_indices, index)
+
+      
+      NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: nll_wrapper(x0)
+
+
+   .. py:method:: optimize_hyperparameters(n_restart_optimizer=20, swarm_size=20, verbose=True)
+
+

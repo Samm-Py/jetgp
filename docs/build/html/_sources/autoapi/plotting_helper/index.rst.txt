@@ -1,0 +1,22 @@
+plotting_helper
+===============
+
+.. py:module:: plotting_helper
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   plotting_helper.make_plots
+   plotting_helper.make_submodel_plots
+
+
+Module Contents
+---------------
+
+.. py:function:: make_plots(X_train, y_train, X_test, y_pred, true_function, cov=-1, X1_grid=0, X2_grid=0, n_order=1, n_bases=1, plot_derivative_surrogates=False, der_indices=[])
+
+.. py:function:: make_submodel_plots(X_train, y_train, X_test, y_pred, true_function, cov=-1, X1_grid=0, X2_grid=0, n_order=1, n_bases=1, plot_submodels=False, submodel_vals=[], submodel_cov=[])
+

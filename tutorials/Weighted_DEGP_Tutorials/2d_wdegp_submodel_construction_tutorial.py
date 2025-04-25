@@ -123,7 +123,7 @@ if __name__ == "__main__":
         X2_grid=X2_grid,
         n_order=n_order,
         n_bases=n_bases,
-        plot_submodels=False,
+        plot_submodels=True,
         submodel_vals=submodel_vals,
     )
 

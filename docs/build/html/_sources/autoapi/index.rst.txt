@@ -1,0 +1,23 @@
+API Reference
+=============
+
+This page contains auto-generated API reference documentation [#f1]_.
+
+.. toctree::
+   :titlesonly:
+
+   /autoapi/degp/index
+   /autoapi/utils/index
+   /autoapi/ddgep/index
+   /autoapi/ddegp/index
+   /autoapi/wdegp/index
+   /autoapi/wddegp/index
+   /autoapi/optimizer/index
+   /autoapi/degp_utils/index
+   /autoapi/ddegp_utils/index
+   /autoapi/wdegp_utils/index
+   /autoapi/wddegp_utils/index
+   /autoapi/kernel_funcs/index
+   /autoapi/plotting_helper/index
+
+.. [#f1] Created with `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`_

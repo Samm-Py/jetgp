@@ -1,0 +1,7 @@
+hexAM\_forceDispl\_FULL module
+==============================
+
+.. automodule:: hexAM_forceDispl_FULL
+   :members:
+   :undoc-members:
+   :show-inheritance:

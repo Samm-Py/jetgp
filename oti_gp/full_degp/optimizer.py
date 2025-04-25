@@ -57,7 +57,7 @@ class Optimizer:
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
             debug=verbose,
-            minfunc=1e-8,
+            minfunc=1e-20,
         )
 
         self.model.opt_x0 = best_x

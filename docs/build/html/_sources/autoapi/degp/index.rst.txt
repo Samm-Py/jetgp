@@ -1,0 +1,105 @@
+degp
+====
+
+.. py:module:: degp
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   degp.degp
+
+
+Module Contents
+---------------
+
+.. py:class:: degp(x_train, y_train, n_order, n_bases, der_indices, normalize=True, sigma_n=None, kernel='SE', kernel_type='anisotropic')
+
+   .. py:attribute:: sigma_n
+      :value: None
+
+
+
+   .. py:attribute:: n_order
+
+
+   .. py:attribute:: n_bases
+
+
+   .. py:attribute:: dim
+
+
+   .. py:attribute:: kernel
+      :value: 'SE'
+
+
+
+   .. py:attribute:: kernel_type
+      :value: 'anisotropic'
+
+
+
+   .. py:attribute:: der_indices
+
+
+   .. py:attribute:: normalize
+      :value: True
+
+
+
+   .. py:attribute:: flattened_der_indicies
+      :value: []
+
+
+
+   .. py:attribute:: powers
+
+
+   .. py:attribute:: differences_by_dim
+      :value: []
+
+
+
+   .. py:attribute:: kernel_factory
+
+
+   .. py:attribute:: kernel_func
+
+
+   .. py:attribute:: bounds
+      :value: []
+
+
+
+   .. py:attribute:: optimizer
+
+
+   .. py:method:: optimize_hyperparameters(*args, **kwargs)
+
+
+   .. py:method:: predict(X_test, params, calc_cov=False, return_deriv=False)
+
+      
+      Compute posterior predictive mean and (optionally) covariance at X_test.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+

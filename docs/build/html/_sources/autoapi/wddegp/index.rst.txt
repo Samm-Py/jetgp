@@ -1,0 +1,118 @@
+wddegp
+======
+
+.. py:module:: wddegp
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   wddegp.wddegp
+
+
+Module Contents
+---------------
+
+.. py:class:: wddegp(x_train, y_train, n_order, n_bases, index, der_indices, rays, normalize=False, sigma_n=0.0, kernel='SE', kernel_type='anisotropic')
+
+   .. py:attribute:: x_train
+
+
+   .. py:attribute:: y_train
+
+
+   .. py:attribute:: sigma_n
+      :value: 0.0
+
+
+
+   .. py:attribute:: n_order
+
+
+   .. py:attribute:: n_bases
+
+
+   .. py:attribute:: rays
+
+
+   .. py:attribute:: index
+
+
+   .. py:attribute:: dim
+
+
+   .. py:attribute:: kernel
+      :value: 'SE'
+
+
+
+   .. py:attribute:: kernel_type
+      :value: 'anisotropic'
+
+
+
+   .. py:attribute:: der_indices
+
+
+   .. py:attribute:: flattened_der_indicies
+      :value: []
+
+
+
+   .. py:attribute:: powers
+      :value: []
+
+
+
+   .. py:attribute:: normalize
+      :value: False
+
+
+
+   .. py:attribute:: differences_by_dim_submodels
+
+
+   .. py:attribute:: kernel_factory
+
+
+   .. py:attribute:: kernel_func
+
+
+   .. py:attribute:: bounds
+      :value: []
+
+
+
+   .. py:attribute:: optimizer
+
+
+   .. py:method:: optimize_hyperparameters(*args, **kwargs)
+
+
+   .. py:method:: predict(X_test, length_scales, calc_cov=False, return_submodels=False)
+
+      
+      Compute posterior predictive mean and covariance at X_test
+      under an ARD RBF kernel with given length_scales.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
