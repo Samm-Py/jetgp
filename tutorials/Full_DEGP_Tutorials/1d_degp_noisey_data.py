@@ -54,12 +54,12 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     arr = np.zeros((len(der_indices) + 1)*n_train)
-    arr[0] = 0.1
-    arr[1] = 1.0
-    arr[2] = 10.0
-    arr[3] = 5.0
-    arr[4] = 1.0
-    arr[5] = 0.1
+    arr[0] = 0.75
+    arr[1] = 0.75
+    arr[2] = 0.75
+    arr[3] = 0.75
+    arr[4] = 0.75
+    arr[5] = 0.75
     noise_std = np.diag(arr)
     for i in range(0, len(y_train_real)):
         y_train_real_noisy = y_train_real + \
@@ -80,7 +80,7 @@ if __name__ == "__main__":
         n_order,
         n_bases,
         der_indices,
-        normalize=False,
+        normalize=True,
         sigma_data=noise_std,      # Informs the model about expected noise level
         kernel="SE",
         kernel_type="anisotropic",

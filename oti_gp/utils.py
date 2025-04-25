@@ -237,7 +237,7 @@ def normalize_directions(sigmas_x, rays):
     return transformed_rays
 
 
-def normalize_y_data(X_train, y_train, der_indices):
+def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     mean_vec_x = np.mean(X_train, axis=0).reshape(1, -1)  # shape: (m, 1)
     std_vec_x = np.std(X_train, axis=0).reshape(1, -1)    # shape: (m, 1)
 
@@ -254,7 +254,14 @@ def normalize_y_data(X_train, y_train, der_indices):
                  )**(der_indices[i][j][1])
         y_train_normalized = np.vstack(
             (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
-    return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x
+
+        # Scale noise if provided
+    if sigma_data is not None:
+        noise_std_normalized = sigma_data / std_vec_y[0, 0]
+    else:
+        noise_std_normalized = None
+
+    return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x, noise_std_normalized
 
 
 def normalize_y_data_directional(X_train, y_train, der_indices):
