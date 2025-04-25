@@ -33,8 +33,8 @@ class degp:
             n_bases, n_order, der_indices)
 
         if normalize:
-            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data(
-                x_train, y_train, self.flattened_der_indicies)
+            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = utils.normalize_y_data(
+                x_train, y_train, sigma_data, self.flattened_der_indicies)
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.x_train = x_train
