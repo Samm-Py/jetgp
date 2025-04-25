@@ -17,94 +17,78 @@ Functions
 
 .. autoapisummary::
 
-   kernel_funcs.adjust_sigma_n_bound
-   kernel_funcs._double_factorial
-   kernel_funcs.matern_prefactor
+   kernel_funcs.matern_kernel_builder
 
 
 Module Contents
 ---------------
 
-.. py:function:: adjust_sigma_n_bound(base_bounds, true_noise_std=None, cushion=0.5)
-
-   
-   Adjust the log10 bounds of sigma_n based on known noise in the data.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: _double_factorial(n: int) -> int
-
-   
-   Returns (2n-1)!! for n ≥ 0.  By convention (-1)!! = 1.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: matern_prefactor(r, nu, length_scale=1.0)
-
-   
-   Evaluate the polynomial prefactor P_p(z) * exp(-z)
-   for half‑integer ν = p + 0.5.
-
-   :param r: Pairwise Euclidean distance(s).
-   :type r: array_like
-   :param nu: Smoothness parameter (must be half‑integer).
-   :type nu: float
-   :param length_scale: Characteristic length ℓ.
-   :type length_scale: float, default 1.0
-
-   :returns: The value of exp(-z) * P_p(z) at each r.
-   :rtype: ndarray
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
+.. py:function:: matern_kernel_builder(nu)
 
 .. py:class:: KernelFactory(dim, normalize, differences_by_dim, n_order, true_noise_std=None)
+
+   
+   Factory for generating different kernel functions (SE, RQ, SineExp, Matérn)
+   in isotropic and anisotropic forms.
+
+   .. attribute:: dim
+
+      Dimensionality of the input space.
+
+      :type: int
+
+   .. attribute:: normalize
+
+      Whether to normalize inputs (scaling differences to [-3, 3]).
+
+      :type: bool
+
+   .. attribute:: differences_by_dim
+
+      Pairwise differences between input points, by dimension.
+
+      :type: list of arrays
+
+   .. attribute:: true_noise_std
+
+      Known noise standard deviation (for adjusting noise bounds).
+
+      :type: float, optional
+
+   .. attribute:: bounds
+
+      Hyperparameter bounds (log10 space).
+
+      :type: list of tuples
+
+   .. attribute:: nu
+
+      Smoothness parameter for the Matérn kernel.
+
+      :type: float
+
+   .. attribute:: n_order
+
+      Order of derivatives for kernel smoothness.
+
+      :type: int
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
    .. py:attribute:: dim
 
@@ -133,40 +117,320 @@ Module Contents
 
    .. py:method:: get_bounds_from_data()
 
+      
+      Computes bounds for hyperparameters based on the observed data range.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: create_kernel(kernel_name, kernel_type)
+
+      
+      Returns a kernel function based on specified name and type.
+
+      :param kernel_name: Name of the kernel ('SE', 'RQ', 'SineExp', 'Matern').
+      :type kernel_name: str
+      :param kernel_type: Type of kernel ('anisotropic' or 'isotropic').
+      :type kernel_type: str
+
+      :returns: The selected kernel function.
+      :rtype: callable
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: _create_anisotropic(kernel)
 
+      
+      Sets bounds and returns the anisotropic kernel function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: _create_isotropic(kernel)
+
+      
+      Sets bounds and returns the isotropic kernel function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: _add_bounds(extra_bounds)
 
+      
+      Adds hyperparameter bounds, adjusting for normalization.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: se_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
+
+      
+      Anisotropic Squared Exponential (SE) kernel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: rq_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
 
+      
+      Anisotropic Rational Quadratic (RQ) kernel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: sine_exp_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
+
+      
+      Anisotropic Sine-Exponential kernel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: matern_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
 
+      
+      Anisotropic Matérn kernel (half-integer ν).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: se_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+
+      
+      Isotropic Squared Exponential (SE) kernel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: rq_kernel_isotropic(differences_by_dim, length_scales, index=-1)
 
+      
+      Isotropic Rational Quadratic (RQ) kernel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: sine_exp_kernel_isotropic(differences_by_dim, length_scales, index=-1)
 
+      
+      Isotropic Sine-Exponential kernel.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: metern_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+
+      
+      Isotropic Matérn kernel (half-integer ν).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 

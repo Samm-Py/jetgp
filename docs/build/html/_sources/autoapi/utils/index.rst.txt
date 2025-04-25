@@ -12,7 +12,6 @@ Functions
    utils.scale_samples
    utils.flatten_der_indices
    utils.nrmse
-   utils.transform_nested_list
    utils.convert_index_to_exponent_form
    utils.build_companion_array
    utils.compare_OTI_indices
@@ -35,17 +34,25 @@ Module Contents
 .. py:function:: scale_samples(samples, lower_bounds, upper_bounds)
 
    
-   Scale each column of samples from [0, 1] to [lb_j, ub_j].
+   Scale each column of samples from the unit interval [0, 1] to user-defined bounds [lb_j, ub_j].
 
-   :param samples: A (d, n) array of samples in [0, 1]^n.
-   :type samples: ndarray
-   :param lower_bounds: Length-n array of lower bounds.
-   :type lower_bounds: array-like
-   :param upper_bounds: Length-n array of upper bounds.
-   :type upper_bounds: array-like
+   Parameters:
+   ----------
+   samples : ndarray of shape (d, n)
+       A 2D array where each column represents a sample in [0, 1]^n.
+   lower_bounds : array-like of length n
+       Lower bounds for each dimension.
+   upper_bounds : array-like of length n
+       Upper bounds for each dimension.
 
-   :returns: A (d, n) array with each column scaled to its corresponding bounds.
-   :rtype: ndarray
+   Returns:
+   -------
+   ndarray of shape (d, n)
+       Scaled samples where each column is mapped from [0, 1] to [lb_j, ub_j] for each dimension.
+
+   Notes:
+   -----
+   This function assumes that each sample is a column vector, and bounds are applied column-wise.
 
 
 
@@ -66,23 +73,18 @@ Module Contents
 
 .. py:function:: flatten_der_indices(indices)
 
-.. py:function:: nrmse(y_true, y_pred, norm_type='minmax')
-
    
-   Compute the Normalized Root Mean Squared Error (NRMSE).
+   Flatten a nested list of derivative indices.
 
-   :param y_true: Ground truth values.
-   :type y_true: array-like
-   :param y_pred: Predicted values.
-   :type y_pred: array-like
-   :param norm_type: Normalization type:
-                     - 'minmax': divide by (max - min) of y_true
-                     - 'mean': divide by mean of y_true
-                     - 'std': divide by standard deviation of y_true
-   :type norm_type: str
+   Parameters:
+   ----------
+   indices : list of lists
+       A nested list where each sublist contains derivative index specifications.
 
-   :returns: NRMSE value.
-   :rtype: float
+   Returns:
+   -------
+   list
+       A single flattened list containing all derivative index entries.
 
 
 
@@ -101,13 +103,27 @@ Module Contents
    ..
        !! processed by numpydoc !!
 
-.. py:function:: transform_nested_list(nested_list)
+.. py:function:: nrmse(y_true, y_pred, norm_type='minmax')
 
    
-   Recursively traverse a nested list. Whenever we encounter
-   a two-element list [k, v] with both k and v as integers,
-   transform k -> 2*k.
+   Compute the Normalized Root Mean Squared Error (NRMSE) between true and predicted values.
 
+   Parameters:
+   ----------
+   y_true : array-like
+       Ground truth or reference values.
+   y_pred : array-like
+       Predicted values to compare against the ground truth.
+   norm_type : str, default="minmax"
+       The method used to normalize the RMSE:
+       - 'minmax': Normalize by the range (max - min) of `y_true`.
+       - 'mean': Normalize by the mean of `y_true`.
+       - 'std': Normalize by the standard deviation of `y_true`.
+
+   Returns:
+   -------
+   float
+       The normalized root mean squared error.
 
 
 
@@ -128,13 +144,105 @@ Module Contents
 
 .. py:function:: convert_index_to_exponent_form(lst)
 
+   
+   Convert a list of indices into exponent form.
+
+   For a given list of integers, the function compresses consecutive identical elements
+   into pairs [value, count], where 'value' is the element and 'count' is its occurrence.
+
+   Parameters:
+   ----------
+   lst : list of int
+       A list of integers representing variable indices.
+
+   Returns:
+   -------
+   list of [int, int]
+       A compressed list where each entry is [value, count], representing the multiplicity
+       of each unique value in the original list.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: build_companion_array(nvars, order, der_indices)
+
+   
+   Build a companion array that maps each derivative index to its corresponding order in the OTI basis.
+
+   The array represents the order of each component in the OTI (Order-Truncated Imaginary) number system:
+   - 0 for function values.
+   - Corresponding derivative order for each derivative term.
+
+   Parameters:
+   ----------
+   nvars : int
+       Number of variables (input dimensions).
+   order : int
+       Maximum derivative order considered.
+   der_indices : list of lists
+       Derivative indices in exponent form, where each sublist represents the derivative multi-index
+       for a specific derivative term.
+
+   Returns:
+   -------
+   companion_array : ndarray
+       A 1D array of length (1 + total derivatives), where:
+       - The first entry is 0 (function value).
+       - Each subsequent entry indicates the derivative order (e.g., 1 for first derivatives).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
 .. py:function:: compare_OTI_indices(nvars, order, term_check)
 
    
-   Generate list of lists that contain indices of bases in an OTI number
+   Compare a given multi-index term against all basis terms in the OTI number system.
 
+   This function searches through all OTI basis terms (multi-indices) up to the specified order
+   and identifies the **order** of the matching term.
+
+   Parameters:
+   ----------
+   nvars : int
+       Number of variables (input dimensions).
+   order : int
+       Maximum derivative order considered.
+   term_check : list of [int, int]
+       The multi-index to check, given in exponent form [[var_index, exponent], ...].
+
+   Returns:
+   -------
+   int
+       The order of the term in the OTI basis (1, 2, ..., order).
+       Returns -1 if no matching term is found.
 
 
 
@@ -156,8 +264,24 @@ Module Contents
 .. py:function:: gen_OTI_indices(nvars, order)
 
    
-   Generate list of lists that contain indices of bases in an OTI number
+   Generate the list of OTI (Order-Truncated Imaginary) basis indices in exponent form.
 
+   For a given number of variables and maximum derivative order, this function produces the
+   multi-index representations for all basis terms in the OTI number system.
+
+   Parameters:
+   ----------
+   nvars : int
+       Number of variables (input dimensions).
+   order : int
+       Maximum derivative order considered.
+
+   Returns:
+   -------
+   list of lists
+       A nested list where:
+       - The outer list has length `order` (one entry per derivative order).
+       - Each inner list contains multi-indices in exponent form for that order.
 
 
 
@@ -178,21 +302,429 @@ Module Contents
 
 .. py:function:: reshape_y_train(y_train)
 
+   
+   Flatten and concatenate function values and derivative observations into a single 1D array.
+
+   Parameters:
+   ----------
+   y_train : list of arrays
+       A list where:
+       - y_train[0] contains the function values (shape: (n_samples,))
+       - y_train[1:], if present, contain derivative values (shape: (n_samples,)) for each derivative component.
+
+   Returns:
+   -------
+   ndarray of shape (n_total,)
+       A flattened 1D array concatenating function values and all derivatives.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test)
+
+   
+   Rescale the diagonal of a covariance matrix to reflect the original (unnormalized) variance
+   of function values and derivatives.
+
+   This function transforms the variance estimates from normalized space back to the original scale.
+
+   Parameters:
+   ----------
+   cov : ndarray of shape (n_total, n_total)
+       Covariance matrix from the GP model (including function values and derivatives).
+   sigma_y : float
+       Standard deviation used to normalize the function values.
+   sigmas_x : ndarray of shape (1, nvars)
+       Standard deviations used to normalize each input dimension.
+   der_indices : list of lists
+       Derivative multi-indices, where each sublist represents the derivative directions and orders.
+   X_test : ndarray of shape (n_samples, nvars)
+       Test input points corresponding to the covariance matrix blocks.
+
+   Returns:
+   -------
+   y_var_normalized : ndarray of shape (n_total,)
+       Rescaled variances for function values and derivatives in the original space.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
 .. py:function:: transform_cov_directrional(cov, sigma_y, sigmas_x, der_indices, X_test)
 
+   
+   Rescale the diagonal of a covariance matrix for function values and directional derivatives.
+
+   Unlike `transform_cov`, this function assumes **directional derivatives** (not multi-index derivatives),
+   so no input scaling (`sigmas_x`) is applied to derivative terms.
+
+   Parameters:
+   ----------
+   cov : ndarray of shape (n_total, n_total)
+       Covariance matrix from the GP model (including function values and directional derivatives).
+   sigma_y : float
+       Standard deviation used to normalize the function values.
+   sigmas_x : ndarray of shape (1, nvars)
+       Standard deviations used to normalize each input dimension (unused for derivatives here).
+   der_indices : list of lists
+       Derivative directions (for directional derivatives).
+   X_test : ndarray of shape (n_samples, nvars)
+       Test input points corresponding to the covariance matrix blocks.
+
+   Returns:
+   -------
+   y_var_normalized : ndarray of shape (n_total,)
+       Rescaled variances for function values and directional derivatives in the original space.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test)
+
+   
+   Rescale predicted function values and derivatives from normalized space back to their original scale.
+
+   This function transforms both function value predictions and **multi-index derivatives**
+   back to the original units after GP prediction.
+
+   Parameters:
+   ----------
+   y_pred : ndarray of shape (n_total,)
+       Predicted mean values from the GP model in normalized space
+       (includes function values and derivatives).
+   mu_y : float
+       Mean of the original function values (before normalization).
+   sigma_y : float
+       Standard deviation of the original function values (before normalization).
+   sigmas_x : ndarray of shape (1, nvars)
+       Standard deviations of the input variables (used for rescaling derivatives).
+   der_indices : list of lists
+       Multi-index derivative structures for each derivative component.
+   X_test : ndarray of shape (n_samples, nvars)
+       Test input points corresponding to the prediction blocks.
+
+   Returns:
+   -------
+   y_train_normalized : ndarray of shape (n_total, 1)
+       Rescaled function values and derivatives in the original scale.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
 .. py:function:: transform_predictions_directional(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test)
 
+   
+   Rescale predicted function values and **directional derivatives** from normalized space
+   back to their original scale.
+
+   This function assumes the derivatives are **directional** (not multi-index),
+   so it applies only output scaling (sigma_y) to derivatives.
+
+   Parameters:
+   ----------
+   y_pred : ndarray of shape (n_total,)
+       Predicted mean values from the GP model in normalized space
+       (includes function values and directional derivatives).
+   mu_y : float
+       Mean of the original function values (before normalization).
+   sigma_y : float
+       Standard deviation of the original function values (before normalization).
+   sigmas_x : ndarray of shape (1, nvars)
+       Standard deviations of the input variables (not used here but included for compatibility).
+   der_indices : list of lists
+       Directions for directional derivatives (each sublist represents a direction vector).
+   X_test : ndarray of shape (n_samples, nvars)
+       Test input points corresponding to the prediction blocks.
+
+   Returns:
+   -------
+   y_train_normalized : ndarray of shape (n_total, 1)
+       Rescaled function values and directional derivatives in the original scale.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: normalize_x_data_test(X_test, sigmas_x, mus_x)
+
+   
+   Normalize test input data using the mean and standard deviation from the training inputs.
+
+   Parameters:
+   ----------
+   X_test : ndarray of shape (n_samples, nvars)
+       Test input points to be normalized.
+   sigmas_x : ndarray of shape (1, nvars)
+       Standard deviations of the training inputs for each variable (used for scaling).
+   mus_x : ndarray of shape (1, nvars)
+       Means of the training inputs for each variable (used for centering).
+
+   Returns:
+   -------
+   X_train_normalized : ndarray of shape (n_samples, nvars)
+       Normalized test inputs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
 .. py:function:: normalize_x_data_train(X_train)
 
+   
+   Normalize training input data by centering and scaling each variable.
+
+   Parameters:
+   ----------
+   X_train : ndarray of shape (n_samples, nvars)
+       Training input points.
+
+   Returns:
+   -------
+   X_train_normalized : ndarray of shape (n_samples, nvars)
+       Normalized training inputs.
+   mean_vec_x : ndarray of shape (1, nvars)
+       Mean values for each input variable (used for centering).
+   std_vec_x : ndarray of shape (1, nvars)
+       Standard deviations for each input variable (used for scaling).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: normalize_directions(sigmas_x, rays)
 
-.. py:function:: normalize_y_data(X_train, y_train, der_indices)
+   
+   Normalize direction vectors (rays) based on input scaling.
+
+   This function rescales direction vectors used for **directional derivatives** so that
+   they are consistent with normalized input space.
+
+   Parameters:
+   ----------
+   sigmas_x : ndarray of shape (1, nvars)
+       Standard deviations of the input variables (used for scaling each direction).
+   rays : ndarray of shape (nvars, n_directions)
+       Direction vectors (columns) in the original input space.
+
+   Returns:
+   -------
+   transformed_rays : ndarray of shape (nvars, n_directions)
+       Normalized direction vectors.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: normalize_y_data(X_train, y_train, sigma_data, der_indices)
+
+   
+   Normalize function values, derivatives, and observational noise for training data.
+
+   This function:
+   - Normalizes function values (`y_train[0]`) to have zero mean and unit variance.
+   - Scales **derivatives** using the chain rule, considering input normalization.
+   - Scales **observational noise** (`sigma_data`) accordingly.
+
+   Parameters:
+   ----------
+   X_train : ndarray of shape (n_samples, nvars)
+       Training input points (used to compute input normalization statistics).
+   y_train : list of arrays
+       List where:
+       - y_train[0] contains function values.
+       - y_train[1:], if present, contain derivative values for each derivative component.
+   sigma_data : float or None
+       Standard deviation of the observational noise (for function values).
+       If provided, it will be normalized.
+   der_indices : list of lists
+       Multi-index derivative structures for each derivative component.
+
+   Returns:
+   -------
+   y_train_normalized : ndarray of shape (n_total,)
+       Normalized function values and derivatives (flattened).
+   mean_vec_y : ndarray of shape (m, 1)
+       Mean of function values before normalization.
+   std_vec_y : ndarray of shape (m, 1)
+       Standard deviation of function values before normalization.
+   std_vec_x : ndarray of shape (1, nvars)
+       Standard deviations of input variables.
+   mean_vec_x : ndarray of shape (1, nvars)
+       Means of input variables.
+   noise_std_normalized : float or None
+       Normalized observational noise standard deviation.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
 .. py:function:: normalize_y_data_directional(X_train, y_train, der_indices)
+
+   
+   Normalize function values and **directional derivatives** for training data.
+
+   This function:
+   - Normalizes **function values (`y_train[0]`)** to have zero mean and unit variance.
+   - Scales **directional derivatives** (`y_train[1:]`) by the **function value standard deviation (`std_vec_y`)**.
+
+   Parameters:
+   ----------
+   X_train : ndarray of shape (n_samples, nvars)
+       Training input points (used to compute input normalization statistics).
+   y_train : list of arrays
+       List where:
+       - y_train[0] contains function values.
+       - y_train[1:], if present, contain directional derivative values for each direction.
+   der_indices : list of lists
+       Directions for directional derivatives (each sublist represents a direction vector).
+
+   Returns:
+   -------
+   y_train_normalized : ndarray of shape (n_total,)
+       Normalized function values and directional derivatives (flattened).
+   mean_vec_y : ndarray of shape (m, 1)
+       Mean of function values before normalization.
+   std_vec_y : ndarray of shape (m, 1)
+       Standard deviation of function values before normalization.
+   std_vec_x : ndarray of shape (1, nvars)
+       Standard deviations of input variables.
+   mean_vec_x : ndarray of shape (1, nvars)
+       Means of input variables.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
