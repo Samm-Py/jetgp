@@ -15,12 +15,11 @@ class degp:
         n_bases,
         der_indices,
         normalize=True,
-        sigma_n=None,
+        sigma_data=None,
         kernel="SE",
         kernel_type="anisotropic",
     ):
 
-        self.sigma_n = sigma_n
         self.n_order = n_order
         self.n_bases = n_bases
         self.dim = x_train.shape[1]
@@ -43,12 +42,17 @@ class degp:
         self.differences_by_dim = degp_utils.differences_by_dim_func(
             self.x_train, self.x_train, n_order
         )
+        if sigma_data is None:
+            self.sigma_data = np.zeros(
+                (self.y_train.shape[0], self.y_train.shape[0]))
+        else:
+            self.sigma_data = sigma_data
+
         self.kernel_factory = KernelFactory(
             dim=n_bases,
             normalize=True,
             differences_by_dim=self.differences_by_dim,
             n_order=n_order,
-            true_noise_std=sigma_n  # <-- Based on the noise you injected into training data
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -84,6 +88,7 @@ class degp:
             self.powers
         )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
+        K += self.sigma_data**2
         L = cholesky(K)
         alpha = solve(L.T, solve(L, self.y_train))
 
