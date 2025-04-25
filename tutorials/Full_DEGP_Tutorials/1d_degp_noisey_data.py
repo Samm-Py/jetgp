@@ -21,8 +21,9 @@ import utils
 import plotting_helper
 
 if __name__ == "__main__":
+    rng = np.random.RandomState(1)
     # GP and function configuration
-    n_order = 1       # Max derivative order included in training
+    n_order = 0       # Max derivative order included in training
     n_bases = 1       # Input dimension (1D)
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
@@ -31,8 +32,8 @@ if __name__ == "__main__":
     X = np.linspace(lb_x, ub_x, 1000).reshape(-1, 1)
     rng = np.random.RandomState(1)
     training_indices = rng.choice(np.arange(X.shape[0]), size=6, replace=False)
-    X_train = X[training_indices]
-
+    X_train = np.sort(X[training_indices], axis=0)
+    n_train = len(X_train)
     # Convert to OTI array and perturb to track derivatives
     X_train_pert = oti.array(X_train)
     for i in range(n_bases):
@@ -48,20 +49,28 @@ if __name__ == "__main__":
     y_train_real = y_train_hc.real
 
     # Add Gaussian noise to function and derivative observations
-    noise_std = np.sqrt(0.75)
-    y_train_real_noisy = y_train_real + \
-        np.random.normal(0, noise_std, size=y_train_real.shape)
 
     # Derivative indices to include in training data
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
+
+    arr = np.zeros((len(der_indices) + 1)*n_train)
+    arr[0] = 0.1
+    arr[1] = 1.0
+    arr[2] = 10.0
+    arr[3] = 5.0
+    arr[4] = 1.0
+    arr[5] = 0.1
+    noise_std = np.diag(arr)
+    for i in range(0, len(y_train_real)):
+        y_train_real_noisy = y_train_real + \
+            rng.normal(loc=0.0, scale=arr[i], size=1)
 
     # Build y_train list: function values and noisy derivatives
     y_train = [y_train_real_noisy]
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
             deriv = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
-            deriv_noisy = deriv + \
-                np.random.normal(0, noise_std, size=deriv.shape)
+            deriv_noisy = deriv
             y_train.append(deriv_noisy)
 
     # Instantiate and configure the GP model
@@ -71,8 +80,8 @@ if __name__ == "__main__":
         n_order,
         n_bases,
         der_indices,
-        normalize=True,
-        sigma_n=noise_std,      # Informs the model about expected noise level
+        normalize=False,
+        sigma_data=noise_std,      # Informs the model about expected noise level
         kernel="SE",
         kernel_type="anisotropic",
     )

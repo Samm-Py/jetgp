@@ -7,31 +7,6 @@ import sympy as sp
 # -------------------------------------------------------------------
 
 
-def adjust_sigma_n_bound(base_bounds, true_noise_std=None, cushion=.5):
-    """
-    Adjusts the log10 bounds of sigma_n (noise level) based on known noise.
-
-    Parameters
-    ----------
-    base_bounds : tuple of float
-        The default lower and upper bounds in log10 space.
-    true_noise_std : float, optional
-        The known standard deviation of the noise in the data.
-    cushion : float, default 0.5
-        Extra margin added around the log10 noise level.
-
-    Returns
-    -------
-    tuple
-        Adjusted bounds if noise is known, otherwise base bounds.
-    """
-    lower, upper = base_bounds
-    if true_noise_std is not None:
-        log_sigma = np.log10(true_noise_std)
-        return (log_sigma - cushion, log_sigma + cushion)
-    return base_bounds
-
-
 def matern_kernel_builder(nu):
 
     # Define symbols
@@ -141,9 +116,7 @@ class KernelFactory:
         """
         Sets bounds and returns the anisotropic kernel function.
         """
-        base_sigma_n_bound = (-16, -3)
-        sigma_n_bound = adjust_sigma_n_bound(
-            base_sigma_n_bound, self.true_noise_std)
+        sigma_n_bound = (-16, -3)
 
         if kernel == "SE":
             self._add_bounds([(-1, 3), sigma_n_bound])
@@ -165,9 +138,7 @@ class KernelFactory:
         """
         Sets bounds and returns the isotropic kernel function.
         """
-        base_sigma_n_bound = (-16, -3)
-        sigma_n_bound = adjust_sigma_n_bound(
-            base_sigma_n_bound, self.true_noise_std)
+        sigma_n_bound = (-16, -3)
 
         if self.normalize:
             core_bounds = [(-3, 3)]
