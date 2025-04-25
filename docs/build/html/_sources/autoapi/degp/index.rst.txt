@@ -15,12 +15,7 @@ Classes
 Module Contents
 ---------------
 
-.. py:class:: degp(x_train, y_train, n_order, n_bases, der_indices, normalize=True, sigma_n=None, kernel='SE', kernel_type='anisotropic')
-
-   .. py:attribute:: sigma_n
-      :value: None
-
-
+.. py:class:: degp(x_train, y_train, n_order, n_bases, der_indices, normalize=True, sigma_data=None, kernel='SE', kernel_type='anisotropic')
 
    .. py:attribute:: n_order
 

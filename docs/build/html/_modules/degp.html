@@ -89,14 +89,10 @@
         <span class="n">n_bases</span><span class="p">,</span>
         <span class="n">der_indices</span><span class="p">,</span>
         <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">sigma_n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sigma_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
         <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-
-<div class="viewcode-block" id="degp.sigma_n">
-<a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.sigma_n">[docs]</a>
-        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_n</span> <span class="o">=</span> <span class="n">sigma_n</span></div>
 
 <div class="viewcode-block" id="degp.n_order">
 <a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.n_order">[docs]</a>
@@ -126,7 +122,7 @@
 <a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.normalize">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span></div>
 
-        <span class="n">indices</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_nested_list</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">der_indices</span>
 <div class="viewcode-block" id="degp.flattened_der_indicies">
 <a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.flattened_der_indicies">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">flatten_der_indices</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span></div>
@@ -138,8 +134,8 @@
 
 
         <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data</span><span class="p">(</span>
-                <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">,</span> <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data</span><span class="p">(</span>
+                <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">sigma_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_train</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span> <span class="o">=</span> <span class="n">x_train</span>
@@ -150,6 +146,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">n_order</span>
         <span class="p">)</span></div>
 
+        <span class="k">if</span> <span class="n">sigma_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">sigma_data</span>
+
 <div class="viewcode-block" id="degp.kernel_factory">
 <a class="viewcode-back" href="../autoapi/degp/index.html#degp.degp.kernel_factory">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span> <span class="o">=</span> <span class="n">KernelFactory</span><span class="p">(</span>
@@ -157,7 +159,6 @@
             <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">differences_by_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span>
             <span class="n">n_order</span><span class="o">=</span><span class="n">n_order</span><span class="p">,</span>
-            <span class="n">true_noise_std</span><span class="o">=</span><span class="n">sigma_n</span>  <span class="c1"># &lt;-- Based on the noise you injected into training data</span>
         <span class="p">)</span></div>
 
 <div class="viewcode-block" id="degp.kernel_func">
@@ -208,6 +209,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">powers</span>
         <span class="p">)</span>
         <span class="n">K</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="o">**</span><span class="mi">2</span>
         <span class="n">L</span> <span class="o">=</span> <span class="n">cholesky</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">))</span>
 

@@ -9,47 +9,52 @@ Functions
 
 .. autoapisummary::
 
-   degp_utils.flatten_der_indices
    degp_utils.differences_by_dim_func
-   degp_utils.nrmse
-   degp_utils.transform_nested_list
-   degp_utils.convert_index_to_exponent_form
-   degp_utils.build_companion_array
-   degp_utils.compare_OTI_indices
-   degp_utils.gen_OTI_indices
-   degp_utils.reshape_y_train
-   degp_utils.transform_cov
-   degp_utils.transform_predictions
-   degp_utils.normalize_x_data_test
-   degp_utils.normalize_x_data_train
-   degp_utils.normalize_y_data
    degp_utils.rbf_kernel
 
 
 Module Contents
 ---------------
 
-.. py:function:: flatten_der_indices(indices)
-
 .. py:function:: differences_by_dim_func(X1, X2, n_order, index=-1)
 
-.. py:function:: nrmse(y_true, y_pred, norm_type='minmax')
-
    
-   Compute the Normalized Root Mean Squared Error (NRMSE).
+   Compute pairwise differences between two input arrays X1 and X2 for each dimension,
+   embedding hypercomplex units along each dimension for automatic differentiation.
 
-   :param y_true: Ground truth values.
-   :type y_true: array-like
-   :param y_pred: Predicted values.
-   :type y_pred: array-like
-   :param norm_type: Normalization type:
-                     - 'minmax': divide by (max - min) of y_true
-                     - 'mean': divide by mean of y_true
-                     - 'std': divide by standard deviation of y_true
-   :type norm_type: str
+   For each dimension k, this function computes:
+       diff_k[i, j] = X1[i, k] + e_{k+1} - X2[j, k]
+   where e_{k+1} is a hypercomplex unit for the (k+1)-th dimension with order 2 * n_order.
 
-   :returns: NRMSE value.
-   :rtype: float
+   :param X1: First set of input points with n1 samples in d dimensions.
+   :type X1: array_like of shape (n1, d)
+   :param X2: Second set of input points with n2 samples in d dimensions.
+   :type X2: array_like of shape (n2, d)
+   :param n_order: The base order used to construct hypercomplex units (e_{k+1}) with order 2 * n_order.
+   :type n_order: int
+   :param index: Currently unused. Reserved for future enhancements.
+   :type index: int, optional
+
+   :returns: **differences_by_dim** -- A list where each element is an array of shape (n1, n2), containing the differences
+             between corresponding dimensions of X1 and X2, augmented with hypercomplex units.
+   :rtype: list of length d
+
+   .. rubric:: Notes
+
+   - The function leverages hypercomplex arithmetic from the pyOTI library.
+   - This routine is typically used in the construction of hypercomplex kernels for Gaussian processes
+     or other applications involving automatic differentiation.
+
+   .. rubric:: Example
+
+   >>> X1 = [[1.0, 2.0], [3.0, 4.0]]
+   >>> X2 = [[1.5, 2.5], [3.5, 4.5]]
+   >>> n_order = 1
+   >>> diffs = differences_by_dim_func(X1, X2, n_order)
+   >>> len(diffs)
+   2
+   >>> diffs[0].shape
+   (2, 2)
 
 
 
@@ -67,111 +72,51 @@ Module Contents
 
    ..
        !! processed by numpydoc !!
-
-.. py:function:: transform_nested_list(nested_list)
-
-   
-   Recursively traverse a nested list. Whenever we encounter
-   a two-element list [k, v] with both k and v as integers,
-   transform k -> 2*k.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: convert_index_to_exponent_form(lst)
-
-.. py:function:: build_companion_array(nvars, order, der_indices)
-
-.. py:function:: compare_OTI_indices(nvars, order, term_check)
-
-   
-   Generate list of lists that contain indices of bases in an OTI number
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: gen_OTI_indices(nvars, order)
-
-   
-   Generate list of lists that contain indices of bases in an OTI number
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   ..
-       !! processed by numpydoc !!
-
-.. py:function:: reshape_y_train(y_train)
-
-.. py:function:: transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test)
-
-.. py:function:: transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test)
-
-.. py:function:: normalize_x_data_test(X_test, sigmas_x, mus_x)
-
-.. py:function:: normalize_x_data_train(X_train)
-
-.. py:function:: normalize_y_data(X_train, y_train, der_indices)
 
 .. py:function:: rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1)
 
    
-   ARD RBF kernel for multi-dimensional inputs:
-     k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+   Compute the derivative-enhanced Radial Basis Function (RBF) kernel matrix
+   with Automatic Relevance Determination (ARD) for multi-dimensional inputs.
 
-   :param X1:
-   :type X1: array of shape (N, D)
-   :param X2:
-   :type X2: array of shape (M, D)
-   :param length_scales:
-   :type length_scales: array of shape (D,), each dimension's length scale
-   :param sigma_f:
-   :type sigma_f: float (signal amplitude)
+   The kernel supports function values and mixed **partial derivatives** up to a specified order.
 
-   :returns: **K**
-   :rtype: array of shape (N, M)
+   General form of the ARD RBF kernel:
+   k(x, x') = exp(-0.5 * sum_d((x_d - x'_d)^2 / length_scale_d^2))
+
+   Parameters:
+   ----------
+   differences : ndarray of shape (N, M, D)
+       Pairwise differences between input points (X - X').
+   length_scales : ndarray of shape (D,)
+       Length scales for each input dimension (ARD).
+   n_order : int
+       Maximum derivative order considered.
+   n_bases : int
+       Total number of bases (function value + derivative terms).
+   kernel_func : callable
+       Function that computes the base RBF kernel and its derivatives.
+       Must return an object with:
+       - `.real`: the base kernel.
+       - `.get_deriv(multi_index)`: derivatives of the kernel.
+   der_indices : list of lists
+       Multi-index derivative structures for each derivative component.
+   powers : list of int
+       Powers of (-1) applied to each term (for symmetry or sign conventions).
+   index : int, optional (default=-1)
+       Index for selecting directional kernels or subspaces (if applicable).
+
+   Returns:
+   -------
+   K : ndarray of shape (n_total, n_total)
+       Kernel matrix including function values and derivative terms.
+
+   Notes:
+   -----
+   - The kernel matrix is built by stacking:
+     - Function value blocks.
+     - Derivative blocks (including mixed partial derivatives).
+   - The sign convention for derivatives is controlled by `powers`.
 
 
 
