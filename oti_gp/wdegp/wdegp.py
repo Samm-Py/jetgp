@@ -16,16 +16,16 @@ class wdegp:
         index,
         der_indices,
         normalize=True,
-        sigma_n=0.0,
+        sigma_data=None,
         kernel="SE",
         kernel_type="anisotropic",
     ):
         self.x_train = x_train
         self.y_train = y_train
-        self.sigma_n = sigma_n
         self.n_order = n_order
         self.n_bases = n_bases
         self.index = index
+        self.num_points = len(x_train)
         self.der_indices = der_indices
         self.dim = x_train.shape[1]
         self.kernel = kernel
@@ -36,7 +36,7 @@ class wdegp:
         self.powers = []
 
         for k, ders in enumerate(der_indices):
-            indices = utils.transform_nested_list(ders)
+            indices = ders
             self.powers.append(
                 utils.build_companion_array(n_bases, n_order, ders))
 
@@ -46,8 +46,8 @@ class wdegp:
         if normalize:
             self.y_train = []
             for k, ders in enumerate(self.der_indices):
-                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data(
-                    x_train, y_train[k], self.flattened_der_indicies[k]
+                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = utils.normalize_y_data(
+                    x_train, y_train[k], sigma_data, self.flattened_der_indicies[k]
                 )
                 self.y_train.append(y_norm)
 
@@ -55,6 +55,7 @@ class wdegp:
         else:
             self.y_train = [utils.reshape_y_train(y) for y in y_train]
             self.x_train = x_train
+            self.sigma_data = sigma_data
 
         self.differences_by_dim_submodels = [
             wdegp_utils.differences_by_dim_func(
@@ -75,6 +76,9 @@ class wdegp:
         )
         self.bounds = self.kernel_factory.bounds
         self.optimizer = Optimizer(self)
+
+        self.sigma_data = utils.generate_submodel_noise_matricies(
+            self.sigma_data, index, self.flattened_der_indicies, self.num_points)
 
     def optimize_hyperparameters(self, *args, **kwargs):
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
@@ -127,6 +131,7 @@ class wdegp:
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
             K += (10**sigma_n)**2 * np.eye(len(K))
+            K += self.sigma_data[i]**2
             L = cholesky(K)
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
@@ -163,12 +168,13 @@ class wdegp:
                 else:
                     f_var = np.diag(np.abs(f_cov))
                 for j in range(len(self.index[i])):
-                    y_var += (weights_matrix[:, self.index[i][j]] ** 2) * f_var
+                    y_var += (weights_matrix[:,
+                              self.index[i][j]]) * np.sqrt(f_var)
                 if return_submodels:
                     submodel_cov.append(f_var)
 
         # Return results
         if return_submodels:
-            return (y_val, y_var, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
+            return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
         else:
             return (y_val, y_var) if calc_cov else y_val

@@ -23,7 +23,7 @@ import plotting_helper
 if __name__ == "__main__":
     rng = np.random.RandomState(1)
     # GP and function configuration
-    n_order = 0       # Max derivative order included in training
+    n_order = 1     # Max derivative order included in training
     n_bases = 1       # Input dimension (1D)
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
@@ -32,7 +32,8 @@ if __name__ == "__main__":
     X = np.linspace(lb_x, ub_x, 1000).reshape(-1, 1)
     rng = np.random.RandomState(1)
     training_indices = rng.choice(np.arange(X.shape[0]), size=6, replace=False)
-    X_train = np.sort(X[training_indices], axis=0)
+    # X_train = np.sort(X[training_indices], axis=0)
+    X_train = X[training_indices]
     n_train = len(X_train)
     # Convert to OTI array and perturb to track derivatives
     X_train_pert = oti.array(X_train)
@@ -54,15 +55,11 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     arr = np.zeros((len(der_indices) + 1)*n_train)
-    arr[0] = 0.75
-    arr[1] = 0.75
-    arr[2] = 0.75
-    arr[3] = 0.75
-    arr[4] = 0.75
-    arr[5] = 0.75
+    arr[:] = .75
     noise_std = np.diag(arr)
+    y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
-        y_train_real_noisy = y_train_real + \
+        y_train_real_noisy[i] = y_train_real_noisy[i] + \
             rng.normal(loc=0.0, scale=arr[i], size=1)
 
     # Build y_train list: function values and noisy derivatives
@@ -70,7 +67,10 @@ if __name__ == "__main__":
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
             deriv = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
-            deriv_noisy = deriv
+            deriv_noisy = deriv.copy()
+            for k in range(0, len(deriv_noisy)):
+                deriv_noisy[k] = deriv_noisy[k] + \
+                    rng.normal(loc=0.0, scale=.75, size=1)
             y_train.append(deriv_noisy)
 
     # Instantiate and configure the GP model
