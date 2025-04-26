@@ -26,6 +26,7 @@ class wdegp:
         self.n_bases = n_bases
         self.index = index
         self.num_points = len(x_train)
+
         self.der_indices = der_indices
         self.dim = x_train.shape[1]
         self.kernel = kernel
@@ -34,6 +35,13 @@ class wdegp:
 
         self.flattened_der_indicies = []
         self.powers = []
+        base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
+        flattened_base_der_indicies = [
+            i for sublist in base_der_indices for i in sublist]
+        if sigma_data is None:
+            arr = np.zeros((len(flattened_base_der_indicies)+1)
+                           * self.num_points)
+            sigma_data = np.diag(arr)
 
         for k, ders in enumerate(der_indices):
             indices = ders
@@ -42,7 +50,6 @@ class wdegp:
 
             flat_indices = [i for sublist in indices for i in sublist]
             self.flattened_der_indicies.append(flat_indices)
-
         if normalize:
             self.y_train = []
             for k, ders in enumerate(self.der_indices):
@@ -78,7 +85,7 @@ class wdegp:
         self.optimizer = Optimizer(self)
 
         self.sigma_data = utils.generate_submodel_noise_matricies(
-            self.sigma_data, index, self.flattened_der_indicies, self.num_points)
+            self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
 
     def optimize_hyperparameters(self, *args, **kwargs):
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
