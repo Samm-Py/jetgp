@@ -725,15 +725,25 @@ def normalize_y_data_directional(X_train, y_train, der_indices):
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x
 
 
-def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points):
+def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices):
     sub_model_matricies = []
     for i, idx in enumerate(index):
         values = np.diag(sigma_data[:num_points, :num_points])
         for j in range(len(der_indices[i])):
-            for k in range(1, len(der_indices[i][j]) + 1):
-                indices = (k*num_points)+np.array(idx)
-                values = np.concatenate(
-                    (values, sigma_data[indices[0:], indices[0:]].flatten()))
+            for k, item in enumerate(base_der_indices):
+                if item == der_indices[i][j]:
+                    scale_factor = k
+                    break
+                else:
+                    scale_factor = -1
+                    continue
+
+            if scale_factor == -1:
+                raise Exception('Unknown Error')
+            scale_factor = k + 1
+            indices = (scale_factor*num_points)+np.array(idx)
+            values = np.concatenate(
+                (values, sigma_data[indices[0:], indices[0:]].flatten()))
         sub_model_matricies.append(np.diag(values))
 
     return sub_model_matricies

@@ -21,10 +21,10 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # GP configuration
-    n_order = 4
+    n_order = 2
     n_bases = 1
     lb_x, ub_x = 0.5, 2.5
-    num_points = 10
+    num_points = 15
 
     # Create training inputs and define submodel structure (1 point per submodel)
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)

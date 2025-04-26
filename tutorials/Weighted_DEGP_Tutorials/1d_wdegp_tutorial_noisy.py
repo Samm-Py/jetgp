@@ -36,7 +36,7 @@ if __name__ == "__main__":
     X_train = X[training_indices]
     # X_train[0] = 1
     # index = [[i] for i in range(num_points)]
-    index = [[0, 1, 2, 3, 4, 5]]
+    index = [[0, 1, 2], [3, 4, 5]]
 
     # Each submodel uses the same full derivative index structure
     base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     y_train_data = []
     y_train_real = true_function(X_train, alg=np)
     arr = np.zeros((len(base_der_indices)+1)*num_points)
-    arr[:] = .75
+    arr[:] = .5
     noise_std = np.diag(arr)
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
@@ -68,7 +68,7 @@ if __name__ == "__main__":
                 deriv_noisy = deriv.copy()
                 for k in range(0, len(deriv_noisy)):
                     deriv_noisy[k] = deriv_noisy[k] + \
-                        rng.normal(loc=0.0, scale=0.75, size=1)
+                        rng.normal(loc=0.0, scale=0.1, size=1)
                 y_train.append(deriv_noisy)
 
         y_train_data.append(y_train)
