@@ -43,6 +43,7 @@ class degp:
         kernel_type : str, default="anisotropic"
             Kernel type (anisotropic or isotropic).
         """
+
         self.n_order = n_order
         self.n_bases = n_bases
         self.dim = x_train.shape[1]
@@ -89,7 +90,7 @@ class degp:
         # Initialize kernel factory and optimizer
         self.kernel_factory = KernelFactory(
             dim=n_bases,
-            normalize=True,
+            normalize=normalize,
             differences_by_dim=self.differences_by_dim,
             n_order=n_order,
         )

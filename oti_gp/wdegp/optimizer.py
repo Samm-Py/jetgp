@@ -16,7 +16,6 @@ class Optimizer:
         x0,
         x_train,
         y_train,
-        sigma_n,
         n_order,
         n_bases,
         der_indices,
@@ -41,6 +40,7 @@ class Optimizer:
                 der_indices_sub, powers, index=idx
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
+            K += self.model.sigma_data[i]**2
 
             try:
                 L = cholesky(K)
@@ -61,7 +61,6 @@ class Optimizer:
             x0,
             self.model.x_train,
             self.model.y_train,
-            self.model.sigma_n,
             self.model.n_order,
             self.model.n_bases,
             self.model.der_indices,

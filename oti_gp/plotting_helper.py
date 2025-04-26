@@ -520,14 +520,14 @@ def make_submodel_plots(
         if len(submodel_cov) == 0:
             for i in range(len(submodel_vals)):
                 submodel_cov.append(
-                    np.zeros((y_pred.shape[0], y_pred.shape[0]))
+                    np.zeros((y_pred.shape[0],))
                 )
     # Standard deviation is the square root of the diagonal of the covariance matrix
 
     assert X_train.shape[1] <= 400, "Plots not implemented for dimension >= 2"
 
     if isinstance(cov, int):
-        cov = np.zeros((y_pred.shape[0], y_pred.shape[0]))
+        cov = np.zeros((y_pred.shape[0],))
     sigma = np.sqrt(cov)
     if not plot_submodels:
         if X_train.shape[1] == 1:

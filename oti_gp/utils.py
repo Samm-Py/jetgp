@@ -134,7 +134,7 @@ def convert_index_to_exponent_form(lst):
     """
    Convert a list of indices into exponent form.
 
-   For a given list of integers, the function compresses consecutive identical elements 
+   For a given list of integers, the function compresses consecutive identical elements
    into pairs [value, count], where 'value' is the element and 'count' is its occurrence.
 
    Parameters:
@@ -189,7 +189,7 @@ def build_companion_array(nvars, order, der_indices):
     order : int
         Maximum derivative order considered.
     der_indices : list of lists
-        Derivative indices in exponent form, where each sublist represents the derivative multi-index 
+        Derivative indices in exponent form, where each sublist represents the derivative multi-index
         for a specific derivative term.
 
     Returns:
@@ -221,7 +221,7 @@ def compare_OTI_indices(nvars, order, term_check):
     """
     Compare a given multi-index term against all basis terms in the OTI number system.
 
-    This function searches through all OTI basis terms (multi-indices) up to the specified order 
+    This function searches through all OTI basis terms (multi-indices) up to the specified order
     and identifies the **order** of the matching term.
 
     Parameters:
@@ -262,7 +262,7 @@ def gen_OTI_indices(nvars, order):
     """
     Generate the list of OTI (Order-Truncated Imaginary) basis indices in exponent form.
 
-    For a given number of variables and maximum derivative order, this function produces the 
+    For a given number of variables and maximum derivative order, this function produces the
     multi-index representations for all basis terms in the OTI number system.
 
     Parameters:
@@ -286,7 +286,8 @@ def gen_OTI_indices(nvars, order):
     >>> gen_OTI_indices(nvars, order)
     [
         [[[1, 1]], [[2, 1]]],         # First-order derivatives: ∂/∂x₁, ∂/∂x₂
-        [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]  # Second-order: ∂²/∂x₁², ∂²/∂x₁∂x₂, ∂²/∂x₂²
+        # Second-order: ∂²/∂x₁², ∂²/∂x₁∂x₂, ∂²/∂x₂²
+        [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]
     ]
     """
     dH = coti.get_dHelp()
@@ -333,7 +334,7 @@ def reshape_y_train(y_train):
 
 def transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test):
     """
-    Rescale the diagonal of a covariance matrix to reflect the original (unnormalized) variance 
+    Rescale the diagonal of a covariance matrix to reflect the original (unnormalized) variance
     of function values and derivatives.
 
     This function transforms the variance estimates from normalized space back to the original scale.
@@ -379,7 +380,7 @@ def transform_cov_directrional(cov, sigma_y, sigmas_x, der_indices, X_test):
     """
     Rescale the diagonal of a covariance matrix for function values and directional derivatives.
 
-    Unlike `transform_cov`, this function assumes **directional derivatives** (not multi-index derivatives), 
+    Unlike `transform_cov`, this function assumes **directional derivatives** (not multi-index derivatives),
     so no input scaling (`sigmas_x`) is applied to derivative terms.
 
     Parameters:
@@ -419,13 +420,13 @@ def transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test):
     """
     Rescale predicted function values and derivatives from normalized space back to their original scale.
 
-    This function transforms both function value predictions and **multi-index derivatives** 
+    This function transforms both function value predictions and **multi-index derivatives**
     back to the original units after GP prediction.
 
     Parameters:
     ----------
     y_pred : ndarray of shape (n_total,)
-        Predicted mean values from the GP model in normalized space 
+        Predicted mean values from the GP model in normalized space
         (includes function values and derivatives).
     mu_y : float
         Mean of the original function values (before normalization).
@@ -463,16 +464,16 @@ def transform_predictions(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test):
 
 def transform_predictions_directional(y_pred, mu_y, sigma_y, sigmas_x, der_indices, X_test):
     """
-    Rescale predicted function values and **directional derivatives** from normalized space 
+    Rescale predicted function values and **directional derivatives** from normalized space
     back to their original scale.
 
-    This function assumes the derivatives are **directional** (not multi-index), 
+    This function assumes the derivatives are **directional** (not multi-index),
     so it applies only output scaling (sigma_y) to derivatives.
 
     Parameters:
     ----------
     y_pred : ndarray of shape (n_total,)
-        Predicted mean values from the GP model in normalized space 
+        Predicted mean values from the GP model in normalized space
         (includes function values and directional derivatives).
     mu_y : float
         Mean of the original function values (before normalization).
@@ -643,7 +644,8 @@ def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     Example:
     --------
     >>> normalize_y_data(X_train, y_train, sigma_data=0.75, der_indices=[[[1, 1]]])
-    (y_train_normalized, mean_vec_y, std_vec_y, std_vec_x, mean_vec_x, noise_std_normalized)
+    (y_train_normalized, mean_vec_y, std_vec_y,
+     std_vec_x, mean_vec_x, noise_std_normalized)
     """
     mean_vec_x = np.mean(X_train, axis=0).reshape(1, -1)  # shape: (m, 1)
     std_vec_x = np.std(X_train, axis=0).reshape(1, -1)    # shape: (m, 1)
@@ -721,3 +723,17 @@ def normalize_y_data_directional(X_train, y_train, der_indices):
         y_train_normalized = np.vstack(
             (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x
+
+
+def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points):
+    sub_model_matricies = []
+    for i, idx in enumerate(index):
+        values = np.diag(sigma_data[:num_points, :num_points])
+        for j in range(len(der_indices[i])):
+            for k in range(1, len(der_indices[i][j]) + 1):
+                indices = (k*num_points)+np.array(idx)
+                values = np.concatenate(
+                    (values, sigma_data[indices[0:], indices[0:]].flatten()))
+        sub_model_matricies.append(np.diag(values))
+
+    return sub_model_matricies

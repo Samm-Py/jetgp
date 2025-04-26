@@ -17,7 +17,7 @@ import plotting_helper
 
 if __name__ == "__main__":
     # ----- Problem Configuration -----
-    n_order = 2      # Max derivative order to include
+    n_order = 3      # Max derivative order to include
     n_bases = 2      # Number of input dimensions
     lb_x, ub_x = -1, 1
     lb_y, ub_y = -1, 1
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     # ----- Generate Training Inputs -----
-    num_points = 5
+    num_points = 4
     x_vals = np.linspace(lb_x, ub_x, num_points)
     y_vals = np.linspace(lb_y, ub_y, num_points)
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
