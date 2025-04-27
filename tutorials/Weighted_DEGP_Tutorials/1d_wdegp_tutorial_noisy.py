@@ -45,13 +45,12 @@ if __name__ == "__main__":
     # Construct training data for each submodel
     y_train_data = []
     y_train_real = true_function(X_train, alg=np)
-    arr = np.zeros((len(base_der_indices)+1)*num_points)
-    arr[:] = .5
-    noise_std = np.diag(arr)
+    noise_std = np.zeros((len(base_der_indices)+1)*num_points)
+    noise_std[:] = .5
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
         y_train_real_noisy[i] = y_train_real_noisy[i] + \
-            rng.normal(loc=0.0, scale=arr[i], size=1)
+            rng.normal(loc=0.0, scale=noise_std[i], size=1)
     for k, val in enumerate(index):
         X_train_pert = oti.array(X_train[val])
         for i in range(n_bases):

@@ -2,6 +2,27 @@ import numpy as np
 import pyoti.core as coti
 
 
+def transform_nested_list(nested_list):
+    """
+    Recursively traverse a nested list. Whenever we encounter
+    a two-element list [k, v] with both k and v as integers,
+    transform k -> 2*k.
+    """
+    # If it's not a list, return it as is.
+    if not isinstance(nested_list, list):
+        return nested_list
+
+    # If it's exactly two integers [k, v], apply the transformation.
+    if len(nested_list) == 2 and all(
+        (isinstance(x, np.uint16) or isinstance(x, int)) for x in nested_list
+    ):
+        k, v = nested_list
+        return [k, v]  # Transform k -> 2*k
+
+    # Otherwise, apply the transformation to each element recursively.
+    return [transform_nested_list(item) for item in nested_list]
+
+
 def scale_samples(samples, lower_bounds, upper_bounds):
     """
     Scale each column of samples from the unit interval [0, 1] to user-defined bounds [lb_j, ub_j].
