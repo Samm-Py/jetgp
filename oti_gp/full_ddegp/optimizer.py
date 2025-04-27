@@ -27,6 +27,7 @@ class Optimizer:
             self.model.powers
         )
         K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
+        K += self.model.sigma_data**2
 
         try:
             L = cholesky(K)

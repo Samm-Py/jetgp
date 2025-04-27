@@ -53,19 +53,38 @@ def generate_training_data(n_order, num_points=5):
         [[3, 1]], [[3, 2]], [[3, 3]],
     ]]
 
+    noise_std = np.zeros((len(der_indices[0]) + 1)*len(X_train))
+    noise_std[:] = .75
+    rng = np.random.RandomState(1)
+    y_train_real_noisy = y_train_real.copy()
+    for i in range(0, len(y_train_real)):
+        y_train_real_noisy[i] = y_train_real_noisy[i] + \
+            rng.normal(loc=0.0, scale=noise_std[i], size=1)
+
+    # Build y_train list: function values and noisy derivatives
+    y_train = [y_train_real_noisy]
+    for i in range(len(der_indices)):
+        for j in range(len(der_indices[i])):
+            deriv = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
+            deriv_noisy = deriv.copy()
+            for k in range(0, len(deriv_noisy)):
+                deriv_noisy[k] = deriv_noisy[k] + \
+                    rng.normal(loc=0.0, scale=0.0, size=1)
+            y_train.append(deriv_noisy)
+
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
             y_train.append(y_train_hc.get_deriv(
                 der_indices[i][j]).reshape(-1, 1))
 
-    return X_train, y_train, der_indices, rays
+    return X_train, y_train, der_indices, rays, noise_std
 
 
 def main():
     np.random.seed(0)
     n_order = 3
 
-    X_train, y_train, der_indices, rays = generate_training_data(
+    X_train, y_train, der_indices, rays, noise_std = generate_training_data(
         n_order)
 
     gp = ddegp(
@@ -75,6 +94,7 @@ def main():
         der_indices=der_indices,
         rays=rays,
         normalize=True,
+        sigma_data=noise_std,
         kernel="SE",
         kernel_type="anisotropic",
     )

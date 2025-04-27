@@ -46,6 +46,13 @@ class ddegp:
         self.differences_by_dim = ddegp_utils.differences_by_dim_func(
             self.x_train, self.x_train, self.rays, n_order)
 
+        # Initialize noise matrix
+        self.sigma_data = (
+            np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
+            if sigma_data is None
+            else np.diag(sigma_data)
+        )
+
         self.kernel_factory = KernelFactory(
             dim=self.dim,
             normalize=self.normalize,
@@ -85,6 +92,7 @@ class ddegp:
             self.powers
         )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
+        K += self.sigma_data**2
         L = cholesky(K)
         alpha = solve(L.T, solve(L, self.y_train))
 
