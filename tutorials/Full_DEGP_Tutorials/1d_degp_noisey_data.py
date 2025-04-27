@@ -54,13 +54,12 @@ if __name__ == "__main__":
     # Derivative indices to include in training data
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
-    arr = np.zeros((len(der_indices) + 1)*n_train)
-    arr[:] = .75
-    noise_std = np.diag(arr)
+    noise_std = np.zeros((len(der_indices) + 1)*n_train)
+    noise_std[:] = .75
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
         y_train_real_noisy[i] = y_train_real_noisy[i] + \
-            rng.normal(loc=0.0, scale=arr[i], size=1)
+            rng.normal(loc=0.0, scale=noise_std[i], size=1)
 
     # Build y_train list: function values and noisy derivatives
     y_train = [y_train_real_noisy]
@@ -70,7 +69,7 @@ if __name__ == "__main__":
             deriv_noisy = deriv.copy()
             for k in range(0, len(deriv_noisy)):
                 deriv_noisy[k] = deriv_noisy[k] + \
-                    rng.normal(loc=0.0, scale=.75, size=1)
+                    rng.normal(loc=0.0, scale=0.0, size=1)
             y_train.append(deriv_noisy)
 
     # Instantiate and configure the GP model

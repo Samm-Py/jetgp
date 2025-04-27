@@ -24,7 +24,7 @@ def generate_rays(order, ndim=2):
     return rays, perts
 
 
-def generate_training_data(n_order, num_points=4):
+def generate_training_data(n_order, num_points=5):
     x_vals = np.linspace(-1, 1, num_points)
     y_vals = np.linspace(-1, 1, num_points)
 
@@ -83,7 +83,7 @@ def main():
         n_restart_optimizer=15, swarm_size=50, verbose=True)
 
     # Test data grid
-    N_grid = 40
+    N_grid = 20
     x_lin = np.linspace(-1, 1, N_grid)
     y_lin = np.linspace(-1, 1, N_grid)
     X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
@@ -106,7 +106,7 @@ def main():
     )
 
     y_true = true_function(X_test, alg=np).flatten()
-    nrmse = utils.nrmse(y_true, y_pred)
+    nrmse = utils.nrmse(y_true, y_pred.flatten())
 
     print("NRMSE between model and true function: {}".format(nrmse))
 

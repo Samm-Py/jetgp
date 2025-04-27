@@ -42,6 +42,8 @@ class wdegp:
             arr = np.zeros((len(flattened_base_der_indicies)+1)
                            * self.num_points)
             sigma_data = np.diag(arr)
+        else:
+            sigma_data = np.diag(sigma_data)
 
         for k, ders in enumerate(der_indices):
             indices = ders

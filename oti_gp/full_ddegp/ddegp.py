@@ -15,13 +15,13 @@ class ddegp:
         der_indices,
         rays,
         normalize=True,
-        sigma_n=0.0,
+        sigma_data=None,
         kernel="SE",
         kernel_type="anisotropic",
     ):
         self.x_train = x_train
         self.y_train = y_train
-        self.sigma_n = sigma_n
+        self.sigma_data = sigma_data
         self.n_order = n_order
         self.rays = rays
         self.n_rays = rays.shape[1]
