@@ -38,9 +38,10 @@ class Optimizer:
 
             K = utils.rbf_kernel(
                 diffs, ell, n_order, n_bases, self.model.kernel_func,
-                der_indices_sub, powers, index=idx, index_list = index[i]
+                der_indices_sub, powers, index=idx, index_list=index[i]
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
+            K += self.model.sigma_data[i]**2
 
             try:
                 L = cholesky(K)
@@ -61,7 +62,7 @@ class Optimizer:
             x0,
             self.model.x_train,
             self.model.y_train,
-            self.model.sigma_n,
+            self.model.sigma_data,
             self.model.n_order,
             self.model.n_bases,
             self.model.der_indices,
