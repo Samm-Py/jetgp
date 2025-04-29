@@ -694,7 +694,7 @@ def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x, noise_std_normalized
 
 
-def normalize_y_data_directional(X_train, y_train, der_indices):
+def normalize_y_data_directional(X_train, y_train, sigma_data, der_indices):
     """
     Normalize function values and **directional derivatives** for training data.
 
@@ -743,7 +743,12 @@ def normalize_y_data_directional(X_train, y_train, der_indices):
         factor = 1/std_vec_y
         y_train_normalized = np.vstack(
             (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
-    return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x
+    if sigma_data is not None:
+        noise_std_normalized = sigma_data / std_vec_y[0, 0]
+    else:
+        noise_std_normalized = None
+
+    return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x, noise_std_normalized
 
 
 def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices):

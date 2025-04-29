@@ -17,24 +17,27 @@ class wddegp:
         der_indices,
         rays,
         normalize=False,
-        sigma_n=0.0,
+        sigma_data=None,
         kernel="SE",
         kernel_type="anisotropic",
     ):
         self.x_train = x_train
         self.y_train = y_train
-        self.sigma_n = sigma_n
         self.n_order = n_order
         self.n_bases = n_bases
         self.rays = rays
         self.index = index
-        # self.n_rays = rays.shape[1]
+        self.num_points = len(x_train)
+        self.n_rays = max(arr.shape[1] for arr in rays)
         self.dim = x_train.shape[1]
         self.kernel = kernel
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.flattened_der_indicies = []
         self.powers = []
+        base_der_indices = utils.gen_OTI_indices(self.n_rays, n_order)
+        flattened_base_der_indicies = [
+            i for sublist in base_der_indices for i in sublist]
         self.normalize = normalize
 
         for k, ders in enumerate(der_indices):
@@ -45,13 +48,18 @@ class wddegp:
 
             flat_indices = [i for sublist in indices for i in sublist]
             self.flattened_der_indicies.append(flat_indices)
-
+        if sigma_data is None:
+            arr = np.zeros((len(flattened_base_der_indicies)+1)
+                           * self.num_points)
+            sigma_data = np.diag(arr)
+        else:
+            sigma_data = np.diag(sigma_data)
         if normalize:
             self.y_train = []
             self.rays = []
             for k, ders in enumerate(self.der_indices):
-                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x = utils.normalize_y_data_directional(
-                    x_train, y_train[k], self.flattened_der_indicies[k]
+                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = utils.normalize_y_data_directional(
+                    x_train, y_train[k], sigma_data, self.flattened_der_indicies[k]
                 )
                 rays_norm = utils.normalize_directions(self.sigmas_x, rays[k])
                 self.y_train.append(y_norm)
@@ -61,6 +69,7 @@ class wddegp:
         else:
             self.y_train = [utils.reshape_y_train(y) for y in y_train]
             self.x_train = x_train
+            self.sigma_data = sigma_data
 
         self.differences_by_dim_submodels = [
             wddegp_utils.differences_by_dim_func(
@@ -81,6 +90,8 @@ class wddegp:
         )
         self.bounds = self.kernel_factory.bounds
         self.optimizer = Optimizer(self)
+        self.sigma_data = utils.generate_submodel_noise_matricies(
+            self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
 
     def optimize_hyperparameters(self, *args, **kwargs):
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
@@ -133,6 +144,7 @@ class wddegp:
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
             K += (10**sigma_n)**2 * np.eye(len(K))
+            K += self.sigma_data[i]**2
             L = cholesky(K)
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
