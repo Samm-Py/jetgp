@@ -7,19 +7,38 @@ from wdegp.optimizer import Optimizer
 
 
 class wdegp:
-    def __init__(
-        self,
-        x_train,
-        y_train,
-        n_order,
-        n_bases,
-        index,
-        der_indices,
-        normalize=True,
-        sigma_data=None,
-        kernel="SE",
-        kernel_type="anisotropic",
-    ):
+    """
+    Weighted Derivative-Enhanced Gaussian Process (wDEGP) regression model.
+
+    Supports multiple submodels indexed by regions of the training data,
+    includes normalization and automatic hyperparameter optimization.
+
+    Parameters
+    ----------
+    x_train : ndarray of shape (n_samples, n_features)
+        Input training points.
+    y_train : list of arrays
+        Each element contains function or derivative observations for a submodel.
+    n_order : int
+        Maximum derivative order to be supported.
+    n_bases : int
+        Number of OTI basis terms used.
+    index : list of lists
+        Submodel training data indices.
+    der_indices : list of lists
+        Multi-indices of derivatives for each submodel.
+    normalize : bool, default=True
+        If True, normalizes the input and output data.
+    sigma_data : float or ndarray, optional
+        Known observation noise or covariance matrix.
+    kernel : str, default='SE'
+        Type of kernel to use: 'SE', 'RQ', 'Matern', or 'SineExp'.
+    kernel_type : str, default='anisotropic'
+        Whether kernel is 'anisotropic' or 'isotropic'.
+    """
+
+    def __init__(self, x_train, y_train, n_order, n_bases, index, der_indices,
+                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic"):
         self.x_train = x_train
         self.y_train = y_train
         self.n_order = n_order
@@ -43,15 +62,14 @@ class wdegp:
                            * self.num_points)
             sigma_data = np.diag(arr)
         else:
-            sigma_data = np.diag(sigma_data)
+            sigma_data = 10*np.diag(sigma_data)
 
-        for k, ders in enumerate(der_indices):
-            indices = ders
+        for ders in der_indices:
             self.powers.append(
                 utils.build_companion_array(n_bases, n_order, ders))
-
-            flat_indices = [i for sublist in indices for i in sublist]
+            flat_indices = [i for sublist in ders for i in sublist]
             self.flattened_der_indicies.append(flat_indices)
+
         if normalize:
             self.y_train = []
             for k, ders in enumerate(self.der_indices):
@@ -59,7 +77,6 @@ class wdegp:
                     x_train, y_train[k], sigma_data, self.flattened_der_indicies[k]
                 )
                 self.y_train.append(y_norm)
-
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.y_train = [utils.reshape_y_train(y) for y in y_train]
@@ -90,24 +107,51 @@ class wdegp:
             self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
 
     def optimize_hyperparameters(self, *args, **kwargs):
+        """
+        Optimize hyperparameters (e.g., length scales and noise) via Particle Swarm Optimization (PSO).
+
+        Returns
+        -------
+        ndarray
+            Optimized hyperparameter vector.
+        """
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
 
     def predict(self, X_test, length_scales, calc_cov=False, return_submodels=False):
         """
-        Compute posterior predictive mean and covariance at X_test
-        under an ARD RBF kernel with given length_scales.
+        Compute posterior predictive mean and (optionally) covariance at test points.
+
+        Parameters
+        ----------
+        X_test : ndarray of shape (n_test, n_features)
+            Test input points.
+        length_scales : ndarray
+            Log-scaled kernel hyperparameters including noise level.
+        calc_cov : bool, default=False
+            If True, also compute and return predictive covariance.
+        return_submodels : bool, default=False
+            If True, return submodel-specific contributions.
+
+        Returns
+        -------
+        y_val : ndarray of shape (n_test,)
+            Predicted mean function values at the test inputs.
+        y_var : ndarray of shape (n_test,), optional
+            Predictive variances at the test inputs (only if calc_cov=True).
+        submodel_vals : list of ndarrays, optional
+            List of submodel predictive means (only if return_submodels=True).
+        submodel_cov : list of ndarrays, optional
+            List of submodel variances (only if calc_cov and return_submodels are True).
         """
         ell = length_scales[:-1]
         sigma_n = length_scales[-1]
         n_test = X_test.shape[0]
         n_train = self.x_train.shape[0]
 
-        # Normalize test input if required
         if self.normalize:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
 
-        # Compute weights matrix
         weights_matrix = np.zeros((n_test, n_train))
         diffs_train_train = wdegp_utils.differences_by_dim_func(
             self.x_train, self.x_train, 0, index=[-1])
@@ -120,31 +164,26 @@ class wdegp:
                 diffs_train_train, diffs_train_test, ell, self.kernel_func)
             weights_matrix[k] = weights[:, 0]
 
-        # Initialize outputs
         y_val = 0
         y_var = 0
         submodel_vals = []
         submodel_cov = []
 
-        # Loop over submodels
         for i in range(len(self.index)):
             index_i = self.index[i]
-
             diffs_train_test = wdegp_utils.differences_by_dim_func(
                 self.x_train, X_test, self.n_order, index=index_i)
             diffs_train_train = self.differences_by_dim_submodels[i]
 
-            # Kernel matrix (train/train) and Cholesky factor
             K = wdegp_utils.rbf_kernel(
                 diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
-            K += (10**sigma_n)**2 * np.eye(len(K))
+            K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             K += self.sigma_data[i]**2
             L = cholesky(K)
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
-            # Predictive mean
             K_s = wdegp_utils.rbf_kernel(
                 diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
@@ -158,7 +197,6 @@ class wdegp:
             if return_submodels:
                 submodel_vals.append(f_mean)
 
-            # Predictive covariance (optional)
             if calc_cov:
                 diffs_test_test = wdegp_utils.differences_by_dim_func(
                     X_test, X_test, self.n_order, index=index_i)
@@ -170,19 +208,17 @@ class wdegp:
                 f_cov = K_ss[:n_test, :n_test] - v.T @ v
 
                 if self.normalize:
-                    f_var = utils.transform_cov(
-                        f_cov, self.sigma_y, self.sigmas_x,
-                        self.flattened_der_indicies[i], X_test
-                    )
+                    f_var = utils.transform_cov(f_cov, self.sigma_y, self.sigmas_x,
+                                                self.flattened_der_indicies[i], X_test)
                 else:
                     f_var = np.diag(np.abs(f_cov))
+
                 for j in range(len(self.index[i])):
-                    y_var += (weights_matrix[:,
-                              self.index[i][j]]) * np.sqrt(f_var)
+                    y_var += weights_matrix[:,
+                                            self.index[i][j]] * np.sqrt(f_var)
                 if return_submodels:
                     submodel_cov.append(f_var)
 
-        # Return results
         if return_submodels:
             return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
         else:

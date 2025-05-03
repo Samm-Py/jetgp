@@ -19,7 +19,7 @@ import plotting_helper
 
 if __name__ == "__main__":
     # n_order: the maximum derivative order to include in the GP model
-    n_order = 2
+    n_order = 3
 
     # n_bases: the dimensionality of the input space (here 1D)
     n_bases = 1
@@ -33,11 +33,11 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     # num_points: number of training points in the 1D domain
-    num_points = 6
+    num_points = 3
 
     # X_train: an array of size (num_points, 1) with equally spaced points
     # between lb_x and ub_x
-    X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
+    X_train = np.array([1.65, 3.1, 4.55]).reshape(-1, 1)
 
     # X_train_pert: convert X_train into an OTI array so we can track
     # derivative information. Then we “perturb” it to embed derivative
@@ -84,7 +84,7 @@ if __name__ == "__main__":
         der_indices,
 
         # If True, automatically normalizes/scales the inputs and outputs for numerical stability
-        normalize=True,
+        normalize=False,
         # Kernel choice; "SE" means the Squared Exponential (RBF) kernel
         kernel="SE",
 

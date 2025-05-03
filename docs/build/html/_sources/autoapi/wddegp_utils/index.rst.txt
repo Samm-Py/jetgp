@@ -19,25 +19,106 @@ Module Contents
 
 .. py:function:: differences_by_dim_func(X1, X2, rays, n_order, index=-1, index_list=[])
 
+   
+   Compute directional differences between input arrays X1 and X2 along specified rays.
+
+   :param X1: Array of shape (n_samples1, n_features) representing the first set of input points.
+   :type X1: ndarray
+   :param X2: Array of shape (n_samples2, n_features) representing the second set of input points.
+   :type X2: ndarray
+   :param rays: Array of shape (n_features, n_rays) representing direction vectors.
+   :type rays: ndarray
+   :param n_order: Maximum derivative order for hypercomplex expansion.
+   :type n_order: int
+   :param index: Index of the current submodel (used to select directional rays specific to this submodel).
+   :type index: int, default=-1
+   :param index_list: List of indices corresponding to the training points included in the current submodel.
+   :type index_list: list, default=[]
+
+   :returns: **differences_by_dim** -- List containing the directional differences for each feature dimension.
+   :rtype: list of ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
 .. py:function:: rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1, index_list=[])
+
+   
+   Construct the kernel matrix for the weighted directional derivative-enhanced GP.
+
+   :param differences: Precomputed pairwise differences by dimension.
+   :type differences: list of ndarray
+   :param length_scales: Array of length scales (hyperparameters).
+   :type length_scales: ndarray
+   :param n_order: Maximum derivative order.
+   :type n_order: int
+   :param n_bases: Number of OTI bases.
+   :type n_bases: int
+   :param kernel_func: Kernel function evaluated over differences.
+   :type kernel_func: callable
+   :param der_indices: Indices indicating derivative orders.
+   :type der_indices: list
+   :param powers: Powers of each term based on OTI basis structure.
+   :type powers: list
+   :param index: Dummy argument for compatibility.
+   :type index: int, default=-1
+   :param index_list: List identifying index subsets for directional derivatives.
+   :type index_list: list, default=[]
+
+   :returns: **K** -- Fully assembled kernel matrix including derivatives.
+   :rtype: ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
 .. py:function:: determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func)
 
    
-   ARD RBF kernel for multi-dimensional inputs:
-     k(x, x') = sigma_f^2 * exp( -0.5 * sum_{d}((x_d - x'_d)^2 / ell_d^2) ).
+   Solve for Kriging weights using a Weighted Coefficient Kriging model.
 
-   :param X1:
-   :type X1: array of shape (N, D)
-   :param X2:
-   :type X2: array of shape (M, D)
-   :param length_scales:
-   :type length_scales: array of shape (D,), each dimension's length scale
-   :param sigma_f:
-   :type sigma_f: float (signal amplitude)
+   This method solves an augmented linear system that enforces unbiasedness
+   and ensures the interpolation is consistent with the weighted directional
+   derivative-enhanced GP structure.
 
-   :returns: **K**
-   :rtype: array of shape (N, M)
+   :param diffs_by_dim: Differences between training points.
+   :type diffs_by_dim: list of ndarray
+   :param diffs_test: Differences between training points and test point.
+   :type diffs_test: list of ndarray
+   :param length_scales: Kernel length scales.
+   :type length_scales: ndarray
+   :param kernel_func: Kernel function evaluated over pairwise differences.
+   :type kernel_func: callable
+
+   :returns: **w** -- Optimal weights vector for Weighted Coefficient Kriging interpolation.
+   :rtype: ndarray
 
 
 

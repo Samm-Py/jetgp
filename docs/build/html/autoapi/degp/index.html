@@ -55,7 +55,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ddgep/index.html">ddgep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
@@ -163,6 +162,11 @@
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="degp.degp.sigma_data">
+<span class="sig-name descname"><span class="pre">sigma_data</span></span><a class="reference internal" href="../../_modules/degp.html#degp.sigma_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#degp.degp.sigma_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="degp.degp.kernel_factory">
 <span class="sig-name descname"><span class="pre">kernel_factory</span></span><a class="reference internal" href="../../_modules/degp.html#degp.kernel_factory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#degp.degp.kernel_factory" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -185,12 +189,35 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="degp.degp.optimize_hyperparameters">
 <span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/degp.html#degp.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#degp.degp.optimize_hyperparameters" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Optimize model hyperparameters using the optimizer.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="degp.degp.predict">
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/degp.html#degp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#degp.degp.predict" title="Link to this definition"></a></dt>
 <dd><p>Compute posterior predictive mean and (optionally) covariance at X_test.</p>
+<section id="parameters">
+<h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>X_test<span class="classifier">ndarray</span></dt><dd><p>Test input points.</p>
+</dd>
+<dt>params<span class="classifier">ndarray</span></dt><dd><p>Hyperparameters (length scales and noise).</p>
+</dd>
+<dt>calc_cov<span class="classifier">bool, default=False</span></dt><dd><p>Whether to compute the predictive covariance.</p>
+</dd>
+<dt>return_deriv<span class="classifier">bool, default=False</span></dt><dd><p>Whether to return derivatives in the prediction.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns:<a class="headerlink" href="#returns" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>f_mean<span class="classifier">ndarray</span></dt><dd><p>Predictive mean.</p>
+</dd>
+<dt>f_var<span class="classifier">ndarray (if calc_cov=True)</span></dt><dd><p>Predictive variance or covariance.</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
 </dd></dl>

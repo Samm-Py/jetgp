@@ -72,52 +72,16 @@
   <h1>Source code for kernel_funcs</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyoti.sparse</span> <span class="k">as</span> <span class="nn">oti</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">factorial</span>
-<span class="kn">import</span> <span class="nn">sympy</span> <span class="k">as</span> <span class="nn">sp</span>
+<span class="kn">import</span> <span class="nn">utils</span>
+
 <span class="c1"># -------------------------------------------------------------------</span>
 <span class="c1"># Utility Functions</span>
 <span class="c1"># -------------------------------------------------------------------</span>
 
 
-<div class="viewcode-block" id="matern_kernel_builder">
-<a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.matern_kernel_builder">[docs]</a>
-<span class="k">def</span> <span class="nf">matern_kernel_builder</span><span class="p">(</span><span class="n">nu</span><span class="p">):</span>
-
-    <span class="c1"># Define symbols</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
-    <span class="n">nu</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Rational</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">nu</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># ν = 1/2</span>
-
-    <span class="c1"># Define prefactor</span>
-    <span class="n">prefactor</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">nu</span><span class="p">))</span> <span class="o">/</span> <span class="n">sp</span><span class="o">.</span><span class="n">gamma</span><span class="p">(</span><span class="n">nu</span><span class="p">)</span>
-
-    <span class="c1"># Argument of Bessel function</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="n">r</span>
-
-    <span class="c1"># Bessel function K_nu(z)</span>
-
-    <span class="c1"># Full expression</span>
-    <span class="n">k_r</span> <span class="o">=</span> <span class="n">prefactor</span> <span class="o">*</span> <span class="n">z</span><span class="o">**</span><span class="n">nu</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">besselk</span><span class="p">(</span><span class="n">nu</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
-
-    <span class="c1"># Simplify</span>
-    <span class="n">k_r_simplified</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">simplify</span><span class="p">(</span><span class="n">k_r</span><span class="p">)</span>
-
-    <span class="n">expr</span> <span class="o">=</span> <span class="n">k_r_simplified</span>
-
-    <span class="c1"># Step 1: Custom dictionary for lambdify</span>
-    <span class="n">custom_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;exp&quot;</span><span class="p">:</span> <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">}</span>
-
-    <span class="c1"># Step 2: Lambdify the expression</span>
-    <span class="n">matern_kernel_func</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">expr</span><span class="p">,</span> <span class="n">modules</span><span class="o">=</span><span class="p">[</span><span class="n">custom_dict</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">])</span>
-
-    <span class="k">return</span> <span class="n">matern_kernel_func</span></div>
-
-
-
 <span class="c1"># -------------------------------------------------------------------</span>
 <span class="c1"># Kernel Factory Class</span>
 <span class="c1"># -------------------------------------------------------------------</span>
-
 
 <div class="viewcode-block" id="KernelFactory">
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory">[docs]</a>
@@ -167,7 +131,7 @@
 
 <div class="viewcode-block" id="KernelFactory.nu">
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.nu">[docs]</a>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span> <span class="o">+</span> <span class="mf">0.5</span>  <span class="c1"># Ensures ν is a half-integer</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span> <span class="o">+</span> <span class="mf">0.5</span></div>
 
 <div class="viewcode-block" id="KernelFactory.n_order">
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.n_order">[docs]</a>
@@ -221,6 +185,11 @@
     <span class="k">def</span> <span class="nf">_create_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets bounds and returns the anisotropic kernel function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        callable</span>
+<span class="sd">            The anisotropic kernel function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sigma_n_bound</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
 
@@ -235,7 +204,7 @@
                              <span class="p">[(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;Matern&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_anisotropic</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Anisotropic kernel not implemented&quot;</span><span class="p">)</span></div>
@@ -246,6 +215,11 @@
     <span class="k">def</span> <span class="nf">_create_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Sets bounds and returns the isotropic kernel function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        callable</span>
+<span class="sd">            The isotropic kernel function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">sigma_n_bound</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
 
@@ -268,8 +242,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sine_exp_kernel_isotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;Matern&quot;</span><span class="p">:</span>
-
             <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_isotropic</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Isotropic kernel not implemented&quot;</span><span class="p">)</span></div>
@@ -279,7 +253,12 @@
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory._add_bounds">[docs]</a>
     <span class="k">def</span> <span class="nf">_add_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_bounds</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adds hyperparameter bounds, adjusting for normalization.</span>
+<span class="sd">        Append additional hyperparameter bounds to the kernel&#39;s configuration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        extra_bounds : list of tuple</span>
+<span class="sd">            Bounds to append, where each tuple is a (min, max) pair in log10 scale.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span> <span class="n">extra_bounds</span>
@@ -296,6 +275,16 @@
     <span class="k">def</span> <span class="nf">se_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Anisotropic Squared Exponential (SE) kernel.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">        index : int, optional</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -342,7 +331,6 @@
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
             <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)))</span>
-
         <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span><span class="p">(</span><span class="n">sqdist</span><span class="p">)</span></div>
 
 
@@ -391,9 +379,9 @@
         <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="KernelFactory.metern_kernel_isotropic">
-<a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.metern_kernel_isotropic">[docs]</a>
-    <span class="k">def</span> <span class="nf">metern_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="KernelFactory.matern_kernel_isotropic">
+<a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.matern_kernel_isotropic">[docs]</a>
+    <span class="k">def</span> <span class="nf">matern_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Matérn kernel (half-integer ν).</span>
 <span class="sd">        &quot;&quot;&quot;</span>

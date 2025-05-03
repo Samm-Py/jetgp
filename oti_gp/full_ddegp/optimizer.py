@@ -5,16 +5,35 @@ from full_ddegp import ddegp_utils as utils
 
 
 class Optimizer:
+    """
+    Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
+    by minimizing the negative log marginal likelihood (NLL).
+
+    Parameters
+    ----------
+    model : object
+        An instance of a model (e.g., ddegp) containing the necessary training data
+        and kernel configuration.
+    """
+
     def __init__(self, model):
-        """
-        model: an instance of degp
-        """
         self.model = model
 
     def negative_log_marginal_likelihood(self, x0):
         """
-        NLL for standard GP in multiple dimensions.
-        NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi).
+        Compute the negative log marginal likelihood (NLL) of the model.
+
+        NLL = 0.5 * y^T K^-1 y + 0.5 * log|K| + 0.5 * N * log(2π)
+
+        Parameters
+        ----------
+        x0 : ndarray
+            Vector of log-scaled hyperparameters (length scales and noise).
+
+        Returns
+        -------
+        float
+            Value of the negative log marginal likelihood.
         """
         ell = x0[:-1]
         sigma_n = x0[-1]
@@ -43,9 +62,39 @@ class Optimizer:
             return 1e6
 
     def nll_wrapper(self, x0):
+        """
+        Wrapper function to compute NLL for optimizer.
+
+        Parameters
+        ----------
+        x0 : ndarray
+            Hyperparameter vector.
+
+        Returns
+        -------
+        float
+            NLL evaluated at x0.
+        """
         return self.negative_log_marginal_likelihood(x0)
 
     def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
+        """
+        Optimize kernel hyperparameters using Particle Swarm Optimization (PSO).
+
+        Parameters
+        ----------
+        n_restart_optimizer : int
+            Number of PSO iterations.
+        swarm_size : int
+            Number of particles in the swarm.
+        verbose : bool
+            If True, print intermediate optimization info.
+
+        Returns
+        -------
+        best_x : ndarray
+            Optimized hyperparameter vector.
+        """
         bounds = self.model.bounds
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]

@@ -48,7 +48,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../degp/index.html">degp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ddgep/index.html">ddgep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
@@ -59,9 +58,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../wddegp_utils/index.html">wddegp_utils</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">kernel_funcs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#classes">Classes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#kernel_funcs.matern_kernel_builder"><code class="docutils literal notranslate"><span class="pre">matern_kernel_builder()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#kernel_funcs.KernelFactory"><code class="docutils literal notranslate"><span class="pre">KernelFactory</span></code></a></li>
 </ul>
 </li>
@@ -109,23 +106,8 @@
 </tbody>
 </table>
 </section>
-<section id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
-<table class="autosummary longtable docutils align-default">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#kernel_funcs.matern_kernel_builder" title="kernel_funcs.matern_kernel_builder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matern_kernel_builder</span></code></a>(nu)</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-</section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="kernel_funcs.matern_kernel_builder">
-<span class="sig-prename descclassname"><span class="pre">kernel_funcs.</span></span><span class="sig-name descname"><span class="pre">matern_kernel_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#matern_kernel_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.matern_kernel_builder" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kernel_funcs.</span></span><span class="sig-name descname"><span class="pre">KernelFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_noise_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory" title="Link to this definition"></a></dt>
@@ -273,24 +255,57 @@ in isotropic and anisotropic forms.</p>
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory._create_anisotropic">
 <span class="sig-name descname"><span class="pre">_create_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory._create_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory._create_anisotropic" title="Link to this definition"></a></dt>
 <dd><p>Sets bounds and returns the anisotropic kernel function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The anisotropic kernel function.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>callable</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory._create_isotropic">
 <span class="sig-name descname"><span class="pre">_create_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory._create_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory._create_isotropic" title="Link to this definition"></a></dt>
 <dd><p>Sets bounds and returns the isotropic kernel function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The isotropic kernel function.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>callable</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory._add_bounds">
 <span class="sig-name descname"><span class="pre">_add_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extra_bounds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory._add_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory._add_bounds" title="Link to this definition"></a></dt>
-<dd><p>Adds hyperparameter bounds, adjusting for normalization.</p>
+<dd><p>Append additional hyperparameter bounds to the kernel’s configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>extra_bounds</strong> (<em>list</em><em> of </em><em>tuple</em>) – Bounds to append, where each tuple is a (min, max) pair in log10 scale.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory.se_kernel_anisotropic">
 <span class="sig-name descname"><span class="pre">se_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory.se_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory.se_kernel_anisotropic" title="Link to this definition"></a></dt>
 <dd><p>Anisotropic Squared Exponential (SE) kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>)</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>)</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -330,8 +345,8 @@ in isotropic and anisotropic forms.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="kernel_funcs.KernelFactory.metern_kernel_isotropic">
-<span class="sig-name descname"><span class="pre">metern_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory.metern_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory.metern_kernel_isotropic" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="kernel_funcs.KernelFactory.matern_kernel_isotropic">
+<span class="sig-name descname"><span class="pre">matern_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory.matern_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory.matern_kernel_isotropic" title="Link to this definition"></a></dt>
 <dd><p>Isotropic Matérn kernel (half-integer ν).</p>
 </dd></dl>
 

@@ -26,6 +26,8 @@ Functions
    utils.normalize_directions
    utils.normalize_y_data
    utils.normalize_y_data_directional
+   utils.generate_submodel_noise_matricies
+   utils.matern_kernel_builder
 
 
 Module Contents
@@ -678,7 +680,7 @@ Module Contents
    ..
        !! processed by numpydoc !!
 
-.. py:function:: normalize_y_data_directional(X_train, y_train, der_indices)
+.. py:function:: normalize_y_data_directional(X_train, y_train, sigma_data, der_indices)
 
    
    Normalize function values and **directional derivatives** for training data.
@@ -710,6 +712,88 @@ Module Contents
        Standard deviations of input variables.
    mean_vec_x : ndarray of shape (1, nvars)
        Means of input variables.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices)
+
+   
+   Generate diagonal noise covariance matrices for each submodel component
+   (including function values and their associated derivatives).
+
+   This function constructs a list of diagonal matrices where each matrix corresponds
+   to a specific group of training indices (e.g., for a submodel), and includes
+   both function value noise and associated derivative noise.
+
+   :param sigma_data: Full covariance (typically diagonal) matrix for all training data, including function values and derivatives.
+   :type sigma_data: ndarray of shape (n_total, n_total)
+   :param index: List where each sublist contains indices of the function values for one submodel (e.g., a cluster or partition).
+   :type index: list of lists of int
+   :param der_indices: Each sublist contains derivative directions for the submodel, corresponding to base_der_indices.
+   :type der_indices: list of lists
+   :param num_points: Number of training points per function (used to compute index offsets for derivatives).
+   :type num_points: int
+   :param base_der_indices: Master list of derivative indices that define the ordering of blocks in the covariance matrix.
+   :type base_der_indices: list of lists
+
+   :returns: **sub_model_matricies** -- List of diagonal noise matrices (ndarray of shape (n_submodel_total, n_submodel_total)) for each submodel,
+             combining noise contributions from function values and all applicable derivative components.
+   :rtype: list of ndarray
+
+   :raises Exception: If a derivative index in `der_indices` is not found in `base_der_indices`.
+
+   .. rubric:: Example
+
+   >>> sigma_data.shape = (300, 300)
+   >>> index = [[0, 1, 2], [3, 4, 5]]
+   >>> der_indices = [[[1, 1]], [[2, 1], [1, 2]]]
+   >>> base_der_indices = [[[1, 1]], [[2, 1]], [[1, 2]]]
+   >>> num_points = 100
+   >>> generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices)
+   [array of shape (6, 6), array of shape (9, 9)]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: matern_kernel_builder(nu)
+
+   
+   Symbolically builds the Matérn kernel function with given smoothness ν.
+
+   :param nu: Smoothness parameter of the Matérn kernel. Should be a half-integer (e.g., 0.5, 1.5, 2.5, ...).
+   :type nu: float
+
+   :returns: A lambdified function that evaluates the Matérn kernel as a function of distance r.
+   :rtype: callable
 
 
 

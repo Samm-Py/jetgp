@@ -12,18 +12,8 @@ Classes
    kernel_funcs.KernelFactory
 
 
-Functions
----------
-
-.. autoapisummary::
-
-   kernel_funcs.matern_kernel_builder
-
-
 Module Contents
 ---------------
-
-.. py:function:: matern_kernel_builder(nu)
 
 .. py:class:: KernelFactory(dim, normalize, differences_by_dim, n_order, true_noise_std=None)
 
@@ -175,6 +165,8 @@ Module Contents
       
       Sets bounds and returns the anisotropic kernel function.
 
+      :returns: The anisotropic kernel function.
+      :rtype: callable
 
 
 
@@ -199,6 +191,8 @@ Module Contents
       
       Sets bounds and returns the isotropic kernel function.
 
+      :returns: The isotropic kernel function.
+      :rtype: callable
 
 
 
@@ -221,8 +215,10 @@ Module Contents
    .. py:method:: _add_bounds(extra_bounds)
 
       
-      Adds hyperparameter bounds, adjusting for normalization.
+      Append additional hyperparameter bounds to the kernel's configuration.
 
+      :param extra_bounds: Bounds to append, where each tuple is a (min, max) pair in log10 scale.
+      :type extra_bounds: list of tuple
 
 
 
@@ -247,6 +243,14 @@ Module Contents
       
       Anisotropic Squared Exponential (SE) kernel.
 
+      :param differences_by_dim:
+      :type differences_by_dim: list of ndarray
+      :param length_scales:
+      :type length_scales: list
+      :param index:
+      :type index: int, optional
+
+      :rtype: ndarray
 
 
 
@@ -410,7 +414,7 @@ Module Contents
           !! processed by numpydoc !!
 
 
-   .. py:method:: metern_kernel_isotropic(differences_by_dim, length_scales, index=-1)
+   .. py:method:: matern_kernel_isotropic(differences_by_dim, length_scales, index=-1)
 
       
       Isotropic Matérn kernel (half-integer ν).

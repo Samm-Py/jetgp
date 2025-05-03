@@ -20,7 +20,7 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="ddgep" href="../ddgep/index.html" />
+    <link rel="next" title="ddegp" href="../ddegp/index.html" />
     <link rel="prev" title="degp" href="../degp/index.html" /> 
 </head>
 
@@ -67,11 +67,12 @@
 <li class="toctree-l4"><a class="reference internal" href="#utils.normalize_directions"><code class="docutils literal notranslate"><span class="pre">normalize_directions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#utils.normalize_y_data"><code class="docutils literal notranslate"><span class="pre">normalize_y_data()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#utils.normalize_y_data_directional"><code class="docutils literal notranslate"><span class="pre">normalize_y_data_directional()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utils.generate_submodel_noise_matricies"><code class="docutils literal notranslate"><span class="pre">generate_submodel_noise_matricies()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#utils.matern_kernel_builder"><code class="docutils literal notranslate"><span class="pre">matern_kernel_builder()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../ddgep/index.html">ddgep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
@@ -165,8 +166,14 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#utils.normalize_y_data" title="utils.normalize_y_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_y_data</span></code></a>(X_train, y_train, sigma_data, der_indices)</p></td>
 <td><p>Normalize function values, derivatives, and observational noise for training data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#utils.normalize_y_data_directional" title="utils.normalize_y_data_directional"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_y_data_directional</span></code></a>(X_train, y_train, der_indices)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#utils.normalize_y_data_directional" title="utils.normalize_y_data_directional"><code class="xref py py-obj docutils literal notranslate"><span class="pre">normalize_y_data_directional</span></code></a>(X_train, y_train, ...)</p></td>
 <td><p>Normalize function values and <strong>directional derivatives</strong> for training data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#utils.generate_submodel_noise_matricies" title="utils.generate_submodel_noise_matricies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_submodel_noise_matricies</span></code></a>(sigma_data, index, ...)</p></td>
+<td><p>Generate diagonal noise covariance matrices for each submodel component</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#utils.matern_kernel_builder" title="utils.matern_kernel_builder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">matern_kernel_builder</span></code></a>(nu)</p></td>
+<td><p>Symbolically builds the Matérn kernel function with given smoothness ν.</p></td>
 </tr>
 </tbody>
 </table>
@@ -620,7 +627,7 @@ If provided, it will be normalized.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="utils.normalize_y_data_directional">
-<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">normalize_y_data_directional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/utils.html#normalize_y_data_directional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.normalize_y_data_directional" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">normalize_y_data_directional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/utils.html#normalize_y_data_directional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.normalize_y_data_directional" title="Link to this definition"></a></dt>
 <dd><p>Normalize function values and <strong>directional derivatives</strong> for training data.</p>
 <p>This function:
 - Normalizes <strong>function values (`y_train[0]`)</strong> to have zero mean and unit variance.
@@ -655,6 +662,64 @@ If provided, it will be normalized.</p>
 </section>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.generate_submodel_noise_matricies">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">generate_submodel_noise_matricies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/utils.html#generate_submodel_noise_matricies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.generate_submodel_noise_matricies" title="Link to this definition"></a></dt>
+<dd><p>Generate diagonal noise covariance matrices for each submodel component
+(including function values and their associated derivatives).</p>
+<p>This function constructs a list of diagonal matrices where each matrix corresponds
+to a specific group of training indices (e.g., for a submodel), and includes
+both function value noise and associated derivative noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_data</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_total</em><em>, </em><em>n_total</em><em>)</em>) – Full covariance (typically diagonal) matrix for all training data, including function values and derivatives.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> of </em><em>lists</em><em> of </em><em>int</em>) – List where each sublist contains indices of the function values for one submodel (e.g., a cluster or partition).</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Each sublist contains derivative directions for the submodel, corresponding to base_der_indices.</p></li>
+<li><p><strong>num_points</strong> (<em>int</em>) – Number of training points per function (used to compute index offsets for derivatives).</p></li>
+<li><p><strong>base_der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Master list of derivative indices that define the ordering of blocks in the covariance matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sub_model_matricies</strong> – List of diagonal noise matrices (ndarray of shape (n_submodel_total, n_submodel_total)) for each submodel,
+combining noise contributions from function values and all applicable derivative components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If a derivative index in <cite>der_indices</cite> is not found in <cite>base_der_indices</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigma_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">base_der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_points</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generate_submodel_noise_matricies</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">num_points</span><span class="p">,</span> <span class="n">base_der_indices</span><span class="p">)</span>
+<span class="go">[array of shape (6, 6), array of shape (9, 9)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.matern_kernel_builder">
+<span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">matern_kernel_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nu</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/utils.html#matern_kernel_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.matern_kernel_builder" title="Link to this definition"></a></dt>
+<dd><p>Symbolically builds the Matérn kernel function with given smoothness ν.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>nu</strong> (<em>float</em>) – Smoothness parameter of the Matérn kernel. Should be a half-integer (e.g., 0.5, 1.5, 2.5, …).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A lambdified function that evaluates the Matérn kernel as a function of distance r.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -663,7 +728,7 @@ If provided, it will be normalized.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../degp/index.html" class="btn btn-neutral float-left" title="degp" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../ddgep/index.html" class="btn btn-neutral float-right" title="ddgep" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../ddegp/index.html" class="btn btn-neutral float-right" title="ddegp" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

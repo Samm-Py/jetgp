@@ -5,9 +5,24 @@ from wdegp import wdegp_utils as utils
 
 
 class Optimizer:
+    """
+    Optimizer class for fitting the hyperparameters of a weighted derivative-enhanced GP model (wDEGP)
+    by minimizing the negative log marginal likelihood (NLL).
+
+    Attributes
+    ----------
+    model : object
+        Instance of a weighted derivative-enhanced GP model (wDEGP) with attributes:
+        x_train, y_train, n_order, n_bases, der_indices, index, bounds, etc.
+    """
+
     def __init__(self, model):
         """
-        model: an instance of wdegp
+        Parameters
+        ----------
+        model : object
+            An instance of a wDEGP model containing training data, hyperparameter bounds,
+            and other model-specific structures required for kernel computation.
         """
         self.model = model
 
@@ -22,7 +37,31 @@ class Optimizer:
         index,
     ):
         """
+        Computes the negative log marginal likelihood (NLL) for a given hyperparameter vector.
+
         NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5*N*log(2*pi)
+
+        Parameters
+        ----------
+        x0 : ndarray
+            Log-scaled hyperparameter vector, where the last entry is log10(sigma_n).
+        x_train : list of ndarrays
+            Input training points (unused inside loop, included for general interface).
+        y_train : list of ndarrays
+            List of function and derivative training values for each submodel.
+        n_order : int
+            Maximum order of derivatives used.
+        n_bases : int
+            Number of Taylor bases used in the expansion.
+        der_indices : list
+            Multi-index derivative information.
+        index : list of lists
+            Indices partitioning the training data into submodels.
+
+        Returns
+        -------
+        float
+            The computed negative log marginal likelihood.
         """
         ell = x0[:-1]
         sigma_n = x0[-1]
@@ -57,6 +96,19 @@ class Optimizer:
         return llhood
 
     def nll_wrapper(self, x0):
+        """
+        Wrapper for NLL function to fit PSO optimizer interface.
+
+        Parameters
+        ----------
+        x0 : ndarray
+            Hyperparameter vector.
+
+        Returns
+        -------
+        float
+            Computed NLL value.
+        """
         return self.negative_log_marginal_likelihood(
             x0,
             self.model.x_train,
@@ -68,11 +120,28 @@ class Optimizer:
         )
 
     def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
+        """
+        Optimizes kernel hyperparameters using Particle Swarm Optimization (PSO)
+        to minimize the negative log marginal likelihood.
+
+        Parameters
+        ----------
+        n_restart_optimizer : int
+            Number of PSO iterations.
+        swarm_size : int
+            Number of particles in the swarm.
+        verbose : bool
+            If True, enables debug mode in PSO for progress printing.
+
+        Returns
+        -------
+        best_x : ndarray
+            Optimized hyperparameter vector.
+        """
         bounds = self.model.bounds
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
 
-        # Run PSO to minimize the NLL
         best_x, best_nll = pso(
             self.nll_wrapper,
             lb,
@@ -82,7 +151,6 @@ class Optimizer:
             debug=verbose,
         )
 
-        # Optionally: store results
         self.opt_x0 = best_x
         self.opt_nll = best_nll
 

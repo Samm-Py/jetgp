@@ -15,17 +15,56 @@ Classes
 Module Contents
 ---------------
 
-.. py:class:: wdegp(x_train, y_train, n_order, n_bases, index, der_indices, normalize=True, sigma_n=0.0, kernel='SE', kernel_type='anisotropic')
+.. py:class:: wdegp(x_train, y_train, n_order, n_bases, index, der_indices, normalize=True, sigma_data=None, kernel='SE', kernel_type='anisotropic')
+
+   
+   Weighted Derivative-Enhanced Gaussian Process (wDEGP) regression model.
+
+   Supports multiple submodels indexed by regions of the training data,
+   includes normalization and automatic hyperparameter optimization.
+
+   :param x_train: Input training points.
+   :type x_train: ndarray of shape (n_samples, n_features)
+   :param y_train: Each element contains function or derivative observations for a submodel.
+   :type y_train: list of arrays
+   :param n_order: Maximum derivative order to be supported.
+   :type n_order: int
+   :param n_bases: Number of OTI basis terms used.
+   :type n_bases: int
+   :param index: Submodel training data indices.
+   :type index: list of lists
+   :param der_indices: Multi-indices of derivatives for each submodel.
+   :type der_indices: list of lists
+   :param normalize: If True, normalizes the input and output data.
+   :type normalize: bool, default=True
+   :param sigma_data: Known observation noise or covariance matrix.
+   :type sigma_data: float or ndarray, optional
+   :param kernel: Type of kernel to use: 'SE', 'RQ', 'Matern', or 'SineExp'.
+   :type kernel: str, default='SE'
+   :param kernel_type: Whether kernel is 'anisotropic' or 'isotropic'.
+   :type kernel_type: str, default='anisotropic'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
    .. py:attribute:: x_train
 
 
    .. py:attribute:: y_train
-
-
-   .. py:attribute:: sigma_n
-      :value: 0.0
-
 
 
    .. py:attribute:: n_order
@@ -35,6 +74,9 @@ Module Contents
 
 
    .. py:attribute:: index
+
+
+   .. py:attribute:: num_points
 
 
    .. py:attribute:: der_indices
@@ -85,15 +127,55 @@ Module Contents
    .. py:attribute:: optimizer
 
 
+   .. py:attribute:: sigma_data
+      :value: []
+
+
+
    .. py:method:: optimize_hyperparameters(*args, **kwargs)
+
+      
+      Optimize hyperparameters (e.g., length scales and noise) via Particle Swarm Optimization (PSO).
+
+      :returns: Optimized hyperparameter vector.
+      :rtype: ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: predict(X_test, length_scales, calc_cov=False, return_submodels=False)
 
       
-      Compute posterior predictive mean and covariance at X_test
-      under an ARD RBF kernel with given length_scales.
+      Compute posterior predictive mean and (optionally) covariance at test points.
 
+      :param X_test: Test input points.
+      :type X_test: ndarray of shape (n_test, n_features)
+      :param length_scales: Log-scaled kernel hyperparameters including noise level.
+      :type length_scales: ndarray
+      :param calc_cov: If True, also compute and return predictive covariance.
+      :type calc_cov: bool, default=False
+      :param return_submodels: If True, return submodel-specific contributions.
+      :type return_submodels: bool, default=False
+
+      :returns: * **y_val** (*ndarray of shape (n_test,)*) -- Predicted mean function values at the test inputs.
+                * **y_var** (*ndarray of shape (n_test,), optional*) -- Predictive variances at the test inputs (only if calc_cov=True).
+                * **submodel_vals** (*list of ndarrays, optional*) -- List of submodel predictive means (only if return_submodels=True).
+                * **submodel_cov** (*list of ndarrays, optional*) -- List of submodel variances (only if calc_cov and return_submodels are True).
 
 
 

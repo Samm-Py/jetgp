@@ -8,7 +8,6 @@ This page contains auto-generated API reference documentation [#f1]_.
 
    /autoapi/degp/index
    /autoapi/utils/index
-   /autoapi/ddgep/index
    /autoapi/ddegp/index
    /autoapi/wdegp/index
    /autoapi/wddegp/index
