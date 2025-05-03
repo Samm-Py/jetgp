@@ -35,26 +35,14 @@ if __name__ == "__main__":
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
 
     old_index = [
-        [1, 2],
-        [4, 8],
-        [7, 11],
-        [13, 14],
-        [0],
-        [3],
-        [12],
-        [15],
+        [1, 2, 4, 8, 7, 11, 13, 14],
+        [0, 3, 12, 15],
         [5, 6, 9, 10]  # Interior submodel
     ]
 
     index = [
-        [0, 1],
-        [2, 3],
-        [4, 5],
-        [6, 7],
-        [8],
-        [9],
-        [10],
-        [11],
+        [0, 1, 2, 3, 4, 5, 6, 7],
+        [8, 9, 10, 11],
         [12, 13, 14, 15]
     ]
 
@@ -67,7 +55,13 @@ if __name__ == "__main__":
     X_train = X_train[reorder]
 
     der_indices = [
-        utils.gen_OTI_indices(n_bases, 1) for _ in range(len(index) - 1)
+        [[[1, 1]], [[2, 1]]],  # First-order derivatives: ∂f/∂x1, ∂f/∂x2
+        [[[1, 2]], [[2, 2]]],  # Second-order: ∂²f/∂x1², ∂²f/∂x2²
+        [[[1, 3]], [[2, 3]]]   # Third-order: ∂³f/∂x1³, ∂³f/∂x2³
+    ]
+
+    der_indices = [
+        der_indices for _ in range(len(index) - 1)
     ]
 
     der_indices.append(utils.gen_OTI_indices(n_bases, n_order))
@@ -110,7 +104,7 @@ if __name__ == "__main__":
         kernel_type="anisotropic",
     )
 
-    params = gp.optimize_hyperparameters(n_restart_optimizer=10, swarm_size=25)
+    params = gp.optimize_hyperparameters(n_restart_optimizer=15, swarm_size=50)
 
     N_grid = 25
     x_lin = np.linspace(lb_x, ub_x, N_grid)

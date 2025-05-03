@@ -15,17 +15,59 @@ Classes
 Module Contents
 ---------------
 
-.. py:class:: wddegp(x_train, y_train, n_order, n_bases, index, der_indices, rays, normalize=False, sigma_n=0.0, kernel='SE', kernel_type='anisotropic')
+.. py:class:: wddegp(x_train, y_train, n_order, n_bases, index, der_indices, rays, normalize=False, sigma_data=None, kernel='SE', kernel_type='anisotropic')
+
+   
+   Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP) model.
+
+   This model augments standard GP regression by incorporating weighted directional derivatives
+   through a hypercomplex framework. It supports submodel decomposition to handle multiple
+   directional structures and adapts to anisotropic kernels.
+
+   :param x_train: Training input locations (N, d).
+   :type x_train: ndarray
+   :param y_train: List of training outputs, including function values and derivatives.
+   :type y_train: list of arrays
+   :param n_order: Order of directional derivatives.
+   :type n_order: int
+   :param n_bases: Number of hypercomplex basis components.
+   :type n_bases: int
+   :param index: Submodel point indices.
+   :type index: list of lists
+   :param der_indices: Multi-index derivative directions for each submodel.
+   :type der_indices: list of lists
+   :param rays: Directional vectors associated with each submodel.
+   :type rays: list of ndarray
+   :param normalize: Whether to normalize the data.
+   :type normalize: bool, default=False
+   :param sigma_data: Noise variances for each data point.
+   :type sigma_data: ndarray or None
+   :param kernel: Kernel type ('SE', 'RQ', etc).
+   :type kernel: str, default="SE"
+   :param kernel_type: Use 'anisotropic' or 'isotropic' kernel behavior.
+   :type kernel_type: str, default="anisotropic"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
 
    .. py:attribute:: x_train
 
 
    .. py:attribute:: y_train
-
-
-   .. py:attribute:: sigma_n
-      :value: 0.0
-
 
 
    .. py:attribute:: n_order
@@ -38,6 +80,12 @@ Module Contents
 
 
    .. py:attribute:: index
+
+
+   .. py:attribute:: num_points
+
+
+   .. py:attribute:: n_rays
 
 
    .. py:attribute:: dim
@@ -88,15 +136,55 @@ Module Contents
    .. py:attribute:: optimizer
 
 
+   .. py:attribute:: sigma_data
+      :value: []
+
+
+
    .. py:method:: optimize_hyperparameters(*args, **kwargs)
+
+      
+      Optimize kernel hyperparameters using PSO to minimize the marginal likelihood.
+
+      :returns: **best_x** -- Optimal log-transformed hyperparameters.
+      :rtype: ndarray
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
 
 
    .. py:method:: predict(X_test, length_scales, calc_cov=False, return_submodels=False)
 
       
-      Compute posterior predictive mean and covariance at X_test
-      under an ARD RBF kernel with given length_scales.
+      Predict mean and optionally variance at new input locations using the wdDEGP model.
 
+      :param X_test: Input locations to predict (M, d).
+      :type X_test: ndarray
+      :param length_scales: Optimized log-transformed kernel hyperparameters.
+      :type length_scales: ndarray
+      :param calc_cov: If True, return predictive variance.
+      :type calc_cov: bool, default=False
+      :param return_submodels: If True, return individual submodel predictions and variances.
+      :type return_submodels: bool, default=False
+
+      :returns: * **y_val** (*ndarray*) -- Predicted function values at X_test.
+                * **y_var** (*ndarray, optional*) -- Predicted variances if calc_cov is True.
+                * **submodel_vals** (*list of ndarray, optional*) -- Submodel predictions.
+                * **submodel_cov** (*list of ndarray, optional*) -- Submodel variances.
 
 
 

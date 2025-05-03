@@ -17,7 +17,7 @@ def true_function(X, alg=oti):
 
 def generate_rays(order, ndim=2):
     """Generate unit vectors (rays) and their hypercomplex perturbations."""
-    thetas = [2 * np.pi / i for i in range(1, 4)]
+    thetas = [np.pi/4, np.pi/2, np.pi * 5 / 4]
     rays = np.column_stack([[np.cos(t), np.sin(t)] for t in thetas])
     e = [oti.e(i + 1, order=order) for i in range(rays.shape[1])]
     perts = np.dot(rays, e)
@@ -48,9 +48,9 @@ def generate_training_data(n_order, num_points=5):
 
     # Derivative index structure must be consistent across all training points
     der_indices = [[
-        [[1, 1]], [[1, 2]], [[1, 3]],
-        [[2, 1]], [[2, 2]], [[2, 3]],
-        [[3, 1]], [[3, 2]], [[3, 3]],
+        [[1, 1]], [[1, 2]],
+        [[2, 1]], [[2, 2]],
+        [[3, 1]], [[3, 2]],
     ]]
 
     for i in range(len(der_indices)):

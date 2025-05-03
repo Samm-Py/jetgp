@@ -23,7 +23,7 @@ import plotting_helper
 if __name__ == "__main__":
     rng = np.random.RandomState(1)
     # GP and function configuration
-    n_order = 1     # Max derivative order included in training
+    n_order = 2     # Max derivative order included in training
     n_bases = 1       # Input dimension (1D)
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
@@ -31,9 +31,10 @@ if __name__ == "__main__":
     # Generate training input points from a dense candidate set
     X = np.linspace(lb_x, ub_x, 1000).reshape(-1, 1)
     rng = np.random.RandomState(1)
-    training_indices = rng.choice(np.arange(X.shape[0]), size=6, replace=False)
-    # X_train = np.sort(X[training_indices], axis=0)
-    X_train = X[training_indices]
+    training_indices = rng.choice(np.arange(X.shape[0]), size=7, replace=False)
+    X_train = np.sort(X[training_indices], axis=0)
+    X_train[0] = 1
+    # X_train = X[training_indices]
     n_train = len(X_train)
     # Convert to OTI array and perturb to track derivatives
     X_train_pert = oti.array(X_train)
@@ -54,8 +55,29 @@ if __name__ == "__main__":
     # Derivative indices to include in training data
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
-    noise_std = np.zeros((len(der_indices) + 1)*n_train)
-    noise_std[:] = .75
+    noise_std = 0.1*np.ones((len(der_indices) + 1)*n_train)
+    noise_std[0] = 0.0
+    noise_std[1] = 0.0
+    noise_std[2] = 0.0
+    noise_std[3] = 0.0
+    noise_std[4] = 0.0
+    noise_std[5] = 0.0
+    noise_std[6] = 0.0
+    # noise_std[7] = 1
+    # noise_std[8] = 1
+    # noise_std[9] = 1
+    # noise_std[10] = 1
+    # noise_std[11] = 1
+    # noise_std[12] = 1
+    # noise_std[13] = 1
+    # noise_std[14] = 1
+    # noise_std[15] = 1
+    # noise_std[16] = 1
+    # noise_std[17] = 1
+    # noise_std[18] = 1
+    # noise_std[19] = 1
+    # noise_std[20] = 1
+
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
         y_train_real_noisy[i] = y_train_real_noisy[i] + \
@@ -63,13 +85,18 @@ if __name__ == "__main__":
 
     # Build y_train list: function values and noisy derivatives
     y_train = [y_train_real_noisy]
+    index = 7
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
             deriv = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
             deriv_noisy = deriv.copy()
+
             for k in range(0, len(deriv_noisy)):
+                noise_std[index] = abs(deriv_noisy[k] * .01*1*(i + 1))
                 deriv_noisy[k] = deriv_noisy[k] + \
-                    rng.normal(loc=0.0, scale=0.0, size=1)
+                    rng.normal(
+                        loc=0.0, scale=abs(deriv_noisy[k] * .01 * (i + 1)), size=1)
+                index = index + 1
             y_train.append(deriv_noisy)
 
     # Instantiate and configure the GP model
@@ -88,7 +115,7 @@ if __name__ == "__main__":
     # Optimize GP hyperparameters using particle swarm
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=25,
-        swarm_size=100
+        swarm_size=50
     )
 
     # Create test points and make predictions

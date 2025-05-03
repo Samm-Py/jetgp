@@ -1,26 +1,7 @@
 import numpy as np
 import pyoti.core as coti
-
-
-def transform_nested_list(nested_list):
-    """
-    Recursively traverse a nested list. Whenever we encounter
-    a two-element list [k, v] with both k and v as integers,
-    transform k -> 2*k.
-    """
-    # If it's not a list, return it as is.
-    if not isinstance(nested_list, list):
-        return nested_list
-
-    # If it's exactly two integers [k, v], apply the transformation.
-    if len(nested_list) == 2 and all(
-        (isinstance(x, np.uint16) or isinstance(x, int)) for x in nested_list
-    ):
-        k, v = nested_list
-        return [k, v]  # Transform k -> 2*k
-
-    # Otherwise, apply the transformation to each element recursively.
-    return [transform_nested_list(item) for item in nested_list]
+import pyoti.sparse as oti
+import sympy as sp
 
 
 def scale_samples(samples, lower_bounds, upper_bounds):
@@ -752,6 +733,49 @@ def normalize_y_data_directional(X_train, y_train, sigma_data, der_indices):
 
 
 def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices):
+    """
+    Generate diagonal noise covariance matrices for each submodel component
+    (including function values and their associated derivatives).
+
+    This function constructs a list of diagonal matrices where each matrix corresponds
+    to a specific group of training indices (e.g., for a submodel), and includes
+    both function value noise and associated derivative noise.
+
+    Parameters
+    ----------
+    sigma_data : ndarray of shape (n_total, n_total)
+        Full covariance (typically diagonal) matrix for all training data, including function values and derivatives.
+    index : list of lists of int
+        List where each sublist contains indices of the function values for one submodel (e.g., a cluster or partition).
+    der_indices : list of lists
+        Each sublist contains derivative directions for the submodel, corresponding to base_der_indices.
+    num_points : int
+        Number of training points per function (used to compute index offsets for derivatives).
+    base_der_indices : list of lists
+        Master list of derivative indices that define the ordering of blocks in the covariance matrix.
+
+    Returns
+    -------
+    sub_model_matricies : list of ndarray
+        List of diagonal noise matrices (ndarray of shape (n_submodel_total, n_submodel_total)) for each submodel,
+        combining noise contributions from function values and all applicable derivative components.
+
+    Raises
+    ------
+    Exception
+        If a derivative index in `der_indices` is not found in `base_der_indices`.
+
+    Example
+    -------
+    >>> sigma_data.shape = (300, 300)
+    >>> index = [[0, 1, 2], [3, 4, 5]]
+    >>> der_indices = [[[1, 1]], [[2, 1], [1, 2]]]
+    >>> base_der_indices = [[[1, 1]], [[2, 1]], [[1, 2]]]
+    >>> num_points = 100
+    >>> generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices)
+    [array of shape (6, 6), array of shape (9, 9)]
+    """
+
     sub_model_matricies = []
     for i, idx in enumerate(index):
         values = np.diag(sigma_data[:num_points, :num_points])
@@ -773,3 +797,31 @@ def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points
         sub_model_matricies.append(np.diag(values))
 
     return sub_model_matricies
+
+
+def matern_kernel_builder(nu):
+    """
+    Symbolically builds the Matérn kernel function with given smoothness ν.
+
+    Parameters
+    ----------
+    nu : float
+        Smoothness parameter of the Matérn kernel. Should be a half-integer (e.g., 0.5, 1.5, 2.5, ...).
+
+    Returns
+    -------
+    callable
+        A lambdified function that evaluates the Matérn kernel as a function of distance r.
+    """
+    r = sp.symbols('r')
+    nu = sp.Rational(2 * nu, 2)
+    prefactor = (2 ** (1 - nu)) / sp.gamma(nu)
+    z = sp.sqrt(2 * nu) * r
+    k_r = prefactor * z**nu * sp.simplify(sp.besselk(nu, z))
+    expr = sp.simplify(k_r)
+    custom_dict = {"exp": oti.exp}
+    matern_kernel_func = sp.lambdify((r), expr, modules=[custom_dict, "numpy"])
+    return matern_kernel_func
+
+
+# def convert_noise_to_matrix(sigma_data, der_):

@@ -48,7 +48,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../degp/index.html">degp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../ddgep/index.html">ddgep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">wddegp</a><ul>
@@ -102,7 +101,7 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wddegp.wddegp" title="wddegp.wddegp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wddegp</span></code></a></p></td>
-<td><p></p></td>
+<td><p>Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP) model.</p></td>
 </tr>
 </tbody>
 </table>
@@ -111,8 +110,29 @@
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="wddegp.wddegp">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wddegp.</span></span><span class="sig-name descname"><span class="pre">wddegp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'anisotropic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp.html#wddegp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp" title="Link to this definition"></a></dt>
-<dd><dl class="py attribute">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wddegp.</span></span><span class="sig-name descname"><span class="pre">wddegp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'anisotropic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp.html#wddegp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp" title="Link to this definition"></a></dt>
+<dd><p>Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP) model.</p>
+<p>This model augments standard GP regression by incorporating weighted directional derivatives
+through a hypercomplex framework. It supports submodel decomposition to handle multiple
+directional structures and adapts to anisotropic kernels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_train</strong> (<em>ndarray</em>) – Training input locations (N, d).</p></li>
+<li><p><strong>y_train</strong> (<em>list</em><em> of </em><em>arrays</em>) – List of training outputs, including function values and derivatives.</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>) – Order of directional derivatives.</p></li>
+<li><p><strong>n_bases</strong> (<em>int</em>) – Number of hypercomplex basis components.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> of </em><em>lists</em>) – Submodel point indices.</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Multi-index derivative directions for each submodel.</p></li>
+<li><p><strong>rays</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Directional vectors associated with each submodel.</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to normalize the data.</p></li>
+<li><p><strong>sigma_data</strong> (<em>ndarray</em><em> or </em><em>None</em>) – Noise variances for each data point.</p></li>
+<li><p><strong>kernel</strong> (<em>str</em><em>, </em><em>default=&quot;SE&quot;</em>) – Kernel type (‘SE’, ‘RQ’, etc).</p></li>
+<li><p><strong>kernel_type</strong> (<em>str</em><em>, </em><em>default=&quot;anisotropic&quot;</em>) – Use ‘anisotropic’ or ‘isotropic’ kernel behavior.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
 <dt class="sig sig-object py" id="wddegp.wddegp.x_train">
 <span class="sig-name descname"><span class="pre">x_train</span></span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.x_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.x_train" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -120,11 +140,6 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wddegp.wddegp.y_train">
 <span class="sig-name descname"><span class="pre">y_train</span></span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.y_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.y_train" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="wddegp.wddegp.sigma_n">
-<span class="sig-name descname"><span class="pre">sigma_n</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="reference internal" href="../../_modules/wddegp.html#wddegp.sigma_n"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.sigma_n" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -145,6 +160,16 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="wddegp.wddegp.index">
 <span class="sig-name descname"><span class="pre">index</span></span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.index" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wddegp.wddegp.num_points">
+<span class="sig-name descname"><span class="pre">num_points</span></span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.num_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.num_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wddegp.wddegp.n_rays">
+<span class="sig-name descname"><span class="pre">n_rays</span></span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.n_rays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.n_rays" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -207,16 +232,48 @@
 <span class="sig-name descname"><span class="pre">optimizer</span></span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.optimizer" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="wddegp.wddegp.sigma_data">
+<span class="sig-name descname"><span class="pre">sigma_data</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="reference internal" href="../../_modules/wddegp.html#wddegp.sigma_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.sigma_data" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="wddegp.wddegp.optimize_hyperparameters">
 <span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.optimize_hyperparameters" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Optimize kernel hyperparameters using PSO to minimize the marginal likelihood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>best_x</strong> – Optimal log-transformed hyperparameters.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="wddegp.wddegp.predict">
 <span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_submodels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp.html#wddegp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.predict" title="Link to this definition"></a></dt>
-<dd><p>Compute posterior predictive mean and covariance at X_test
-under an ARD RBF kernel with given length_scales.</p>
+<dd><p>Predict mean and optionally variance at new input locations using the wdDEGP model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X_test</strong> (<em>ndarray</em>) – Input locations to predict (M, d).</p></li>
+<li><p><strong>length_scales</strong> (<em>ndarray</em>) – Optimized log-transformed kernel hyperparameters.</p></li>
+<li><p><strong>calc_cov</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True, return predictive variance.</p></li>
+<li><p><strong>return_submodels</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True, return individual submodel predictions and variances.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>y_val</strong> (<em>ndarray</em>) – Predicted function values at X_test.</p></li>
+<li><p><strong>y_var</strong> (<em>ndarray, optional</em>) – Predicted variances if calc_cov is True.</p></li>
+<li><p><strong>submodel_vals</strong> (<em>list of ndarray, optional</em>) – Submodel predictions.</p></li>
+<li><p><strong>submodel_cov</strong> (<em>list of ndarray, optional</em>) – Submodel variances.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

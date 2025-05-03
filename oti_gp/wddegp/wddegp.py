@@ -7,20 +7,41 @@ from wddegp.optimizer import Optimizer
 
 
 class wddegp:
-    def __init__(
-        self,
-        x_train,
-        y_train,
-        n_order,
-        n_bases,
-        index,
-        der_indices,
-        rays,
-        normalize=False,
-        sigma_data=None,
-        kernel="SE",
-        kernel_type="anisotropic",
-    ):
+    """
+    Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP) model.
+
+    This model augments standard GP regression by incorporating weighted directional derivatives
+    through a hypercomplex framework. It supports submodel decomposition to handle multiple
+    directional structures and adapts to anisotropic kernels.
+
+    Parameters
+    ----------
+    x_train : ndarray
+        Training input locations (N, d).
+    y_train : list of arrays
+        List of training outputs, including function values and derivatives.
+    n_order : int
+        Order of directional derivatives.
+    n_bases : int
+        Number of hypercomplex basis components.
+    index : list of lists
+        Submodel point indices.
+    der_indices : list of lists
+        Multi-index derivative directions for each submodel.
+    rays : list of ndarray
+        Directional vectors associated with each submodel.
+    normalize : bool, default=False
+        Whether to normalize the data.
+    sigma_data : ndarray or None
+        Noise variances for each data point.
+    kernel : str, default="SE"
+        Kernel type ('SE', 'RQ', etc).
+    kernel_type : str, default="anisotropic"
+        Use 'anisotropic' or 'isotropic' kernel behavior.
+    """
+
+    def __init__(self, x_train, y_train, n_order, n_bases, index, der_indices, rays,
+                 normalize=False, sigma_data=None, kernel="SE", kernel_type="anisotropic"):
         self.x_train = x_train
         self.y_train = y_train
         self.n_order = n_order
@@ -41,30 +62,29 @@ class wddegp:
         self.normalize = normalize
 
         for k, ders in enumerate(der_indices):
-            indices = utils.transform_nested_list(ders)
             n_rays = rays[k].shape[1]
             self.powers.append(
                 utils.build_companion_array(n_rays, n_order, ders))
-
-            flat_indices = [i for sublist in indices for i in sublist]
+            flat_indices = [i for sublist in ders for i in sublist]
             self.flattened_der_indicies.append(flat_indices)
+
         if sigma_data is None:
             arr = np.zeros((len(flattened_base_der_indicies)+1)
                            * self.num_points)
             sigma_data = np.diag(arr)
         else:
-            sigma_data = np.diag(sigma_data)
+            sigma_data = 10*np.diag(sigma_data)
+
         if normalize:
             self.y_train = []
             self.rays = []
             for k, ders in enumerate(self.der_indices):
-                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = utils.normalize_y_data_directional(
-                    x_train, y_train[k], sigma_data, self.flattened_der_indicies[k]
-                )
+                y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = \
+                    utils.normalize_y_data_directional(
+                        x_train, y_train[k], sigma_data, self.flattened_der_indicies[k])
                 rays_norm = utils.normalize_directions(self.sigmas_x, rays[k])
                 self.y_train.append(y_norm)
                 self.rays.append(rays_norm)
-
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.y_train = [utils.reshape_y_train(y) for y in y_train]
@@ -73,9 +93,8 @@ class wddegp:
 
         self.differences_by_dim_submodels = [
             wddegp_utils.differences_by_dim_func(
-                self.x_train, self.x_train, self.rays,  self.n_order, idx, idx_list
-            )
-            for idx, idx_list in enumerate(self.index)
+                self.x_train, self.x_train, self.rays, self.n_order, idx, idx_list
+            ) for idx, idx_list in enumerate(self.index)
         ]
 
         self.kernel_factory = KernelFactory(
@@ -94,24 +113,51 @@ class wddegp:
             self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
 
     def optimize_hyperparameters(self, *args, **kwargs):
+        """
+        Optimize kernel hyperparameters using PSO to minimize the marginal likelihood.
+
+        Returns
+        -------
+        best_x : ndarray
+            Optimal log-transformed hyperparameters.
+        """
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
 
     def predict(self, X_test, length_scales, calc_cov=False, return_submodels=False):
         """
-        Compute posterior predictive mean and covariance at X_test
-        under an ARD RBF kernel with given length_scales.
+        Predict mean and optionally variance at new input locations using the wdDEGP model.
+
+        Parameters
+        ----------
+        X_test : ndarray
+            Input locations to predict (M, d).
+        length_scales : ndarray
+            Optimized log-transformed kernel hyperparameters.
+        calc_cov : bool, default=False
+            If True, return predictive variance.
+        return_submodels : bool, default=False
+            If True, return individual submodel predictions and variances.
+
+        Returns
+        -------
+        y_val : ndarray
+            Predicted function values at X_test.
+        y_var : ndarray, optional
+            Predicted variances if calc_cov is True.
+        submodel_vals : list of ndarray, optional
+            Submodel predictions.
+        submodel_cov : list of ndarray, optional
+            Submodel variances.
         """
         ell = length_scales[:-1]
         sigma_n = length_scales[-1]
         n_test = X_test.shape[0]
         n_train = self.x_train.shape[0]
 
-        # Normalize test input if required
         if self.normalize:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
 
-        # Compute weights matrix
         weights_matrix = np.zeros((n_test, n_train))
         diffs_train_train = wddegp_utils.differences_by_dim_func(
             self.x_train, self.x_train, self.rays, 0, index=-1)
@@ -124,13 +170,11 @@ class wddegp:
                 diffs_train_train, diffs_train_test, ell, self.kernel_func)
             weights_matrix[k] = weights[:, 0]
 
-        # Initialize outputs
         y_val = 0
         y_var = 0
         submodel_vals = []
         submodel_cov = []
 
-        # Loop over submodels
         for i in range(len(self.index)):
             index_i = self.index[i]
 
@@ -138,21 +182,17 @@ class wddegp:
                 self.x_train, X_test, self.rays, self.n_order, index=i, index_list=index_i)
             diffs_train_train = self.differences_by_dim_submodels[i]
 
-            # Kernel matrix (train/train) and Cholesky factor
             K = wddegp_utils.rbf_kernel(
                 diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
-                self.flattened_der_indicies[i], self.powers[i], index=index_i
-            )
+                self.flattened_der_indicies[i], self.powers[i], index=index_i)
             K += (10**sigma_n)**2 * np.eye(len(K))
             K += self.sigma_data[i]**2
             L = cholesky(K)
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
-            # Predictive mean
             K_s = wddegp_utils.rbf_kernel(
                 diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
-                self.flattened_der_indicies[i], self.powers[i], index=index_i
-            )
+                self.flattened_der_indicies[i], self.powers[i], index=index_i)
             f_mean = K_s[:, :n_test].T @ alpha
             if self.normalize:
                 f_mean = self.mu_y + f_mean * self.sigma_y
@@ -162,22 +202,19 @@ class wddegp:
             if return_submodels:
                 submodel_vals.append(f_mean)
 
-            # Predictive covariance (optional)
             if calc_cov:
                 diffs_test_test = wddegp_utils.differences_by_dim_func(
                     X_test, X_test, self.rays, self.n_order,  index=i, index_list=index_i)
                 K_ss = wddegp_utils.rbf_kernel(
                     diffs_test_test, ell, self.n_order, self.n_bases, self.kernel_func,
-                    self.flattened_der_indicies[i], self.powers[i], index=index_i
-                )
+                    self.flattened_der_indicies[i], self.powers[i], index=index_i)
                 v = solve(L, K_s[:, :n_test])
                 f_cov = K_ss[:n_test, :n_test] - v.T @ v
 
                 if self.normalize:
                     f_var = utils.transform_cov(
                         f_cov, self.sigma_y, self.sigmas_x,
-                        self.flattened_der_indicies[i], X_test
-                    )
+                        self.flattened_der_indicies[i], X_test)
                 else:
                     f_var = np.diag(np.abs(f_cov))
                 for j in range(len(self.index[i])):
@@ -185,7 +222,6 @@ class wddegp:
                 if return_submodels:
                     submodel_cov.append(f_var)
 
-        # Return results
         if return_submodels:
             return (y_val, y_var, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
         else:

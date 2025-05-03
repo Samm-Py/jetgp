@@ -57,6 +57,9 @@ Module Contents
 
 
 
+   .. py:attribute:: sigma_data
+
+
    .. py:attribute:: kernel_factory
 
 
@@ -73,12 +76,50 @@ Module Contents
 
    .. py:method:: optimize_hyperparameters(*args, **kwargs)
 
+      
+      Optimize model hyperparameters using the optimizer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
 
    .. py:method:: predict(X_test, params, calc_cov=False, return_deriv=False)
 
       
       Compute posterior predictive mean and (optionally) covariance at X_test.
 
+      Parameters:
+      ----------
+      X_test : ndarray
+          Test input points.
+      params : ndarray
+          Hyperparameters (length scales and noise).
+      calc_cov : bool, default=False
+          Whether to compute the predictive covariance.
+      return_deriv : bool, default=False
+          Whether to return derivatives in the prediction.
+
+      Returns:
+      -------
+      f_mean : ndarray
+          Predictive mean.
+      f_var : ndarray (if calc_cov=True)
+          Predictive variance or covariance.
 
 
 

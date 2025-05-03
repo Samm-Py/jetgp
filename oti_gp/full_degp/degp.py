@@ -84,7 +84,7 @@ class degp:
         self.sigma_data = (
             np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
             if sigma_data is None
-            else np.diag(sigma_data)
+            else 10*np.diag(sigma_data)
         )
 
         # Initialize kernel factory and optimizer
