@@ -101,7 +101,7 @@ def rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_in
     return K
 
 
-def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func):
+def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigma_n):
     """
     Compute interpolation weights for Weighted Coefficient Kriging (WCK)
     using a radial basis function (RBF) kernel.
@@ -148,6 +148,7 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func):
     r = kernel_func(diffs_test, length_scales, index)
 
     K = phi.real
+    K += (10 ** sigma_n) ** 2 * np.eye(len(K))
     F = np.ones((n1, 1))
     r = r.real[:, 0].reshape(-1, 1)
     r = np.vstack((r, [1]))

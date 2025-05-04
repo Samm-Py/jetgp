@@ -74,7 +74,8 @@ class wdegp:
             self.y_train = []
             for k, ders in enumerate(self.der_indices):
                 y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = utils.normalize_y_data(
-                    x_train, y_train[k], sigma_data, self.flattened_der_indicies[k]
+                    x_train, y_train[k], 10 *
+                    sigma_data, self.flattened_der_indicies[k]
                 )
                 self.y_train.append(y_norm)
             self.x_train = utils.normalize_x_data_train(x_train)
@@ -161,7 +162,7 @@ class wdegp:
             diffs_train_test = wdegp_utils.differences_by_dim_func(
                 self.x_train, x_k, 0, index=[-1])
             weights = wdegp_utils.determine_weights(
-                diffs_train_train, diffs_train_test, ell, self.kernel_func)
+                diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
             weights_matrix[k] = weights[:, 0]
 
         y_val = 0
@@ -181,6 +182,7 @@ class wdegp:
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             K += self.sigma_data[i]**2
+            print(self.sigma_data[i])
             L = cholesky(K)
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
