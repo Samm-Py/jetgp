@@ -62,7 +62,8 @@ class wdegp:
                            * self.num_points)
             sigma_data = np.diag(arr)
         else:
-            sigma_data[self.num_points:] = 10 * sigma_data[self.num_points:]
+            sigma_data[self.num_points:] = 10 * \
+                sigma_data[self.num_points:]
             sigma_data = np.diag(sigma_data)
 
         for ders in der_indices:
@@ -166,6 +167,9 @@ class wdegp:
                 diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
             weights_matrix[k] = weights[:, 0]
 
+        from matplotlib import pyplot as plt
+        plt.figure(1000)
+        plt.plot(weights_matrix)
         y_val = 0
         y_var = 0
         submodel_vals = []
