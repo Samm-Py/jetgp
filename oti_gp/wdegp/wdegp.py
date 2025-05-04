@@ -58,14 +58,8 @@ class wdegp:
         flattened_base_der_indicies = [
             i for sublist in base_der_indices for i in sublist]
         if sigma_data is None:
-            arr = np.zeros((len(flattened_base_der_indicies)+1)
-                           * self.num_points)
-            sigma_data = np.diag(arr)
-        else:
-            sigma_data[self.num_points:] = 10 * \
-                sigma_data[self.num_points:]
-            sigma_data = np.diag(sigma_data)
-
+            sigma_data = np.zeros((len(flattened_base_der_indicies)+1)
+                                  * self.num_points)
         for ders in der_indices:
             self.powers.append(
                 utils.build_companion_array(n_bases, n_order, ders))
@@ -103,6 +97,7 @@ class wdegp:
             kernel_name=self.kernel,
             kernel_type=self.kernel_type,
         )
+        self.sigma_data = np.diag(sigma_data)
         self.bounds = self.kernel_factory.bounds
         self.optimizer = Optimizer(self)
 

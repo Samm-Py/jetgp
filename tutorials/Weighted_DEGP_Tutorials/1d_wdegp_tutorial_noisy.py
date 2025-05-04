@@ -24,7 +24,7 @@ if __name__ == "__main__":
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
     # GP configuration
-    n_order = 1
+    n_order = 2
     n_bases = 1
     # Generate training input points from a dense candidate set
     num_points = 7
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     # X_train = X[training_indices]
     # X_train[0] = 1
     # index = [[i] for i in range(num_points)]
-    index = [[i] for i in range(num_points)]
+    index = [[0, 1, 2, 3, 4, 5, 6]]
 
     # Each submodel uses the same full derivative index structure
     base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
@@ -94,7 +94,7 @@ if __name__ == "__main__":
             deriv = y_train_hc.get_deriv(der_indices_tmp[i][j]).reshape(-1, 1)
             deriv_noisy = deriv.copy()
             noise_std[(i+1)*num_points:(i+2) *
-                      num_points] = deriv_noisy.flatten()*0.1 * (i + 1)
+                      num_points] = deriv_noisy.flatten()*0.01 * (i + 1)
 
     gp = wdegp(
         X_train,

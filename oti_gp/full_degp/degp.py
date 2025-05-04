@@ -58,7 +58,7 @@ class degp:
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
         self.powers = utils.build_companion_array(
             n_bases, n_order, der_indices)
-        sigma_data[self.num_points:] = 10*sigma_data[self.num_points:]
+        sigma_data[self.num_points:] = sigma_data[self.num_points:]
         # Normalize data if required
         if normalize:
             (
@@ -76,7 +76,6 @@ class degp:
         else:
             self.x_train = x_train
             self.y_train = utils.reshape_y_train(y_train)
-            sigma_data[self.num_points:] = 10*sigma_data[self.num_points:]
 
         # Compute differences for the kernel
         self.differences_by_dim = degp_utils.differences_by_dim_func(
@@ -89,8 +88,6 @@ class degp:
             if sigma_data is None
             else np.diag(sigma_data)
         )
-        self.sigma_data[self.num_points:,
-                        self.num_points:] = self.sigma_data[self.num_points:, self.num_points:]
 
         # Initialize kernel factory and optimizer
         self.kernel_factory = KernelFactory(
