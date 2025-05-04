@@ -162,14 +162,11 @@ class wdegp:
         for k in range(n_test):
             x_k = X_test[k].reshape(1, -1)
             diffs_train_test = wdegp_utils.differences_by_dim_func(
-                self.x_train, x_k, 0, index=[-1])
+                x_k, self.x_train, 0, index=[-1])
             weights = wdegp_utils.determine_weights(
                 diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
             weights_matrix[k] = weights[:, 0]
 
-        from matplotlib import pyplot as plt
-        plt.figure(1000)
-        plt.plot(weights_matrix)
         y_val = 0
         y_var = 0
         submodel_vals = []

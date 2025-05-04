@@ -21,7 +21,7 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # GP configuration
-    n_order = 2
+    n_order = 3
     n_bases = 1
     lb_x, ub_x = 0.5, 2.5
     num_points = 15
