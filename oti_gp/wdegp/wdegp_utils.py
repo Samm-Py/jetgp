@@ -141,7 +141,7 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
       - μ is the Lagrange multiplier,
       - w contains the interpolation weights used in Weighted Coefficient Kriging.
     """
-    n1 = diffs_test[0].shape[0]
+    n1 = diffs_test[0].shape[1]
     index = [-1]
 
     phi = kernel_func(diffs_by_dim, length_scales, index)
@@ -150,7 +150,7 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     K = phi.real
     K += (10 ** sigma_n) ** 2 * np.eye(len(K))
     F = np.ones((n1, 1))
-    r = r.real[:, 0].reshape(-1, 1)
+    r = r.real.reshape(-1, 1)
     r = np.vstack((r, [1]))
 
     M = np.zeros((n1 + 1, n1 + 1))
