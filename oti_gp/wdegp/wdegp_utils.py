@@ -148,7 +148,6 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     r = kernel_func(diffs_test, length_scales, index)
 
     K = phi.real
-    K += (10 ** sigma_n) ** 2 * np.eye(len(K))
     F = np.ones((n1, 1))
     r = r.real.reshape(-1, 1)
     r = np.vstack((r, [1]))

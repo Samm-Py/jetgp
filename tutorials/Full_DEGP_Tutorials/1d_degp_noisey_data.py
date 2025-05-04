@@ -23,7 +23,7 @@ import plotting_helper
 if __name__ == "__main__":
     rng = np.random.RandomState(1)
     # GP and function configuration
-    n_order = 2   # Max derivative order included in training
+    n_order = 4   # Max derivative order included in training
     n_bases = 1       # Input dimension (1D)
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     training_indices = rng.choice(
         np.arange(X.shape[0]), size=num_pts, replace=False)
     X_train = np.sort(X[training_indices], axis=0)
-    X_train[0] = 1
+    X_train[0] = 1.0
     # X_train = X[training_indices]
     n_train = len(X_train)
     # Convert to OTI array and perturb to track derivatives
@@ -71,12 +71,12 @@ if __name__ == "__main__":
             deriv = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
             deriv_noisy = deriv.copy()
             noise_std[(i+1)*num_pts:(i+2) *
-                      num_pts] = deriv_noisy.flatten()*.01 * (i + 1)
+                      num_pts] = deriv_noisy.flatten()*1 * (i + 1)
 
             for k in range(0, len(deriv_noisy)):
                 deriv_noisy[k] = deriv_noisy[k] + \
                     rng.normal(
-                        loc=0.0, scale=abs(deriv_noisy[k] * .01 * (i + 1)), size=1)
+                        loc=0.0, scale=abs(deriv_noisy[k] * 1 * (i + 1)), size=1)
             y_train.append(deriv_noisy)
 
     # Instantiate and configure the GP model
@@ -94,8 +94,8 @@ if __name__ == "__main__":
 
     # Optimize GP hyperparameters using particle swarm
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=25,
-        swarm_size=50
+        n_restart_optimizer=50,
+        swarm_size=100
     )
 
     # Create test points and make predictions

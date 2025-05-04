@@ -73,7 +73,7 @@ class wddegp:
                            * self.num_points)
             sigma_data = np.diag(arr)
         else:
-            sigma_data = 10*np.diag(sigma_data)
+            sigma_data = np.diag(sigma_data)
 
         if normalize:
             self.y_train = []
@@ -81,7 +81,7 @@ class wddegp:
             for k, ders in enumerate(self.der_indices):
                 y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = \
                     utils.normalize_y_data_directional(
-                        x_train, y_train[k], 10*sigma_data, self.flattened_der_indicies[k])
+                        x_train, y_train[k], sigma_data, self.flattened_der_indicies[k])
                 rays_norm = utils.normalize_directions(self.sigmas_x, rays[k])
                 self.y_train.append(y_norm)
                 self.rays.append(rays_norm)

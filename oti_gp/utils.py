@@ -649,6 +649,8 @@ def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     (y_train_normalized, mean_vec_y, std_vec_y,
      std_vec_x, mean_vec_x, noise_std_normalized)
     """
+
+    num_points = len(X_train)
     mean_vec_x = np.mean(X_train, axis=0).reshape(1, -1)  # shape: (m, 1)
     std_vec_x = np.std(X_train, axis=0).reshape(1, -1)    # shape: (m, 1)
 
@@ -656,7 +658,7 @@ def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     std_vec_y = np.std(y_train[0], axis=0).reshape(-1, 1)    # shape: (m, 1)
 
     y_train_normalized = (y_train[0] - mean_vec_y)/std_vec_y
-
+    noise_std_normalized = np.zeros(sigma_data.shape)
     for i in range(len(der_indices)):
         factor = 1/std_vec_y
         for j in range(len(der_indices[i])):
@@ -665,12 +667,13 @@ def normalize_y_data(X_train, y_train, sigma_data, der_indices):
                  )**(der_indices[i][j][1])
         y_train_normalized = np.vstack(
             (y_train_normalized.reshape(-1, 1), y_train[i + 1] * factor[0, 0]))
-
+        if sigma_data is not None:
+            noise_std_normalized[(
+                i + 1)*num_points:(i+2)*num_points] = sigma_data[(
+                    i + 1)*num_points:(i+2)*num_points] * factor[0, 0]
+        else:
+            noise_std_normalized = None
         # Scale noise if provided
-    if sigma_data is not None:
-        noise_std_normalized = sigma_data / std_vec_y[0, 0]
-    else:
-        noise_std_normalized = None
 
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x, noise_std_normalized
 
