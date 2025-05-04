@@ -23,7 +23,7 @@ import plotting_helper
 if __name__ == "__main__":
     rng = np.random.RandomState(1)
     # GP and function configuration
-    n_order = 4     # Max derivative order included in training
+    n_order = 1     # Max derivative order included in training
     n_bases = 1       # Input dimension (1D)
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
@@ -56,13 +56,13 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     noise_std = 0.1*np.ones((len(der_indices) + 1)*n_train)
-    noise_std[0] = 0.75
-    noise_std[1] = 0.75
-    noise_std[2] = 0.75
-    noise_std[3] = 0.75
-    noise_std[4] = 0.75
-    noise_std[5] = 0.75
-    noise_std[6] = 0.75
+    noise_std[0] = 0.0
+    noise_std[1] = 0.0
+    noise_std[2] = 0.0
+    noise_std[3] = 0.0
+    noise_std[4] = 0.0
+    noise_std[5] = 0.0
+    noise_std[6] = 0.0
     # noise_std[7] = 1
     # noise_std[8] = 1
     # noise_std[9] = 1
@@ -92,10 +92,10 @@ if __name__ == "__main__":
             deriv_noisy = deriv.copy()
 
             for k in range(0, len(deriv_noisy)):
-                noise_std[index] = abs(deriv_noisy[k] * .75*1*(i + 1))
+                noise_std[index] = abs(deriv_noisy[k] * .01*1*(i + 1))
                 deriv_noisy[k] = deriv_noisy[k] + \
                     rng.normal(
-                        loc=0.0, scale=abs(deriv_noisy[k] * .75 * (i + 1)), size=1)
+                        loc=0.0, scale=abs(deriv_noisy[k] * .01 * (i + 1)), size=1)
                 index = index + 1
             y_train.append(deriv_noisy)
 
