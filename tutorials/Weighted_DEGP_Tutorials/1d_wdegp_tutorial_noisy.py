@@ -27,30 +27,32 @@ if __name__ == "__main__":
     n_order = 1
     n_bases = 1
     # Generate training input points from a dense candidate set
-    num_points = 6
+    num_points = 7
     X = np.linspace(lb_x, ub_x, 1000).reshape(-1, 1)
     rng = np.random.RandomState(1)
     training_indices = rng.choice(
         np.arange(X.shape[0]), size=num_points, replace=False)
-    # X_train = np.sort(X[training_indices], axis=0)
-    X_train = X[training_indices]
+    X_train = np.sort(X[training_indices], axis=0)
+    X_train[0] = 1
+    # X_train = X[training_indices]
     # X_train[0] = 1
     # index = [[i] for i in range(num_points)]
-    index = [[0, 1, 2], [3, 4, 5]]
+    index = [[i] for i in range(num_points)]
 
     # Each submodel uses the same full derivative index structure
     base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
-    der_indices = [base_der_indices for _ in index]z
+    der_indices = [base_der_indices for _ in index]
 
     # Construct training data for each submodel
     y_train_data = []
     y_train_real = true_function(X_train, alg=np)
     noise_std = np.zeros((len(base_der_indices)+1)*num_points)
-    noise_std[:] = .5
+    noise_std[:] = 0.0
+    noise_std[num_points:] = 0.00
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
         y_train_real_noisy[i] = y_train_real_noisy[i] + \
-            rng.normal(loc=0.0, scale=noise_std[i], size=1)
+            rng.normal(loc=0.0, scale=0.0, size=1)
     for k, val in enumerate(index):
         X_train_pert = oti.array(X_train[val])
         for i in range(n_bases):
@@ -67,7 +69,7 @@ if __name__ == "__main__":
                 deriv_noisy = deriv.copy()
                 for k in range(0, len(deriv_noisy)):
                     deriv_noisy[k] = deriv_noisy[k] + \
-                        rng.normal(loc=0.0, scale=0.1, size=1)
+                        rng.normal(loc=0.0, scale=0.00, size=1)
                 y_train.append(deriv_noisy)
 
         y_train_data.append(y_train)

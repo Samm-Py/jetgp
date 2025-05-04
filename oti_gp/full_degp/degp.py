@@ -47,6 +47,7 @@ class degp:
         self.n_order = n_order
         self.n_bases = n_bases
         self.dim = x_train.shape[1]
+        self.num_points = x_train.shape[0]
         self.kernel = kernel
         self.kernel_type = kernel_type
         self.der_indices = der_indices
@@ -60,6 +61,7 @@ class degp:
 
         # Normalize data if required
         if normalize:
+            sigma_data[self.num_points:] = 10*sigma_data[self.num_points:]
             (
                 self.y_train,
                 self.mu_y,
@@ -70,6 +72,7 @@ class degp:
             ) = utils.normalize_y_data(
                 x_train, y_train, sigma_data, self.flattened_der_indicies
             )
+
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.x_train = x_train
@@ -84,8 +87,10 @@ class degp:
         self.sigma_data = (
             np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
             if sigma_data is None
-            else 10*np.diag(sigma_data)
+            else np.diag(sigma_data)
         )
+        self.sigma_data[self.num_points:, self.num_points:] = 10 * \
+            self.sigma_data[self.num_points:, self.num_points:]
 
         # Initialize kernel factory and optimizer
         self.kernel_factory = KernelFactory(
