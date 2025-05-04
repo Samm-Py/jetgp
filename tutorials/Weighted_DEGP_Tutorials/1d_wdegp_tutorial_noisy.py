@@ -48,7 +48,7 @@ if __name__ == "__main__":
     y_train_real = true_function(X_train, alg=np)
     noise_std = np.zeros((len(base_der_indices)+1)*num_points)
     noise_std[:] = 0.0
-    noise_std[num_points:] = 0.00
+    noise_std[num_points:] = .1
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
         y_train_real_noisy[i] = y_train_real_noisy[i] + \
@@ -67,9 +67,12 @@ if __name__ == "__main__":
                 deriv = y_train_hc.get_deriv(
                     base_der_indices[i][j]).reshape(-1, 1)
                 deriv_noisy = deriv.copy()
-                for k in range(0, len(deriv_noisy)):
-                    deriv_noisy[k] = deriv_noisy[k] + \
-                        rng.normal(loc=0.0, scale=0.00, size=1)
+                for l in range(0, len(deriv_noisy)):
+                    deriv_noisy[l] = deriv_noisy[l] + \
+                        rng.normal(
+                            loc=0.0, scale=abs(0.01 * deriv_noisy[l]), size=1)
+                    noise_std[(l + 1) * num_points +
+                              k] = abs(0.01 * deriv_noisy[l])
                 y_train.append(deriv_noisy)
 
         y_train_data.append(y_train)
@@ -82,7 +85,7 @@ if __name__ == "__main__":
         n_bases,
         index,
         der_indices,
-        normalize=True,
+        normalize=False,
         sigma_data=noise_std,      # Informs the model about expected noise level
         kernel="SE",
         kernel_type="anisotropic",

@@ -61,7 +61,7 @@ class degp:
 
         # Normalize data if required
         if normalize:
-            sigma_data[self.num_points:] = 10*sigma_data[self.num_points:]
+            sigma_data[self.num_points:] = 100*sigma_data[self.num_points:]
             (
                 self.y_train,
                 self.mu_y,
@@ -89,8 +89,8 @@ class degp:
             if sigma_data is None
             else np.diag(sigma_data)
         )
-        self.sigma_data[self.num_points:, self.num_points:] = 10 * \
-            self.sigma_data[self.num_points:, self.num_points:]
+        self.sigma_data[self.num_points:,
+                        self.num_points:] = self.sigma_data[self.num_points:, self.num_points:]
 
         # Initialize kernel factory and optimizer
         self.kernel_factory = KernelFactory(

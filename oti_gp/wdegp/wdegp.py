@@ -62,7 +62,8 @@ class wdegp:
                            * self.num_points)
             sigma_data = np.diag(arr)
         else:
-            sigma_data = 10*np.diag(sigma_data)
+            sigma_data[self.num_points:] = 10 * sigma_data[self.num_points:]
+            sigma_data = np.diag(sigma_data)
 
         for ders in der_indices:
             self.powers.append(
@@ -74,7 +75,7 @@ class wdegp:
             self.y_train = []
             for k, ders in enumerate(self.der_indices):
                 y_norm, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, self.sigma_data = utils.normalize_y_data(
-                    x_train, y_train[k], 10 *
+                    x_train, y_train[k],
                     sigma_data, self.flattened_der_indicies[k]
                 )
                 self.y_train.append(y_norm)
@@ -182,7 +183,6 @@ class wdegp:
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             K += self.sigma_data[i]**2
-            print(self.sigma_data[i])
             L = cholesky(K)
             alpha = solve(L.T, solve(L, self.y_train[i]))
 
