@@ -23,7 +23,7 @@ import plotting_helper
 if __name__ == "__main__":
     rng = np.random.RandomState(1)
     # GP and function configuration
-    n_order = 1     # Max derivative order included in training
+    n_order = 1   # Max derivative order included in training
     n_bases = 1       # Input dimension (1D)
     lb_x = 0          # Lower bound of input domain
     ub_x = 10         # Upper bound of input domain
@@ -92,10 +92,10 @@ if __name__ == "__main__":
             deriv_noisy = deriv.copy()
 
             for k in range(0, len(deriv_noisy)):
-                noise_std[index] = abs(deriv_noisy[k] * .01*1*(i + 1))
+                noise_std[index] = abs(deriv_noisy[k] * .5*1*(10*i + 1))
                 deriv_noisy[k] = deriv_noisy[k] + \
                     rng.normal(
-                        loc=0.0, scale=abs(deriv_noisy[k] * .01 * (i + 1)), size=1)
+                        loc=0.0, scale=abs(deriv_noisy[k] * .5 * (10*i + 1)), size=1)
                 index = index + 1
             y_train.append(deriv_noisy)
 
