@@ -58,7 +58,6 @@ class degp:
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
         self.powers = utils.build_companion_array(
             n_bases, n_order, der_indices)
-        sigma_data[self.num_points:] = sigma_data[self.num_points:]
         # Normalize data if required
         if normalize:
             (
