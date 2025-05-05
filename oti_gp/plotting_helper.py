@@ -136,51 +136,50 @@ def make_plots(
 
             # ----- Plotting the Results -----
             # Create a figure with two subplots: one for the GP prediction and one for the true function.
-            plt.figure(0, figsize=(12, 6))
+            # Compute the absolute error
+            abs_error = np.abs(f_mean_2d - true_values)
+
+            # Create a figure with three subplots: GP prediction, true function, and absolute error
+            plt.figure(0, figsize=(18, 5))
 
             # Subplot (a): GP Prediction
-            plt.subplot(1, 2, 1)
+            plt.subplot(1, 3, 1)
             plt.title(
                 "Order {} Enhanced Gaussian Process\n True Function Prediction".format(
-                    n_order
-                )
+                    n_order)
             )
-            # Contour plot of the GP predicted mean
-            plt.contourf(
-                X1_grid, X2_grid, f_mean_2d, levels=50, cmap="viridis"
-            )
+            plt.contourf(X1_grid, X2_grid, f_mean_2d,
+                         levels=50, cmap="viridis")
             plt.colorbar()
-            # Overlay the training points on the prediction plot
-            plt.scatter(
-                X_train[:, 0],
-                X_train[:, 1],
-                c="white",
-                edgecolors="k",
-                label="Train pts",
-            )
+            plt.scatter(X_train[:, 0], X_train[:, 1],
+                        c="white", edgecolors="k", label="Train pts")
             plt.xlabel("X1")
             plt.ylabel("X2")
             plt.legend()
-            plt.tight_layout(pad=2.0)
 
             # Subplot (b): True Function
-            plt.subplot(1, 2, 2)
-            title_str = r"True Function"
-            plt.title(title_str, fontsize=12)
-            # Contour plot of the true function values
-            plt.contourf(
-                X1_grid, X2_grid, true_values, levels=50, cmap="viridis"
-            )
+            plt.subplot(1, 3, 2)
+            plt.title("True Function", fontsize=12)
+            plt.contourf(X1_grid, X2_grid, true_values,
+                         levels=50, cmap="viridis")
             plt.colorbar()
-            # Overlay the training points on the true function plot
-            plt.scatter(
-                X_train[:, 0], X_train[:, 1], c="white", edgecolors="k"
-            )
+            plt.scatter(X_train[:, 0], X_train[:, 1],
+                        c="white", edgecolors="k")
             plt.xlabel("X1")
             plt.ylabel("X2")
-            plt.show()
+
+            # Subplot (c): Absolute Error
+            plt.subplot(1, 3, 3)
+            plt.title("Absolute Error", fontsize=12)
+            plt.contourf(X1_grid, X2_grid, abs_error, levels=50, cmap="magma")
+            plt.colorbar()
+            plt.scatter(X_train[:, 0], X_train[:, 1],
+                        c="white", edgecolors="k")
+            plt.xlabel("X1")
+            plt.ylabel("X2")
 
             plt.tight_layout(pad=2.0)
+            plt.show()
 
     else:
         sigma = np.sqrt(cov)

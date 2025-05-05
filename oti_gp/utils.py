@@ -658,7 +658,7 @@ def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     std_vec_y = np.std(y_train[0], axis=0).reshape(-1, 1)    # shape: (m, 1)
 
     y_train_normalized = (y_train[0] - mean_vec_y)/std_vec_y
-    noise_std_normalized = np.zeros(sigma_data.shape)
+    noise_std_normalized = sigma_data
     for i in range(len(der_indices)):
         factor = 1/std_vec_y
         for j in range(len(der_indices[i])):
