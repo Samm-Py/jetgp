@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import cholesky, solve
 from pyswarm import pso
 from full_degp import degp_utils as utils
-
+from line_profiler import profile
 
 class Optimizer:
     def __init__(self, model):
@@ -15,7 +15,8 @@ class Optimizer:
             An instance of a derivative-enhanced Gaussian process (DEGP) model.
         """
         self.model = model
-
+    
+    @profile
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.
@@ -69,7 +70,8 @@ class Optimizer:
         except Exception:
             # Return large penalty if matrix is not positive definite
             return 1e6
-
+    
+    @profile
     def nll_wrapper(self, x0):
         """
         Wrapper for the negative log marginal likelihood function.
@@ -86,6 +88,7 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
+    @profile
     def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
         """
         Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
