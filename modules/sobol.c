@@ -24,11 +24,7 @@
             "/opt/anaconda3/envs/pyoti/lib/python3.9/site-packages/numpy/core/include"
         ],
         "libraries": [
-            "m",
-            "ifcore",
-            "ifcoremt",
-            "svml",
-            "intlc"
+            "m"
         ],
         "name": "sobol",
         "sources": [

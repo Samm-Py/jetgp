@@ -1,4 +1,12 @@
 *~
 
+# Macos-specific files.
 .DS_Store
 
+# Zone.Identifier files to be discarded.
+*Zone.Identifier
+
+# Cython generated files.
+modules/*.c
+modules/build/
+modules/*.so

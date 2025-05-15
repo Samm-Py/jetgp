@@ -1,6 +1,6 @@
 import numpy as np
 import pyoti.sparse as oti
-
+from line_profiler import profile
 
 def differences_by_dim_func(X1, X2, n_order, index=-1):
     """
@@ -77,7 +77,7 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
         differences_by_dim.append(diffs_k)
     return differences_by_dim
 
-
+@profile
 def rbf_kernel(
     differences,
     length_scales,

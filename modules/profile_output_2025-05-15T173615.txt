@@ -1,0 +1,230 @@
+Timer unit: 1e-09 s
+
+Total time: 3.25348 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/degp_utils.py
+Function: rbf_kernel at line 80
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    80                                           @profile
+    81                                           def rbf_kernel(
+    82                                               differences,
+    83                                               length_scales,
+    84                                               n_order,
+    85                                               n_bases,
+    86                                               kernel_func,
+    87                                               der_indices,
+    88                                               powers,
+    89                                               index=-1,
+    90                                           ):
+    91                                               """
+    92                                               Compute the derivative-enhanced Radial Basis Function (RBF) kernel matrix 
+    93                                               with Automatic Relevance Determination (ARD) for multi-dimensional inputs.
+    94                                           
+    95                                               The kernel supports function values and mixed **partial derivatives** up to a specified order.
+    96                                           
+    97                                               General form of the ARD RBF kernel:
+    98                                               k(x, x') = exp(-0.5 * sum_d((x_d - x'_d)^2 / length_scale_d^2))
+    99                                           
+   100                                               Parameters:
+   101                                               ----------
+   102                                               differences : ndarray of shape (N, M, D)
+   103                                                   Pairwise differences between input points (X - X').
+   104                                               length_scales : ndarray of shape (D,)
+   105                                                   Length scales for each input dimension (ARD).
+   106                                               n_order : int
+   107                                                   Maximum derivative order considered.
+   108                                               n_bases : int
+   109                                                   Total number of bases (function value + derivative terms).
+   110                                               kernel_func : callable
+   111                                                   Function that computes the base RBF kernel and its derivatives.
+   112                                                   Must return an object with:
+   113                                                   - `.real`: the base kernel.
+   114                                                   - `.get_deriv(multi_index)`: derivatives of the kernel.
+   115                                               der_indices : list of lists
+   116                                                   Multi-index derivative structures for each derivative component.
+   117                                               powers : list of int
+   118                                                   Powers of (-1) applied to each term (for symmetry or sign conventions).
+   119                                               index : int, optional (default=-1)
+   120                                                   Index for selecting directional kernels or subspaces (if applicable).
+   121                                           
+   122                                               Returns:
+   123                                               -------
+   124                                               K : ndarray of shape (n_total, n_total)
+   125                                                   Kernel matrix including function values and derivative terms.
+   126                                           
+   127                                               Notes:
+   128                                               -----
+   129                                               - The kernel matrix is built by stacking:
+   130                                                 - Function value blocks.
+   131                                                 - Derivative blocks (including mixed partial derivatives).
+   132                                               - The sign convention for derivatives is controlled by `powers`.
+   133                                           
+   134                                               Example:
+   135                                               --------
+   136                                               >>> K = rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers)
+   137                                               >>> K.shape == (n_bases, n_bases)
+   138                                               """
+   139                                           
+   140       277 1764975000.0    6e+06     54.2      phi = kernel_func(differences, length_scales, index)
+   141                                           
+   142      4432    1429000.0    322.4      0.0      for i in range(0, len(der_indices) + 1):
+   143      4155    9476000.0   2280.6      0.3          row_j = 0
+   144     66480   15748000.0    236.9      0.5          for j in range(0, len(der_indices) + 1):
+   145     62325    8677000.0    139.2      0.3              if j == 0 and i == 0:
+   146       277    2777000.0  10025.3      0.1                  row_j = phi.real * (-1)**(powers[j])
+   147     62048    7844000.0    126.4      0.2              elif j > 0 and i == 0:
+   148      7756   39028000.0   5032.0      1.2                  row_j = np.hstack(
+   149      3878   46873000.0  12086.9      1.4                      (row_j,  (-1)**(powers[j]) * phi.get_deriv(der_indices[j - 1])))
+   150     58170    6868000.0    118.1      0.2              elif j == 0 and i > 0:
+   151      3878   42992000.0  11086.1      1.3                  row_j = phi.get_deriv(der_indices[i - 1])
+   152                                                       else:
+   153    108584  258598000.0   2381.5      7.9                  row_j = np.hstack(
+   154    108584   78371000.0    721.8      2.4                      (row_j, (-1)**(powers[j]) *
+   155     54292  779405000.0  14355.8     24.0                       phi.get_deriv(der_indices[j - 1] + der_indices[i - 1]))
+   156                                                           )
+   157      4155     790000.0    190.1      0.0          if i == 0:
+   158       277      44000.0    158.8      0.0              K = row_j
+   159                                                   else:
+   160      3878  189534000.0  48874.2      5.8              K = np.vstack((K, row_j))
+   161                                           
+   162       277      51000.0    184.1      0.0      return K
+
+Total time: 4.67662 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py
+Function: negative_log_marginal_likelihood at line 19
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    19                                               @profile
+    20                                               def negative_log_marginal_likelihood(self, x0):
+    21                                                   """
+    22                                                   Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.
+    23                                           
+    24                                                   The NLL formula:
+    25                                                   NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5 * N * log(2 * pi)
+    26                                           
+    27                                                   Parameters:
+    28                                                   ----------
+    29                                                   x0 : ndarray
+    30                                                       Hyperparameters, where:
+    31                                                       - x0[:-1] are the length scales (ell).
+    32                                                       - x0[-1] is the log noise standard deviation (sigma_n).
+    33                                           
+    34                                                   Returns:
+    35                                                   -------
+    36                                                   float
+    37                                                       The computed NLL value. Returns a large value (1e6) if Cholesky fails.
+    38                                                   """
+    39       275     115000.0    418.2      0.0          ell = x0[:-1]
+    40       275      95000.0    345.5      0.0          sigma_n = x0[-1]
+    41                                           
+    42                                                   # Compute kernel matrix with current hyperparameters
+    43       550 3003744000.0    5e+06     64.2          K = utils.rbf_kernel(
+    44       275     130000.0    472.7      0.0              self.model.differences_by_dim,
+    45       275      27000.0     98.2      0.0              ell,
+    46       275      82000.0    298.2      0.0              self.model.n_order,
+    47       275      57000.0    207.3      0.0              self.model.n_bases,
+    48       275     107000.0    389.1      0.0              self.model.kernel_func,
+    49       275      77000.0    280.0      0.0              self.model.flattened_der_indicies,
+    50       275     100000.0    363.6      0.0              self.model.powers
+    51                                                   )
+    52                                           
+    53                                                   # Add noise terms
+    54       275   30765000.0 111872.7      0.7          K += (10**sigma_n)**2 * np.eye(K.shape[0])
+    55       275   18244000.0  66341.8      0.4          K += self.model.sigma_data**2
+    56                                           
+    57       275      40000.0    145.5      0.0          try:
+    58                                                       # Cholesky decomposition for numerical stability
+    59       275 1003862000.0    4e+06     21.5              L = cholesky(K)
+    60       223  611386000.0    3e+06     13.1              alpha = solve(L.T, solve(L, self.model.y_train))
+    61                                           
+    62                                                       # Compute NLL components
+    63       223    1389000.0   6228.7      0.0              data_fit = 0.5 * np.dot(self.model.y_train, alpha)
+    64       223    5468000.0  24520.2      0.1              log_det_K = np.sum(np.log(np.diag(L)))
+    65       223      37000.0    165.9      0.0              complexity = log_det_K
+    66       223     103000.0    461.9      0.0              N = len(self.model.y_train)
+    67       223     484000.0   2170.4      0.0              const = 0.5 * N * np.log(2 * np.pi)
+    68                                           
+    69       223     126000.0    565.0      0.0              return data_fit + complexity + const
+    70        52      80000.0   1538.5      0.0          except Exception:
+    71                                                       # Return large penalty if matrix is not positive definite
+    72        52     102000.0   1961.5      0.0              return 1e6
+
+Total time: 4.68513 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py
+Function: nll_wrapper at line 74
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    74                                               @profile
+    75                                               def nll_wrapper(self, x0):
+    76                                                   """
+    77                                                   Wrapper for the negative log marginal likelihood function.
+    78                                           
+    79                                                   Parameters:
+    80                                                   ----------
+    81                                                   x0 : ndarray
+    82                                                       Hyperparameters.
+    83                                           
+    84                                                   Returns:
+    85                                                   -------
+    86                                                   float
+    87                                                       The NLL value.
+    88                                                   """
+    89       275 4685125000.0    2e+07    100.0          return self.negative_log_marginal_likelihood(x0)
+
+Total time: 4.69727 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py
+Function: optimize_hyperparameters at line 91
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    91                                               @profile
+    92                                               def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
+    93                                                   """
+    94                                                   Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
+    95                                           
+    96                                                   Parameters:
+    97                                                   ----------
+    98                                                   n_restart_optimizer : int, default=20
+    99                                                       Maximum number of iterations for PSO.
+   100                                                   swarm_size : int, default=20
+   101                                                       Number of particles in the swarm.
+   102                                                   verbose : bool, default=True
+   103                                                       Controls verbosity of PSO output.
+   104                                           
+   105                                                   Returns:
+   106                                                   -------
+   107                                                   best_x : ndarray
+   108                                                       The optimal set of hyperparameters found.
+   109                                                   """
+   110         1          0.0      0.0      0.0          bounds = self.model.bounds
+   111         1       2000.0   2000.0      0.0          lb = [b[0] for b in bounds]
+   112         1       1000.0   1000.0      0.0          ub = [b[1] for b in bounds]
+   113                                           
+   114                                                   # Run PSO to minimize the NLL
+   115         2 4697169000.0    2e+09    100.0          best_x, best_nll = pso(
+   116         1       4000.0   4000.0      0.0              self.nll_wrapper,
+   117         1       1000.0   1000.0      0.0              lb,
+   118         1          0.0      0.0      0.0              ub,
+   119         1          0.0      0.0      0.0              swarmsize=swarm_size,
+   120         1          0.0      0.0      0.0              maxiter=n_restart_optimizer,
+   121         1          0.0      0.0      0.0              debug=verbose,
+   122         1          0.0      0.0      0.0              minfunc=1e-20,
+   123                                                   )
+   124                                           
+   125                                                   # Store the optimal solution
+   126         1       3000.0   3000.0      0.0          self.model.opt_x0 = best_x
+   127         1       1000.0   1000.0      0.0          self.model.opt_nll = best_nll
+   128                                           
+   129         1          0.0      0.0      0.0          if verbose:
+   130         1      81000.0  81000.0      0.0              print("Best solution:", best_x)
+   131         1       3000.0   3000.0      0.0              print("Objective value:", best_nll)
+   132                                           
+   133         1          0.0      0.0      0.0          return best_x
+
+  3.25 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/degp_utils.py:80 - rbf_kernel
+  4.68 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py:19 - negative_log_marginal_likelihood
+  4.69 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py:74 - nll_wrapper
+  4.70 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py:91 - optimize_hyperparameters
