@@ -1,0 +1,139 @@
+Timer unit: 1e-09 s
+
+Total time: 4.39111 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py
+Function: negative_log_marginal_likelihood at line 19
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    19                                               @profile
+    20                                               def negative_log_marginal_likelihood(self, x0):
+    21                                                   """
+    22                                                   Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.
+    23                                           
+    24                                                   The NLL formula:
+    25                                                   NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5 * N * log(2 * pi)
+    26                                           
+    27                                                   Parameters:
+    28                                                   ----------
+    29                                                   x0 : ndarray
+    30                                                       Hyperparameters, where:
+    31                                                       - x0[:-1] are the length scales (ell).
+    32                                                       - x0[-1] is the log noise standard deviation (sigma_n).
+    33                                           
+    34                                                   Returns:
+    35                                                   -------
+    36                                                   float
+    37                                                       The computed NLL value. Returns a large value (1e6) if Cholesky fails.
+    38                                                   """
+    39       275     138000.0    501.8      0.0          ell = x0[:-1]
+    40       275      79000.0    287.3      0.0          sigma_n = x0[-1]
+    41                                           
+    42                                                   # Compute kernel matrix with current hyperparameters
+    43       550 2785827000.0    5e+06     63.4          K = utils.rbf_kernel(
+    44       275     109000.0    396.4      0.0              self.model.differences_by_dim,
+    45       275      34000.0    123.6      0.0              ell,
+    46       275      75000.0    272.7      0.0              self.model.n_order,
+    47       275      64000.0    232.7      0.0              self.model.n_bases,
+    48       275      99000.0    360.0      0.0              self.model.kernel_func,
+    49       275      85000.0    309.1      0.0              self.model.flattened_der_indicies,
+    50       275     103000.0    374.5      0.0              self.model.powers
+    51                                                   )
+    52                                           
+    53                                                   # Add noise terms
+    54       275   26064000.0  94778.2      0.6          K += (10**sigma_n)**2 * np.eye(K.shape[0])
+    55       275   17392000.0  63243.6      0.4          K += self.model.sigma_data**2
+    56                                           
+    57       275      48000.0    174.5      0.0          try:
+    58                                                       # Cholesky decomposition for numerical stability
+    59       275  961314000.0    3e+06     21.9              L = cholesky(K)
+    60       223  593413000.0    3e+06     13.5              alpha = solve(L.T, solve(L, self.model.y_train))
+    61                                           
+    62                                                       # Compute NLL components
+    63       223    1043000.0   4677.1      0.0              data_fit = 0.5 * np.dot(self.model.y_train, alpha)
+    64       223    4426000.0  19847.5      0.1              log_det_K = np.sum(np.log(np.diag(L)))
+    65       223      47000.0    210.8      0.0              complexity = log_det_K
+    66       223     106000.0    475.3      0.0              N = len(self.model.y_train)
+    67       223     418000.0   1874.4      0.0              const = 0.5 * N * np.log(2 * np.pi)
+    68                                           
+    69       223     111000.0    497.8      0.0              return data_fit + complexity + const
+    70        52      45000.0    865.4      0.0          except Exception:
+    71                                                       # Return large penalty if matrix is not positive definite
+    72        52      66000.0   1269.2      0.0              return 1e6
+
+Total time: 4.399 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py
+Function: nll_wrapper at line 74
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    74                                               @profile
+    75                                               def nll_wrapper(self, x0):
+    76                                                   """
+    77                                                   Wrapper for the negative log marginal likelihood function.
+    78                                           
+    79                                                   Parameters:
+    80                                                   ----------
+    81                                                   x0 : ndarray
+    82                                                       Hyperparameters.
+    83                                           
+    84                                                   Returns:
+    85                                                   -------
+    86                                                   float
+    87                                                       The NLL value.
+    88                                                   """
+    89       275 4399003000.0    2e+07    100.0          return self.negative_log_marginal_likelihood(x0)
+
+Total time: 4.41016 s
+File: /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py
+Function: optimize_hyperparameters at line 91
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    91                                               @profile
+    92                                               def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
+    93                                                   """
+    94                                                   Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
+    95                                           
+    96                                                   Parameters:
+    97                                                   ----------
+    98                                                   n_restart_optimizer : int, default=20
+    99                                                       Maximum number of iterations for PSO.
+   100                                                   swarm_size : int, default=20
+   101                                                       Number of particles in the swarm.
+   102                                                   verbose : bool, default=True
+   103                                                       Controls verbosity of PSO output.
+   104                                           
+   105                                                   Returns:
+   106                                                   -------
+   107                                                   best_x : ndarray
+   108                                                       The optimal set of hyperparameters found.
+   109                                                   """
+   110         1       2000.0   2000.0      0.0          bounds = self.model.bounds
+   111         1       3000.0   3000.0      0.0          lb = [b[0] for b in bounds]
+   112         1       5000.0   5000.0      0.0          ub = [b[1] for b in bounds]
+   113                                           
+   114                                                   # Run PSO to minimize the NLL
+   115         2 4410051000.0    2e+09    100.0          best_x, best_nll = pso(
+   116         1       1000.0   1000.0      0.0              self.nll_wrapper,
+   117         1          0.0      0.0      0.0              lb,
+   118         1          0.0      0.0      0.0              ub,
+   119         1          0.0      0.0      0.0              swarmsize=swarm_size,
+   120         1       1000.0   1000.0      0.0              maxiter=n_restart_optimizer,
+   121         1          0.0      0.0      0.0              debug=verbose,
+   122         1       1000.0   1000.0      0.0              minfunc=1e-20,
+   123                                                   )
+   124                                           
+   125                                                   # Store the optimal solution
+   126         1       1000.0   1000.0      0.0          self.model.opt_x0 = best_x
+   127         1          0.0      0.0      0.0          self.model.opt_nll = best_nll
+   128                                           
+   129         1          0.0      0.0      0.0          if verbose:
+   130         1      88000.0  88000.0      0.0              print("Best solution:", best_x)
+   131         1       2000.0   2000.0      0.0              print("Objective value:", best_nll)
+   132                                           
+   133         1       1000.0   1000.0      0.0          return best_x
+
+  4.39 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py:19 - negative_log_marginal_likelihood
+  4.40 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py:74 - nll_wrapper
+  4.41 seconds - /Users/zkj327/coding/oti_gp/oti_gp/full_degp/optimizer.py:91 - optimize_hyperparameters

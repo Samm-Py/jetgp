@@ -1,7 +1,7 @@
 import numpy as np
 import pyoti.sparse as oti
 import utils
-
+from line_profiler import profile
 # -------------------------------------------------------------------
 # Utility Functions
 # -------------------------------------------------------------------
@@ -160,7 +160,7 @@ class KernelFactory:
     # -------------------------------------------------------------------
     # Anisotropic Kernel Implementations
     # -------------------------------------------------------------------
-
+    @profile
     def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """
         Anisotropic Squared Exponential (SE) kernel.

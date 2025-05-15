@@ -12,7 +12,9 @@ import numpy as np
 import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
-import modules.sobol as sb
+import sys
+sys.path.append("../../modules/")
+import sobol as sb
 import plotting_helper
 
 if __name__ == "__main__":
@@ -26,11 +28,12 @@ if __name__ == "__main__":
 
     # ----- Define Subset of Derivative Indices -----
     # Only include main directional derivatives up to second order for x₁, x₂, x₃
-    der_indices = [
-        [[[1, 1]], [[2, 1]], [[3, 1]], [[4, 1]]],   # ∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃
-        # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃²
-        [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],
-    ]
+    # der_indices = [
+    #     [[[1, 1]], [[2, 1]], [[3, 1]], [[4, 1]]],   # ∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃
+    #     # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃²
+    #     [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],
+    # ]
+    der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     # ----- Define True Function -----
     def true_function(X, alg=oti):
