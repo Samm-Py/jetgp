@@ -17,11 +17,11 @@ sys.path.append("../../modules/")
 import sobol as sb
 import plotting_helper
 
-if __name__ == "__main__":
+def main():
     # ----- Configuration -----
     np.random.seed(1354)
     n_bases = 4      # Input dimensionality
-    n_order = 2      # Max derivative order used
+    n_order = 3      # Max derivative order used
     num_points_train = 26
     lower_bounds = [-2.048] * n_bases
     upper_bounds = [2.048] * n_bases
@@ -96,21 +96,25 @@ if __name__ == "__main__":
     )
 
     # ----- Visualization -----
-    plotting_helper.make_plots(
-        X_train,
-        y_train,
-        X_test,
-        y_pred,
-        true_function,
-        X1_grid=X1_grid,
-        X2_grid=X2_grid,
-        n_order=n_order,
-        n_bases=n_bases,
-        plot_derivative_surrogates=False,
-        der_indices=der_indices,
-    )
+    # plotting_helper.make_plots(
+    #     X_train,
+    #     y_train,
+    #     X_test,
+    #     y_pred,
+    #     true_function,
+    #     X1_grid=X1_grid,
+    #     X2_grid=X2_grid,
+    #     n_order=n_order,
+    #     n_bases=n_bases,
+    #     plot_derivative_surrogates=False,
+    #     der_indices=der_indices,
+    # )
 
     # ----- Compute and Print NRMSE -----
     y_true = true_function(X_test, alg=np).flatten()
     nrmse_val = utils.nrmse(y_true, y_pred)
     print("NRMSE between model and true function: {:.8f}".format(nrmse_val))
+
+
+if __name__ == "__main__":
+    main()
