@@ -175,11 +175,34 @@ class KernelFactory:
         -------
         ndarray
         """
+        # print(differences_by_dim[0].shape)
         ell = 10 ** (length_scales[:-1])
         sigma_f = length_scales[-1]
-        sqdist = sum((ell[i] * differences_by_dim[i])
-                     ** 2 for i in range(self.dim))
-        return (10 ** sigma_f) ** 2 * oti.exp(-0.5 * sqdist)
+        # sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x'[i] )**2 )
+        # sqdist = sum( 
+        #     (
+        #          (-0.5 * ell[i] * ell[i] ) 
+        #         * 
+        #         ( differences_by_dim[i] * differences_by_dim[i] )
+        #     ) for i in range(self.dim)
+        # )
+        tmp1 = oti.zeros(differences_by_dim[0].shape)
+        tmp2 = oti.zeros(differences_by_dim[0].shape)
+        sqdist = oti.zeros(differences_by_dim[0].shape)
+        for i in range(self.dim):
+            # subdivide by terms
+            # tmp1 = differences_by_dim[i] * differences_by_dim[i]
+            oti.mul(differences_by_dim[i] , differences_by_dim[i], out = tmp1)
+            t1 = -0.5 * ell[i] * ell[i] 
+            # tmp2 = t1 * tmp1
+            oti.mul(t1, tmp1, out = tmp2)
+            # sqdist += tmp2
+            oti.sum(sqdist, tmp2, out = sqdist)
+        # end for 
+        oti.exp(sqdist,out=tmp1)
+        oti.mul( ((10 ** sigma_f) ** 2), tmp1, out=tmp2)
+        # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
+        return tmp2
 
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """

@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
+from scipy.linalg import cho_solve, cho_factor
 from pyswarm import pso
 from full_degp import degp_utils as utils
 from line_profiler import profile
@@ -56,12 +57,29 @@ class Optimizer:
 
         try:
             # Cholesky decomposition for numerical stability
-            L = cholesky(K)
-            alpha = solve(L.T, solve(L, self.model.y_train))
-
+            # L = cholesky(K)
+            # alpha = solve(
+            #             L.T, 
+            #             solve(
+            #                 L, self.model.y_train
+            #             )
+            #         )
+            # alpha = solve(
+            #             K, 
+            #             self.model.y_train
+            #         )
+            
+            
+            L,low = cho_factor(K)
+            alpha = cho_solve(
+                        (L,low), 
+                        self.model.y_train
+                    )
+            
             # Compute NLL components
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
+            # log_det_K = np.log(np.linalg.det(K))
             complexity = log_det_K
             N = len(self.model.y_train)
             const = 0.5 * N * np.log(2 * np.pi)
