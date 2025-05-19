@@ -95,7 +95,7 @@ def main():
         return_deriv=False
     )
 
-    # ----- Visualization -----
+    # # ----- Visualization -----
     # plotting_helper.make_plots(
     #     X_train,
     #     y_train,

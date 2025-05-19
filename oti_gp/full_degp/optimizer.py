@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.linalg import cholesky, solve
 from scipy.linalg import cho_solve, cho_factor
 from pyswarm import pso
 from full_degp import degp_utils as utils
@@ -106,7 +105,7 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
-    @profile
+    # @profile
     def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
         """
         Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
