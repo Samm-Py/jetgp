@@ -95,20 +95,20 @@ def main():
         return_deriv=False
     )
 
-    # # ----- Visualization -----
-    # plotting_helper.make_plots(
-    #     X_train,
-    #     y_train,
-    #     X_test,
-    #     y_pred,
-    #     true_function,
-    #     X1_grid=X1_grid,
-    #     X2_grid=X2_grid,
-    #     n_order=n_order,
-    #     n_bases=n_bases,
-    #     plot_derivative_surrogates=False,
-    #     der_indices=der_indices,
-    # )
+    # ----- Visualization -----
+    plotting_helper.make_plots(
+        X_train,
+        y_train,
+        X_test,
+        y_pred,
+        true_function,
+        X1_grid=X1_grid,
+        X2_grid=X2_grid,
+        n_order=n_order,
+        n_bases=n_bases,
+        plot_derivative_surrogates=False,
+        der_indices=der_indices,
+    )
 
     # ----- Compute and Print NRMSE -----
     y_true = true_function(X_test, alg=np).flatten()
