@@ -1,8 +1,8 @@
 import numpy as np
-from numpy.linalg import cholesky, solve
+from scipy.linalg import cho_solve, cho_factor
 from pyswarm import pso
 from wdegp import wdegp_utils as utils
-
+from line_profiler import profile
 
 class Optimizer:
     """
@@ -26,6 +26,7 @@ class Optimizer:
         """
         self.model = model
 
+    @profile
     def negative_log_marginal_likelihood(
         self,
         x0,
@@ -82,8 +83,11 @@ class Optimizer:
             K += self.model.sigma_data[i]**2
 
             try:
-                L = cholesky(K)
-                alpha = solve(L.T, solve(L, y_train_sub))
+                L,low = cho_factor(K)
+                alpha = cho_solve(
+                        (L,low), 
+                        y_train_sub
+                    )
 
                 data_fit = 0.5 * np.dot(y_train_sub, alpha)
                 log_det = np.sum(np.log(np.diag(L)))

@@ -56,19 +56,8 @@ class Optimizer:
 
         try:
             # Cholesky decomposition for numerical stability
-            # L = cholesky(K)
-            # alpha = solve(
-            #             L.T, 
-            #             solve(
-            #                 L, self.model.y_train
-            #             )
-            #         )
-            # alpha = solve(
-            #             K, 
-            #             self.model.y_train
-            #         )
-            
-            
+            # TODO: This seems to be very common accross models. Maybe worth 
+            # having as single and unified implementation.
             L,low = cho_factor(K)
             alpha = cho_solve(
                         (L,low), 
@@ -78,7 +67,6 @@ class Optimizer:
             # Compute NLL components
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
-            # log_det_K = np.log(np.linalg.det(K))
             complexity = log_det_K
             N = len(self.model.y_train)
             const = 0.5 * N * np.log(2 * np.pi)
