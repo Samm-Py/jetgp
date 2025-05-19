@@ -151,32 +151,44 @@ def rbf_kernel(
     # for i in range(0, len(der_indices_tr) ):
     #     print(der_indices[i] , der_indices_tr[i])
     # print("")
-    for i in range(0, len(der_indices) + 1):
-        row_j = 0
-        for j in range(0, len(der_indices) + 1):
+    
+    # TODO: Preallocate matrix (and indices) to optimize matrix generation:
+    nderivs = len(der_indices)
+    PHIrows = phi.shape[0] 
+    PHIcols = phi.shape[1] 
+
+    K = np.zeros( ( PHIrows * ( nderivs + 1 ) , PHIcols * ( nderivs + 1 ) ) )
+
+    # print(f'len(der_indices): ({len(der_indices)})')
+    # print(f'Shape before: ({phi.shape})')
+
+    for j in range(0, len(der_indices) + 1):
+        signj = (-1)**(powers[j])
+        for i in range(0, len(der_indices) + 1):
+            # Get local view of the global array. 
+            Klocal = K[ i*PHIrows : (i+1)*PHIrows , j*PHIcols : (j+1)*PHIcols ]
             if j == 0 and i == 0:
-                row_j = phi_exp[0] * (-1)**(powers[j])
+                Klocal[:,:] = phi_exp[0] * signj
             elif j > 0 and i == 0:
-                row_j = np.hstack(
-                    (row_j,  (-1)**(powers[j]) * phi_exp[der_indices_tr[j-1]]))
-                     #phi.get_deriv(der_indices[j - 1])))
+                Klocal[:,:] = signj * phi_exp[der_indices_tr[j-1]]
             elif j == 0 and i > 0:
-                row_j = phi_exp[der_indices_tr[i-1]]
-                #phi.get_deriv(der_indices[i - 1])
+                Klocal[:,:] = phi_exp[der_indices_tr[i-1]]
             else:
+                
                 imdir1 = der_ind_order[j-1]
                 imdir2 = der_ind_order[i-1]
                 idx, ord = dh.mult_dir(imdir1[0],imdir1[1],imdir2[0],imdir2[1])
                 idx = der_map[ord][idx]
-                row_j = np.hstack(
-                    (row_j, (-1)**(powers[j]) *
-                     phi_exp[idx])
-                    #  phi.get_deriv(der_indices[j - 1] + der_indices[i - 1]))
-                )
-        if i == 0:
-            K = row_j
-        else:
-            K = np.vstack((K, row_j))
+                
+                Klocal[:,:] =  signj * phi_exp[idx]
+                
+                
+        
+    # print(f'Shape final: ({K.shape})')
+    # print(f'Shape final factors: ')
+    # print(f' -> nrows: {K.shape[0]/phi.shape[0]}x')
+    # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
+    # print(80*'-')
 
     return K
 
