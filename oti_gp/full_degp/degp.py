@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
+from scipy.linalg import cho_solve, cho_factor
 from full_degp import degp_utils
 import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
@@ -144,8 +145,14 @@ class degp:
         )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
-        L = cholesky(K)
-        alpha = solve(L.T, solve(L, self.y_train))
+        
+        L,low = cho_factor(K)
+        alpha = cho_solve(
+                    (L,low), 
+                    self.y_train
+                )
+        # L = cholesky(K)
+        # alpha = solve(L.T, solve(L, self.y_train))
 
         if self.normalize:
             X_test = utils.normalize_x_data_test(

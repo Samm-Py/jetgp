@@ -1,7 +1,8 @@
 *~
 
-# __pycache__ directories.
-*__pycache__/
+# Any __pycache__ directories.
+# __pycache__/
+# __pycache__/*
 
 # Macos-specific files.
 .DS_Store
