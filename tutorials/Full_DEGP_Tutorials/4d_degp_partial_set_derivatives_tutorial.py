@@ -21,7 +21,7 @@ def main():
     # ----- Configuration -----
     np.random.seed(1354)
     n_bases = 4      # Input dimensionality
-    n_order = 4      # Max derivative order used
+    n_order = 3      # Max derivative order used
     num_points_train = 26
     lower_bounds = [-2.048] * n_bases
     upper_bounds = [2.048] * n_bases
