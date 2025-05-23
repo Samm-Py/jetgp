@@ -54,7 +54,7 @@ class ddegp:
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
 
         if normalize:
-            sigma_data[self.num_points:] = sigma_data[self.num_points:]
+            # sigma_data[self.num_points:] = sigma_data[self.num_points:]
             self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = utils.normalize_y_data_directional(
                 x_train, y_train, sigma_data, self.flattened_der_indicies)
             self.rays = utils.normalize_directions(self.sigmas_x, self.rays)
