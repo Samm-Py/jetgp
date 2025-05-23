@@ -21,8 +21,8 @@ def main():
     # ----- Configuration -----
     np.random.seed(1354)
     n_bases = 4      # Input dimensionality
-    n_order = 3      # Max derivative order used
-    num_points_train = 26
+    n_order =       # Max derivative order used
+    num_points_train = 3
     lower_bounds = [-2.048] * n_bases
     upper_bounds = [2.048] * n_bases
 
@@ -95,20 +95,20 @@ def main():
         return_deriv=False
     )
 
-    # # ----- Visualization -----
-    # plotting_helper.make_plots(
-    #     X_train,
-    #     y_train,
-    #     X_test,
-    #     y_pred,
-    #     true_function,
-    #     X1_grid=X1_grid,
-    #     X2_grid=X2_grid,
-    #     n_order=n_order,
-    #     n_bases=n_bases,
-    #     plot_derivative_surrogates=False,
-    #     der_indices=der_indices,
-    # )
+    # ----- Visualization -----
+    plotting_helper.make_plots(
+        X_train,
+        y_train,
+        X_test,
+        y_pred,
+        true_function,
+        X1_grid=X1_grid,
+        X2_grid=X2_grid,
+        n_order=n_order,
+        n_bases=n_bases,
+        plot_derivative_surrogates=False,
+        der_indices=der_indices,
+    )
 
     # ----- Compute and Print NRMSE -----
     y_true = true_function(X_test, alg=np).flatten()

@@ -13,7 +13,9 @@ import numpy as np
 import pyoti.sparse as oti
 from wdegp.wdegp import wdegp as oti_gp_weighted
 import utils
-import modules.sobol as sb
+import sys
+sys.path.append("../../modules/")
+import sobol as sb
 from sklearn.cluster import KMeans
 import itertools
 import plotting_helper
