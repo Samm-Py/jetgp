@@ -157,8 +157,55 @@ class KernelFactory:
         else:
             self.bounds += extra_bounds
 
+    # # -------------------------------------------------------------------
+    # # Anisotropic Kernel Implementations
+    # # -------------------------------------------------------------------
+    # @profile
+    # def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    #     """
+    #     Anisotropic Squared Exponential (SE) kernel.
+
+    #     Parameters
+    #     ----------
+    #     differences_by_dim : list of ndarray
+    #     length_scales : list
+    #     index : int, optional
+
+    #     Returns
+    #     -------
+    #     ndarray
+    #     """
+    #     # print(differences_by_dim[0].shape)
+    #     ell = 10 ** (length_scales[:-1])
+    #     sigma_f = length_scales[-1]
+    #     # sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x'[i] )**2 )
+    #     # sqdist = sum( 
+    #     #     (
+    #     #          (-0.5 * ell[i] * ell[i] ) 
+    #     #         * 
+    #     #         ( differences_by_dim[i] * differences_by_dim[i] )
+    #     #     ) for i in range(self.dim)
+    #     # )
+    #     tmp1 = oti.zeros(differences_by_dim[0].shape)
+    #     tmp2 = oti.zeros(differences_by_dim[0].shape)
+    #     sqdist = oti.zeros(differences_by_dim[0].shape)
+    #     for i in range(self.dim):
+    #         # subdivide by terms
+    #         # tmp1 = differences_by_dim[i] * differences_by_dim[i]
+    #         oti.mul(differences_by_dim[i] , differences_by_dim[i], out = tmp1)
+    #         t1 =  ell[i] * ell[i] * (-0.5)
+    #         # tmp2 = t1 * tmp1
+    #         oti.mul(t1, tmp1, out = tmp2)
+    #         # sqdist += tmp2
+    #         oti.sum(sqdist, tmp2, out = sqdist)
+    #     # end for 
+    #     oti.exp( sqdist,out=tmp1)
+    #     oti.mul( ((10 ** sigma_f) ** 2), tmp1, out=tmp2)
+    #     # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
+    #     return tmp2
+
     # -------------------------------------------------------------------
-    # Anisotropic Kernel Implementations
+    # Anisotropic Kernel Implementations (MAC Mod 2)
     # -------------------------------------------------------------------
     @profile
     def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
@@ -192,17 +239,47 @@ class KernelFactory:
         for i in range(self.dim):
             # subdivide by terms
             # tmp1 = differences_by_dim[i] * differences_by_dim[i]
-            oti.mul(differences_by_dim[i] , differences_by_dim[i], out = tmp1)
-            t1 = -0.5 * ell[i] * ell[i] 
+            oti.mul(ell[i] , differences_by_dim[i], out = tmp1)
+            oti.mul(tmp1 , tmp1, out = tmp2)
+            # oti.pow(tmp1 , 2, out = tmp2)
+            # t1 =  ell[i] * ell[i] #* (-0.5)
             # tmp2 = t1 * tmp1
-            oti.mul(t1, tmp1, out = tmp2)
+            # oti.mul(t1, tmp1, out = tmp2)
             # sqdist += tmp2
             oti.sum(sqdist, tmp2, out = sqdist)
         # end for 
-        oti.exp(sqdist,out=tmp1)
+        oti.exp( (-0.5)*sqdist,out=tmp1)
         oti.mul( ((10 ** sigma_f) ** 2), tmp1, out=tmp2)
         # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
         return tmp2
+    
+    # # -------------------------------------------------------------------
+    # # Anisotropic Kernel Implementations (Sam's original)
+    # # -------------------------------------------------------------------
+    # @profile
+    # def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    #     """
+    #     Anisotropic Squared Exponential (SE) kernel.
+
+    #     Parameters
+    #     ----------
+    #     differences_by_dim : list of ndarray
+    #     length_scales : list
+    #     index : int, optional
+
+    #     Returns
+    #     -------
+    #     ndarray
+    #     """
+    #     ell = 10 ** (length_scales[:-1])
+    #     sigma_f = length_scales[-1]
+    #     # sqdist = sum((ell[i] * ell[i] * (differences_by_dim[i]*differences_by_dim[i] ))
+    #     #              for i in range(self.dim))
+    #     sqdist = sum( ( (ell[i]) * (differences_by_dim[i]))**2
+    #                  for i in range(self.dim))
+    #     return (10 ** sigma_f) ** 2 * oti.exp(-0.5 * sqdist)
+        
+        
 
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """

@@ -17,6 +17,9 @@ from full_degp.degp import degp
 import utils
 import plotting_helper
 
+
+np.set_printoptions(linewidth=80)
+
 if __name__ == "__main__":
     # n_order: the maximum derivative order to include in the GP model
     n_order = 3
