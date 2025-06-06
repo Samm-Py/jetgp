@@ -1,5 +1,6 @@
 import numpy as np
-from scipy.linalg import cho_solve, cho_factor
+from numpy.linalg import cholesky, solve
+from scipy.linalg import cho_solve, cho_factor, solve_triangular
 from wdegp import wdegp_utils as wdegp_utils
 import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
@@ -177,11 +178,13 @@ class wdegp:
                 diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
+            
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             K += self.sigma_data[i]**2
             # L = cholesky(K)
             # alpha = solve(L.T, solve(L, self.y_train[i]))
-            L,low = cho_factor(K)
+            # print(K)
+            L,low = cho_factor(K, lower=True)
             alpha = cho_solve(
                         (L,low), 
                         self.y_train[i]
@@ -209,9 +212,10 @@ class wdegp:
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
                 # v = solve(L, K_s[:, :n_test])
-                v = cho_solve(
-                        (L,low), 
-                        K_s[:, :n_test]
+                v = solve_triangular(
+                        L, 
+                        K_s[:, :n_test],
+                        lower=low,
                     )
                 f_cov = K_ss[:n_test, :n_test] - v.T @ v
 
