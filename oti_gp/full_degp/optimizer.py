@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import cholesky, solve
 from pyswarm import pso
 from full_degp import degp_utils as utils
-
+import utils as gen_utils
 
 class Optimizer:
     def __init__(self, model):
@@ -109,14 +109,13 @@ class Optimizer:
         ub = [b[1] for b in bounds]
 
         # Run PSO to minimize the NLL
-        best_x, best_nll = pso(
+        best_x, best_nll = gen_utils.pso(
             self.nll_wrapper,
             lb,
             ub,
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
             debug=verbose,
-            minfunc=1e-20,
         )
 
         # Store the optimal solution
