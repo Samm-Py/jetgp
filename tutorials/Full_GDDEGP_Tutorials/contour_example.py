@@ -171,8 +171,8 @@ def main():
         n_restart_optimizer=25, swarm_size=30, verbose=True)
 
     # ---- prediction grid ------------------------------------------
-    gx = np.linspace(-2.5, 2.5, 100)
-    gy = np.linspace(-2.5, 2.5, 100)
+    gx = np.linspace(-2.5, 2.5, 40)
+    gy = np.linspace(-2.5, 2.5, 40)
     X1, X2 = np.meshgrid(gx, gy)
     X_pred = np.column_stack([X1.ravel(), X2.ravel()])
 
@@ -181,7 +181,7 @@ def main():
     rays_pred = [ray0 for _ in range(X_pred.shape[0])]
     rays_pred = np.hstack(rays_pred)
     y_pred = gp.predict(X_pred, rays_pred, params,
-                        calc_cov=False, return_deriv=False)
+                        calc_cov=True, return_deriv=False)
     y_pred_train = gp.predict(X_train, rays_array, params,
                               calc_cov=False, return_deriv=False)
     y_true = true_function(X_pred).ravel()

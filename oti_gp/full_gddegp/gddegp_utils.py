@@ -35,8 +35,8 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, n_order, return_deriv=True
     m1 = 1  # directions per point in X1
     m2 = 1  # directions per point in X2
 
+    # Pre-compute OTI basis elements (avoid recomputing in loops)
     if not return_deriv:
-        # Pre-compute OTI basis elements (avoid recomputing in loops)
         e_tags_1 = oti.e(1, order=n_order)
         e_tags_2 = oti.e(2, order=n_order)
     else:
