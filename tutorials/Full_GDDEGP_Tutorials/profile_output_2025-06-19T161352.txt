@@ -1,0 +1,163 @@
+Timer unit: 1e-09 s
+
+Total time: 1.03226 s
+File: /home/sam/Research/github_oti_gp/oti_gp/oti_gp/full_gddegp/gddegp.py
+Function: predict at line 93
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    93                                               @profile
+    94                                               def predict(self, X_test, rays_predict, params, calc_cov=False, return_deriv=False):
+    95                                                   """
+    96                                                   Predict posterior mean and optional variance at test points.
+    97                                           
+    98                                                   Parameters
+    99                                                   ----------
+   100                                                   X_test : ndarray
+   101                                                       Test input points of shape (n_test, n_features).
+   102                                                   params : ndarray
+   103                                                       Log-scaled kernel hyperparameters.
+   104                                                   calc_cov : bool, default=False
+   105                                                       Whether to compute predictive variance.
+   106                                                   return_deriv : bool, default=False
+   107                                                       Whether to return derivative predictions.
+   108                                           
+   109                                                   Returns
+   110                                                   -------
+   111                                                   f_mean : ndarray
+   112                                                       Predictive mean vector.
+   113                                                   f_var : ndarray, optional
+   114                                                       Predictive variance vector (only if calc_cov=True).
+   115                                                   """
+   116         2       8500.0   4250.0      0.0          length_scales = params[:-1]
+   117         2       4700.0   2350.0      0.0          sigma_n = params[-1]
+   118                                           
+   119         4    5755599.0    1e+06      0.6          K = gddegp_utils.rbf_kernel(
+   120         2       1700.0    850.0      0.0              self.differences_by_dim,
+   121         2        900.0    450.0      0.0              length_scales,
+   122         2       1500.0    750.0      0.0              self.n_order,
+   123         2       1900.0    950.0      0.0              self.num_points,
+   124         2        700.0    350.0      0.0              self.kernel_func,
+   125                                                   )
+   126         2      64200.0  32100.0      0.0          K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
+   127         2      17400.0   8700.0      0.0          K += self.sigma_data**2
+   128                                           
+   129         2     162800.0  81400.0      0.0          L = cholesky(K)
+   130         2    1001000.0 500500.0      0.1          alpha = solve(L.T, solve(L, self.y_train))
+   131                                           
+   132                                                   # theta = np.pi/4
+   133                                                   # unit_v = np.array([[np.cos(theta)], [np.sin(theta)]])  # shape (2,1)
+   134         2       1200.0    600.0      0.0          rays_test = rays_predict
+   135         2       1800.0    900.0      0.0          if self.normalize:
+   136         4     246700.0  61675.0      0.0              X_test = utils.normalize_x_data_test(
+   137         2       1900.0    950.0      0.0                  X_test, self.sigmas_x, self.mus_x)
+   138         4      34500.0   8625.0      0.0              rays_test = utils.normalize_directions_2(
+   139         2        800.0    400.0      0.0                  self.sigmas_x, rays_test)
+   140         4  230322995.0    6e+07     22.3          diff_x_test_x_train = gddegp_utils.differences_by_dim_func(
+   141         2       1500.0    750.0      0.0              self.x_train, X_test, self.rays_array, rays_test, self.n_order, return_deriv=return_deriv)
+   142         4  793968281.0    2e+08     76.9          K_s = gddegp_utils.rbf_kernel(
+   143         2       2400.0   1200.0      0.0              diff_x_test_x_train, length_scales, self.n_order,
+   144         2       4100.0   2050.0      0.0              X_test.shape[0],
+   145         2       1100.0    550.0      0.0              self.kernel_func, return_deriv=return_deriv)
+   146                                           
+   147         2     604800.0 302400.0      0.1          f_mean = K_s.T@alpha
+   148                                           
+   149         2       3300.0   1650.0      0.0          if self.normalize:
+   150         2        900.0    450.0      0.0              if return_deriv:
+   151                                                           f_mean = utils.transform_predictions_directional(
+   152                                                               f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
+   153                                                               self.flattened_der_indicies, X_test)
+   154                                                       else:
+   155         2      45300.0  22650.0      0.0                  f_mean = self.mu_y + f_mean * self.sigma_y
+   156                                           
+   157         2        800.0    400.0      0.0          if not calc_cov:
+   158         2        700.0    350.0      0.0              return f_mean
+   159                                           
+   160                                                   diff_x_test_x_test = gddegp_utils.differences_by_dim_func(
+   161                                                       X_test, X_test, rays_test, rays_test, self.n_order)
+   162                                                   K_ss = gddegp_utils.rbf_kernel(
+   163                                                       diff_x_test_x_test, length_scales, self.n_order, X_test.shape[0],
+   164                                                       self.kernel_func, return_deriv=return_deriv)
+   165                                           
+   166                                                   v = solve(L, K_s)
+   167                                                   if not return_deriv:
+   168                                                       f_cov = K_ss[:X_test.shape[0], :] - v.T @ v
+   169                                                   else:
+   170                                                       f_cov = K_ss - v.T @ v
+   171                                           
+   172                                                   if self.normalize:
+   173                                                       if return_deriv:
+   174                                                           f_var = utils.transform_cov_directrional(
+   175                                                               f_cov, self.sigma_y, self.sigmas_x,
+   176                                                               self.flattened_der_indicies, X_test)
+   177                                                       else:
+   178                                                           f_var = self.sigma_y**2 * np.diag(np.abs(f_cov))
+   179                                                   else:
+   180                                                       f_var = np.diag(np.abs(f_cov))
+   181                                           
+   182                                                   return f_mean, f_var
+
+Total time: 4.84185 s
+File: /home/sam/Research/github_oti_gp/oti_gp/oti_gp/full_gddegp/gddegp_utils.py
+Function: rbf_kernel at line 167
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   167                                           @profile
+   168                                           def rbf_kernel(differences, length_scales, max_order, num_directions, kernel_func, index=-1, return_deriv=True):
+   169                                               """
+   170                                               Assemble the full DD-GP covariance matrix, blockâ€“row by blockâ€“row,
+   171                                               strictly using the derivative calls and conventions you verified.
+   172                                           
+   173                                               Parameters
+   174                                               ----------
+   175                                               phi : (n Ã— n) hypercomplex ndarray
+   176                                                   Kernel matrix with all directional tags embedded.
+   177                                               num_directions : int
+   178                                               max_order      : int
+   179                                           
+   180                                               Returns
+   181                                               -------
+   182                                               K : ndarray   # square, size  n Â· (1 + num_directions Â· max_order)
+   183                                               """
+   184                                           
+   185                                               # ---------- 0)  top block-row  ---------------------------------
+   186                                               #      [ K_ff  |  K_fd(order=1) | K_fd(order=2) | ... ]
+   187                                               # shape (n , n + n*T*max_order)
+   188                                           
+   189      1535 4224285432.0    3e+06     87.2      phi = kernel_func(differences, length_scales, index)
+   190      1535    1662600.0   1083.1      0.0      if max_order == 0:
+   191                                                   return phi.real
+   192      1535     905300.0    589.8      0.0      if not return_deriv:
+   193         2   16025199.0    8e+06      0.3          K = build_first_block_column(phi, num_directions, max_order)
+   194         2        600.0    300.0      0.0          return K
+   195                                           
+   196      1533  161113342.0 105096.8      3.3      K_top = build_first_block_row(phi, num_directions, max_order)
+   197      1533     995299.0    649.2      0.0      block_rows = [K_top]
+   198                                           
+   199                                               # ---------- subsequent block-rows (order_1 = 1 .. max_order) ---
+   200      6132    3972600.0    647.8      0.1      for order_1 in range(1, max_order + 1):
+   201                                           
+   202      4599   59681273.0  12977.0      1.2          K_df = phi.get_deriv([[1, order_1]])      # (n,)
+   203                                           
+   204                                                   # ---- (b)  concatenate all derivativeâ€“derivative blocks for this row
+   205      4599    3174198.0    690.2      0.1          dd_blocks = []
+   206     18396   10439697.0    567.5      0.2          for order_2 in range(1, max_order + 1):
+   207                                                       # uses your untouched helper
+   208     13797  213093020.0  15444.9      4.4              dd_block = build_K_dd_full(phi, num_directions, order_1, order_2)
+   209                                                       # each (n*T , n*T)
+   210     13797    8271896.0    599.5      0.2              dd_blocks.append(dd_block)
+   211                                                   # (n*T , n*T*max_order)
+   212      4599   62389480.0  13565.9      1.3          K_dd_row = np.hstack(dd_blocks)
+   213                                           
+   214                                                   # ---- (c)  complete this block-row and append --------------
+   215                                                   # (n , n*T + n*T*max_order)
+   216      4599   45095285.0   9805.5      0.9          full_row = np.hstack([K_df, K_dd_row])
+   217      4599    2682599.0    583.3      0.1          block_rows.append(full_row)
+   218                                           
+   219                                               # ---------- final v-stack --------------------------------------
+   220      1533   27587282.0  17995.6      0.6      K_global = np.vstack(block_rows)
+   221      1533     475300.0    310.0      0.0      return K_global
+
+  1.03 seconds - /home/sam/Research/github_oti_gp/oti_gp/oti_gp/full_gddegp/gddegp.py:93 - predict
+  4.84 seconds - /home/sam/Research/github_oti_gp/oti_gp/oti_gp/full_gddegp/gddegp_utils.py:167 - rbf_kernel

@@ -300,7 +300,7 @@ def plot_gp_state(
 
 def main():
     plot_dir = "contour_example_ECL_plots"
-    n_order = 2
+    n_order = 10
     box = ((-2, 2), (-2, 2))  # variable bounds for optimizer
     bounds = np.array(box)
     lb, ub = bounds[:, 0], bounds[:, 1]
@@ -375,10 +375,10 @@ def main():
         print(f"Next sample: {x_next}")
 
         # Evaluate function and directional derivatives at new point
-        # ray_next = utils.get_surrogate_gradient_ray(
-        #     gp, x_next, previous_params, fallback_axis=0, normalize=True, threshold=threshold)
-        ray_next = utils.get_entropy_ridge_direction_nd(
-            gp, x_next, previous_params, threshold=threshold)
+        ray_next = utils.get_surrogate_gradient_ray(
+            gp, x_next, previous_params, fallback_axis=0, normalize=True, threshold=threshold)
+        # ray_next = utils.get_entropy_ridge_direction_nd(
+        #     gp, x_next, previous_params, threshold=threshold)
         # utils.check_gp_gradient(gp, x_next, previous_params)
         rays_list_next = [ray_next]
         rays_plot_next = [.4*ray_next]

@@ -138,7 +138,7 @@ class gddegp:
             rays_test = utils.normalize_directions_2(
                 self.sigmas_x, rays_test)
         diff_x_test_x_train = gddegp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.rays_array, rays_test, self.n_order,)
+            self.x_train, X_test, self.rays_array, rays_test, self.n_order, return_deriv=return_deriv)
         K_s = gddegp_utils.rbf_kernel(
             diff_x_test_x_train, length_scales, self.n_order,
             X_test.shape[0],
