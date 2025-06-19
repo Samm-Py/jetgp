@@ -31,7 +31,7 @@ if __name__ == "__main__":
     ]
 
     # ----- Generate Training Inputs -----
-    num_points = 4
+    num_points = 5
     x_vals = np.linspace(lb_x, ub_x, num_points)
     y_vals = np.linspace(lb_y, ub_y, num_points)
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
     # ----- Hyperparameter Optimization -----
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=50,
-        swarm_size=50
+        n_restart_optimizer=25,
+        swarm_size=25
     )
 
     # ----- Generate Test Data -----

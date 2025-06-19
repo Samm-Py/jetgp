@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
-from pyswarm import pso
 from full_ddegp import ddegp_utils as utils
+import utils as gen_utils
 
 
 class Optimizer:
@@ -99,7 +99,7 @@ class Optimizer:
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
 
-        best_x, best_nll = pso(
+        best_x, best_nll = gen_utils.pso(
             self.nll_wrapper,
             lb,
             ub,

@@ -177,8 +177,8 @@ class KernelFactory:
         """
         ell = 10 ** (length_scales[:-1])
         sigma_f = length_scales[-1]
-        sqdist = sum((ell[i] * differences_by_dim[i])
-                     ** 2 for i in range(self.dim))
+        sqdist = sum((ell[i] * ell[i] * differences_by_dim[i]*differences_by_dim[i])
+                     for i in range(self.dim))
         return (10 ** sigma_f) ** 2 * oti.exp(-0.5 * sqdist)
 
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
