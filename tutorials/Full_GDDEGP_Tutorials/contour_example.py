@@ -171,8 +171,8 @@ def main():
         n_restart_optimizer=25, swarm_size=30, verbose=True)
 
     # ---- prediction grid ------------------------------------------
-    gx = np.linspace(-2.5, 2.5, 30)
-    gy = np.linspace(-2.5, 2.5, 30)
+    gx = np.linspace(-2.5, 2.5, 100)
+    gy = np.linspace(-2.5, 2.5, 100)
     X1, X2 = np.meshgrid(gx, gy)
     X_pred = np.column_stack([X1.ravel(), X2.ravel()])
 
@@ -180,76 +180,76 @@ def main():
     ray0 = np.array([[1.0], [0.0]])
     rays_pred = [ray0 for _ in range(X_pred.shape[0])]
     rays_pred = np.hstack(rays_pred)
-    y_pred, y_var = gp.predict(X_pred, rays_pred, params,
-                               calc_cov=True, return_deriv=False)
+    y_pred = gp.predict(X_pred, rays_pred, params,
+                        calc_cov=False, return_deriv=False)
     y_pred_train = gp.predict(X_train, rays_array, params,
                               calc_cov=False, return_deriv=False)
     y_true = true_function(X_pred).ravel()
 
-    # ===================== Plotting ===============================
-    threshold = 4.0
-    fig, (ax_gp, ax_true, ax_var) = plt.subplots(1, 3, figsize=(19, 5),
-                                                 sharex=True, sharey=True)
+    # # ===================== Plotting ===============================
+    # threshold = 4.0
+    # fig, (ax_gp, ax_true, ax_var) = plt.subplots(1, 3, figsize=(19, 5),
+    #                                              sharex=True, sharey=True)
 
-    Zp = y_pred.reshape(X1.shape)      # GP mean grid
-    Zt = y_true.reshape(X1.shape)      # true grid
-    Zv = y_var.reshape(X1.shape)       # GP variance grid
+    # Zp = y_pred.reshape(X1.shape)      # GP mean grid
+    # Zt = y_true.reshape(X1.shape)      # true grid
+    # Zv = y_var.reshape(X1.shape)       # GP variance grid
 
-    # common filled-contour levels for mean/true
-    levels = np.linspace(min(Zp.min(), Zt.min()),
-                         max(Zp.max(), Zt.max()), 40)
+    # # common filled-contour levels for mean/true
+    # levels = np.linspace(min(Zp.min(), Zt.min()),
+    #                      max(Zp.max(), Zt.max()), 40)
 
-    # variance levels (separate since variance has different scale)
-    var_levels = np.linspace(Zv.min(), Zv.max(), 40)
+    # # variance levels (separate since variance has different scale)
+    # var_levels = np.linspace(Zv.min(), Zv.max(), 40)
 
-    # ===== GP panel ==================================================
-    cf1 = ax_gp.contourf(X1, X2, Zp, levels=levels, cmap="viridis")
-    fig.colorbar(cf1, ax=ax_gp, fraction=0.046)
-    ax_gp.set_title("GP mean")
-    gp_line = ax_gp.contour(X1, X2, Zp, levels=[threshold],
-                            colors="red", linewidths=1.8, linestyles="-")
-    true_line = ax_gp.contour(X1, X2, Zt, levels=[threshold],
-                              colors="black", linewidths=1.8, linestyles="--")
-    ax_gp.scatter(X_train[:, 0], X_train[:, 1],
-                  c="red", edgecolor="k", s=35, zorder=3)
-    for pt, v in zip(X_train, rays_plot):
-        clipped_arrow(ax_gp, pt, v.flatten(), color="white")
-    handles = [Line2D([], [], color="red", lw=2, label="GP  f=4"),
-               Line2D([], [], color="black", lw=2, ls="--", label="True f=4")]
-    ax_gp.legend(handles=handles, loc="upper right")
+    # # ===== GP panel ==================================================
+    # cf1 = ax_gp.contourf(X1, X2, Zp, levels=levels, cmap="viridis")
+    # fig.colorbar(cf1, ax=ax_gp, fraction=0.046)
+    # ax_gp.set_title("GP mean")
+    # gp_line = ax_gp.contour(X1, X2, Zp, levels=[threshold],
+    #                         colors="red", linewidths=1.8, linestyles="-")
+    # true_line = ax_gp.contour(X1, X2, Zt, levels=[threshold],
+    #                           colors="black", linewidths=1.8, linestyles="--")
+    # ax_gp.scatter(X_train[:, 0], X_train[:, 1],
+    #               c="red", edgecolor="k", s=35, zorder=3)
+    # for pt, v in zip(X_train, rays_plot):
+    #     clipped_arrow(ax_gp, pt, v.flatten(), color="white")
+    # handles = [Line2D([], [], color="red", lw=2, label="GP  f=4"),
+    #            Line2D([], [], color="black", lw=2, ls="--", label="True f=4")]
+    # ax_gp.legend(handles=handles, loc="upper right")
 
-    # ===== True panel =================================================
-    cf2 = ax_true.contourf(X1, X2, Zt, levels=levels, cmap="viridis")
-    fig.colorbar(cf2, ax=ax_true, fraction=0.046)
-    ax_true.set_title("True function")
-    ax_true.contour(X1, X2, Zt, levels=[threshold],
-                    colors="black", linewidths=1.8, linestyles="--")
-    ax_true.contour(X1, X2, Zp, levels=[threshold],
-                    colors="red", linewidths=1.8, linestyles="-")
-    ax_true.scatter(X_train[:, 0], X_train[:, 1],
-                    c="red", edgecolor="k", s=35, zorder=3)
-    for pt, v in zip(X_train, rays_plot):
-        clipped_arrow(ax_true, pt, v.flatten(), color="white")
+    # # ===== True panel =================================================
+    # cf2 = ax_true.contourf(X1, X2, Zt, levels=levels, cmap="viridis")
+    # fig.colorbar(cf2, ax=ax_true, fraction=0.046)
+    # ax_true.set_title("True function")
+    # ax_true.contour(X1, X2, Zt, levels=[threshold],
+    #                 colors="black", linewidths=1.8, linestyles="--")
+    # ax_true.contour(X1, X2, Zp, levels=[threshold],
+    #                 colors="red", linewidths=1.8, linestyles="-")
+    # ax_true.scatter(X_train[:, 0], X_train[:, 1],
+    #                 c="red", edgecolor="k", s=35, zorder=3)
+    # for pt, v in zip(X_train, rays_plot):
+    #     clipped_arrow(ax_true, pt, v.flatten(), color="white")
 
-    # ===== Variance panel =============================================
-    cf3 = ax_var.contourf(X1, X2, Zv, levels=var_levels, cmap="plasma")
-    fig.colorbar(cf3, ax=ax_var, fraction=0.046)
-    ax_var.set_title("GP variance")
-    ax_var.scatter(X_train[:, 0], X_train[:, 1],
-                   c="white", edgecolor="k", s=35, zorder=3)
-    for pt, v in zip(X_train, rays_plot):
-        clipped_arrow(ax_var, pt, v.flatten(), color="black")
+    # # ===== Variance panel =============================================
+    # cf3 = ax_var.contourf(X1, X2, Zv, levels=var_levels, cmap="plasma")
+    # fig.colorbar(cf3, ax=ax_var, fraction=0.046)
+    # ax_var.set_title("GP variance")
+    # ax_var.scatter(X_train[:, 0], X_train[:, 1],
+    #                c="white", edgecolor="k", s=35, zorder=3)
+    # for pt, v in zip(X_train, rays_plot):
+    #     clipped_arrow(ax_var, pt, v.flatten(), color="black")
 
-    # ===== Axis Formatting ============================================
-    for ax in (ax_gp, ax_true, ax_var):
-        ax.set_xlim([-2.5, 2.5])
-        ax.set_ylim([-2.5, 2.5])
-        ax.set_aspect("equal")
-        ax.set_xlabel("x₁")
-        ax.set_ylabel("x₂")
+    # # ===== Axis Formatting ============================================
+    # for ax in (ax_gp, ax_true, ax_var):
+    #     ax.set_xlim([-2.5, 2.5])
+    #     ax.set_ylim([-2.5, 2.5])
+    #     ax.set_aspect("equal")
+    #     ax.set_xlabel("x₁")
+    #     ax.set_ylabel("x₂")
 
-    plt.tight_layout()
-    plt.show()
+    # plt.tight_layout()
+    # plt.show()
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2, e_tags_1,
     return diffs_k
 
 
-def differences_by_dim_func(X1, X2, rays_X1, rays_X2, n_order):
+def differences_by_dim_func(X1, X2, rays_X1, rays_X2, n_order, return_deriv=True):
     """
     Compute dimension-wise differences with OTI tagging on both X1 and X2.
     Optimized version that pre-computes tags to avoid redundant calculations.
@@ -35,9 +35,13 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, n_order):
     m1 = 1  # directions per point in X1
     m2 = 1  # directions per point in X2
 
-    # Pre-compute OTI basis elements (avoid recomputing in loops)
-    e_tags_1 = oti.e(1, order=2 * n_order)
-    e_tags_2 = oti.e(2, order=2 * n_order)
+    if not return_deriv:
+        # Pre-compute OTI basis elements (avoid recomputing in loops)
+        e_tags_1 = oti.e(1, order=n_order)
+        e_tags_2 = oti.e(2, order=n_order)
+    else:
+        e_tags_1 = oti.e(1, order=2 * n_order)
+        e_tags_2 = oti.e(2, order=2 * n_order)
 
     if n_order == 0:
         e_tags_1 = oti.zero()
