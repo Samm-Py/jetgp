@@ -158,7 +158,7 @@ class gddegp:
             return f_mean
 
         diff_x_test_x_test = gddegp_utils.differences_by_dim_func(
-            X_test, X_test, rays_test, rays_test, self.n_order)
+            X_test, X_test, rays_test, rays_test, self.n_order, return_deriv=return_deriv)
         K_ss = gddegp_utils.rbf_kernel(
             diff_x_test_x_test, length_scales, self.n_order, X_test.shape[0],
             self.kernel_func, return_deriv=return_deriv)
