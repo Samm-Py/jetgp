@@ -10,15 +10,13 @@ import plotting_helper
 
 
 def true_function(X, alg=np):
-    """Branin-Hoo function with directional structure."""
+    """Six-Hump Camel function with directional structure."""
     x1, x2 = X[:, 0], X[:, 1]
-    a = 1.0
-    b = 5.1 / (4.0 * np.pi**2)
-    c = 5.0 / np.pi
-    r = 6.0
-    s = 10.0
-    t = 1.0 / (8.0 * np.pi)
-    return a * (x2 - b * x1**2 + c * x1 - r)**2 + s * (1 - t) * alg.cos(x1) + s
+    return (
+        (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
+        + x1 * x2
+        + (-4 + 4 * x2**2) * x2**2
+    )
 
 
 def generate_rays(order, ndim=2):
@@ -31,8 +29,8 @@ def generate_rays(order, ndim=2):
 
 
 def generate_training_data(n_order, num_points=5):
-    x_vals = np.linspace(-5, 10, num_points)
-    y_vals = np.linspace(0, 15, num_points)
+    x_vals = np.linspace(-2, 2, num_points)
+    y_vals = np.linspace(-1, 1, num_points)
 
     # Cartesian product for 3D grid
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
@@ -86,21 +84,18 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=50, verbose=True)
+        n_restart_optimizer=25, swarm_size=50, verbose=True)
 
     # Test data grid
     N_grid = 20
-    x_lin = np.linspace(-5, 10, N_grid)
-    y_lin = np.linspace(0, 15, N_grid)
+    x_lin = np.linspace(-2, 2, N_grid)
+    y_lin = np.linspace(-1, 1, N_grid)
     X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
     X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
 
     # Predict with directional derivatives
     y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=False)
-    y_pred_train = gp.predict(X_train, params, calc_cov=False, return_deriv=True)
-    
-    print(y_train)
-    print(y_pred_train)
+
     plotting_helper.make_plots(
         X_train,
         y_train,

@@ -66,12 +66,11 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
 
         # Nested loops to fill diffs_k
         for i in range(n1):
-            for j in range(n2):
-                diffs_k[i, j] = (
-                    X1[i, k]
-                    + oti.e(k + 1, order=2 * n_order)
-                    - (X2[j, k])
-                )
+            diffs_k[i, :] = (
+                X1[i, k]
+                + oti.e(k + 1, order=2 * n_order)
+                - (X2[:, k].T)
+            )
 
         # Append to our list
         differences_by_dim.append(diffs_k)

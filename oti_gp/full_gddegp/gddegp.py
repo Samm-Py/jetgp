@@ -2,11 +2,12 @@ import numpy as np
 from numpy.linalg import cholesky, solve
 import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
-from full_ddegp.optimizer import Optimizer
-from full_ddegp import ddegp_utils
+from full_gddegp.optimizer import Optimizer
+from full_gddegp import gddegp_utils
+from line_profiler import profile
 
 
-class ddegp:
+class gddegp:
     """
     Directional Derivative-Enhanced Gaussian Process (dDEGP) model.
 
@@ -36,36 +37,36 @@ class ddegp:
         Kernel anisotropy ('anisotropic' or 'isotropic').
     """
 
-    def __init__(self, x_train, y_train, n_order, der_indices, rays,
+    def __init__(self, x_train, y_train, n_order, rays_array,
                  normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic"):
         self.x_train = x_train
         self.y_train = y_train
         self.sigma_data = sigma_data
         self.n_order = n_order
-        self.rays = rays
-        self.n_rays = rays.shape[1]
+        self.rays_array = rays_array
         self.dim = x_train.shape[1]
+        self.num_points = x_train.shape[0]
         self.kernel = kernel
         self.kernel_type = kernel_type
-        self.der_indices = der_indices
         self.normalize = normalize
+        # self.num_directions = rays_array.shape[1]
+        indices = gddegp_utils.make_der_indices(
+            1, self.n_order)
 
-        indices = der_indices
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
 
         if normalize:
             self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = utils.normalize_y_data_directional(
                 x_train, y_train, sigma_data, self.flattened_der_indicies)
-            self.rays = utils.normalize_directions(self.sigmas_x, self.rays)
+            self.rays_array = utils.normalize_directions_2(
+                self.sigmas_x, self.rays_array)
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.x_train = x_train
             self.y_train = utils.reshape_y_train(y_train)
 
-        self.powers = utils.build_companion_array(
-            self.n_rays, n_order, der_indices)
-        self.differences_by_dim = ddegp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, self.rays, n_order)
+        self.differences_by_dim = gddegp_utils.differences_by_dim_func(
+            self.x_train, self.x_train, self.rays_array, self.rays_array, n_order)
 
         self.sigma_data = (
             np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
@@ -89,7 +90,8 @@ class ddegp:
         """
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
 
-    def predict(self, X_test, params, calc_cov=False, return_deriv=False):
+    @profile
+    def predict(self, X_test, rays_predict, params, calc_cov=False, return_deriv=False):
         """
         Predict posterior mean and optional variance at test points.
 
@@ -114,27 +116,35 @@ class ddegp:
         length_scales = params[:-1]
         sigma_n = params[-1]
 
-        K = ddegp_utils.rbf_kernel(
-            self.differences_by_dim, length_scales, self.n_order,
-            self.kernel_func, self.flattened_der_indicies, self.powers)
+        K = gddegp_utils.rbf_kernel(
+            self.differences_by_dim,
+            length_scales,
+            self.n_order,
+            self.num_points,
+            self.kernel_func,
+        )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
 
         L = cholesky(K)
         alpha = solve(L.T, solve(L, self.y_train))
 
+        # theta = np.pi/4
+        # unit_v = np.array([[np.cos(theta)], [np.sin(theta)]])  # shape (2,1)
+        rays_test = rays_predict
         if self.normalize:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
-
-        diff_x_test_x_train = ddegp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.rays, self.n_order)
-        K_s = ddegp_utils.rbf_kernel(
+            rays_test = utils.normalize_directions_2(
+                self.sigmas_x, rays_test)
+        diff_x_test_x_train = gddegp_utils.differences_by_dim_func(
+            self.x_train, X_test, self.rays_array, rays_test, self.n_order, return_deriv=return_deriv)
+        K_s = gddegp_utils.rbf_kernel(
             diff_x_test_x_train, length_scales, self.n_order,
-            self.kernel_func, self.flattened_der_indicies, self.powers)
+            X_test.shape[0],
+            self.kernel_func, return_deriv=return_deriv)
 
-        f_mean = K_s.T @ alpha if return_deriv else K_s[:,
-                                                        :len(X_test)].T @ alpha
+        f_mean = K_s.T@alpha
 
         if self.normalize:
             if return_deriv:
@@ -147,20 +157,21 @@ class ddegp:
         if not calc_cov:
             return f_mean
 
-        diff_x_test_x_test = ddegp_utils.differences_by_dim_func(
-            X_test, X_test, self.rays, self.n_order)
-        K_ss = ddegp_utils.rbf_kernel(
-            diff_x_test_x_test, length_scales, self.n_order,
-            self.kernel_func, self.flattened_der_indicies, self.powers)
+        diff_x_test_x_test = gddegp_utils.differences_by_dim_func(
+            X_test, X_test, rays_test, rays_test, self.n_order, return_deriv=return_deriv)
+        K_ss = gddegp_utils.rbf_kernel(
+            diff_x_test_x_test, length_scales, self.n_order, X_test.shape[0],
+            self.kernel_func, return_deriv=return_deriv)
 
         v = solve(L, K_s)
-        f_cov = K_ss - \
-            v.T @ v if return_deriv else K_ss[:len(X_test),
-                                              :len(X_test)] - v.T @ v
+        if not return_deriv:
+            f_cov = K_ss[:X_test.shape[0], :] - v.T @ v
+        else:
+            f_cov = K_ss - v.T @ v
 
         if self.normalize:
             if return_deriv:
-                f_var = utils.transform_cov_directional(
+                f_var = utils.transform_cov_directrional(
                     f_cov, self.sigma_y, self.sigmas_x,
                     self.flattened_der_indicies, X_test)
             else:

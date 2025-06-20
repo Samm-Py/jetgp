@@ -19,7 +19,7 @@ from line_profiler import profile
 @profile
 def main():
     # ----- Problem Configuration -----
-    n_order = 3      # Max derivative order to include
+    n_order = 4      # Max derivative order to include
     n_bases = 2      # Number of input dimensions
     lb_x, ub_x = -1, 1
     lb_y, ub_y = -1, 1
