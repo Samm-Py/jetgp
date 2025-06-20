@@ -9,21 +9,15 @@ import plotting_helper
 # -----------------------------
 
 
-def true_function(X, alg=np):
-    """Branin-Hoo function with directional structure."""
+def true_function(X, alg=oti):
+    """True function with directional structure."""
     x1, x2 = X[:, 0], X[:, 1]
-    a = 1.0
-    b = 5.1 / (4.0 * np.pi**2)
-    c = 5.0 / np.pi
-    r = 6.0
-    s = 10.0
-    t = 1.0 / (8.0 * np.pi)
-    return a * (x2 - b * x1**2 + c * x1 - r)**2 + s * (1 - t) * alg.cos(x1) + s
+    return x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
 
 
 def generate_rays(order, ndim=2):
     """Generate unit vectors (rays) and their hypercomplex perturbations."""
-    thetas = [np.pi/4, np.pi/2, np.pi * 5 / 4]
+    thetas = [0, np.pi/2]
     rays = np.column_stack([[np.cos(t), np.sin(t)] for t in thetas])
     e = [oti.e(i + 1, order=order) for i in range(rays.shape[1])]
     perts = np.dot(rays, e)
@@ -31,8 +25,8 @@ def generate_rays(order, ndim=2):
 
 
 def generate_training_data(n_order, num_points=5):
-    x_vals = np.linspace(-5, 10, num_points)
-    y_vals = np.linspace(0, 15, num_points)
+    x_vals = np.linspace(-1, 1, num_points)
+    y_vals = np.linspace(-1, 1, num_points)
 
     # Cartesian product for 3D grid
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
@@ -69,55 +63,10 @@ def generate_training_data(n_order, num_points=5):
 
 def main():
     np.random.seed(0)
-    n_order = 2
+    n_order = 3
 
     X_train, y_train, der_indices, rays = generate_training_data(
         n_order)
-
-    gp = ddegp(
-        X_train,
-        y_train,
-        n_order=n_order,
-        der_indices=der_indices,
-        rays=rays,
-        normalize=True,
-        kernel="SE",
-        kernel_type="anisotropic",
-    )
-
-    params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=50, verbose=True)
-
-    # Test data grid
-    N_grid = 20
-    x_lin = np.linspace(-5, 10, N_grid)
-    y_lin = np.linspace(0, 15, N_grid)
-    X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
-    X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
-
-    # Predict with directional derivatives
-    y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=False)
-    y_pred_train = gp.predict(X_train, params, calc_cov=False, return_deriv=True)
-    
-    print(y_train)
-    print(y_pred_train)
-    plotting_helper.make_plots(
-        X_train,
-        y_train,
-        X_test,
-        y_pred,
-        true_function,
-        X1_grid=X1_grid,
-        X2_grid=X2_grid,
-        n_order=n_order,
-        plot_derivative_surrogates=False,
-        der_indices=der_indices,
-    )
-
-    y_true = true_function(X_test, alg=np).flatten()
-    nrmse = utils.nrmse(y_true, y_pred.flatten())
-
-    print("NRMSE between model and true function: {}".format(nrmse))
 
 
 if __name__ == "__main__":

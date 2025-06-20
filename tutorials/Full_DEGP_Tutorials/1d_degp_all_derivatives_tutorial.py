@@ -22,7 +22,7 @@ np.set_printoptions(linewidth=80)
 
 if __name__ == "__main__":
     # n_order: the maximum derivative order to include in the GP model
-    n_order = 3
+    n_order = 2
 
     # n_bases: the dimensionality of the input space (here 1D)
     n_bases = 1
@@ -36,11 +36,11 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     # num_points: number of training points in the 1D domain
-    num_points = 3
+    num_points = 9
 
     # X_train: an array of size (num_points, 1) with equally spaced points
     # between lb_x and ub_x
-    X_train = np.array([1.65, 3.1, 4.55]).reshape(-1, 1)
+    X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
 
     # X_train_pert: convert X_train into an OTI array so we can track
     # derivative information. Then we “perturb” it to embed derivative
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     # The returned 'params' contains the final best hyperparameter values found.
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=25,
-        swarm_size=100
+        swarm_size=50
     )
 
     # Create a grid of test points for prediction
@@ -111,6 +111,9 @@ if __name__ == "__main__":
     # Make predictions at the test points (mean and variance)
     y_pred, y_var = gp.predict(
         X_test, params, calc_cov=True, return_deriv=False
+    )
+    y_pred_train = gp.predict(
+        X_train, params, calc_cov=False, return_deriv=True
     )
 
 

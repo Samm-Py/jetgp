@@ -45,7 +45,7 @@ def make_plots(
                     )
 
                 true_values = true_function(X_test_pert, alg=oti).real
-                plt.figure(0, figsize=(5, 5))
+                plt.figure(0, figsize=(8, 5))
                 plt.rcParams["font.size"] = 12
                 plt.plot(
                     X_test,
@@ -83,7 +83,7 @@ def make_plots(
                     label="95% CI",
                 )
 
-                # plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+                plt.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
 
                 plt.tight_layout(
                     pad=2.0

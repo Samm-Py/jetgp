@@ -4,6 +4,7 @@ import itertools
 from full_ddegp.ddegp import ddegp
 import utils  # Plotting and helper utilities
 import plotting_helper
+from scipy.stats import qmc
 # -----------------------------
 # Directional Derivative Enhanced GP (Full Model)
 # -----------------------------
@@ -30,12 +31,18 @@ def generate_rays(order, ndim=2):
     return rays, perts
 
 
-def generate_training_data(n_order, num_points=5):
+def generate_training_data(n_order, num_points=16):
     x_vals = np.linspace(-5, 10, num_points)
     y_vals = np.linspace(0, 15, num_points)
+    sampler = qmc.LatinHypercube(d=2, seed=1)
+    unit = sampler.random(n=num_points)             # (n,2)
 
+    # 2) affine map to Branin rectangle
+    X = np.empty_like(unit)
+    X[:, 0] = -5.0 + (10.0 - (-5.0)) * unit[:, 0]     # x ∈ [-5,10]
+    X[:, 1] = 0.0 + (15.0 - 0.0) * unit[:, 1]     # y ∈ [0,15]
     # Cartesian product for 3D grid
-    X_train = np.array(list(itertools.product(x_vals, y_vals)))
+    X_train = X.copy()
 
     # Convert to OTI array for hypercomplex perturbation
     X_train_pert = oti.array(X_train)
@@ -54,9 +61,7 @@ def generate_training_data(n_order, num_points=5):
 
     # Derivative index structure must be consistent across all training points
     der_indices = [[
-        [[1, 1]], [[1, 2]],
-        [[2, 1]], [[2, 2]],
-        [[3, 1]], [[3, 2]],
+        [[1, 1]]
     ]]
 
     for i in range(len(der_indices)):
@@ -69,7 +74,7 @@ def generate_training_data(n_order, num_points=5):
 
 def main():
     np.random.seed(0)
-    n_order = 2
+    n_order = 1
 
     X_train, y_train, der_indices, rays = generate_training_data(
         n_order)
@@ -86,7 +91,7 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=50, verbose=True)
+        n_restart_optimizer=51, swarm_size=100, verbose=True)
 
     # Test data grid
     N_grid = 20
@@ -97,10 +102,7 @@ def main():
 
     # Predict with directional derivatives
     y_pred = gp.predict(X_test, params, calc_cov=False, return_deriv=False)
-    y_pred_train = gp.predict(X_train, params, calc_cov=False, return_deriv=True)
-    
-    print(y_train)
-    print(y_pred_train)
+
     plotting_helper.make_plots(
         X_train,
         y_train,

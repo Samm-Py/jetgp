@@ -2,6 +2,11 @@ import numpy as np
 import pyoti.core as coti
 import pyoti.sparse as oti
 import sympy as sp
+from scipy.stats import qmc
+from scipy.optimize import minimize
+from scipy.stats import norm
+import sys
+from scipy.linalg import null_space
 
 
 def scale_samples(samples, lower_bounds, upper_bounds):
@@ -605,6 +610,75 @@ def normalize_directions(sigmas_x, rays):
     return transformed_rays
 
 
+# def normalize_directions_2(sigmas_x, rays):
+#     """
+#     Normalize direction vectors (rays) based on input scaling.
+
+#     This function rescales direction vectors used for **directional derivatives** so that
+#     they are consistent with normalized input space.
+
+#     Parameters:
+#     ----------
+#     sigmas_x : ndarray of shape (1, nvars)
+#         Standard deviations of the input variables (used for scaling each direction).
+#     rays : ndarray of shape (nvars, n_directions)
+#         Direction vectors (columns) in the original input space.
+
+#     Returns:
+#     -------
+#     transformed_rays : ndarray of shape (nvars, n_directions)
+#         Normalized direction vectors.
+
+#     Example:
+#     --------
+#     >>> sigmas_x = np.array([[2.0, 1.0]])
+#     >>> rays = np.array([[1.0, 0.0], [0.0, 1.0]])
+#     >>> normalize_directions(sigmas_x, rays)
+#     array([[0.5, 0. ],
+#            [0. , 1. ]])
+#     """
+#     transformed_rays_list = []
+#     for i in range(len(rays)):
+
+#         transformed_rays = np.zeros(rays[i].shape)
+#         for j in range(transformed_rays.shape[1]):
+#             transformed_rays[:, j] = np.diag(
+#                 1/sigmas_x.flatten()) @ rays[i][:, j]
+#         transformed_rays_list.append(transformed_rays)
+#     return transformed_rays_list
+
+
+def normalize_directions_2(sigmas_x, rays_array):
+    """
+    Normalize direction vectors (rays) based on input scaling.
+
+    This function rescales direction vectors used for **directional derivatives** so that
+    they are consistent with normalized input space.
+
+    Parameters:
+    ----------
+    sigmas_x : ndarray of shape (1, nvars)
+        Standard deviations of the input variables (used for scaling each direction).
+    rays : ndarray of shape (nvars, n_directions)
+        Direction vectors (columns) in the original input space.
+
+    Returns:
+    -------
+    transformed_rays : ndarray of shape (nvars, n_directions)
+        Normalized direction vectors.
+
+    Example:
+    --------
+    >>> sigmas_x = np.array([[2.0, 1.0]])
+    >>> rays = np.array([[1.0, 0.0], [0.0, 1.0]])
+    >>> normalize_directions(sigmas_x, rays)
+    array([[0.5, 0. ],
+            [0. , 1. ]])
+    """
+
+    return rays_array / sigmas_x.flatten()[:, None]
+
+
 def normalize_y_data(X_train, y_train, sigma_data, der_indices):
     """
     Normalize function values, derivatives, and observational noise for training data.
@@ -827,4 +901,551 @@ def matern_kernel_builder(nu):
     return matern_kernel_func
 
 
-# def convert_noise_to_matrix(sigma_data, der_):
+def robust_local_optimization(func, x0, args=(), lb=None, ub=None, debug=False):
+    """Robust L-BFGS-B optimization with abnormal termination handling"""
+    bounds = list(zip(lb, ub)) if lb is not None and ub is not None else None
+
+    result = minimize(
+        func, x0, args=args, method="L-BFGS-B", bounds=bounds,
+        options={"disp": False, "maxiter": 1000, "gtol": 1e-7}
+    )
+    sys.stdout.flush()
+
+    if "ABNORMAL_TERMINATION_IN_LNSRCH" in result.message:
+        result.recovered_from_abnormal = False
+        if debug:
+            print(f"L-BFGS-B terminated abnormally: {result.message:}")
+            print("Using current point as recovered solution...")
+
+        # Create result with current point
+        class RecoveredResult:
+            def __init__(self, x, fun, message):
+                self.x = x
+                self.fun = fun
+                self.success = False
+                self.message = message
+                self.recovered_from_abnormal = True
+
+        current_f = func(result.x, *args)
+        return RecoveredResult(result.x, current_f, f"Recovered from abnormal termination: {result.message}")
+    else:
+        return result
+
+
+def should_accept_local_result(local_res, current_best_f, is_feasible, debug=False):
+    """Check if local optimization result should be accepted"""
+    if not local_res.success and not local_res.recovered_from_abnormal:
+        return False
+
+    if not is_feasible(local_res.x):
+        if debug:
+            print("Local optimization result is infeasible - rejecting")
+        return False
+
+    if local_res.fun >= current_best_f:
+        if debug:
+            print(
+                "Local optimization did not improve:")
+        return False
+
+    return True
+
+
+def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
+        swarmsize=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100,
+        minstep=1e-8, minfunc=1e-8, debug=False, seed=42,
+        local_opt_every=10, initial_positions=None):
+    """
+    Particle Swarm Optimization with periodic local refinement
+
+    Parameters:
+    -----------
+    func : callable
+        Objective function to minimize
+    lb : array_like
+        Lower bounds for variables
+    ub : array_like  
+        Upper bounds for variables
+    ieqcons : list, optional
+        List of inequality constraint functions
+    f_ieqcons : callable, optional
+        Function returning array of inequality constraints
+    args : tuple, optional
+        Extra arguments passed to objective function
+    kwargs : dict, optional
+        Extra keyword arguments passed to objective function
+    swarmsize : int, optional
+        Number of particles in swarm
+    omega : float, optional
+        Inertia weight
+    phip : float, optional
+        Personal best weight
+    phig : float, optional
+        Global best weight
+    maxiter : int, optional
+        Maximum number of iterations
+    minstep : float, optional
+        Minimum step size for convergence
+    minfunc : float, optional
+        Minimum function improvement for convergence
+    debug : bool, optional
+        Whether to print debug information
+    seed : int, optional
+        Random seed for reproducibility
+    local_opt_every : int, optional
+        Frequency of local optimization (every N iterations)
+
+    Returns:
+    --------
+    best_position : ndarray
+        Best position found
+    best_value : float
+        Best function value found
+    """
+
+    # Input validation
+    lb = np.asarray(lb)
+    ub = np.asarray(ub)
+    D = len(lb)
+
+    assert len(lb) == len(
+        ub), "Lower- and upper-bounds must be the same length"
+    assert np.all(
+        ub > lb), "All upper-bound values must be greater than lower-bound values"
+    assert callable(func), "Invalid function handle"
+
+    # Set random seed
+    np.random.seed(seed)
+
+    # Velocity bounds
+    vhigh = np.abs(ub - lb)
+    vlow = -vhigh
+
+    # Constraint setup
+    if f_ieqcons is not None:
+        def cons(x):
+            return np.asarray(f_ieqcons(x, *args, **kwargs))
+    elif ieqcons:
+        def cons(x):
+            return np.asarray([c(x, *args, **kwargs) for c in ieqcons])
+    else:
+        def cons(x):
+            return np.array([0.0])
+
+    def is_feasible(x):
+        return np.all(cons(x) >= 0)
+
+    # Initialize swarm using Sobol sequence
+    sampler = qmc.Sobol(d=D, scramble=True, seed=seed)
+    sobol_sample = sampler.random_base2(m=int(np.ceil(np.log2(swarmsize))))
+    x = qmc.scale(sobol_sample[:swarmsize], lb, ub)
+    if initial_positions is not None:
+        n_init = min(len(initial_positions), swarmsize)
+        x[:n_init] = initial_positions[:n_init]
+    # Initialize velocities and personal bests
+    v = vlow + np.random.rand(swarmsize, D) * (vhigh - vlow)
+    p = np.copy(x)
+    fp = np.array([func(p[i], *args, **kwargs) for i in range(swarmsize)])
+    feasibles = np.array([is_feasible(p[i]) for i in range(swarmsize)])
+
+    # Initialize global best
+    fg = np.inf
+    g = None
+
+    for i in range(swarmsize):
+        if feasibles[i] and fp[i] < fg:
+            fg = fp[i]
+            g = p[i].copy()
+
+    # Main PSO loop
+    it = 1
+    while it <= maxiter:
+        # Update velocities and positions
+        rp = np.random.rand(swarmsize, D)
+        rg = np.random.rand(swarmsize, D)
+        v = omega * v + phip * rp * (p - x) + phig * rg * (g - x)
+        x = np.clip(x + v, lb, ub)
+
+        # Evaluate particles and update personal/global bests
+        for i in range(swarmsize):
+            fx = func(x[i], *args, **kwargs)
+
+            if fx < fp[i] and is_feasible(x[i]):
+                p[i] = x[i].copy()
+                fp[i] = fx
+
+                if fx < fg:
+                    stepsize = np.linalg.norm(g - x[i])
+
+                    if debug:
+                        print(
+                            f'New best for swarm at iteration {it}: {x[i]} {fx}')
+
+                    # Check convergence criteria
+                    if np.abs(fg - fx) <= minfunc:
+                        print(f'Stopping: Objective improvement < {minfunc}')
+                        return x[i], fx
+                    if stepsize <= minstep:
+                        print(f'Stopping: Position change < {minstep}')
+                        return x[i], fx
+
+                    g = x[i].copy()
+                    fg = fx
+
+        # Periodic local refinement - CLEANED UP VERSION
+        if it % local_opt_every == 0:
+            local_res = robust_local_optimization(
+                func, g, args=args, lb=lb, ub=ub, debug=debug
+            )
+
+            if should_accept_local_result(local_res, fg, is_feasible, debug):
+                if debug:
+                    print(
+                        f"Gradient refinement improved best at iteration {it}: {local_res.fun:.6e}")
+                g = local_res.x.copy()
+                fg = local_res.fun
+
+        if debug:
+            print(f'Best after iteration {it}: {g} {fg}')
+        it += 1
+
+    # Final checks
+    print(f'Stopping: maximum iterations reached --> {maxiter}')
+    if g is not None and not is_feasible(g):
+        print("Warning: Optimization finished without a feasible solution.")
+
+    return g, fg
+
+
+def ecl_acquisition(mu_N, var_N, threshold=0.0):
+    """
+    Entropy Contour Learning (ECL) acquisition function for gddegp models.
+
+    Implements the ECL acquisition function from equation (8):
+    ECL(x | S_N, g) = -P(g(Y(x)) > 0) log P(g(Y(x)) > 0) - P(g(Y(x)) ≤ 0) log P(g(Y(x)) ≤ 0)
+
+    Where g is the affine limit state function g(Y(x)) = Y(x) - T and the failure 
+    region G is defined by g(Y(x)) ≤ 0.
+
+    Parameters:
+    -----------
+    gp_model : gddegp
+        Trained gp model instance
+    X : array-like, shape (n_points, n_features) or (n_features,)
+        Points to evaluate the acquisition function
+    rays_predict : ndarray
+        Ray directions for prediction. Shape should be (n_dims, n_rays)
+    params : ndarray
+        Hyperparameters for gddegp prediction
+    threshold : float, default=0.0
+        Threshold T for the affine limit state function g(Y(x)) = Y(x) - T
+        Default is 0.0, meaning failure region is defined by Y(x) ≤ 0
+
+    Returns:
+    --------
+    ecl_values : array-like, shape (n_points,) or float
+        ECL acquisition function values (higher values indicate more informative points)
+
+    Examples:
+    ---------
+    >>> # After training your gddegp model
+    >>> ecl_vals = ecl_acquisition(gp_model, candidate_points, rays, params, threshold=0.0)
+    >>> next_point_idx = np.argmax(ecl_vals)
+    >>> next_point = candidate_points[next_point_idx]
+    """
+
+    # Convert variance to standard deviation
+    sigma_N = np.sqrt(np.maximum(var_N, 1e-15))  # Ensure positive variance
+
+    # Handle single point case
+    if mu_N.ndim == 0:
+        mu_N = np.array([mu_N])
+    if sigma_N.ndim == 0:
+        sigma_N = np.array([sigma_N])
+
+    # Compute standardized values: (μ_N(x) - T) / σ_N(x)
+    sigma_N = np.maximum(sigma_N, 1e-10)  # Numerical stability
+    z = (mu_N - threshold) / sigma_N
+
+    # Compute probabilities using standard normal CDF Φ
+    # P(g(Y(x)) > 0) = P(Y(x) > T) = 1 - Φ((μ_N(x) - T)/σ_N(x))
+    p_safe = 1 - norm.cdf(z)  # Probability of being in safe region
+
+    # Compute ECL using binary entropy: H(p) = -p*log(p) - (1-p)*log(1-p)
+    # Clip probabilities for numerical stability
+    p_safe = np.clip(p_safe, 1e-15, 1 - 1e-15)
+    ecl_values = -p_safe * np.log(p_safe) - (1 - p_safe) * np.log(1 - p_safe)
+
+    # Return scalar if single point, array otherwise
+    return ecl_values[0] if len(ecl_values) == 1 else ecl_values
+
+
+def ecl_batch_acquisition(gp_model, X, rays_predict, params, threshold=0.0, batch_size=1):
+    """
+    Batch ECL acquisition function that selects multiple points simultaneously.
+
+    Uses a greedy approach to select the next batch_size points that maximize
+    the ECL criterion while maintaining diversity.
+
+    Parameters:
+    -----------
+    gp_model : gddegp
+        Trained gddegp model instance
+    X : array-like, shape (n_candidates, n_features)
+        Candidate points to select from
+    rays_predict : ndarray
+        Ray directions for prediction
+    params : ndarray
+        Hyperparameters for gddegp prediction
+    threshold : float, default=0.0
+        Threshold for the limit state function
+    batch_size : int, default=1
+        Number of points to select in the batch
+
+    Returns:
+    --------
+    selected_indices : array-like, shape (batch_size,)
+        Indices of selected points from X
+    selected_points : array-like, shape (batch_size, n_features)
+        The selected points
+
+    Examples:
+    ---------
+    >>> indices, points = ecl_batch_acquisition(gp_model, candidates, rays, params, batch_size=3)
+    >>> next_experiments = points
+    """
+    X = np.atleast_2d(X)
+    n_candidates = X.shape[0]
+
+    if batch_size >= n_candidates:
+        return np.arange(n_candidates), X
+
+    selected_indices = []
+    remaining_indices = list(range(n_candidates))
+
+    for _ in range(batch_size):
+        if not remaining_indices:
+            break
+
+        # Evaluate ECL for remaining candidates
+        remaining_X = X[remaining_indices]
+        ecl_values = ecl_acquisition(
+            gp_model, remaining_X, rays_predict, params, threshold)
+
+        # Select point with highest ECL value
+        best_local_idx = np.argmax(ecl_values)
+        best_global_idx = remaining_indices[best_local_idx]
+
+        selected_indices.append(best_global_idx)
+        remaining_indices.remove(best_global_idx)
+
+    selected_indices = np.array(selected_indices)
+    selected_points = X[selected_indices]
+
+    return selected_indices, selected_points
+
+
+def get_surrogate_gradient_ray(gp, x, params, fallback_axis=0, normalize=True, threshold=0.0):
+    """
+    Returns a normalized surrogate gradient direction (d x 1 column vector)
+    at location x using the current GP model (any input dimension).
+    If the GP mean at x is above threshold, returns -grad; else returns grad.
+
+    Parameters
+    ----------
+    gp : object
+        Trained GP model instance with .predict (supports arbitrary input dim)
+    x : array-like, shape (1, d)
+        The input location where to compute the surrogate gradient direction
+    params : array-like
+        GP hyperparameters
+    fallback_axis : int, default=0
+        Axis to use if gradient norm is zero (default: 0)
+    normalize : bool, default=True
+        If True, return a unit vector; else, return unnormalized gradient
+    threshold : float, default=0.0
+        Threshold value for sign flip
+
+    Returns
+    -------
+    ray : ndarray, shape (d, 1)
+        The chosen direction (as a column vector)
+    grad : ndarray, shape (d, 1)
+        The predicted gradient as a column vector (signed as above)
+    """
+    x = np.atleast_2d(x)
+    d = x.shape[1]
+    grad = np.zeros((d, 1))
+
+    # Predict each directional derivative along standard basis
+    for i in range(d):
+        basis = np.zeros((d, 1))
+        basis[i, 0] = 1.0
+        mu = gp.predict(x, basis, params, calc_cov=False, return_deriv=True)
+        grad[i, 0] = mu[1]  # Assumes mu[0]=f(x), mu[1]=first derivative
+
+    # Predict the GP mean at x (using any direction, e.g., first axis)
+    basis0 = np.zeros((d, 1))
+    basis0[0, 0] = 1.0
+    mu_mean = gp.predict(x, basis0, params, calc_cov=False,
+                         return_deriv=False)[0]
+
+    # Flip sign if above threshold
+    if mu_mean > threshold:
+        grad = -grad
+
+    norm = np.linalg.norm(grad)
+    if normalize:
+        if norm < 1e-12:
+            fallback = np.zeros((d, 1))
+            fallback[fallback_axis, 0] = 1.0
+            return fallback.reshape(-1, 1)
+        else:
+            return (grad / norm).reshape(-1, 1)
+    else:
+        return grad.reshape(-1, 1)
+
+
+def finite_difference_gradient(gp, x, params, h=1e-5):
+    """
+    Compute central finite difference approximation of GP mean gradient at x.
+
+    Parameters
+    ----------
+    gp : object
+        Trained GP model instance
+    x : ndarray, shape (1, d)
+        Point at which to compute finite difference gradient
+    params : array-like
+        GP hyperparameters
+    h : float
+        Step size
+
+    Returns
+    -------
+    grad_fd : ndarray, shape (d, 1)
+        Central finite difference gradient estimate
+    """
+    x = np.atleast_2d(x)
+    d = x.shape[1]
+    grad_fd = np.zeros((d, 1))
+    ray0 = np.zeros((d, 1))
+    # Direction for mean prediction; can be any since return_deriv=False
+    ray0[0, 0] = 1.0
+
+    # Evaluate GP mean at central point and shifted points
+    for i in range(d):
+        dx = np.zeros_like(x)
+        dx[0, i] = h
+
+        f_plus = gp.predict(x + dx, ray0, params,
+                            calc_cov=False, return_deriv=False)
+        f_minus = gp.predict(x - dx, ray0, params,
+                             calc_cov=False, return_deriv=False)
+        grad_fd[i, 0] = (f_plus[0] - f_minus[0]) / (2 * h)
+    return grad_fd
+
+
+def check_gp_gradient(gp, x, params, h=1e-5, fallback_axis=0):
+    """
+    Compare GP-predicted gradient vs finite-difference at x.
+    Prints and returns both.
+    """
+    # Surrogate-predicted gradient
+    grad_sur = get_surrogate_gradient_ray(
+        gp, x, params, fallback_axis=fallback_axis, normalize=False)
+    # Finite difference gradient
+    grad_fd = finite_difference_gradient(gp, x, params, h=h)
+
+    print("Surrogate GP gradient:\n", grad_sur.flatten())
+    print("Finite-difference gradient:\n", grad_fd.flatten())
+    print("Absolute error:\n", np.abs(grad_sur.flatten() - grad_fd.flatten()))
+    print("Relative error:\n", np.abs(grad_sur.flatten() -
+          grad_fd.flatten()) / (np.abs(grad_fd.flatten()) + 1e-15))
+
+    return grad_sur, grad_fd
+
+
+def get_entropy_ridge_direction_nd(gp, x, params, threshold=0.0, h=1e-5,
+                                   fallback_axis=0, normalize=True, random_dir=False, seed=None):
+    """
+    Get a direction tangent to the entropy level set ("ridge direction") at x.
+    In higher dimensions, returns either a single direction or an orthonormal basis for the tangent space.
+
+    Parameters
+    ----------
+    gp : object
+        Trained GP model instance with .predict
+    x : array-like, shape (1, d)
+        The input location
+    params : array-like
+        GP hyperparameters
+    threshold : float
+        ECL threshold
+    h : float
+        Finite difference step
+    fallback_axis : int
+        Axis for fallback if gradient is zero
+    normalize : bool
+        Normalize output direction
+    random_dir : bool
+        If True, return a random direction in the ridge (level set). If False, returns first basis vector.
+    seed : int or None
+        For reproducible random direction
+
+    Returns
+    -------
+    ridge_dir : ndarray, shape (d, 1)
+        Ridge direction (tangent to entropy level set) at x
+    grad_H : ndarray, shape (d, 1)
+        Gradient of entropy at x
+    basis : ndarray, shape (d, d-1)
+        (If requested) Orthonormal basis for tangent space to entropy level set at x
+    """
+    from utils import ecl_acquisition
+
+    x = np.atleast_2d(x)
+    d = x.shape[1]
+
+    # Entropy at x
+    def entropy_func(x0):
+        x0 = np.atleast_2d(x0)
+        ray0 = np.zeros((d, 1))
+        ray0[0, 0] = 1.0
+        mu, var = gp.predict(
+            x0, ray0, params, calc_cov=True, return_deriv=False)
+        return float(ecl_acquisition(mu, var, threshold=threshold))
+
+    grad_H = np.zeros((d, 1))
+    for i in range(d):
+        dx = np.zeros_like(x)
+        dx[0, i] = h
+        grad_H[i, 0] = (entropy_func(x + dx) - entropy_func(x - dx)) / (2 * h)
+
+    # Edge case: gradient nearly zero
+    # grad_norm = np.linalg.norm(grad_H)
+    # if grad_norm < 1e-12:
+    #     fallback = np.zeros((d, 1))
+    #     fallback[fallback_axis, 0] = 1.0
+    #     return fallback, grad_H, None
+
+    # Orthonormal basis for null space (tangent space to level set)
+    # null_space returns (d, d-1) matrix: each column is a basis vector
+    basis = null_space(grad_H.T)  # shape (d, d-1)
+
+    # Select a direction from the tangent space
+    if random_dir:
+        rng = np.random.default_rng(seed)
+        coeffs = rng.standard_normal(basis.shape[1])
+        ridge_dir = basis @ coeffs
+        if normalize:
+            ridge_dir = ridge_dir / np.linalg.norm(ridge_dir)
+        ridge_dir = ridge_dir.reshape(-1, 1)
+    else:
+        # Return first basis vector (deterministic)
+        ridge_dir = basis[:, 0]
+        if normalize:
+            ridge_dir = ridge_dir / np.linalg.norm(ridge_dir)
+        ridge_dir = ridge_dir.reshape(-1, 1)
+
+    return ridge_dir

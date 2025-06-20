@@ -72,8 +72,8 @@ def main():
 
     # ----- Hyperparameter Optimization -----
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=10,
-        swarm_size=25,
+        n_restart_optimizer=35,
+        swarm_size=100,
         verbose=True
     )
 
