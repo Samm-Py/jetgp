@@ -1,6 +1,6 @@
 import numpy as np
 import pyoti.sparse as oti
-
+from line_profiler import profile
 
 def differences_by_dim_func(X1, X2, n_order, index=-1):
     """
@@ -41,7 +41,7 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
         differences_by_dim.append(diffs_k)
     return differences_by_dim
 
-
+@profile
 def rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1):
     """
     Constructs the RBF kernel matrix with derivative entries using hypercomplex representation.
@@ -71,6 +71,10 @@ def rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_in
         Full RBF kernel matrix with mixed function and derivative entries.
     """
     phi = kernel_func(differences, length_scales, index)
+
+    # Preallocate K
+    
+    
 
     for i in range(0, len(der_indices) + 1):
         row_j = 0

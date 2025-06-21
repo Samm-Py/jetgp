@@ -1,8 +1,10 @@
 import numpy as np
-from numpy.linalg import cholesky, solve
+from scipy.linalg import cho_solve, cho_factor
 from pyswarm import pso
 from full_degp import degp_utils as utils
+from line_profiler import profile
 import utils as gen_utils
+
 
 class Optimizer:
     def __init__(self, model):
@@ -15,7 +17,8 @@ class Optimizer:
             An instance of a derivative-enhanced Gaussian process (DEGP) model.
         """
         self.model = model
-
+    
+    @profile
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.
@@ -48,16 +51,21 @@ class Optimizer:
             self.model.flattened_der_indicies,
             self.model.powers
         )
-
+        
         # Add noise terms
         K += (10**sigma_n)**2 * np.eye(K.shape[0])
         K += self.model.sigma_data**2
 
         try:
             # Cholesky decomposition for numerical stability
-            L = cholesky(K)
-            alpha = solve(L.T, solve(L, self.model.y_train))
-
+            # TODO: This seems to be very common accross models. Maybe worth 
+            # having as single and unified implementation.
+            L,low = cho_factor(K)
+            alpha = cho_solve(
+                        (L,low), 
+                        self.model.y_train
+                    )
+            
             # Compute NLL components
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
@@ -69,7 +77,8 @@ class Optimizer:
         except Exception:
             # Return large penalty if matrix is not positive definite
             return 1e6
-
+    
+    # @profile
     def nll_wrapper(self, x0):
         """
         Wrapper for the negative log marginal likelihood function.
@@ -86,6 +95,7 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
+    @profile
     def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
         """
         Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).

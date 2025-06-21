@@ -12,25 +12,28 @@ import numpy as np
 import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
-import modules.sobol as sb
+import sys
+sys.path.append("../../modules/")
+import sobol as sb
 import plotting_helper
 
-if __name__ == "__main__":
+def main():
     # ----- Configuration -----
     np.random.seed(1354)
     n_bases = 4      # Input dimensionality
-    n_order = 2      # Max derivative order used
-    num_points_train = 26
+    n_order =       # Max derivative order used
+    num_points_train = 3
     lower_bounds = [-2.048] * n_bases
     upper_bounds = [2.048] * n_bases
 
     # ----- Define Subset of Derivative Indices -----
     # Only include main directional derivatives up to second order for x₁, x₂, x₃
-    der_indices = [
-        [[[1, 1]], [[2, 1]], [[3, 1]], [[4, 1]]],   # ∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃
-        # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃²
-        [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],
-    ]
+    # der_indices = [
+    #     [[[1, 1]], [[2, 1]], [[3, 1]], [[4, 1]]],   # ∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃
+    #     # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃²
+    #     [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],
+    # ]
+    der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     # ----- Define True Function -----
     def true_function(X, alg=oti):
@@ -111,3 +114,7 @@ if __name__ == "__main__":
     y_true = true_function(X_test, alg=np).flatten()
     nrmse_val = utils.nrmse(y_true, y_pred)
     print("NRMSE between model and true function: {:.8f}".format(nrmse_val))
+
+
+if __name__ == "__main__":
+    main()
