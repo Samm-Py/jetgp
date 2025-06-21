@@ -14,8 +14,10 @@ import itertools
 from full_degp.degp import degp
 import utils
 import plotting_helper
+from line_profiler import profile
 
-if __name__ == "__main__":
+@profile
+def main():
     # ----- Problem Configuration -----
     n_order = 4      # Max derivative order to include
     n_bases = 2      # Number of input dimensions
@@ -85,22 +87,25 @@ if __name__ == "__main__":
         return_deriv=False
     )
 
-    # ----- Plot Results -----
-    plotting_helper.make_plots(
-        X_train,
-        y_train,
-        X_test,
-        y_pred,
-        true_function,
-        X1_grid=X1_grid,
-        X2_grid=X2_grid,
-        n_order=n_order,
-        n_bases=n_bases,
-        plot_derivative_surrogates=False,
-        der_indices=der_indices,
-    )
+    # # ----- Plot Results -----
+    # plotting_helper.make_plots(
+    #     X_train,
+    #     y_train,
+    #     X_test,
+    #     y_pred,
+    #     true_function,
+    #     X1_grid=X1_grid,
+    #     X2_grid=X2_grid,
+    #     n_order=n_order,
+    #     n_bases=n_bases,
+    #     plot_derivative_surrogates=False,
+    #     der_indices=der_indices,
+    # )
 
     y_true = true_function(X_test, alg=np).flatten()
     nrmse = utils.nrmse(y_true, y_pred)
 
     print("NRMSE between model and true function: {}".format(nrmse))
+
+if __name__ == "__main__":
+    main()

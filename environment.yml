@@ -1,0 +1,10 @@
+name: otigp
+channels:
+  - conda-forge
+dependencies:
+  - mauriaristi::pyoti
+  - numpy
+  - scipy
+  - sympy
+  - pip:
+    - pyswarm

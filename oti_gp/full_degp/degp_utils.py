@@ -1,6 +1,6 @@
 import numpy as np
 import pyoti.sparse as oti
-
+from line_profiler import profile
 
 def differences_by_dim_func(X1, X2, n_order, index=-1):
     """
@@ -76,7 +76,7 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
         differences_by_dim.append(diffs_k)
     return differences_by_dim
 
-
+@profile
 def rbf_kernel(
     differences,
     length_scales,
@@ -135,27 +135,90 @@ def rbf_kernel(
     >>> K = rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers)
     >>> K.shape == (n_bases, n_bases)
     """
+    import pyoti.core as coti
+    dh = coti.get_dHelp()
 
     phi = kernel_func(differences, length_scales, index)
+    phi_exp = phi.get_all_derivs( n_bases, 2*n_order )
+    # print(phi_exp.shape)
+    der_map = deriv_map(n_bases,2*n_order)
+    # print(der_map)
+    # for i in range(0, len(der_indices) ):
+    #     print(der_indices[i])
+    der_indices_tr,der_ind_order = transform_der_indices(der_indices, der_map)
+    # print("")
+    # for i in range(0, len(der_indices_tr) ):
+    #     print(der_indices[i] , der_indices_tr[i])
+    # print("")
+    
+    # TODO: Preallocate matrix (and indices) to optimize matrix generation:
+    nderivs = len(der_indices)
+    PHIrows = phi.shape[0] 
+    PHIcols = phi.shape[1] 
 
-    for i in range(0, len(der_indices) + 1):
-        row_j = 0
-        for j in range(0, len(der_indices) + 1):
+    K = np.zeros( ( PHIrows * ( nderivs + 1 ) , PHIcols * ( nderivs + 1 ) ) )
+
+    # print(f'len(der_indices): ({len(der_indices)})')
+    # print(f'Shape before: ({phi.shape})')
+
+    for j in range(0, len(der_indices) + 1):
+        signj = (-1)**(powers[j])
+        for i in range(0, len(der_indices) + 1):
+            # Get local view of the global array. 
+            Klocal = K[ i*PHIrows : (i+1)*PHIrows , j*PHIcols : (j+1)*PHIcols ]
             if j == 0 and i == 0:
-                row_j = phi.real * (-1)**(powers[j])
+                Klocal[:,:] = phi_exp[0] * signj
             elif j > 0 and i == 0:
-                row_j = np.hstack(
-                    (row_j,  (-1)**(powers[j]) * phi.get_deriv(der_indices[j - 1])))
+                Klocal[:,:] = signj * phi_exp[der_indices_tr[j-1]]
             elif j == 0 and i > 0:
-                row_j = phi.get_deriv(der_indices[i - 1])
+                Klocal[:,:] = phi_exp[der_indices_tr[i-1]]
             else:
-                row_j = np.hstack(
-                    (row_j, (-1)**(powers[j]) *
-                     phi.get_deriv(der_indices[j - 1] + der_indices[i - 1]))
-                )
-        if i == 0:
-            K = row_j
-        else:
-            K = np.vstack((K, row_j))
+                
+                imdir1 = der_ind_order[j-1]
+                imdir2 = der_ind_order[i-1]
+                idx, ord = dh.mult_dir(imdir1[0],imdir1[1],imdir2[0],imdir2[1])
+                idx = der_map[ord][idx]
+                
+                Klocal[:,:] =  signj * phi_exp[idx]
+                
+                
+        
+    # print(f'Shape final: ({K.shape})')
+    # print(f'Shape final factors: ')
+    # print(f' -> nrows: {K.shape[0]/phi.shape[0]}x')
+    # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
+    # print(80*'-')
 
     return K
+
+
+
+
+def deriv_map(nbases,order):
+    import pyoti.core as coti
+    # dh = coti.get_dHelp()
+    k = 0
+    map_deriv = []
+    # np.arange(coti.ndir_total(nbases,order),dtype=np.int64)
+    for ordi in range(order+1):
+        ndir = coti.ndir_order(nbases,ordi)
+        map_deriv_i = [0] * ndir
+        for idx in range(ndir):            
+            map_deriv_i[idx] = k
+            k+=1
+        map_deriv.append(map_deriv_i)
+    return map_deriv
+
+def transform_der_indices(der_indices, der_map):
+    import pyoti.core as coti
+    deriv_ind_transf = []
+    deriv_ind_order = []
+    for deriv in der_indices:
+        # deriv_ind_transf_i = []
+        # for deriv in der_list:
+        #     deriv_ind_transf_i.append(coti.imdir(deriv))
+        imdir = coti.imdir(deriv)
+        idx, order = imdir
+        deriv_ind_transf.append(der_map[order][idx])
+        deriv_ind_order.append(imdir)
+    return deriv_ind_transf, deriv_ind_order

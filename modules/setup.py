@@ -12,7 +12,7 @@ mod1 = Extension('sobol',
                  extra_compile_args=["-I.", "-I.", "-O3", '-fopenmp'],
                  extra_link_args=['-fopenmp', "-O3"],
                  # Link to math library.
-                 libraries=['m', 'ifcore', 'ifcoremt', 'svml', 'intlc'],
+                 libraries=['m',],
                  )
 
 
@@ -30,7 +30,7 @@ mod2 = Extension('lhs',
                  extra_compile_args=["-I.", "-I.", "-O3", '-fopenmp'],
                  extra_link_args=['-fopenmp', "-O3"],
                  # Link to math library.
-                 libraries=['m', 'ifcore', 'ifcoremt', 'svml', 'intlc'],
+                 libraries=['m', ],
                  )
 
 
@@ -47,7 +47,7 @@ mod3 = Extension('primes',
                  extra_compile_args=["-I.", "-I.", "-O3", '-fopenmp'],
                  extra_link_args=['-fopenmp', "-O3"],
                  # Link to math library.
-                 libraries=['m', 'ifcore', 'ifcoremt', 'svml', 'intlc'],
+                  libraries=['m', ],
                  )
 
 
@@ -65,7 +65,7 @@ mod4 = Extension('vdc',
                  extra_compile_args=["-I.", "-I.", "-O3", '-fopenmp'],
                  extra_link_args=['-fopenmp', "-O3"],
                  # Link to math library.
-                 libraries=['m', 'ifcore', 'ifcoremt', 'svml', 'intlc'],
+                 libraries=['m', ],
                  )
 
 
@@ -83,7 +83,7 @@ mod5 = Extension('halton',
                  extra_compile_args=["-I.", "-I.", "-O3", '-fopenmp'],
                  extra_link_args=['-fopenmp', "-O3"],
                  # Link to math library.
-                 libraries=['m', 'ifcore', 'ifcoremt', 'svml', 'intlc'],
+                 libraries=['m', ],
                  )
 
 
@@ -101,7 +101,7 @@ mod6 = Extension('hammersley',
                  extra_compile_args=["-I.", "-I.", "-O3", '-fopenmp'],
                  extra_link_args=['-fopenmp', "-O3"],
                  # Link to math library.
-                 libraries=['m', 'ifcore', 'ifcoremt', 'svml', 'intlc'],
+                 libraries=['m', ],
                  )
 
 

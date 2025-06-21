@@ -13,7 +13,9 @@ import numpy as np
 import pyoti.sparse as oti
 from wdegp.wdegp import wdegp as oti_gp_weighted
 import utils
-import modules.sobol as sb
+import sys
+sys.path.append("../../modules/")
+import sobol as sb
 from sklearn.cluster import KMeans
 import itertools
 import plotting_helper
@@ -128,17 +130,17 @@ if __name__ == "__main__":
     nrmse_slice = utils.nrmse(y_slice_true, y_slice_pred, norm_type="minmax")
     print("NRMSE for x3 = x4 = 0 slice: {}".format(nrmse_slice))
 
-    # Plot 2D slice prediction
-    plotting_helper.make_submodel_plots(
-        X_train,
-        y_train_data,
-        X_slice,
-        y_slice_pred,
-        true_function,
-        X1_grid=X1_grid,
-        X2_grid=X2_grid,
-        n_order=n_order,
-        n_bases=n_bases,
-        plot_submodels=False,
-        submodel_vals=None,
-    )
+    # # Plot 2D slice prediction
+    # plotting_helper.make_submodel_plots(
+    #     X_train,
+    #     y_train_data,
+    #     X_slice,
+    #     y_slice_pred,
+    #     true_function,
+    #     X1_grid=X1_grid,
+    #     X2_grid=X2_grid,
+    #     n_order=n_order,
+    #     n_bases=n_bases,
+    #     plot_submodels=False,
+    #     submodel_vals=None,
+    # )
