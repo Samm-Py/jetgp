@@ -195,7 +195,7 @@ def main():
 
     # Initial training set
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
-        n_samples=10, box=box, n_order=n_order, seed=42)
+        n_samples=5, box=box, n_order=n_order, seed=42)
     rays_array = np.hstack(rays_list)
 
     gp = gddegp(X_train, y_blocks,
@@ -207,7 +207,7 @@ def main():
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=50, swarm_size=100, verbose=True)
 
-    n_active = 20
+    n_active = 30
     previous_params = params
 
     for al_iter in range(n_active):
@@ -244,6 +244,7 @@ def main():
         # Choose direction (e.g., x1)
         ray_next = utils.get_entropy_ridge_direction_nd_2(
             gp, x_next, previous_params, threshold=threshold)
+        print(ray_next)
         rays_list_next = [ray_next]
         rays_plot_next = [0.6*ray_next]
         # Hypercomplex construction for new point
@@ -286,6 +287,31 @@ def main():
     plot_gp_slice(
         gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
         title_prefix=f"Final model: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
+
+    # --- Monte Carlo domain sampling ---
+    N_mc = 50000
+    box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
+    sampler = qmc.Sobol(d=3, scramble=True, seed=123)
+    m = int(np.ceil(np.log2(N_mc)))
+    X_mc = sampler.random_base2(m=m)[:N_mc]
+    for j, (lo, hi) in enumerate(box):
+        X_mc[:, j] = lo + (hi - lo) * X_mc[:, j]
+
+    # -- True function --
+    y_true_mc = ishigami(X_mc)
+    frac_true = np.mean(y_true_mc > threshold)
+    print(f"True: Fraction of domain above threshold: {100*frac_true:.2f}%")
+
+    # -- GP surrogate (mean only) --
+    # Use rays in x1 direction for all MC points
+    ray0 = np.zeros((3, 1))
+    ray0[0, 0] = 1.0
+    rays_mc = np.hstack([ray0] * N_mc)
+    y_gp_mc = gp.predict(X_mc, rays_mc, previous_params,
+                         calc_cov=False, return_deriv=False).ravel()
+    frac_gp = np.mean(y_gp_mc > threshold)
+    print(
+        f"GP surrogate: Fraction of domain above threshold: {100*frac_gp:.2f}%")
 
 
 if __name__ == "__main__":
