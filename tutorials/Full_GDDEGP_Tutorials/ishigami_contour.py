@@ -195,7 +195,7 @@ def main():
 
     # Initial training set
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
-        n_samples=6, box=box, n_order=n_order, seed=42)
+        n_samples=10, box=box, n_order=n_order, seed=42)
     rays_array = np.hstack(rays_list)
 
     gp = gddegp(X_train, y_blocks,
@@ -205,9 +205,9 @@ def main():
                 kernel="SE",
                 kernel_type="anisotropic")
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=40, swarm_size=60, verbose=True)
+        n_restart_optimizer=50, swarm_size=100, verbose=True)
 
-    n_active = 44
+    n_active = 20
     previous_params = params
 
     for al_iter in range(n_active):
@@ -227,14 +227,14 @@ def main():
             return -utils.ecl_acquisition(mu, var, threshold=threshold)
 
         def neg_ecl_with_thresh(x): return neg_ecl(x, threshold=threshold)
-        candidate_points = sobol_points(1000, box, seed=al_iter)
+        candidate_points = sobol_points(2000, box, seed=al_iter)
         entropy = -1 * neg_ecl_with_thresh(candidate_points)
-        idx = np.argsort(entropy)[-40:]
+        idx = np.argsort(entropy)[-20:]
         top20_points = candidate_points[idx]
         lb = np.array([b[0] for b in box])
         ub = np.array([b[1] for b in box])
         x_next, fg = utils.pso(
-            neg_ecl_with_thresh, lb, ub, swarmsize=40, maxiter=60, debug=True,
+            neg_ecl_with_thresh, lb, ub, swarmsize=20, maxiter=10, minstep=1e-8, minfunc=1e-15, debug=True,
             seed=al_iter*111+42, initial_positions=top20_points)
         print(f"ECL(x_next): {-neg_ecl(x_next, threshold=threshold)}")
         print("x_next:", x_next)
@@ -277,7 +277,7 @@ def main():
                     kernel="SE",
                     kernel_type="anisotropic")
         previous_params = gp.optimize_hyperparameters(
-            n_restart_optimizer=40, swarm_size=60, verbose=True, x0=previous_params)
+            n_restart_optimizer=10, swarm_size=60, verbose=True, x0=previous_params)
         plot_gp_slice(
             gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
             title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/after_iter_{al_iter+1:02d}")

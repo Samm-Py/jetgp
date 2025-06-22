@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.linalg import cho_solve, cho_factor
-from pyswarm import pso
 from wddegp import wddegp_utils as utils
 from line_profiler import profile
+import utils as gen_utils
+
 
 class Optimizer:
     """
@@ -73,11 +74,11 @@ class Optimizer:
             K += self.model.sigma_data[i] ** 2
 
             try:
-                L,low = cho_factor(K)
+                L, low = cho_factor(K)
                 alpha = cho_solve(
-                        (L,low), 
-                        y_train_sub
-                    )
+                    (L, low),
+                    y_train_sub
+                )
 
                 data_fit = 0.5 * np.dot(y_train_sub, alpha)
                 log_det = np.sum(np.log(np.diag(L)))
@@ -134,7 +135,7 @@ class Optimizer:
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
 
-        best_x, best_nll = pso(
+        best_x, best_nll = gen_utils.pso(
             self.nll_wrapper,
             lb,
             ub,

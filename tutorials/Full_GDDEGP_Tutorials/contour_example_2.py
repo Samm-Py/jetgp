@@ -201,10 +201,11 @@ def main():
         threshold=1.0,
         seed=42)
 
+    rays_array = np.hstack(rays_list)
     # ---- fit DD-GP -------------------------------------------------
     gp = gddegp(X_train, y_blocks,
                 n_order=n_order,
-                rays_list=rays_list,
+                rays_array=rays_array,
                 normalize=True,
                 kernel="SE",
                 kernel_type="anisotropic",)
@@ -222,10 +223,11 @@ def main():
     ray0 = np.array([[1.0], [0.0]])
     rays_pred = [ray0 for _ in range(X_pred.shape[0])]
 
+    rays_pred = np.hstack(rays_pred)
     y_pred = gp.predict(X_pred, rays_pred, params,
                         calc_cov=False, return_deriv=False).ravel()
 
-    y_pred_train = gp.predict(X_train, rays_list, params,
+    y_pred_train = gp.predict(X_train, rays_array, params,
                               calc_cov=False, return_deriv=True).ravel()
 
     print(y_pred_train)
