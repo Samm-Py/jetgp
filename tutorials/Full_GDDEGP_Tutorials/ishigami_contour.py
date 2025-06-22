@@ -230,11 +230,12 @@ def main():
         candidate_points = sobol_points(1000, box, seed=al_iter)
         # --- Add neighbors around ALL previously chosen x_next ---
         n_neighbors = 10      # number of extra points per x_next
-        neighbor_std = 0.05   # spread of neighbors (adjust as needed)
+        neighbor_std = np.array([0.05 * (hi - lo)
+                                for (lo, hi) in box])  # Shape (3,)
         neighbor_points = []
 
         for xc in x_next_list:
-            pts = xc + np.random.randn(n_neighbors, 3) * neighbor_std
+            pts = xc + np.random.randn(n_neighbors, len(box)) * neighbor_std
             # Clip to bounds
             for j, (lo, hi) in enumerate(box):
                 pts[:, j] = np.clip(pts[:, j], lo, hi)
