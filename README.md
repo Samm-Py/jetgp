@@ -12,7 +12,6 @@ An Gaussian Process library with support for arbitrary-order derivative-enhanced
 - ```sympy```.
 - ```numpy```.
 - ```scipy```.
-- ```pyswarm```: Library for particle swarm optimization. Install using pip ```python3.9 -m pip install pyswarm```
 
 ## Installation instructions
 
