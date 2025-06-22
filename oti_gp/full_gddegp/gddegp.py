@@ -1,10 +1,10 @@
 import numpy as np
-from numpy.linalg import cholesky, solve
 import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from full_gddegp.optimizer import Optimizer
 from full_gddegp import gddegp_utils
 from line_profiler import profile
+from scipy.linalg import cho_solve, cho_factor, solve_triangular
 
 
 class gddegp:
@@ -88,7 +88,8 @@ class gddegp:
         Run the optimizer to find the best kernel hyperparameters.
         Returns optimized hyperparameter vector.
         """
-        return self.optimizer.optimize_hyperparameters(*args, **kwargs)
+        self.params = self.optimizer.optimize_hyperparameters(*args, **kwargs)
+        return self.params
 
     @profile
     def predict(self, X_test, rays_predict, params, calc_cov=False, return_deriv=False):
@@ -126,8 +127,15 @@ class gddegp:
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
 
-        L = cholesky(K)
-        alpha = solve(L.T, solve(L, self.y_train))
+        L, low = cho_factor(K, lower=True)
+        self.L = L
+        self.low = low
+        # L = cholesky(K)
+        # low = True
+        alpha = cho_solve(
+            (L, low),
+            self.y_train
+        )
 
         # theta = np.pi/4
         # unit_v = np.array([[np.cos(theta)], [np.sin(theta)]])  # shape (2,1)
@@ -137,14 +145,14 @@ class gddegp:
                 X_test, self.sigmas_x, self.mus_x)
             rays_test = utils.normalize_directions_2(
                 self.sigmas_x, rays_test)
-        diff_x_test_x_train = gddegp_utils.differences_by_dim_func(
+        diff_x_train_x_test = gddegp_utils.differences_by_dim_func(
             self.x_train, X_test, self.rays_array, rays_test, self.n_order, return_deriv=return_deriv)
-        K_s = gddegp_utils.rbf_kernel(
-            diff_x_test_x_train, length_scales, self.n_order,
+        self.K_s = gddegp_utils.rbf_kernel(
+            diff_x_train_x_test, length_scales, self.n_order,
             X_test.shape[0],
             self.kernel_func, return_deriv=return_deriv)
 
-        f_mean = K_s.T@alpha
+        f_mean = self.K_s.T@alpha
 
         if self.normalize:
             if return_deriv:
@@ -163,7 +171,7 @@ class gddegp:
             diff_x_test_x_test, length_scales, self.n_order, X_test.shape[0],
             self.kernel_func, return_deriv=return_deriv)
 
-        v = solve(L, K_s)
+        v = solve_triangular(L, self.K_s, lower=low)
         if not return_deriv:
             f_cov = K_ss[:X_test.shape[0], :] - v.T @ v
         else:
