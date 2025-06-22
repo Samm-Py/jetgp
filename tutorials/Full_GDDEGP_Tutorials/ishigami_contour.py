@@ -191,11 +191,11 @@ def main():
     n_order = 3
     threshold = 16.226
     plot_dir = "ishigami_gp_al_slices"
-    x3_slice = np.pi   # Value of x3 for plotting
+    x3_slice = -np.pi   # Value of x3 for plotting
 
     # Initial training set
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
-        n_samples=5, box=box, n_order=n_order, seed=42)
+        n_samples=10, box=box, n_order=n_order, seed=42)
     rays_array = np.hstack(rays_list)
 
     gp = gddegp(X_train, y_blocks,
@@ -207,9 +207,9 @@ def main():
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=50, swarm_size=100, verbose=True)
 
-    n_active = 30
+    n_active = 40
     previous_params = params
-
+    x_next_list = []
     for al_iter in range(n_active):
         print(f"\nActive Learning Iteration {al_iter+1}/{n_active}")
         # Maximize ECL over entire domain!
@@ -227,7 +227,21 @@ def main():
             return -utils.ecl_acquisition(mu, var, threshold=threshold)
 
         def neg_ecl_with_thresh(x): return neg_ecl(x, threshold=threshold)
-        candidate_points = sobol_points(2000, box, seed=al_iter)
+        candidate_points = sobol_points(1000, box, seed=al_iter)
+        # --- Add neighbors around ALL previously chosen x_next ---
+        n_neighbors = 10      # number of extra points per x_next
+        neighbor_std = 0.05   # spread of neighbors (adjust as needed)
+        neighbor_points = []
+
+        for xc in x_next_list:
+            pts = xc + np.random.randn(n_neighbors, 3) * neighbor_std
+            # Clip to bounds
+            for j, (lo, hi) in enumerate(box):
+                pts[:, j] = np.clip(pts[:, j], lo, hi)
+            neighbor_points.append(pts)
+        if neighbor_points:
+            neighbor_points = np.vstack(neighbor_points)
+            candidate_points = np.vstack([candidate_points, neighbor_points])
         entropy = -1 * neg_ecl_with_thresh(candidate_points)
         idx = np.argsort(entropy)[-20:]
         top20_points = candidate_points[idx]
@@ -236,6 +250,7 @@ def main():
         x_next, fg = utils.pso(
             neg_ecl_with_thresh, lb, ub, swarmsize=20, maxiter=10, minstep=1e-8, minfunc=1e-15, debug=True,
             seed=al_iter*111+42, initial_positions=top20_points)
+        x_next_list.append(x_next)
         print(f"ECL(x_next): {-neg_ecl(x_next, threshold=threshold)}")
         print("x_next:", x_next)
         if np.any(np.all(np.isclose(X_train, x_next, atol=1e-4), axis=1)):
@@ -289,7 +304,7 @@ def main():
         title_prefix=f"Final model: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
 
     # --- Monte Carlo domain sampling ---
-    N_mc = 50000
+    N_mc = 100000
     box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
     sampler = qmc.Sobol(d=3, scramble=True, seed=123)
     m = int(np.ceil(np.log2(N_mc)))

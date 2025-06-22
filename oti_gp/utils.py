@@ -1509,8 +1509,8 @@ def get_entropy_ridge_direction_nd_2(gp, x, params, threshold=0.0, h=1e-5,
         v = basis[:, idx].reshape(-1, 1)
         mu = gp.predict(
             x, v, params, calc_cov=False, return_deriv=True)
-        if abs(mu[1]) < best_grad:
-            best_grad = mu[1]
+        if abs(mu[2]) < best_grad:
+            best_grad = abs(mu[2])
             best_dir = v
 
     return best_dir
