@@ -188,7 +188,7 @@ def plot_gp_slice(
 
 def main():
     box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
-    n_order = 3
+    n_order = 1
     threshold = 16.226
     plot_dir = "ishigami_gp_al_slices"
     x3_slice = -np.pi   # Value of x3 for plotting
@@ -207,7 +207,7 @@ def main():
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=50, swarm_size=100, verbose=True)
 
-    n_active = 40
+    n_active = 90
     previous_params = params
     x_next_list = []
     for al_iter in range(n_active):

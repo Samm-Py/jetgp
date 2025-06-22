@@ -218,8 +218,8 @@ if __name__ == "__main__":
     try:
         # Run the main benchmark (single point only)
         results = benchmark_hypercomplex_vs_numpy(
-            orders=[1, 2, 3],
-            n_runs=1000000  # More runs since we're doing single points
+            orders=[1],
+            n_runs=10000000  # More runs since we're doing single points
         )
 
         # Plot results
