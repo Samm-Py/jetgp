@@ -131,12 +131,12 @@ def main():
 
     X_train, y_train, rays_list = generate_training_data(
         n_order)
-
+    rays_array = np.hstack(rays_list)
     gp = gddegp(
         X_train,
         y_train,
         n_order=n_order,
-        rays_list=rays_list,
+        rays_array=rays_array,
         normalize=True,
         kernel="SE",
         kernel_type="anisotropic",
@@ -157,6 +157,7 @@ def main():
     ray = np.array([[np.cos(theta)],         # (2,1)
                     [np.sin(theta)]])
     rays_pred = [ray for i in range(X_pred.shape[0])]
+    rays_pred = np.hstack(rays_pred)
     y_pred = gp.predict(X_pred, rays_pred, params, calc_cov=False,
                         return_deriv=True).ravel()
     N = X_pred.shape[0]

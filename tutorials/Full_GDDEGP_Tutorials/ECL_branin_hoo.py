@@ -378,7 +378,7 @@ def main():
         # Evaluate function and directional derivatives at new point
         # ray_next = utils.get_surrogate_gradient_ray(
         #     gp, x_next, previous_params, fallback_axis=0, normalize=True, threshold=threshold)
-        ray_next = utils.get_entropy_ridge_direction_nd(
+        ray_next = utils.get_entropy_ridge_direction_nd_2(
             gp, x_next, previous_params, threshold=threshold)
         # ray_next = utils.maximize_ier_direction(
         #     gp, x_next.reshape(1, -1), X_train, y_blocks, rays_array, previous_params, box, threshold=threshold,

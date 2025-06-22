@@ -8,20 +8,21 @@ make predictions on a 2D slice of the input space (x₁-x₂ plane with x₃=x�
 --------------------------------------------------------------------------------
 """
 
+import plotting_helper
+import sobol as sb
 import numpy as np
 import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
 import sys
 sys.path.append("../../modules/")
-import sobol as sb
-import plotting_helper
+
 
 def main():
     # ----- Configuration -----
     np.random.seed(1354)
     n_bases = 4      # Input dimensionality
-    n_order =       # Max derivative order used
+    n_order = 2     # Max derivative order used
     num_points_train = 3
     lower_bounds = [-2.048] * n_bases
     upper_bounds = [2.048] * n_bases
