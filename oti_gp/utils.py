@@ -1507,10 +1507,22 @@ def get_entropy_ridge_direction_nd_2(gp, x, params, threshold=0.0, h=1e-5,
     best_dir = None
     for idx in range(basis.shape[1]):
         v = basis[:, idx].reshape(-1, 1)
-        mu = gp.predict(
-            x, v, params, calc_cov=False, return_deriv=True)
-        if abs(mu[2]) < best_grad:
-            best_grad = abs(mu[2])
+        mu = gp.predict(x, v, params, calc_cov=False, return_deriv=True)
+        if gp.n_order >= 2:
+            second_deriv = mu[2]
+        else:
+            # Use central finite difference on the GP's directional derivative
+            x_fwd = x + h * v.T
+            x_bwd = x - h * v.T
+            # Predict first derivative at forward and backward positions
+            mu_fwd = gp.predict(
+                x_fwd, v, params, calc_cov=False, return_deriv=True)
+            mu_bwd = gp.predict(
+                x_bwd, v, params, calc_cov=False, return_deriv=True)
+            # mu_fwd[1] and mu_bwd[1] are first directional derivatives at shifted positions
+            second_deriv = (mu_fwd[1] - mu_bwd[1]) / (2 * h)
+        if abs(second_deriv) < best_grad:
+            best_grad = abs(second_deriv)
             best_dir = v
 
     return best_dir
