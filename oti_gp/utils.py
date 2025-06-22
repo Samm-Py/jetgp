@@ -7,6 +7,8 @@ from scipy.optimize import minimize
 from scipy.stats import norm
 import sys
 from scipy.linalg import null_space
+from full_gddegp import gddegp
+from line_profiler import profile
 
 
 def scale_samples(samples, lower_bounds, upper_bounds):
@@ -1101,7 +1103,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
             if should_accept_local_result(local_res, fg, is_feasible, debug):
                 if debug:
                     print(
-                        f"Gradient refinement improved best at iteration {it}: {local_res.fun:.6e}")
+                        "Gradient refinement improved")
                 g = local_res.x.copy()
                 fg = local_res.fun
 
@@ -1296,7 +1298,7 @@ def get_surrogate_gradient_ray(gp, x, params, fallback_axis=0, normalize=True, t
 
     norm = np.linalg.norm(grad)
     if normalize:
-        if norm < 1e-12:
+        if norm < 1e-16:
             fallback = np.zeros((d, 1))
             fallback[fallback_axis, 0] = 1.0
             return fallback.reshape(-1, 1)
@@ -1449,3 +1451,174 @@ def get_entropy_ridge_direction_nd(gp, x, params, threshold=0.0, h=1e-5,
         ridge_dir = ridge_dir.reshape(-1, 1)
 
     return ridge_dir
+
+
+def get_entropy_ridge_direction_nd_2(gp, x, params, threshold=0.0, h=1e-5,
+                                     fallback_axis=0, normalize=True, random_dir=False, seed=None):
+    """
+    Get a direction tangent to the entropy level set ("ridge direction") at x.
+    In higher dimensions, returns either a single direction or an orthonormal basis for the tangent space.
+
+    Parameters
+    ----------
+    gp : object
+        Trained GP model instance with .predict
+    x : array-like, shape (1, d)
+        The input location
+    params : array-like
+        GP hyperparameters
+    threshold : float
+        ECL threshold
+    h : float
+        Finite difference step
+    fallback_axis : int
+        Axis for fallback if gradient is zero
+    normalize : bool
+        Normalize output direction
+    random_dir : bool
+        If True, return a random direction in the ridge (level set). If False, returns first basis vector.
+    seed : int or None
+        For reproducible random direction
+
+    Returns
+    -------
+    ridge_dir : ndarray, shape (d, 1)
+        Ridge direction (tangent to entropy level set) at x
+    grad_H : ndarray, shape (d, 1)
+        Gradient of entropy at x
+    basis : ndarray, shape (d, d-1)
+        (If requested) Orthonormal basis for tangent space to entropy level set at x
+    """
+    grad_H = get_surrogate_gradient_ray(
+        gp, x, params, fallback_axis=0, normalize=True, threshold=0.0)
+
+    # Edge case: gradient nearly zero
+    # grad_norm = np.linalg.norm(grad_H)
+    # if grad_norm < 1e-12:
+    #     fallback = np.zeros((d, 1))
+    #     fallback[fallback_axis, 0] = 1.0
+    #     return fallback, grad_H, None
+
+    # Orthonormal basis for null space (tangent space to level set)
+    # null_space returns (d, d-1) matrix: each column is a basis vector
+    basis = null_space(grad_H.T)  # shape (d, d-1)
+
+    best_grad = np.inf
+    best_dir = None
+    for idx in range(basis.shape[1]):
+        v = basis[:, idx].reshape(-1, 1)
+        mu = gp.predict(
+            x, v, params, calc_cov=False, return_deriv=True)
+        if abs(mu[1]) < best_grad:
+            best_grad = mu[1]
+            best_dir = v
+
+    return best_dir
+
+
+def sobol_points(n_points, box, seed=0):
+    d = len(box)
+    sampler = qmc.Sobol(d=d, scramble=True, seed=seed)
+    m = int(np.ceil(np.log2(n_points)))
+    pts = sampler.random_base2(m=m)[:n_points]
+    for j, (lo, hi) in enumerate(box):
+        pts[:, j] = lo + (hi - lo) * pts[:, j]
+    return pts
+
+
+def local_box_around_point(x_next, delta):
+    # x_next: shape (1, d) or (d,)
+    x_next = np.atleast_2d(x_next).reshape(-1)
+    d = x_next.shape[0]
+    return [(float(x_next[j] - delta), float(x_next[j] + delta)) for j in range(d)]
+
+
+@profile
+def maximize_ier_direction(
+    gp, x_next, x_train, y_blocks, rays_array, params, box, threshold=0.0, n_integration=500, seed=123, delta=.5
+):
+    """
+    Maximizes Integrated Entropy Reduction (IER) at x_next over directions v (unit norm).
+    """
+    d = x_next.shape[1]
+    # 1. Integration points for Monte Carlo estimate
+    local_box = local_box_around_point(x_next, delta)
+    integration_points = sobol_points(n_integration, local_box, seed)
+    # Use a default ray for integration points (e.g., all along first axis)
+    ray0 = np.zeros((d, 1))
+    ray0[0, 0] = 1.0
+    integration_rays = np.tile(ray0, n_integration)
+
+    # 2. Get current mean/variance at integration points
+    mu_before, var_before = gp.predict(
+        integration_points, integration_rays, params, calc_cov=True, return_deriv=False
+    )
+    from utils import ecl_acquisition
+    ecl_before = ecl_acquisition(mu_before, var_before, threshold=threshold)
+
+    @profile
+    def negative_ier(w):
+        v = w.reshape(-1, 1)
+        norm_v = np.linalg.norm(v)
+        if norm_v < 1e-12:
+            return 1e6
+        v = v / norm_v
+
+        Y_blocks = [y.copy() for y in y_blocks]
+        # --- Normalize if needed ---
+        v_ = v
+        integration_rays_ = integration_rays
+        # utils.check_gp_gradient(gp, x_next, previous_params)
+        # Hypercomplex construction for new point
+
+        # Compute GP predictions (function value and derivatives)
+        y_pred = gp.predict(x_next, v_, params,
+                            calc_cov=False, return_deriv=True).ravel()
+
+        # How many derivatives do you want to include?
+        n_order = gp.n_order
+
+        # Rebuild y_blocks_next to include the GP predictions
+        Y_blocks_next = []
+
+        # Append the function prediction
+        Y_blocks_next.append(y_pred[0].reshape(-1, 1))
+
+        # Append derivatives in order (1st, 2nd, ..., n_order)
+        for i in range(1, n_order + 1):
+            Y_blocks_next.append(y_pred[i].reshape(-1, 1))
+
+        # Augment training set
+        X_train = np.vstack([x_train, x_next])
+        for k in range(len(y_blocks)):
+            Y_blocks[k] = np.vstack([Y_blocks[k], Y_blocks_next[k]])
+        rays_array_tmp = np.concatenate([rays_array, v_], axis=1)
+
+        gp_temp = gddegp.gddegp(X_train, Y_blocks,
+                                n_order=gp.n_order,
+                                rays_array=rays_array_tmp,
+                                normalize=True,
+                                kernel="SE",
+                                kernel_type="anisotropic",)
+
+        mu, var_after = gp_temp.predict(
+            integration_points, integration_rays_, params, calc_cov=True, return_deriv=False)
+        ecl_after = ecl_acquisition(
+            mu, var_after, threshold=threshold)
+        ier = np.mean(ecl_before - ecl_after)
+        return -ier
+    # 4. Optimize using L-BFGS-B, with a couple random restarts for robustness
+
+    D = d  # dimension of direction
+    lb = np.full(D, -2.0)
+    ub = np.full(D, 2.0)
+    # Optionally, can try [-1, 1] or any sufficiently wide box (PSO will normalize inside objective)
+
+    best_w, best_val = pso(
+        negative_ier, lb, ub,
+        swarmsize=10*d, maxiter=11, debug=True, seed=seed + 77
+    )
+    v_opt = best_w.reshape(-1, 1)
+    v_opt /= np.linalg.norm(v_opt)
+
+    return v_opt

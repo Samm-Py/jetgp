@@ -182,8 +182,8 @@ def main():
                  fc='white', ec='white', clip_on=True)
 
     # ==== Prediction Grid ====
-    gx = np.linspace(-5, 10, 20)
-    gy = np.linspace(0, 15, 20)
+    gx = np.linspace(-5, 10, 200)
+    gy = np.linspace(0, 15, 200)
     X1, X2 = np.meshgrid(gx, gy)
     X_pred = np.column_stack([X1.ravel(), X2.ravel()])
 

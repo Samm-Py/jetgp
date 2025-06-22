@@ -89,7 +89,7 @@ def generate_training_data_lhs(n_samples=16,
                                threshold=17.0,
                                seed=None):
     X_train = lhs_points(n_samples, box, seed)
-    rays_list, tag_map, rays_plot = rays_random(X_train, seed=None)
+    rays_list, tag_map, rays_plot = rays_random(X_train, seed=seed)
 
     # hyper-complex inputs
     X_hc = oti.array(X_train)
@@ -300,11 +300,11 @@ def plot_gp_state(
 
 def main():
     plot_dir = "contour_example_ECL_plots"
-    n_order = 10
+    n_order = 1
     box = ((-2, 2), (-2, 2))  # variable bounds for optimizer
     bounds = np.array(box)
     lb, ub = bounds[:, 0], bounds[:, 1]
-    threshold = 10
+    threshold = 20
 
     # ----- Initial training set -----
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
@@ -327,7 +327,7 @@ def main():
         n_restart_optimizer=10, swarm_size=50, verbose=True)
 
     # ---- Active Learning Loop ----
-    n_active = 10  # number of active samples to add
+    n_active = 16  # number of active samples to add
     previous_params = params
     gx = np.linspace(-2.0, 2.0, 20)
     gy = np.linspace(-2.0, 2.0, 20)
@@ -375,10 +375,14 @@ def main():
         print(f"Next sample: {x_next}")
 
         # Evaluate function and directional derivatives at new point
-        ray_next = utils.get_surrogate_gradient_ray(
-            gp, x_next, previous_params, fallback_axis=0, normalize=True, threshold=threshold)
-        # ray_next = utils.get_entropy_ridge_direction_nd(
-        #     gp, x_next, previous_params, threshold=threshold)
+        # ray_next = utils.get_surrogate_gradient_ray(
+        #     gp, x_next, previous_params, fallback_axis=0, normalize=True, threshold=threshold)
+        ray_next = utils.get_entropy_ridge_direction_nd_2(
+            gp, x_next, previous_params, threshold=threshold)
+        # ray_next = utils.maximize_ier_direction(
+        #     gp, x_next.reshape(1, -1), X_train, y_blocks, rays_array, previous_params, box, threshold=threshold,
+        #     n_integration=200, seed=al_iter+42
+        # )
         # utils.check_gp_gradient(gp, x_next, previous_params)
         rays_list_next = [ray_next]
         rays_plot_next = [.4*ray_next]
