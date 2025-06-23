@@ -210,7 +210,34 @@ def main():
     n_active = 90
     previous_params = params
     x_next_list = []
+    N_mc = 10_000_000
+    box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
+
+    # Monte Carlo points (reuse same points throughout)
+    sampler = qmc.Sobol(d=3, scramble=True, seed=123)
+    m = int(np.ceil(np.log2(N_mc)))
+    X_mc = sampler.random_base2(m=m)[:N_mc]
+    for j, (lo, hi) in enumerate(box):
+        X_mc[:, j] = lo + (hi - lo) * X_mc[:, j]
+
+    # True failure volume (doesn't change)
+    y_true_mc = ishigami(X_mc)
+    frac_true = np.mean(y_true_mc > threshold)
+    print(f"MC (True function) failure volume: {frac_true}")
+
+    rel_error_history = []
+    iteration_history = []
     for al_iter in range(n_active):
+        N_mc = 500_000
+        box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
+
+        # Monte Carlo points (reuse same points throughout)
+        sampler = qmc.Sobol(d=3, scramble=True, seed=123 + al_iter)
+        m = int(np.ceil(np.log2(N_mc)))
+        X_mc = sampler.random_base2(m=m)[:N_mc]
+        for j, (lo, hi) in enumerate(box):
+            X_mc[:, j] = lo + (hi - lo) * X_mc[:, j]
+
         print(f"\nActive Learning Iteration {al_iter+1}/{n_active}")
         # Maximize ECL over entire domain!
 
@@ -229,13 +256,15 @@ def main():
         def neg_ecl_with_thresh(x): return neg_ecl(x, threshold=threshold)
         candidate_points = sobol_points(1000, box, seed=al_iter)
         # --- Add neighbors around ALL previously chosen x_next ---
-        n_neighbors = 10      # number of extra points per x_next
-        neighbor_std = np.array([0.05 * (hi - lo)
+        n_neighbors = 10*n_order      # number of extra points per x_next
+        neighbor_std = np.array([0.10 * (hi - lo)
                                 for (lo, hi) in box])  # Shape (3,)
         neighbor_points = []
-
+        rng = np.random.default_rng(
+            seed=al_iter * 12345 + 42)  # any formula you like
         for xc in x_next_list:
-            pts = xc + np.random.randn(n_neighbors, len(box)) * neighbor_std
+            pts = xc + \
+                rng.standard_normal((n_neighbors, len(box))) * neighbor_std
             # Clip to bounds
             for j, (lo, hi) in enumerate(box):
                 pts[:, j] = np.clip(pts[:, j], lo, hi)
@@ -287,6 +316,7 @@ def main():
             gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
             title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
         # Refit GP
+
         gp = gddegp(X_train, y_blocks,
                     n_order=n_order,
                     rays_array=rays_array,
@@ -298,36 +328,34 @@ def main():
         plot_gp_slice(
             gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
             title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/after_iter_{al_iter+1:02d}")
-
+        if al_iter % 10 == 9 or al_iter == 0:
+            # Predict on MC sample
+            ray0 = np.zeros((3, 1))
+            ray0[0, 0] = 1.0
+            rays_mc = np.hstack([ray0] * N_mc)
+            y_gp_mc = gp.predict(X_mc, rays_mc, previous_params,
+                                 calc_cov=False, return_deriv=False).ravel()
+            frac_gp = np.mean(y_gp_mc > threshold)
+            # Relative error
+            rel_error = np.abs(frac_gp - frac_true) / frac_true
+            rel_error_history.append(rel_error)
+            iteration_history.append(al_iter)
+            print(
+                f"Iter {al_iter}: GP failure volume={100*frac_gp:.2f}%, True={100*frac_true:.2f}%, Rel error={rel_error:.4f}")
     # Final plot on the slice
     plot_gp_slice(
         gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
         title_prefix=f"Final model: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
 
-    # --- Monte Carlo domain sampling ---
-    N_mc = 100000
-    box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
-    sampler = qmc.Sobol(d=3, scramble=True, seed=123)
-    m = int(np.ceil(np.log2(N_mc)))
-    X_mc = sampler.random_base2(m=m)[:N_mc]
-    for j, (lo, hi) in enumerate(box):
-        X_mc[:, j] = lo + (hi - lo) * X_mc[:, j]
-
-    # -- True function --
-    y_true_mc = ishigami(X_mc)
-    frac_true = np.mean(y_true_mc > threshold)
-    print(f"True: Fraction of domain above threshold: {100*frac_true:.2f}%")
-
-    # -- GP surrogate (mean only) --
-    # Use rays in x1 direction for all MC points
-    ray0 = np.zeros((3, 1))
-    ray0[0, 0] = 1.0
-    rays_mc = np.hstack([ray0] * N_mc)
-    y_gp_mc = gp.predict(X_mc, rays_mc, previous_params,
-                         calc_cov=False, return_deriv=False).ravel()
-    frac_gp = np.mean(y_gp_mc > threshold)
-    print(
-        f"GP surrogate: Fraction of domain above threshold: {100*frac_gp:.2f}%")
+    plt.figure(figsize=(7, 4))
+    plt.plot(iteration_history, rel_error_history, marker='o', linestyle='-')
+    plt.xlabel('Active learning iteration')
+    plt.ylabel('Relative error in failure volume')
+    plt.title('Relative error of GP-estimated failure volume vs. MC (True)')
+    plt.yscale('log')  # Often error shrinks exponentially!
+    plt.grid(True, which='both', ls='--', alpha=0.6)
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":
