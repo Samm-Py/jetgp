@@ -103,85 +103,91 @@ def clipped_arrow(ax, start, vec, color="white", **kwargs):
 
 
 def plot_gp_slice(
-        gp, params, X_train, rays_plot, x3_slice=np.pi, threshold=3.0,
+        gp, params, X_train, rays_plot, x3_slice_nums=[np.pi], threshold=3.0,
         title_prefix='', savepath=None, show_train=True, ecl_func=None):
-    gx = np.linspace(-np.pi, np.pi, 40)
-    gy = np.linspace(-np.pi, np.pi, 40)
-    X1, X2 = np.meshgrid(gx, gy)
-    X_pred = np.column_stack([X1.ravel(), X2.ravel()])
-    X_pred_full = np.c_[X_pred, np.full((X_pred.shape[0], 1), x3_slice)]
-    # Predict GP
-    ray0 = np.zeros((3, 1))
-    ray0[0, 0] = 1.0
-    rays_pred = np.hstack([ray0] * X_pred.shape[0])
-    y_pred, y_var = gp.predict(
-        X_pred_full, rays_pred, params, calc_cov=True, return_deriv=False)
-    # True function
-    y_true = ishigami(X_pred_full).reshape(X1.shape)
-    Zm = y_pred.reshape(X1.shape)
-    Zv = y_var.reshape(X1.shape)
-    # Entropy/ECL
-    if ecl_func is None:
-        from utils import ecl_acquisition
-        ecl_func = ecl_acquisition
-    entropy_vals = ecl_func(y_pred, y_var, threshold=threshold)
-    Zecl = entropy_vals.reshape(X1.shape)
-    # Levels
-    levels = np.linspace(np.min([Zm, y_true]), np.max([Zm, y_true]), 40)
-    var_levels = np.linspace(Zv.min(), Zv.max(), 40)
-    ent_levels = np.linspace(Zecl.min(), Zecl.max(), 40)
-    if not np.all(np.diff(ent_levels) > 0):
-        ent_levels = np.linspace(ent_levels[0], ent_levels[0] + 1e-6, 40)
-    # Plot
-    fig, axes = plt.subplots(2, 2, figsize=(14, 11), sharex=True, sharey=True)
-    ax_gp, ax_true, ax_var, ax_ecl = axes.ravel()
-    # GP mean
-    cf0 = ax_gp.contourf(X1, X2, Zm, levels=levels, cmap="viridis")
-    plt.colorbar(cf0, ax=ax_gp, fraction=0.046)
-    ax_gp.set_title(f"{title_prefix}GP mean (x3={x3_slice:.2f})")
-    # GP mean threshold contour
-    ax_gp.contour(X1, X2, Zm, levels=[threshold], colors="red", linewidths=2.2)
-    # True function threshold contour
-    ax_gp.contour(X1, X2, y_true, levels=[
-                  threshold], colors="black", linewidths=2.2, linestyles="--")
-    # True function
-    cf1 = ax_true.contourf(X1, X2, y_true, levels=levels, cmap="viridis")
-    plt.colorbar(cf1, ax=ax_true, fraction=0.046)
-    ax_true.set_title(f"Ishigami True (x3={x3_slice:.2f})")
-    # True threshold contour
-    ax_true.contour(X1, X2, y_true, levels=[
-                    threshold], colors="black", linewidths=2.2, linestyles="--")
-    # GP threshold contour
-    ax_true.contour(X1, X2, Zm, levels=[
-                    threshold], colors="red", linewidths=2.2)
-    # GP variance
-    cf2 = ax_var.contourf(X1, X2, Zv, levels=var_levels, cmap="plasma")
-    plt.colorbar(cf2, ax=ax_var, fraction=0.046)
-    ax_var.set_title("GP Variance")
-    # ECL/entropy
-    cf3 = ax_ecl.contourf(X1, X2, Zecl, levels=ent_levels, cmap="inferno")
-    plt.colorbar(cf3, ax=ax_ecl, fraction=0.046)
-    ax_ecl.set_title("ECL (entropy)")
-    for ax in axes.ravel():
-        ax.set_xlabel("x1")
-        ax.set_ylabel("x2")
-        ax.set_xlim(-np.pi, np.pi)
-        ax.set_ylim(-np.pi, np.pi)
-        ax.set_aspect('equal')
-        # Plot all train points
-        if show_train and X_train is not None:
-            mask = np.abs(X_train[:, 2] - x3_slice) < 1e-2
-            ax.scatter(X_train[mask, 0], X_train[mask, 1], c='r',
-                       edgecolor='k', s=40, label='Train @ slice', zorder=5)
-            ax.scatter(X_train[:, 0], X_train[:, 1], c='w', alpha=0.13, s=14)
-    plt.tight_layout()
-    if savepath is not None:
-        os.makedirs(os.path.dirname(savepath), exist_ok=True)
-        fig.savefig(savepath + ".pdf", bbox_inches="tight")
-        fig.savefig(savepath + ".png", bbox_inches="tight")
-        plt.close(fig)
-    else:
-        plt.show()
+    names = ['_upper', '_lower']
+    for idx, x3_slice in enumerate(x3_slice_nums):
+        savepath = savepath + names[idx]
+        gx = np.linspace(-np.pi, np.pi, 40)
+        gy = np.linspace(-np.pi, np.pi, 40)
+        X1, X2 = np.meshgrid(gx, gy)
+        X_pred = np.column_stack([X1.ravel(), X2.ravel()])
+        X_pred_full = np.c_[X_pred, np.full((X_pred.shape[0], 1), x3_slice)]
+        # Predict GP
+        ray0 = np.zeros((3, 1))
+        ray0[0, 0] = 1.0
+        rays_pred = np.hstack([ray0] * X_pred.shape[0])
+        y_pred, y_var = gp.predict(
+            X_pred_full, rays_pred, params, calc_cov=True, return_deriv=False)
+        # True function
+        y_true = ishigami(X_pred_full).reshape(X1.shape)
+        Zm = y_pred.reshape(X1.shape)
+        Zv = y_var.reshape(X1.shape)
+        # Entropy/ECL
+        if ecl_func is None:
+            from utils import ecl_acquisition
+            ecl_func = ecl_acquisition
+        entropy_vals = ecl_func(y_pred, y_var, threshold=threshold)
+        Zecl = entropy_vals.reshape(X1.shape)
+        # Levels
+        levels = np.linspace(np.min([Zm, y_true]), np.max([Zm, y_true]), 40)
+        var_levels = np.linspace(Zv.min(), Zv.max(), 40)
+        ent_levels = np.linspace(Zecl.min(), Zecl.max(), 40)
+        if not np.all(np.diff(ent_levels) > 0):
+            ent_levels = np.linspace(ent_levels[0], ent_levels[0] + 1e-6, 40)
+        # Plot
+        fig, axes = plt.subplots(2, 2, figsize=(
+            14, 11), sharex=True, sharey=True)
+        ax_gp, ax_true, ax_var, ax_ecl = axes.ravel()
+        # GP mean
+        cf0 = ax_gp.contourf(X1, X2, Zm, levels=levels, cmap="viridis")
+        plt.colorbar(cf0, ax=ax_gp, fraction=0.046)
+        ax_gp.set_title(f"{title_prefix}GP mean (x3={x3_slice:.2f})")
+        # GP mean threshold contour
+        ax_gp.contour(X1, X2, Zm, levels=[
+                      threshold], colors="red", linewidths=2.2)
+        # True function threshold contour
+        ax_gp.contour(X1, X2, y_true, levels=[
+                      threshold], colors="black", linewidths=2.2, linestyles="--")
+        # True function
+        cf1 = ax_true.contourf(X1, X2, y_true, levels=levels, cmap="viridis")
+        plt.colorbar(cf1, ax=ax_true, fraction=0.046)
+        ax_true.set_title(f"Ishigami True (x3={x3_slice:.2f})")
+        # True threshold contour
+        ax_true.contour(X1, X2, y_true, levels=[
+                        threshold], colors="black", linewidths=2.2, linestyles="--")
+        # GP threshold contour
+        ax_true.contour(X1, X2, Zm, levels=[
+                        threshold], colors="red", linewidths=2.2)
+        # GP variance
+        cf2 = ax_var.contourf(X1, X2, Zv, levels=var_levels, cmap="plasma")
+        plt.colorbar(cf2, ax=ax_var, fraction=0.046)
+        ax_var.set_title("GP Variance")
+        # ECL/entropy
+        cf3 = ax_ecl.contourf(X1, X2, Zecl, levels=ent_levels, cmap="inferno")
+        plt.colorbar(cf3, ax=ax_ecl, fraction=0.046)
+        ax_ecl.set_title("ECL (entropy)")
+        for ax in axes.ravel():
+            ax.set_xlabel("x1")
+            ax.set_ylabel("x2")
+            ax.set_xlim(-np.pi, np.pi)
+            ax.set_ylim(-np.pi, np.pi)
+            ax.set_aspect('equal')
+            # Plot all train points
+            if show_train and X_train is not None:
+                mask = np.abs(X_train[:, 2] - x3_slice) < 1e-2
+                ax.scatter(X_train[mask, 0], X_train[mask, 1], c='r',
+                           edgecolor='k', s=40, label='Train @ slice', zorder=5)
+                ax.scatter(X_train[:, 0], X_train[:, 1],
+                           c='w', alpha=0.13, s=14)
+        plt.tight_layout()
+        if savepath is not None:
+            os.makedirs(os.path.dirname(savepath), exist_ok=True)
+            fig.savefig(savepath + ".pdf", bbox_inches="tight")
+            fig.savefig(savepath + ".png", bbox_inches="tight")
+            plt.close(fig)
+        else:
+            plt.show()
 
 # ---- Main active learning loop ----
 
@@ -195,7 +201,7 @@ def main():
 
     # Initial training set
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
-        n_samples=10, box=box, n_order=n_order, seed=42)
+        n_samples=10, box=box, n_order=n_order, seed=420)
     rays_array = np.hstack(rays_list)
 
     gp = gddegp(X_train, y_blocks,
@@ -210,7 +216,7 @@ def main():
     n_active = 90
     previous_params = params
     x_next_list = []
-    N_mc = 10_000_000
+    N_mc = 100_000_000
     box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
 
     # Monte Carlo points (reuse same points throughout)
@@ -228,11 +234,11 @@ def main():
     rel_error_history = []
     iteration_history = []
     for al_iter in range(n_active):
-        N_mc = 500_000
+        N_mc = 100_000
         box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
 
         # Monte Carlo points (reuse same points throughout)
-        sampler = qmc.Sobol(d=3, scramble=True, seed=123 + al_iter)
+        sampler = qmc.Sobol(d=3, scramble=True, seed=12843 + al_iter)
         m = int(np.ceil(np.log2(N_mc)))
         X_mc = sampler.random_base2(m=m)[:N_mc]
         for j, (lo, hi) in enumerate(box):
@@ -254,14 +260,14 @@ def main():
             return -utils.ecl_acquisition(mu, var, threshold=threshold)
 
         def neg_ecl_with_thresh(x): return neg_ecl(x, threshold=threshold)
-        candidate_points = sobol_points(1000, box, seed=al_iter)
+        candidate_points = sobol_points(1000, box, seed=al_iter + 42)
         # --- Add neighbors around ALL previously chosen x_next ---
-        n_neighbors = 10*n_order      # number of extra points per x_next
+        n_neighbors = 10      # number of extra points per x_next
         neighbor_std = np.array([0.10 * (hi - lo)
                                 for (lo, hi) in box])  # Shape (3,)
         neighbor_points = []
         rng = np.random.default_rng(
-            seed=al_iter * 12345 + 42)  # any formula you like
+            seed=al_iter * 123456 + 42)  # any formula you like
         for xc in x_next_list:
             pts = xc + \
                 rng.standard_normal((n_neighbors, len(box))) * neighbor_std
@@ -279,7 +285,7 @@ def main():
         ub = np.array([b[1] for b in box])
         x_next, fg = utils.pso(
             neg_ecl_with_thresh, lb, ub, swarmsize=20, maxiter=10, minstep=1e-8, minfunc=1e-15, debug=True,
-            seed=al_iter*111+42, initial_positions=top20_points)
+            seed=al_iter*111+420, initial_positions=top20_points)
         x_next_list.append(x_next)
         print(f"ECL(x_next): {-neg_ecl(x_next, threshold=threshold)}")
         print("x_next:", x_next)
@@ -313,7 +319,7 @@ def main():
         rays_array = np.hstack(rays_list)
         # Plotting after each iteration on the slice
         plot_gp_slice(
-            gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
+            gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
             title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
         # Refit GP
 
@@ -326,9 +332,9 @@ def main():
         previous_params = gp.optimize_hyperparameters(
             n_restart_optimizer=10, swarm_size=60, verbose=True, x0=previous_params)
         plot_gp_slice(
-            gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
+            gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
             title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/after_iter_{al_iter+1:02d}")
-        if al_iter % 10 == 9 or al_iter == 0:
+        if (al_iter + 1) % 5 == 0 or al_iter == 0:
             # Predict on MC sample
             ray0 = np.zeros((3, 1))
             ray0[0, 0] = 1.0
@@ -344,7 +350,7 @@ def main():
                 f"Iter {al_iter}: GP failure volume={100*frac_gp:.2f}%, True={100*frac_true:.2f}%, Rel error={rel_error:.4f}")
     # Final plot on the slice
     plot_gp_slice(
-        gp, previous_params, X_train, rays_plot, x3_slice=x3_slice, threshold=threshold,
+        gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
         title_prefix=f"Final model: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
 
     plt.figure(figsize=(7, 4))
