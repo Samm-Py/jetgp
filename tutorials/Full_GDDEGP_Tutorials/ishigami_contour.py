@@ -8,6 +8,7 @@ import utils
 from matplotlib.patches import FancyArrowPatch
 from shapely.geometry import LineString, box
 import os
+import pandas as pd
 # ---- Ishigami function ----
 
 
@@ -201,7 +202,7 @@ def main():
 
     # Initial training set
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
-        n_samples=10, box=box, n_order=n_order, seed=420)
+        n_samples=30, box=box, n_order=n_order, seed=420)
     rays_array = np.hstack(rays_list)
 
     gp = gddegp(X_train, y_blocks,
@@ -213,7 +214,7 @@ def main():
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=50, swarm_size=100, verbose=True)
 
-    n_active = 90
+    n_active = 40
     previous_params = params
     x_next_list = []
     N_mc = 100_000_000
@@ -233,7 +234,7 @@ def main():
 
     rel_error_history = []
     iteration_history = []
-    for al_iter in range(n_active):
+    for al_iter in range(n_active + 1):
         N_mc = 100_000
         box = [(-np.pi, np.pi), (-np.pi, np.pi), (-np.pi, np.pi)]
 
@@ -293,8 +294,9 @@ def main():
             print("Duplicate point; skipping.")
             continue
         # Choose direction (e.g., x1)
-        ray_next = utils.get_entropy_ridge_direction_nd_2(
-            gp, x_next, previous_params, threshold=threshold)
+        #ray_next = utils.get_entropy_ridge_direction_nd_2(
+        #    gp, x_next, previous_params, threshold=threshold)
+        ray_next = utils.get_surrogate_gradient_ray(gp, x_next, previous_params, normalize=True, threshold=threshold)
         print(ray_next)
         rays_list_next = [ray_next]
         rays_plot_next = [0.6*ray_next]
@@ -318,9 +320,9 @@ def main():
         rays_plot.append(rays_plot_next[0])
         rays_array = np.hstack(rays_list)
         # Plotting after each iteration on the slice
-        plot_gp_slice(
-            gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
-            title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
+        # plot_gp_slice(
+        #     gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
+        #     title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/before_iter_{al_iter+1:02d}")
         # Refit GP
 
         gp = gddegp(X_train, y_blocks,
@@ -330,11 +332,11 @@ def main():
                     kernel="SE",
                     kernel_type="anisotropic")
         previous_params = gp.optimize_hyperparameters(
-            n_restart_optimizer=10, swarm_size=60, verbose=True, x0=previous_params)
-        plot_gp_slice(
-            gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
-            title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/after_iter_{al_iter+1:02d}")
-        if (al_iter + 1) % 5 == 0 or al_iter == 0:
+            n_restart_optimizer=20, swarm_size=100, verbose=True, x0=previous_params)
+        # plot_gp_slice(
+        #     gp, previous_params, X_train, rays_plot, x3_slice_nums=[np.pi, -np.pi], threshold=threshold,
+        #     title_prefix=f"AL iter {al_iter+1}: ", savepath=f"{plot_dir}/after_iter_{al_iter+1:02d}")
+        if (al_iter) % 10 == 0 or al_iter == 0:
             # Predict on MC sample
             ray0 = np.zeros((3, 1))
             ray0[0, 0] = 1.0
@@ -362,6 +364,12 @@ def main():
     plt.grid(True, which='both', ls='--', alpha=0.6)
     plt.tight_layout()
     plt.show()
+    df = pd.DataFrame({
+    "iteration": iteration_history,
+    "rel_error": rel_error_history
+    })
+
+    df.to_csv(f"rel_error_history_2.csv", index=False)
 
 
 if __name__ == "__main__":

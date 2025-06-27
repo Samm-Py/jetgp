@@ -15,20 +15,19 @@ a_ish = 1.0
 b_ish = 0.5
 
 
-def true_function(X, alg=np):
+def true_function(x1, x2, x3, alg=np):
     """Your original function"""
-    x1, x2, x3 = X[0, 0], X[0, 1], X[0, 2]
-    return (alg.sin(x1)
+    return ((alg.sin(x1)
             + a_ish * alg.sin(x2)**2
-            + b_ish * x3**4 * alg.sin(x1))
+            + b_ish * x3**4 * alg.sin(x1)))**3
 
 
-def time_function_evaluation(func, X, alg, n_runs=100):
+def time_function_evaluation(func, x1, x2, x3, alg, n_runs=100):
     """Time a function evaluation over multiple runs"""
     times = []
     for _ in range(n_runs):
         start_time = time.perf_counter()
-        result = func(X, alg=alg)
+        result = func(x1, x2, x3, alg=alg)
         end_time = time.perf_counter()
         times.append(end_time - start_time)
 
@@ -48,8 +47,8 @@ def sobol_points(n_samples, seed=None, scramble=True):
     Parameters
     ----------
     n_samples : int
-        Number of points you want.  
-        • If `scramble=False` you must supply a power-of-two (2, 4, 8, …).  
+        Number of points you want.
+        • If `scramble=False` you must supply a power-of-two (2, 4, 8, …).
         • With `scramble=True` any positive integer works.
     seed : int or None
         Random seed for reproducible scrambling.
@@ -93,11 +92,10 @@ def generate_pointwise_rays(n_samples=24, n_order=1, seed=1):
     return X, rays, tags
 
 
-def apply_pointwise_perturb(X, rays, tags, n_order):
-    X_hc = oti.array(X)
-    for i, (ray, tag) in enumerate(zip(rays, tags)):
-        e_tag = oti.e(1, order=n_order)            # dual unit
-        X_hc[i, :] += (oti.array(ray)*e_tag).T
+def apply_pointwise_perturb(X_hc, rays, tags, n_order):
+    for j in range(X_hc.shape[1]):
+        e_tag = oti.e((1 + j), order=n_order)            # dual unit
+        X_hc[:, j] += 1*e_tag
     return X_hc
 
 
@@ -120,17 +118,29 @@ def benchmark_hypercomplex_vs_numpy(orders=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10], n_ru
         print(f"\nTesting order {order}...")
 
         # Generate single point data for this order
-        X, rays, tags = generate_pointwise_rays(1, order)  # Single point only
-        X_hc = apply_pointwise_perturb(X, rays, tags, order)
+        X, rays, tags = generate_pointwise_rays(10, order)  # Single point only
+        X1 = X.copy()
+        X1 = oti.array(X1)
+        X_hc = apply_pointwise_perturb(X1, rays, tags, order)
+
+        x1 = oti.array(X[:, 0])
+        x2 = oti.array(X[:, 1])
+        x3 = oti.array(X[:, 2])
+
+        x1_hc = X_hc[:, 0]
+        x2_hc = X_hc[:, 1]
+        x3_hc = X_hc[:, 2]
 
         # Time numpy evaluation
         print("  Timing numpy evaluation...")
-        numpy_stats = time_function_evaluation(true_function, X, np, n_runs)
+        numpy_stats = time_function_evaluation(
+            true_function, x1, x2, x3, oti, n_runs)
         results['numpy'].append(numpy_stats)
 
         # Time hypercomplex evaluation
         print("  Timing hypercomplex evaluation...")
-        hc_stats = time_function_evaluation(true_function, X_hc, oti, n_runs)
+        hc_stats = time_function_evaluation(
+            true_function, x1_hc, x2_hc, x3_hc, oti, n_runs)
         results['hypercomplex'][order] = hc_stats
 
         # Print results for this order
@@ -188,11 +198,22 @@ def detailed_single_point_comparison(order=2, n_runs=1000):
 
     # Generate single point data
     X, rays, tags = generate_pointwise_rays(1, order)  # Single point
+
     X_hc = apply_pointwise_perturb(X, rays, tags, order)
 
+    x1 = X[0, 0]
+    x2 = X[0, 1]
+    x3 = X[0, 2]
+
+    x1_hc = X_hc[0, 0]
+    x2_hc = X_hc[0, 1]
+    x3_hc = X_hc[0, 2]
+
     # Time both approaches
-    numpy_stats = time_function_evaluation(true_function, X, np, n_runs)
-    hc_stats = time_function_evaluation(true_function, X_hc, oti, n_runs)
+    numpy_stats = time_function_evaluation(
+        true_function, x1, x2, x3, np, n_runs)
+    hc_stats = time_function_evaluation(
+        true_function, x1_hc, x2_hc, x3_hc, oti, n_runs)
 
     print(f"NumPy evaluation:")
     print(f"  Mean: {numpy_stats['mean']*1e6:.1f} μs")
@@ -218,15 +239,15 @@ if __name__ == "__main__":
     try:
         # Run the main benchmark (single point only)
         results = benchmark_hypercomplex_vs_numpy(
-            orders=[1, 2],
-            n_runs=1000000  # More runs since we're doing single points
+            orders=[1],
+            n_runs=1000  # More runs since we're doing single points
         )
 
         # Plot results
         plot_timing_results(results)
 
         # Detailed single-point comparison
-        detailed_single_point_comparison(order=2, n_runs=1000)
+        # detailed_single_point_comparison(order=10, n_runs=10000)
 
     except NameError as e:
         print(f"Error: {e}")

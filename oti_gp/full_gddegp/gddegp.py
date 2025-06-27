@@ -3,7 +3,6 @@ import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from full_gddegp.optimizer import Optimizer
 from full_gddegp import gddegp_utils
-from line_profiler import profile
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
 
 
@@ -50,14 +49,17 @@ class gddegp:
         self.kernel_type = kernel_type
         self.normalize = normalize
         # self.num_directions = rays_array.shape[1]
-        indices = gddegp_utils.make_der_indices(
+        # indices = gddegp_utils.make_der_indices(
+        #     2, self.n_order)
+        der_indices = gddegp_utils.make_der_indices(
             1, self.n_order)
-
-        self.flattened_der_indicies = utils.flatten_der_indices(indices)
-
+        # self.der_map = gddegp_utils.deriv_map(2, 2*n_order)
+        self.flattened_der_indices = utils.flatten_der_indices(der_indices)
+        # self.der_indices_tr, self.der_ind_order = gddegp_utils.transform_der_indices(
+        #     indices, self.der_map)
         if normalize:
             self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = utils.normalize_y_data_directional(
-                x_train, y_train, sigma_data, self.flattened_der_indicies)
+                x_train, y_train, sigma_data, self.flattened_der_indices)
             self.rays_array = utils.normalize_directions_2(
                 self.sigmas_x, self.rays_array)
             self.x_train = utils.normalize_x_data_train(x_train)
@@ -90,8 +92,6 @@ class gddegp:
         """
         self.params = self.optimizer.optimize_hyperparameters(*args, **kwargs)
         return self.params
-
-    @profile
     def predict(self, X_test, rays_predict, params, calc_cov=False, return_deriv=False):
         """
         Predict posterior mean and optional variance at test points.
@@ -121,15 +121,15 @@ class gddegp:
             self.differences_by_dim,
             length_scales,
             self.n_order,
-            self.num_points,
             self.kernel_func,
+            # self.der_indices_tr,
+            # self.der_ind_order,
+            # self.der_map,
         )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
 
         L, low = cho_factor(K, lower=True)
-        self.L = L
-        self.low = low
         # L = cholesky(K)
         # low = True
         alpha = cho_solve(
@@ -140,6 +140,11 @@ class gddegp:
         # theta = np.pi/4
         # unit_v = np.array([[np.cos(theta)], [np.sin(theta)]])  # shape (2,1)
         rays_test = rays_predict
+
+        # if not return_deriv:
+        #     der_map = gddegp_utils.deriv_map(1, 2*self.n_order)
+        # else:
+        #     der_map = self.der_map
         if self.normalize:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
@@ -147,18 +152,21 @@ class gddegp:
                 self.sigmas_x, rays_test)
         diff_x_train_x_test = gddegp_utils.differences_by_dim_func(
             self.x_train, X_test, self.rays_array, rays_test, self.n_order, return_deriv=return_deriv)
-        self.K_s = gddegp_utils.rbf_kernel(
+        K_s = gddegp_utils.rbf_kernel(
             diff_x_train_x_test, length_scales, self.n_order,
-            X_test.shape[0],
-            self.kernel_func, return_deriv=return_deriv)
+            self.kernel_func,
+            # self.der_indices_tr,
+            # self.der_ind_order,
+            # self.der_map,
+            return_deriv=return_deriv)
 
-        f_mean = self.K_s.T@alpha
+        f_mean = K_s.T@alpha
 
         if self.normalize:
             if return_deriv:
                 f_mean = utils.transform_predictions_directional(
                     f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
-                    self.flattened_der_indicies, X_test)
+                    self.flattened_der_indices, X_test)
             else:
                 f_mean = self.mu_y + f_mean * self.sigma_y
 
@@ -168,10 +176,14 @@ class gddegp:
         diff_x_test_x_test = gddegp_utils.differences_by_dim_func(
             X_test, X_test, rays_test, rays_test, self.n_order, return_deriv=return_deriv)
         K_ss = gddegp_utils.rbf_kernel(
-            diff_x_test_x_test, length_scales, self.n_order, X_test.shape[0],
-            self.kernel_func, return_deriv=return_deriv)
+            diff_x_test_x_test, length_scales, self.n_order,
+            self.kernel_func,
+            # self.der_indices_tr,
+            # self.der_ind_order,
+            # self.der_map,
+            return_deriv=return_deriv)
 
-        v = solve_triangular(L, self.K_s, lower=low)
+        v = solve_triangular(L, K_s, lower=low)
         if not return_deriv:
             f_cov = K_ss[:X_test.shape[0], :] - v.T @ v
         else:

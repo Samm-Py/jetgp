@@ -43,8 +43,11 @@ class Optimizer:
             self.model.differences_by_dim,
             ell,
             self.model.n_order,
-            self.model.num_points,
             self.model.kernel_func,
+            self.model.flattened_der_indices,
+            # self.model.der_indices_tr,
+            # self.model.der_ind_order,
+            # self.model.der_map,
         )
 
         # Add noise terms

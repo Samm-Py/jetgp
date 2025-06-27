@@ -146,8 +146,8 @@ def main():
         n_restart_optimizer=51, swarm_size=50, verbose=True)
 
     # ==== Prediction Grid ====
-    gx = np.linspace(-2, 2, 200)
-    gy = np.linspace(-2, 2, 200)
+    gx = np.linspace(-2, 2, 50)
+    gy = np.linspace(-2, 2, 50)
     X1, X2 = np.meshgrid(gx, gy)
     X_pred = np.column_stack([X1.ravel(), X2.ravel()])
 

@@ -22,7 +22,7 @@ np.set_printoptions(linewidth=80)
 
 if __name__ == "__main__":
     # n_order: the maximum derivative order to include in the GP model
-    n_order = 3
+    n_order = 2
 
     # n_bases: the dimensionality of the input space (here 1D)
     n_bases = 1
