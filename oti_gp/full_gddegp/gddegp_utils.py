@@ -1,6 +1,7 @@
 import numpy as np
 import pyoti.sparse as oti
 from line_profiler import profile
+import pyoti.core as coti
 
 
 def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2, e_tags_1, e_tags_2):
@@ -71,105 +72,104 @@ def make_der_indices(num_directions: int, max_order: int):
     return der_indices
 
 
-def build_first_block_row(phi, num_directions, max_order):
-    """
-    Build the first block row of a DD-GP kernel matrix.
+# def build_first_block_row(phi, max_order):
+#     """
+#     Build the first block row of a DD-GP kernel matrix.
 
-    Parameters
-    ----------
-    phi : ndarray (n x n), hypercomplex
-        Full kernel matrix with all tags embedded.
-    num_directions : int
-        Number of distinct directional tags.
-    max_order : int
-        Maximum derivative order to include.
+#     Parameters
+#     ----------
+#     phi : ndarray (n x n), hypercomplex
+#         Full kernel matrix with all tags embedded.
+#     num_directions : int
+#         Number of distinct directional tags.
+#     max_order : int
+#         Maximum derivative order to include.
 
-    Returns
-    -------
-    row : ndarray
-        Horizontally concatenated first row: K_ff | K_fd (order 1) | ... | K_fd (order R)
-    """
-    row = phi.real  # K_ff block
+#     Returns
+#     -------
+#     row : ndarray
+#         Horizontally concatenated first row: K_ff | K_fd (order 1) | ... | K_fd (order R)
+#     """
+#     row = phi.real  # K_ff block
 
-    for order in range(1, max_order + 1):
-        deriv_block = phi.get_deriv([[2, order]])
-        row = np.hstack((row, deriv_block))
+#     for order in range(1, max_order + 1):
+#         deriv_block = phi.get_deriv([[2, order]])
+#         row = np.hstack((row, deriv_block))
 
-    return row
-
-
-def build_first_block_column(phi, num_directions, max_order):
-    """
-    Build the first block row of a DD-GP kernel matrix.
-
-    Parameters
-    ----------
-    phi : ndarray (n x n), hypercomplex
-        Full kernel matrix with all tags embedded.
-    num_directions : int
-        Number of distinct directional tags.
-    max_order : int
-        Maximum derivative order to include.
-
-    Returns
-    -------
-    row : ndarray
-        Horizontally concatenated first row: K_ff | K_fd (order 1) | ... | K_fd (order R)
-    """
-    column = phi.real  # K_ff block
-
-    for order in range(1, max_order + 1):
-        deriv_block = phi.get_deriv([[1, order]])
-        column = np.vstack((column, deriv_block))
-
-    return column
+#     return row
 
 
-def build_K_dd_full(phi, num_directions, order_1, order_2):
-    """
-    Build the full (n * num_directions) x (n * num_directions) second derivative block matrix.
+# def build_first_block_column(phi, max_order):
+#     """
+#     Build the first block row of a DD-GP kernel matrix.
 
-    Parameters
-    ----------
-    phi : ndarray of shape (n, n), with hypercomplex entries
-        Kernel matrix with directional tagging.
-    num_directions : int
-        Number of directional directions (tags).
+#     Parameters
+#     ----------
+#     phi : ndarray (n x n), hypercomplex
+#         Full kernel matrix with all tags embedded.
+#     num_directions : int
+#         Number of distinct directional tags.
+#     max_order : int
+#         Maximum derivative order to include.
 
-    Returns
-    -------
-    K_dd : ndarray of shape (n * num_directions, n * num_directions)
-    """
-    mixed_tag = [[1, order_1], [2, order_2]]
-    # If the *array* object supports .get_deriv, this is one call:
-    K_dd = phi.get_deriv(mixed_tag).copy()
+#     Returns
+#     -------
+#     row : ndarray
+#         Horizontally concatenated first row: K_ff | K_fd (order 1) | ... | K_fd (order R)
+#     """
+#     column = phi.real  # K_ff block
 
-    # If phi is a plain NumPy array of objects, fall back to:
-    # K_dd = np.empty_like(phi, dtype=float)
-    # for i in range(phi.shape[0]):
-    #     for j in range(phi.shape[1]):
-    #         K_dd[i, j] = phi[i, j].get_deriv(mixed_tag)
+#     for order in range(1, max_order + 1):
+#         deriv_block = phi.get_deriv([[1, order]])
+#         column = np.vstack((column, deriv_block))
 
-    # ------------------------------------------------------------------
-    # 2) Replace diagonal entries with the special same-direction term
-    #    (-1)^{order_1} · d^{order_1+order_2}/d(tag1)
-    # ------------------------------------------------------------------
-    # diag_len = min(phi.shape)          # works whether or not phi is square
-    # diag_idx = np.arange(diag_len)
-
-    # # Compute new diagonal values once, then bulk-assign
-    # new_diag = [
-    #     (-1) ** order_1
-    #     * phi[int(k), int(k)].get_deriv([[1, order_1 + order_2]])
-    #     for k in diag_idx
-    # ]
-    # K_dd[diag_idx, diag_idx] = new_diag
-
-    return K_dd
+#     return column
 
 
-@profile
-def rbf_kernel(differences, length_scales, max_order, num_directions, kernel_func, index=-1, return_deriv=True):
+# def build_K_dd_full(phi, order_1, order_2):
+#     """
+#     Build the full (n * num_directions) x (n * num_directions) second derivative block matrix.
+
+#     Parameters
+#     ----------
+#     phi : ndarray of shape (n, n), with hypercomplex entries
+#         Kernel matrix with directional tagging.
+#     num_directions : int
+#         Number of directional directions (tags).
+
+#     Returns
+#     -------
+#     K_dd : ndarray of shape (n * num_directions, n * num_directions)
+#     """
+#     mixed_tag = [[1, order_1], [2, order_2]]
+#     # If the *array* object supports .get_deriv, this is one call:
+#     K_dd = phi.get_deriv(mixed_tag).copy()
+
+#     # If phi is a plain NumPy array of objects, fall back to:
+#     # K_dd = np.empty_like(phi, dtype=float)
+#     # for i in range(phi.shape[0]):
+#     #     for j in range(phi.shape[1]):
+#     #         K_dd[i, j] = phi[i, j].get_deriv(mixed_tag)
+
+#     # ------------------------------------------------------------------
+#     # 2) Replace diagonal entries with the special same-direction term
+#     #    (-1)^{order_1} · d^{order_1+order_2}/d(tag1)
+#     # ------------------------------------------------------------------
+#     # diag_len = min(phi.shape)          # works whether or not phi is square
+#     # diag_idx = np.arange(diag_len)
+
+#     # # Compute new diagonal values once, then bulk-assign
+#     # new_diag = [
+#     #     (-1) ** order_1
+#     #     * phi[int(k), int(k)].get_deriv([[1, order_1 + order_2]])
+#     #     for k in diag_idx
+#     # ]
+#     # K_dd[diag_idx, diag_idx] = new_diag
+
+#     return K_dd
+
+
+def rbf_kernel(differences, length_scales, max_order, kernel_func, index=-1, return_deriv=True):
     """
     Assemble the full DD-GP covariance matrix, blockâ€“row by blockâ€“row,
     strictly using the derivative calls and conventions you verified.
@@ -191,35 +191,74 @@ def rbf_kernel(differences, length_scales, max_order, num_directions, kernel_fun
     # shape (n , n + n*T*max_order)
 
     phi = kernel_func(differences, length_scales, index)
+    nderivs = max_order
+    PHIrows = phi.shape[0]
+    PHIcols = phi.shape[1]
     if max_order == 0:
         return phi.real
     if not return_deriv:
-        K = build_first_block_column(phi, num_directions, max_order)
-        return K
+        nderivs = max_order
+        K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
+        iters = 1
+    else:
+        K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
+        iters = max_order + 1
 
-    K_top = build_first_block_row(phi, num_directions, max_order)
-    block_rows = [K_top]
+    for i in range(0, max_order + 1):
+        for j in range(0, iters):
+            # Get local view of the global array.
+            Klocal = K[i*PHIrows: (i+1)*PHIrows, j*PHIcols: (j+1)*PHIcols]
+            if j == 0 and i == 0:
+                Klocal[:, :] = phi.real
+            elif j > 0 and i == 0:
+                Klocal[:, :] = phi.get_deriv([[2, j]])
+            elif j == 0 and i > 0:
+                Klocal[:, :] = phi.get_deriv([[1, i]])
+            else:
 
-    # ---------- subsequent block-rows (order_1 = 1 .. max_order) ---
-    for order_1 in range(1, max_order + 1):
+                # imdir1 = der_ind_order[j-1]
+                # imdir2 = der_ind_order[i-1]
+                # idx, ord = dh.mult_dir(
+                #     imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+                # idx = der_map[ord][idx]
 
-        K_df = phi.get_deriv([[1, order_1]])      # (n,)
+                Klocal[:, :] = phi.get_deriv([[1, i], [2, j]])
 
-        # ---- (b)  concatenate all derivativeâ€“derivative blocks for this row
-        dd_blocks = []
-        for order_2 in range(1, max_order + 1):
-            # uses your untouched helper
-            dd_block = build_K_dd_full(phi, num_directions, order_1, order_2)
-            # each (n*T , n*T)
-            dd_blocks.append(dd_block)
-        # (n*T , n*T*max_order)
-        K_dd_row = np.hstack(dd_blocks)
+    # print(f'Shape final: ({K.shape})')
+    # print(f'Shape final factors: ')
+    # print(f' -> nrows: {K.shape[0]/phi.shape[0]}x')
+    # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
+    # print(80*'-')
 
-        # ---- (c)  complete this block-row and append --------------
-        # (n , n*T + n*T*max_order)
-        full_row = np.hstack([K_df, K_dd_row])
-        block_rows.append(full_row)
+    return K
 
-    # ---------- final v-stack --------------------------------------
-    K_global = np.vstack(block_rows)
-    return K_global
+
+def deriv_map(nbases, order):
+    import pyoti.core as coti
+    # dh = coti.get_dHelp()
+    k = 0
+    map_deriv = []
+    # np.arange(coti.ndir_total(nbases,order),dtype=np.int64)
+    for ordi in range(order+1):
+        ndir = coti.ndir_order(nbases, ordi)
+        map_deriv_i = [0] * ndir
+        for idx in range(ndir):
+            map_deriv_i[idx] = k
+            k += 1
+        map_deriv.append(map_deriv_i)
+    return map_deriv
+
+
+def transform_der_indices(der_indices, der_map):
+    import pyoti.core as coti
+    deriv_ind_transf = []
+    deriv_ind_order = []
+    for deriv in der_indices:
+        # deriv_ind_transf_i = []
+        # for deriv in der_list:
+        #     deriv_ind_transf_i.append(coti.imdir(deriv))
+        imdir = coti.imdir(deriv)
+        idx, order = imdir
+        deriv_ind_transf.append(der_map[order][idx])
+        deriv_ind_order.append(imdir)
+    return deriv_ind_transf, deriv_ind_order

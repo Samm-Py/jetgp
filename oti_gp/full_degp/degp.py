@@ -7,6 +7,7 @@ from kernel_funcs.kernel_funcs import KernelFactory
 from full_degp.optimizer import Optimizer
 
 
+
 class degp:
     def __init__(
         self,
@@ -145,15 +146,15 @@ class degp:
         )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
-        
-        L,low = cho_factor(K, lower=True)
+
+        L, low = cho_factor(K, lower=True)
         # L = cholesky(K)
         # low = True
         alpha = cho_solve(
-                    (L,low), 
-                    self.y_train
-                )
-        
+            (L, low),
+            self.y_train
+        )
+
         # L = cholesky(K)
         # alpha = solve(L.T, solve(L, self.y_train))
 
@@ -213,7 +214,7 @@ class degp:
         )
 
         # v = solve(L, K_s)
-        v = solve_triangular(L, K_s, lower=low )
+        v = solve_triangular(L, K_s, lower=low)
 
         f_cov = (
             K_ss - v.T @ v
