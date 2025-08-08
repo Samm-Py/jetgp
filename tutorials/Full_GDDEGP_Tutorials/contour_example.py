@@ -168,7 +168,7 @@ def main():
                 kernel_type="anisotropic",)
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=25, swarm_size=30, verbose=True)
+        n_restart_optimizer=30, swarm_size=500, verbose=True)
 
     # ---- prediction grid ------------------------------------------
     gx = np.linspace(-2.5, 2.5, 40)
