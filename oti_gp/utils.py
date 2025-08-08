@@ -956,7 +956,7 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         swarmsize=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100,
         minstep=1e-8, minfunc=1e-8, debug=False, seed=42,
-        local_opt_every=10, initial_positions=None):
+        local_opt_every=15, initial_positions=None):
     """
     Particle Swarm Optimization with periodic local refinement
 
@@ -1097,7 +1097,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         # Periodic local refinement - CLEANED UP VERSION
         if it % local_opt_every == 0:
             local_res = robust_local_optimization(
-                func, g, args=args, lb=lb, ub=ub, debug=debug
+                func, g, args=args, lb=lb, ub=ub, debug=False
             )
 
             if should_accept_local_result(local_res, fg, is_feasible, debug):

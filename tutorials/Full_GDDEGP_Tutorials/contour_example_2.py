@@ -142,7 +142,7 @@ def generate_training_data_lhs(n_samples=16,
     # targets
     y_blocks = [f_hc.real.reshape(-1, 1)]                # f
     der_indices = [[[1, 1]], [[1, 2]], [[1, 3]], [[1, 4]], [
-        [1, 5]], [[1, 6]], [[1, 7]], [[1, 8]], [[1, 9]], [[1, 10]]]
+        [1, 5]]]
     for idx in der_indices:
         y_blocks.append(f_hc.get_deriv(idx).reshape(-1, 1))
 
@@ -192,7 +192,7 @@ def clipped_arrow(ax, start, vec, color="white", **kwargs):
 
 
 def main():
-    n_order = 10
+    n_order = 5
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
         n_samples=16,
         box=((-4, 4), (-4, 4)),
@@ -211,7 +211,7 @@ def main():
                 kernel_type="anisotropic",)
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=25, swarm_size=30, verbose=True)
+        n_restart_optimizer=15, swarm_size=300, verbose=True)
 
     # ---- prediction grid ------------------------------------------
     gx = np.linspace(-4, 4, 100)
