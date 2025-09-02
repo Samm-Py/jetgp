@@ -146,7 +146,7 @@ def main():
                 kernel="SE",
                 kernel_type="anisotropic")
 
-    params = gp.optimize_hyperparameters(n_restart_optimizer=30,
+    params = gp.optimize_hyperparameters(n_restart_optimizer=15,
                                          swarm_size=150, verbose=True)
 
     # --- 2-D slice grid (x3 = 0) ------------------------------------
