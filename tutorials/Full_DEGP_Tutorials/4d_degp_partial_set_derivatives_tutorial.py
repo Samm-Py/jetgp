@@ -23,7 +23,7 @@ def main():
     np.random.seed(1354)
     n_bases = 4      # Input dimensionality
     n_order = 2     # Max derivative order used
-    num_points_train = 3
+    num_points_train = 10
     lower_bounds = [-2.048] * n_bases
     upper_bounds = [2.048] * n_bases
 
@@ -73,8 +73,8 @@ def main():
 
     # ----- Hyperparameter Optimization -----
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=35,
-        swarm_size=100,
+        n_restart_optimizer=15,
+        swarm_size=250,
         verbose=True
     )
 
@@ -89,10 +89,10 @@ def main():
     X_test[:, 2:] = 0.0  # Fix x₃ and x₄ at 0 for 2D visualization
 
     # ----- GP Prediction -----
-    y_pred = gp.predict(
+    y_pred, y_var = gp.predict(
         X_test,
         params,
-        calc_cov=False,
+        calc_cov=True,
         return_deriv=False
     )
 

@@ -70,8 +70,8 @@ if __name__ == "__main__":
 
     # ----- Hyperparameter Optimization -----
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=25,
-        swarm_size=25
+        n_restart_optimizer=15,
+        swarm_size=200
     )
 
     # ----- Generate Test Data -----

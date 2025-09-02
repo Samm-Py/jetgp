@@ -304,7 +304,7 @@ def main():
     box = ((-2, 2), (-2, 2))  # variable bounds for optimizer
     bounds = np.array(box)
     lb, ub = bounds[:, 0], bounds[:, 1]
-    threshold = 5
+    threshold = 20
 
     # ----- Initial training set -----
     X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(

@@ -101,7 +101,7 @@ if __name__ == "__main__":
         kernel_type="anisotropic",
     )
 
-    params = gp.optimize_hyperparameters(n_restart_optimizer=10, swarm_size=25)
+    params = gp.optimize_hyperparameters(n_restart_optimizer=15, swarm_size=200)
 
     N_grid = 25
     x_lin = np.linspace(lb_x, ub_x, N_grid)
