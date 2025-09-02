@@ -146,17 +146,20 @@ class degp:
         )
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
-
-        L, low = cho_factor(K, lower=True)
-        # L = cholesky(K)
-        # low = True
-        alpha = cho_solve(
-            (L, low),
-            self.y_train
-        )
-
-        # L = cholesky(K)
-        # alpha = solve(L.T, solve(L, self.y_train))
+        try:
+            cho_solve_failed = True
+            L, low = cho_factor(K, lower=True)
+            # L = cholesky(K)
+            # low = True
+            alpha = cho_solve(
+                (L, low),
+                self.y_train
+            )
+        except:
+            cho_solve_failed = True
+            alpha = np.linalg.solve(K, self.y_train)
+            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+            # If Cholesky fails, fall back to standard solve
 
         if self.normalize:
             X_test = utils.normalize_x_data_test(
@@ -213,14 +216,20 @@ class degp:
             self.powers,
         )
 
-        # v = solve(L, K_s)
-        v = solve_triangular(L, K_s, lower=low)
+        if cho_solve_failed:
+            f_cov = (
+                K_ss - K_s.T @ np.linalg.inv(K) @ K_s
+                if return_deriv
+                else K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
+            )
+        else:
+            v = solve_triangular(L, K_s, lower=low)
 
-        f_cov = (
-            K_ss - v.T @ v
-            if return_deriv
-            else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
-        )
+            f_cov = (
+                K_ss - v.T @ v
+                if return_deriv
+                else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
+            )
 
         # Normalize or return raw covariance
         if self.normalize:

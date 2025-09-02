@@ -58,12 +58,12 @@ if __name__ == "__main__":
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
 
     noise_std = np.zeros((len(der_indices) + 1)*n_train)
-    noise_std[:num_pts] = abs(y_train_real.flatten()) * .25
+    noise_std[:num_pts] = abs(y_train_real.flatten()) * .10
 
     y_train_real_noisy = y_train_real.copy()
     for i in range(0, len(y_train_real)):
         y_train_real_noisy[i] = y_train_real_noisy[i] + \
-            rng.normal(loc=0.0, scale=abs(y_train_real_noisy[i]) * .25, size=1)
+            rng.normal(loc=0.0, scale=abs(y_train_real_noisy[i]) * .1, size=1)
 
     # Build y_train list: function values and noisy derivatives
     y_train = [y_train_real_noisy]
@@ -72,12 +72,12 @@ if __name__ == "__main__":
             deriv = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
             deriv_noisy = deriv.copy()
             noise_std[(i+1)*num_pts:(i+2) *
-                      num_pts] = deriv_noisy.flatten()*.50 * (i + 1)
+                      num_pts] = deriv_noisy.flatten()*.1 * (i + 1)
 
             for k in range(0, len(deriv_noisy)):
                 deriv_noisy[k] = deriv_noisy[k] + \
                     rng.normal(
-                        loc=0.0, scale=abs(deriv_noisy[k] * .50 * (i + 1)), size=1)
+                        loc=0.0, scale=abs(deriv_noisy[k] * .10 * (i + 1)), size=1)
             y_train.append(deriv_noisy)
 
     # Instantiate and configure the GP model
