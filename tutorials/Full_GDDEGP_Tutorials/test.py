@@ -143,7 +143,7 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=51, swarm_size=50, verbose=True)
+        n_restart_optimizer=15, swarm_size=50, verbose=True)
 
     # ==== Prediction Grid ====
     gx = np.linspace(-2, 2, 50)
