@@ -85,7 +85,7 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=50, verbose=True)
+        n_restart_optimizer=15, swarm_size=200, verbose=True)
 
     # 2D grid for x1 and x2
     N_grid = 20

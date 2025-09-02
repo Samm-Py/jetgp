@@ -110,7 +110,7 @@ def main():
     X_train, index = generate_training_data(num_points)
     gp = build_gp_model(X_train, index, n_order, n_bases)
 
-    params = gp.optimize_hyperparameters(n_restart_optimizer=20, swarm_size=50)
+    params = gp.optimize_hyperparameters(n_restart_optimizer=15, swarm_size=200)
 
     N_grid = 25
     x_lin = np.linspace(-1, 1, N_grid)

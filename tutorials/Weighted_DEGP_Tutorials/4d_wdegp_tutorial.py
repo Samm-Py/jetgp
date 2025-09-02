@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     # Optimize hyperparameters
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=25
+        n_restart_optimizer=15, swarm_size=200
     )
 
     # Predict on full test set

@@ -86,7 +86,7 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=50, verbose=True)
+        n_restart_optimizer=15, swarm_size=200, verbose=True)
 
     # Test data grid
     N_grid = 20

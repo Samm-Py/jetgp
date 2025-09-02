@@ -61,7 +61,7 @@ def generate_training_data(n_order, num_points=16):
 
     # Derivative index structure must be consistent across all training points
     der_indices = [[
-        [[1, 1]]
+        [[1, 1]], [[2,1]], [[3,1]]
     ]]
 
     for i in range(len(der_indices)):
@@ -78,7 +78,7 @@ def main():
 
     X_train, y_train, der_indices, rays = generate_training_data(
         n_order)
-
+    print(y_train)
     gp = ddegp(
         X_train,
         y_train,
@@ -91,7 +91,7 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=51, swarm_size=100, verbose=True)
+        n_restart_optimizer=15, swarm_size=200, verbose=True)
 
     # Test data grid
     N_grid = 20
