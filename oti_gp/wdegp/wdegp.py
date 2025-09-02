@@ -184,11 +184,20 @@ class wdegp:
             # L = cholesky(K)
             # alpha = solve(L.T, solve(L, self.y_train[i]))
             # print(K)
-            L,low = cho_factor(K, lower=True)
-            alpha = cho_solve(
-                        (L,low), 
-                        self.y_train[i]
-                    )
+            try:
+                cho_solve_failed = False
+                L,low = cho_factor(K, lower=True)
+                alpha = cho_solve(
+                            (L,low), 
+                            self.y_train[i]
+                        )
+            except:
+                cho_solve_failed = True
+                L = cholesky(K)
+                alpha = np.linalg.solve(K, self.y_train[i])
+                print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+            # If Cholesky fails, fall back to standard solve
+            
 
 
             K_s = wdegp_utils.rbf_kernel(
@@ -212,11 +221,15 @@ class wdegp:
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
                 # v = solve(L, K_s[:, :n_test])
-                v = solve_triangular(
+                if cho_solve_failed:
+                    v = solve(L, K_s[:, :n_test])
+                else:
+                    v = solve_triangular(
                         L, 
                         K_s[:, :n_test],
                         lower=low,
                     )
+       
                 f_cov = K_ss[:n_test, :n_test] - v.T @ v
 
                 if self.normalize:
