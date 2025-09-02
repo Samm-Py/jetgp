@@ -222,15 +222,12 @@ class wdegp:
                 )
                 # v = solve(L, K_s[:, :n_test])
                 if cho_solve_failed:
-                    v = solve(L, K_s[:, :n_test])
-                else:
-                    v = solve_triangular(
-                        L, 
-                        K_s[:, :n_test],
-                        lower=low,
+                    f_cov = ( K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
                     )
-       
-                f_cov = K_ss[:n_test, :n_test] - v.T @ v
+                else:
+                    v = solve_triangular(L, K_s, lower=low)
+                    f_cov = (K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
+                    )
 
                 if self.normalize:
                     f_var = utils.transform_cov(f_cov, self.sigma_y, self.sigmas_x,
