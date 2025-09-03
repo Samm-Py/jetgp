@@ -4,7 +4,8 @@ import utils as utils
 from kernel_funcs.kernel_funcs import KernelFactory
 from full_ddegp.optimizer import Optimizer
 from full_ddegp import ddegp_utils
-
+from scipy.linalg import cho_solve, cho_factor, solve_triangular
+from numpy.linalg import cholesky, solve
 
 class ddegp:
     """
@@ -120,8 +121,20 @@ class ddegp:
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
 
-        L = cholesky(K)
-        alpha = solve(L.T, solve(L, self.y_train))
+        try:
+            cho_solve_failed = False
+            L, low = cho_factor(K, lower=True)
+            # L = cholesky(K)
+            # low = True
+            alpha = cho_solve(
+                (L, low),
+                self.y_train
+            )
+        except:
+            cho_solve_failed = True
+            alpha = np.linalg.solve(K, self.y_train)
+            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+            # If Cholesky fails, fall back to standard solve
 
         if self.normalize:
             X_test = utils.normalize_x_data_test(
@@ -153,10 +166,21 @@ class ddegp:
             diff_x_test_x_test, length_scales, self.n_order,
             self.kernel_func, self.flattened_der_indicies, self.powers)
 
-        v = solve(L, K_s)
-        f_cov = K_ss - \
-            v.T @ v if return_deriv else K_ss[:len(X_test),
-                                              :len(X_test)] - v.T @ v
+        if cho_solve_failed:
+            f_cov = (
+                K_ss - K_s.T @ np.linalg.inv(K) @ K_s
+                if return_deriv
+                else K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
+            )
+        else:
+            v = solve_triangular(L, K_s, lower=low)
+
+            f_cov = (
+                K_ss - v.T @ v
+                if return_deriv
+                else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
+            )
+
 
         if self.normalize:
             if return_deriv:

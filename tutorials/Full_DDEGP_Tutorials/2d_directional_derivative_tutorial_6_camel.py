@@ -28,8 +28,8 @@ def generate_rays(order, ndim=2):
     return rays, perts
 
 
-def generate_training_data(n_order, num_points=5):
-    x_vals = np.linspace(-2, 2, num_points)
+def generate_training_data(n_order, num_points=4):
+    x_vals = np.linspace(-1, 1, num_points)
     y_vals = np.linspace(-1, 1, num_points)
 
     # Cartesian product for 3D grid
@@ -72,6 +72,7 @@ def main():
     X_train, y_train, der_indices, rays = generate_training_data(
         n_order)
 
+    print(rays)
     gp = ddegp(
         X_train,
         y_train,
@@ -84,11 +85,11 @@ def main():
     )
 
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15, swarm_size=200, verbose=True)
+        n_restart_optimizer=30, swarm_size=250, verbose=True)
 
     # Test data grid
     N_grid = 20
-    x_lin = np.linspace(-2, 2, N_grid)
+    x_lin = np.linspace(-1, 1, N_grid)
     y_lin = np.linspace(-1, 1, N_grid)
     X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
     X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])

@@ -102,8 +102,8 @@ def main():
     )
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=15, swarm_size=200, verbose=True)
-    gx = np.linspace(-5, 10, 200)
-    gy = np.linspace(0, 15, 200)
+    gx = np.linspace(-5, 10, 400)
+    gy = np.linspace(0, 15, 400)
     X1, X2 = np.meshgrid(gx, gy)
     X_pred = np.column_stack([X1.ravel(), X2.ravel()])
 

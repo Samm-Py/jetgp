@@ -2,7 +2,7 @@ import numpy as np
 from numpy.linalg import cholesky, solve
 from full_gddegp import gddegp_utils as utils
 import utils as gen_utils
-
+from scipy.linalg import cho_solve, cho_factor
 
 class Optimizer:
     def __init__(self, model):
@@ -55,27 +55,19 @@ class Optimizer:
         K += self.model.sigma_data**2
 
         try:
-            # Cholesky decomposition for numerical stability
-            L = cholesky(K)
-            alpha = solve(L.T, solve(L, self.model.y_train))
+            L,low = cho_factor(K)
+            alpha = cho_solve(
+                        (L,low), 
+                        self.model.y_train
+                    )
 
-            # Compute NLL components
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
             complexity = log_det_K
             N = len(self.model.y_train)
             const = 0.5 * N * np.log(2 * np.pi)
-
-            # tmp = K.copy()
-            # tmp = tmp.T
-            # var = tmp - K
-            # tol = 1e-12
-            # if not np.allclose(var, 0.0, atol=tol):
-            #     input('i')
-            #     print(var)
             return data_fit + complexity + const
         except Exception:
-            # Return large penalty if matrix is not positive definite
             return 1e6
 
     def nll_wrapper(self, x0):
