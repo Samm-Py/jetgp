@@ -1,73 +1,209 @@
+"""
+DEGP Tutorial: Derivative Enhanced Gaussian Processes
+
+This tutorial demonstrates how to use derivative information to improve 
+Gaussian Process regression. We'll show how including derivatives of 
+different orders affects the quality of predictions.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
+import time
 
+# Set plotting parameters for better readability
 plt.rcParams.update({'font.size': 12})
 
 def true_function(X, alg=oti):
+    """
+    Test function combining exponential decay, oscillations, and linear trend.
+    
+    Parameters:
+    -----------
+    X : array-like, shape (n_samples, 1)
+        Input points
+    alg : module
+        Numerical library (numpy or pyoti)
+        
+    Returns:
+    --------
+    y : array-like
+        Function values
+    """
     x = X[:, 0]
     return alg.exp(-x) + alg.sin(2*x) + alg.cos(3 * x) + 0.2 * x + 1.0
 
+# =============================================================================
+# Tutorial Configuration
+# =============================================================================
+
+print("DEGP Tutorial: Derivative Enhanced Gaussian Processes")
+print("=" * 60)
+
+# Problem setup
 lb_x, ub_x = 0.2, 5.0
-num_points = 3
-X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
-X_test = np.linspace(lb_x, ub_x, 100).reshape(-1, 1)
+num_training_points = 3  # Very few points to show DEGP advantage
+num_test_points = 100
+
+print(f"Domain: [{lb_x}, {ub_x}]")
+print(f"Training points: {num_training_points}")
+print(f"Test points: {num_test_points}")
+
+# Generate training and test data
+X_train = np.linspace(lb_x, ub_x, num_training_points).reshape(-1, 1)
+X_test = np.linspace(lb_x, ub_x, num_test_points).reshape(-1, 1)
 y_true = true_function(X_test, alg=np)
+
+print(f"Training points: {X_train.ravel()}")
+print()
+
+# =============================================================================
+# DEGP with Different Derivative Orders
+# =============================================================================
 
 orders = [0, 1, 2, 4]
 titles = [
-    r"Order 0: $f(x)$",
+    r"Order 0: $f(x)$ only",
     r"Order 1: $f(x)$, $f'(x)$",
     r"Order 2: $f(x)$, $f'(x)$, $f''(x)$",
     r"Order 4: $f(x)$, ..., $f^{(4)}(x)$"
 ]
 
-fig, axs = plt.subplots(2, 2, figsize=(12, 8), sharex=True, sharey=True)
+# Store results for comparison
+results = {}
+
+fig, axs = plt.subplots(2, 2, figsize=(14, 10), sharex=True, sharey=True)
 axs = axs.flatten()
 
+print("Training DEGP models with different derivative orders...")
+print("-" * 50)
+
 for idx, n_order in enumerate(orders):
-    n_bases = 1
+    print(f"Processing Order {n_order}...")
+    start_time = time.time()
+    
+    # Setup derivative indices
+    n_bases = 1  # Number of input dimensions
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
-    # Hypercomplex perturb
+    
+    print(f"  Derivative indices: {der_indices}")
+    
+    # Generate training data with derivatives using automatic differentiation
     X_train_pert = oti.array(X_train)
+    
+    # Add perturbation for automatic differentiation
     for i in range(1, n_bases + 1):
         X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(i, order=n_order)
 
+    # Evaluate function and all derivatives at training points
     y_train_hc = true_function(X_train_pert)
-    y_train = [y_train_hc.real]
+    
+    # Extract function values and derivatives
+    y_train = [y_train_hc.real]  # Function values
+    total_derivatives = 0
+    
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
-            y_train.append(y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1))
-
+            derivative = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
+            y_train.append(derivative)
+            total_derivatives += 1
+    
+    print(f"  Total training observations: {len(y_train[0]) + total_derivatives * len(y_train[0])}")
+    
+    # Initialize and train DEGP
     gp = degp(
         X_train, y_train, n_order, n_bases, der_indices,
-        normalize=False, kernel="SE", kernel_type="anisotropic"
+        normalize=False, 
+        kernel="SE",  # Squared Exponential kernel
+        kernel_type="anisotropic"
     )
-    params = gp.optimize_hyperparameters(n_restart_optimizer=10, swarm_size=100)
+    
+    # Optimize hyperparameters
+    params = gp.optimize_hyperparameters(
+        n_restart_optimizer=10, 
+        swarm_size=100
+    )
+    
+    # Make predictions
     y_pred, y_var = gp.predict(X_test, params, calc_cov=True, return_deriv=False)
-
+    
+    # Calculate metrics
+    mse = np.mean((y_pred.ravel() - y_true.ravel())**2)
+    mae = np.mean(np.abs(y_pred.ravel() - y_true.ravel()))
+    
+    # Store results
+    results[n_order] = {
+        'mse': mse,
+        'mae': mae,
+        'time': time.time() - start_time,
+        'n_observations': len(y_train[0]) + total_derivatives * len(y_train[0])
+    }
+    
+    print(f"  MSE: {mse:.6f}, MAE: {mae:.6f}, Time: {time.time() - start_time:.2f}s")
+    
+    # Plot results
     ax = axs[idx]
-    l0, = ax.plot(X_test, y_true, 'k-', lw=2, label="True $f(x)$")
+    
+    # True function
+    l0, = ax.plot(X_test, y_true, 'k-', lw=2.5, label="True $f(x)$")
+    
+    # GP prediction
     l1, = ax.plot(X_test, y_pred, 'b--', lw=2, label="GP mean")
+    
+    # Uncertainty bounds (95% confidence interval)
     l2 = ax.fill_between(
         X_test.ravel(),
         y_pred.ravel() - 2*np.sqrt(y_var.ravel()),
         y_pred.ravel() + 2*np.sqrt(y_var.ravel()),
         color='blue', alpha=0.15, label='GP 95% CI'
     )
-    l3 = ax.scatter(X_train, y_train[0], c='red', s=40, zorder=5, label="Train pts")
-    ax.set_title(titles[idx])
+    
+    # Training points
+    l3 = ax.scatter(X_train, y_train[0], c='red', s=60, zorder=5, 
+                   edgecolors='black', linewidth=1, label="Training points")
+    
+    # Formatting
+    ax.set_title(f"{titles[idx]}\nMSE: {mse:.4f}", fontsize=11)
     ax.set_xlabel("$x$")
     ax.set_ylabel("$f(x)$")
+    ax.grid(True, alpha=0.3)
 
-# Call tight_layout BEFORE adding legend!
-plt.tight_layout(rect=[0, 0.11, 1, 1])
-# Extra space for bottom legend
-plt.subplots_adjust(bottom=0.17)
+print()
 
-# To avoid missing handles, collect from all axes
+# =============================================================================
+# Results Summary
+# =============================================================================
+
+print("RESULTS SUMMARY")
+print("=" * 60)
+print(f"{'Order':<8}{'MSE':<12}{'MAE':<12}{'Time (s)':<10}{'Observations'}")
+print("-" * 60)
+
+for order in orders:
+    r = results[order]
+    print(f"{order:<8}{r['mse']:<12.6f}{r['mae']:<12.6f}{r['time']:<10.2f}{r['n_observations']}")
+
+print()
+print("Key Observations:")
+print("- Higher derivative orders generally improve accuracy")
+print("- More derivative information helps with fewer training points")
+print("- Computational cost increases with derivative order")
+print("- DEGP is particularly useful when training data is sparse")
+
+# =============================================================================
+# Plotting and Layout
+# =============================================================================
+
+# Adjust layout
+plt.tight_layout(rect=[0, 0.15, 1, 0.95])
+
+# Add a main title
+fig.suptitle('Derivative Enhanced Gaussian Process Comparison', 
+             fontsize=16, fontweight='bold', y=0.98)
+
+# Create shared legend
 handles, labels = [], []
 for ax in axs:
     h, l = ax.get_legend_handles_labels()
@@ -78,9 +214,36 @@ for ax in axs:
 
 fig.legend(
     handles, labels,
-    loc='lower center', bbox_to_anchor=(0.5, 0.02),
-    ncol=4, frameon=False, fontsize=12
+    loc='lower center', 
+    bbox_to_anchor=(0.5, 0.02),
+    ncol=len(handles), 
+    frameon=True, 
+    fontsize=11,
+    fancybox=True,
+    shadow=True
 )
 
-plt.savefig("derivative_gp_comparison.png", dpi=300)
+# Save and display
+plt.savefig("degp_tutorial_comparison.png", dpi=300, bbox_inches='tight')
 plt.show()
+
+# =============================================================================
+# Additional Educational Content
+# =============================================================================
+
+print("\nWHAT IS DEGP?")
+print("=" * 60)
+print("Derivative Enhanced Gaussian Processes (DEGP) incorporate derivative")
+print("information alongside function values to improve predictions.")
+print()
+print("Benefits:")
+print("• Better accuracy with fewer training points")
+print("• More informative priors from derivative constraints") 
+print("• Useful when derivatives are available (physics, optimization)")
+print()
+print("When to use DEGP:")
+print("• Limited training data available")
+print("• Derivatives can be computed (analytically or via AD)")
+print("• Smooth functions where derivative information is meaningful")
+print()
+print("Tutorial complete! Check the generated plot for visual comparison.")

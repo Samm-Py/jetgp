@@ -218,9 +218,9 @@ class degp:
 
         if cho_solve_failed:
             f_cov = (
-                K_ss - K_s.T @ np.linalg.inv(K) @ K_s
+                K_ss - K_s @ np.linalg.solve(K,K_s[:, :len(X_test)])
                 if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
+                else K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.solve(K,K_s[:, :len(X_test)])
             )
         else:
             v = solve_triangular(L, K_s, lower=low)

@@ -88,6 +88,8 @@ def main():
 
     X_train, y_train, der_indices, rays = generate_training_data(
         n_order)
+    print(rays)
+    input('i')
 
     gp = ddegp(
         X_train,

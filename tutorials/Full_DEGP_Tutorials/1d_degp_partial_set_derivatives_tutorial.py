@@ -1,14 +1,21 @@
 """
---------------------------------------------------------------------------------
-This script demonstrates a derivative-enhanced Gaussian Process (GP) model for a
-one-dimensional function, including derivatives up to a user-specified order.
-We generate a small training set of points in the domain [lb_x, ub_x], compute
-function values and a subset of derivative information using OTI-based hypercomplex
-automatic differentiation, and train a GP on both function values and selected
-derivatives. The GP can then make more informed predictions due to the added
-derivative constraints. Finally, we visualize and compare the GP’s predictions
-with the true function.
---------------------------------------------------------------------------------
+================================================================================
+DEGP Tutorial: Derivative-Enhanced Gaussian Process for 1D Function Approximation
+================================================================================
+
+This tutorial demonstrates how to use derivative information to enhance Gaussian 
+Process regression. We'll show how including specific derivative orders can 
+dramatically improve predictions, especially with limited training data.
+
+Key concepts covered:
+- Hypercomplex automatic differentiation for derivative computation
+- Selective derivative inclusion in GP training
+- Hyperparameter optimization
+- Performance evaluation and visualization
+
+The example uses a complex 1D function with exponential decay, oscillations, 
+and linear trends to showcase DEGP capabilities.
+================================================================================
 """
 
 import numpy as np
@@ -16,98 +23,314 @@ import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
 import plotting_helper
+import time
+from typing import List, Tuple, Optional
 
-if __name__ == "__main__":
-    # n_order: the maximum derivative order used for perturbation
-    # (note: not all orders are included in training)
-    n_order = 4
+def true_function(X, alg=oti):
+    """
+    Complex test function combining multiple mathematical components.
+    
+    This function is designed to be challenging for standard GP regression
+    due to its combination of:
+    - Exponential decay: exp(-x)
+    - Oscillatory behavior: sin(x) + cos(3x)  
+    - Linear trend: 0.2x + 1.0
+    
+    Parameters:
+    -----------
+    X : array-like, shape (n_samples, 1)
+        Input points
+    alg : module
+        Numerical library (numpy or pyoti for automatic differentiation)
+        
+    Returns:
+    --------
+    y : array-like
+        Function values
+    """
+    x = X[:, 0]
+    f = alg.exp(-x) + alg.sin(x) + alg.cos(3 * x) + 0.2 * x + 1.0
+    return f
 
-    # n_bases: the dimensionality of the input space (1D in this example)
-    n_bases = 1
+def evaluate_model_performance(y_true: np.ndarray, y_pred: np.ndarray, 
+                             y_var: np.ndarray) -> dict:
+    """
+    Compute comprehensive performance metrics.
+    
+    Parameters:
+    -----------
+    y_true : array
+        True function values
+    y_pred : array  
+        Predicted values
+    y_var : array
+        Prediction variances
+        
+    Returns:
+    --------
+    metrics : dict
+        Dictionary of performance metrics
+    """
+    # Flatten arrays for consistent computation
+    y_true_flat = y_true.flatten()
+    y_pred_flat = y_pred.flatten()
+    y_var_flat = y_var.flatten()
+    
+    # Basic error metrics
+    mse = np.mean((y_true_flat - y_pred_flat)**2)
+    mae = np.mean(np.abs(y_true_flat - y_pred_flat))
+    rmse = np.sqrt(mse)
+    
+    # Normalized metrics
+    nrmse = utils.nrmse(y_true_flat, y_pred_flat)
+    max_error = np.max(np.abs(y_true_flat - y_pred_flat))
+    
+    # Uncertainty metrics
+    mean_uncertainty = np.mean(np.sqrt(y_var_flat))
+    uncertainty_range = np.max(np.sqrt(y_var_flat)) - np.min(np.sqrt(y_var_flat))
+    
+    # Coverage probability (approximate)
+    std_pred = np.sqrt(y_var_flat)
+    within_2sigma = np.mean(np.abs(y_true_flat - y_pred_flat) <= 2 * std_pred)
+    
+    return {
+        'mse': mse,
+        'mae': mae, 
+        'rmse': rmse,
+        'nrmse': nrmse,
+        'max_error': max_error,
+        'mean_uncertainty': mean_uncertainty,
+        'uncertainty_range': uncertainty_range,
+        'coverage_2sigma': within_2sigma
+    }
 
-    # lb_x, ub_x: domain bounds for sampling training data
-    lb_x = 0.2
-    ub_x = 6
-
-    # der_indices: uniform subset of derivatives to include at each point.
-    # Here we include only first-order and fourth-order derivatives with respect to x.
-    # This format assumes the same structure is applied at each training point.
+def main():
+    """
+    Main tutorial execution with detailed explanations and error handling.
+    """
+    print("DEGP Tutorial: Enhanced Gaussian Process with Derivatives")
+    print("=" * 65)
+    
+    # ==========================================================================
+    # Configuration Parameters
+    # ==========================================================================
+    
+    # Derivative order configuration
+    n_order = 4  # Maximum derivative order for perturbation
+    n_bases = 1  # Input dimensionality (1D example)
+    
+    # Domain configuration  
+    lb_x, ub_x = 0.2, 6.0  # Domain bounds
+    num_points = 6          # Number of training points
+    
+    # Test grid for evaluation
+    N_grid = 100
+    
+    print(f"Configuration:")
+    print(f"  Domain: [{lb_x}, {ub_x}]")
+    print(f"  Training points: {num_points}")
+    print(f"  Maximum derivative order: {n_order}")
+    print(f"  Test grid points: {N_grid}")
+    
+    # ==========================================================================
+    # Derivative Selection Strategy
+    # ==========================================================================
+    
+    # Custom derivative indices: include 1st and 4th order derivatives
+    # Format: [[[[variable_index, derivative_order]]]]
+    # This selective approach reduces computational cost while capturing
+    # both local slope information (1st) and higher-order curvature (4th)
     der_indices = [[[[1, 1]], [[1, 4]]]]
-
-    # num_points: number of training samples
-    num_points = 6
-
-    # X_train: evenly spaced points over the domain
+    
+    print(f"\nDerivative Selection:")
+    print(f"  Including derivatives: 1st order (local slope)")
+    print(f"                        4th order (higher curvature)")
+    print(f"  Derivative indices format: {der_indices}")
+    
+    # ==========================================================================
+    # Training Data Generation
+    # ==========================================================================
+    
+    print(f"\nGenerating Training Data...")
+    start_time = time.time()
+    
+    # Create evenly spaced training points
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
-
-    # X_train_pert: convert to OTI array and apply perturbations up to order n_order
-    # so we can later extract required derivatives (even if we only use some of them)
+    print(f"  Training locations: {X_train.ravel()}")
+    
+    # Setup hypercomplex perturbation for automatic differentiation
     X_train_pert = oti.array(X_train)
     for i in range(1, n_bases + 1):
-        X_train_pert[:, i - 1] = X_train_pert[:,
-                                              i - 1] + oti.e(i, order=n_order)
-
-    # Define the true underlying function (combines exponential, sinusoidal, and linear terms)
-    def true_function(X, alg=oti):
-        x = X[:, 0]
-        f = alg.exp(-x) + alg.sin(x) + alg.cos(3 * x) + 0.2 * x + 1.0
-        return f
-
-    # Evaluate function at hypercomplex (perturbed) inputs
+        X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(i, order=n_order)
+    
+    # Evaluate function with all derivatives up to n_order
     y_train_hc = true_function(X_train_pert)
-    y_train_real = y_train_hc.real
-
-    # y_train: list of outputs and selected derivative components
-    y_train = [y_train_real]
+    
+    # Extract function values and selected derivatives
+    y_train = [y_train_hc.real]  # Function values
+    total_derivative_observations = 0
+    
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
-            y_train.append(
-                y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
-            )
-
-    # Instantiate the derivative-enhanced GP model
-    gp = degp(
-        X_train,
-        y_train,
-        n_order,
-        n_bases,
-        der_indices,
-        normalize=True,
-        kernel="SE",
-        kernel_type="anisotropic",
-    )
-
-    # Optimize hyperparameters using particle swarm optimization
-    params = gp.optimize_hyperparameters(
-        n_restart_optimizer=25,
-        swarm_size=100
-    )
-
-    # Create test grid for prediction
-    N_grid = 100
+            derivative_data = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
+            y_train.append(derivative_data)
+            total_derivative_observations += len(derivative_data)
+    
+    data_gen_time = time.time() - start_time
+    print(f"  Function observations: {len(y_train[0])}")
+    print(f"  Derivative observations: {total_derivative_observations}")
+    print(f"  Total training observations: {len(y_train[0]) + total_derivative_observations}")
+    print(f"  Data generation time: {data_gen_time:.3f}s")
+    
+    # ==========================================================================
+    # DEGP Model Setup and Training
+    # ==========================================================================
+    
+    print(f"\nSetting up DEGP Model...")
+    
+    try:
+        # Initialize DEGP model
+        gp = degp(
+            X_train,           # Training inputs
+            y_train,           # Training outputs (function + derivatives)
+            n_order,           # Maximum derivative order
+            n_bases,           # Input dimensionality  
+            der_indices,       # Which derivatives to include
+            normalize=True,    # Normalize inputs/outputs
+            kernel="SE",       # Squared Exponential kernel
+            kernel_type="anisotropic"  # Allow different length scales per dimension
+        )
+        
+        print("  Model initialization: SUCCESS")
+        print(f"  Kernel: Squared Exponential (anisotropic)")
+        print(f"  Normalization: Enabled")
+        
+    except Exception as e:
+        print(f"  Model initialization: FAILED")
+        print(f"  Error: {e}")
+        return
+    
+    # ==========================================================================
+    # Hyperparameter Optimization
+    # ==========================================================================
+    
+    print(f"\nOptimizing Hyperparameters...")
+    optimization_start = time.time()
+    
+    try:
+        # Optimize using particle swarm optimization
+        params = gp.optimize_hyperparameters(
+            n_restart_optimizer=25,  # Number of optimization restarts
+            swarm_size=100          # PSO swarm size
+        )
+        
+        optimization_time = time.time() - optimization_start
+        print(f"  Optimization time: {optimization_time:.2f}s")
+        print(f"  Optimization: SUCCESS")
+        
+        # Display optimized parameters (if accessible)
+        if hasattr(params, '__len__') and len(params) > 0:
+            print(f"  Optimized parameters: {len(params)} values")
+        
+    except Exception as e:
+        print(f"  Optimization: FAILED")
+        print(f"  Error: {e}")
+        return
+    
+    # ==========================================================================
+    # Model Prediction
+    # ==========================================================================
+    
+    print(f"\nMaking Predictions...")
+    prediction_start = time.time()
+    
+    # Create test grid
     X_test = np.linspace(lb_x, ub_x, N_grid).reshape(-1, 1)
+    
+    try:
+        # Generate predictions with uncertainty quantification
+        y_pred, y_var = gp.predict(
+            X_test,              # Test inputs
+            params,              # Optimized hyperparameters
+            calc_cov=True,       # Calculate full covariance
+            return_deriv=False   # Only return function predictions
+        )
+        
+        prediction_time = time.time() - prediction_start
+        print(f"  Prediction time: {prediction_time:.3f}s")
+        print(f"  Predictions generated: {len(y_pred)}")
+        
+    except Exception as e:
+        print(f"  Prediction: FAILED")
+        print(f"  Error: {e}")
+        return
+    
+    # ==========================================================================
+    # Performance Evaluation
+    # ==========================================================================
+    
+    print(f"\nEvaluating Model Performance...")
+    
+    # Compute true function values for comparison
+    y_true = true_function(X_test, alg=np)
+    
+    # Calculate comprehensive metrics
+    metrics = evaluate_model_performance(y_true, y_pred, y_var)
+    
+    print(f"\nPerformance Metrics:")
+    print(f"  NRMSE:           {metrics['nrmse']:.6f}")
+    print(f"  RMSE:            {metrics['rmse']:.6f}")
+    print(f"  MAE:             {metrics['mae']:.6f}")
+    print(f"  Max Error:       {metrics['max_error']:.6f}")
+    print(f"  Mean Uncertainty: {metrics['mean_uncertainty']:.6f}")
+    print(f"  95% Coverage:    {metrics['coverage_2sigma']:.3f}")
+    
+    # ==========================================================================
+    # Visualization
+    # ==========================================================================
+    
+    print(f"\nGenerating Visualizations...")
+    
+    try:
+        # Create plots comparing predictions with ground truth
+        plotting_helper.make_plots(
+            X_train,                    # Training inputs
+            y_train,                    # Training outputs
+            X_test,                     # Test inputs  
+            y_pred.flatten(),           # Predictions
+            true_function,              # True function
+            cov=y_var,                  # Prediction variance
+            n_order=n_order,            # Derivative order
+            n_bases=n_bases,            # Input dimensionality
+            plot_derivative_surrogates=False,  # Focus on function approximation
+            der_indices=der_indices     # Derivative configuration
+        )
+        
+        print("  Visualization: SUCCESS")
+        
+    except Exception as e:
+        print(f"  Visualization: FAILED") 
+        print(f"  Error: {e}")
+    
+    # ==========================================================================
+    # Tutorial Summary
+    # ==========================================================================
+    
+    total_time = time.time() - start_time
+    
+    print(f"\nTutorial Summary:")
+    print(f"=" * 50)
+    print(f"Total execution time: {total_time:.2f}s")
+    print(f"Final NRMSE: {metrics['nrmse']:.6f}")
+    print(f"\nKey Takeaways:")
+    print(f"• DEGP leverages derivative information for better predictions")
+    print(f"• Selective derivative inclusion balances accuracy vs. cost") 
+    print(f"• With {num_points} training points, achieved {metrics['nrmse']:.4f} NRMSE")
+    print(f"• Uncertainty quantification provides confidence bounds")
+    print(f"\nNext steps:")
+    print(f"• Try different derivative combinations")
+    print(f"• Experiment with various kernel types")
+    print(f"• Apply to your own functions/datasets")
 
-    # Predict GP posterior mean and variance
-    y_pred, y_var = gp.predict(
-        X_test, params, calc_cov=True, return_deriv=False
-    )
-
-# Plot results comparing model predictions vs. ground truth
-plotting_helper.make_plots(
-    X_train,
-    y_train,
-    X_test,
-    y_pred.flatten(),
-    true_function,
-    cov=y_var,
-    n_order=n_order,
-    n_bases=n_bases,
-    plot_derivative_surrogates=False,
-    der_indices=der_indices,
-)
-
-# Compute NRMSE as a quality metric
-y_true = true_function(X_test, alg=np)
-nrmse = utils.nrmse(y_true, y_pred)
-
-print("NRMSE between model and true function: {}".format(nrmse))
+if __name__ == "__main__":
+    main()
