@@ -18,7 +18,7 @@ import plotting_helper
 
 if __name__ == "__main__":
     # ----- Problem Configuration -----
-    n_order = 3      # Maximum derivative order to include
+    n_order = 2      # Maximum derivative order to include
     n_bases = 2      # Number of input dimensions
     lb_x, ub_x = -1, 1
     lb_y, ub_y = -1, 1
@@ -27,7 +27,6 @@ if __name__ == "__main__":
     der_indices = [
         [[[1, 1]], [[2, 1]]],  # First-order derivatives: ∂f/∂x1, ∂f/∂x2
         [[[1, 2]], [[2, 2]]],  # Second-order: ∂²f/∂x1², ∂²f/∂x2²
-        [[[1, 3]], [[2, 3]]]   # Third-order: ∂³f/∂x1³, ∂³f/∂x2³
     ]
 
     # ----- Generate Training Inputs -----
