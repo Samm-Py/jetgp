@@ -168,7 +168,8 @@ class wdegp:
         submodel_vals = []
         submodel_cov = []
 
-        for i in range(len(self.index)):
+        if len(self.index) == 1:   
+            i = 0
             index_i = self.index[i]
             diffs_train_test = wdegp_utils.differences_by_dim_func(
                 self.x_train, X_test, self.n_order, index=index_i)
@@ -208,8 +209,7 @@ class wdegp:
             if self.normalize:
                 f_mean = self.mu_y + f_mean * self.sigma_y
 
-            for j in range(len(self.index[i])):
-                y_val += weights_matrix[:, self.index[i][j]] * f_mean
+            y_val +=f_mean
             if return_submodels:
                 submodel_vals.append(f_mean)
 
@@ -235,13 +235,90 @@ class wdegp:
                 else:
                     f_var = np.diag(np.abs(f_cov))
 
-                for j in range(len(self.index[i])):
-                    y_var += weights_matrix[:,
-                                            self.index[i][j]] * np.sqrt(f_var)
+
+                y_var += np.sqrt(f_var)
                 if return_submodels:
                     submodel_cov.append(f_var)
 
-        if return_submodels:
-            return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
+            if return_submodels:
+                return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
+            else:
+                return (y_val, y_var) if calc_cov else y_val
         else:
-            return (y_val, y_var) if calc_cov else y_val
+            for i in range(len(self.index)):
+                index_i = self.index[i]
+                diffs_train_test = wdegp_utils.differences_by_dim_func(
+                    self.x_train, X_test, self.n_order, index=index_i)
+                diffs_train_train = self.differences_by_dim_submodels[i]
+
+                K = wdegp_utils.rbf_kernel(
+                    diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
+                    self.flattened_der_indicies[i], self.powers[i], index=index_i
+                )
+                
+                K += (10 ** sigma_n) ** 2 * np.eye(len(K))
+                K += self.sigma_data[i]**2
+                # L = cholesky(K)
+                # alpha = solve(L.T, solve(L, self.y_train[i]))
+                # print(K)
+                try:
+                    cho_solve_failed = False
+                    L,low = cho_factor(K, lower=True)
+                    alpha = cho_solve(
+                                (L,low), 
+                                self.y_train[i]
+                            )
+                except:
+                    cho_solve_failed = True
+                    L = cholesky(K)
+                    alpha = np.linalg.solve(K, self.y_train[i])
+                    print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+                # If Cholesky fails, fall back to standard solve
+                
+
+
+                K_s = wdegp_utils.rbf_kernel(
+                    diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
+                    self.flattened_der_indicies[i], self.powers[i], index=index_i
+                )
+                f_mean = K_s[:, :n_test].T @ alpha
+                if self.normalize:
+                    f_mean = self.mu_y + f_mean * self.sigma_y
+
+                for j in range(len(self.index[i])):
+                    y_val += weights_matrix[:, self.index[i][j]] * f_mean
+                if return_submodels:
+                    submodel_vals.append(f_mean)
+
+                if calc_cov:
+                    diffs_test_test = wdegp_utils.differences_by_dim_func(
+                        X_test, X_test, self.n_order, index=index_i)
+                    K_ss = wdegp_utils.rbf_kernel(
+                        diffs_test_test, ell, self.n_order, self.n_bases, self.kernel_func,
+                        self.flattened_der_indicies[i], self.powers[i], index=index_i
+                    )
+                    # v = solve(L, K_s[:, :n_test])
+                    if cho_solve_failed:
+                        f_cov = ( K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
+                        )
+                    else:
+                        v = solve_triangular(L, K_s, lower=low)
+                        f_cov = (K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
+                        )
+
+                    if self.normalize:
+                        f_var = utils.transform_cov(f_cov, self.sigma_y, self.sigmas_x,
+                                                    self.flattened_der_indicies[i], X_test)
+                    else:
+                        f_var = np.diag(np.abs(f_cov))
+
+                    for j in range(len(self.index[i])):
+                        y_var += weights_matrix[:,
+                                                self.index[i][j]] * np.sqrt(f_var)
+                    if return_submodels:
+                        submodel_cov.append(f_var)
+
+            if return_submodels:
+                return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
+            else:
+                return (y_val, y_var) if calc_cov else y_val

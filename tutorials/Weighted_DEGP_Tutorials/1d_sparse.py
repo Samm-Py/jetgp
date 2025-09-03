@@ -26,21 +26,30 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # GP configuration
-    n_order = 3
+    n_order = 2
     n_bases = 1
     lb_x, ub_x = 0.5, 2.5
     num_points = 10
 
     # Create training inputs
     X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
+    # Make a copy to avoid overwriting while swapping
+    X_swapped = X_train.copy()
 
-    # Define 2 submodels using grouped training points
-    index = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
+    # Define index sets
+    a, b = [2, 3, 4], [5, 6, 7]
+
+    # Swap the rows
+    X_swapped[a], X_swapped[b] = X_train[b], X_train[a]
+
+    X_train = X_swapped.copy()
+
+    # Define points at which to include derivative information
+    index = [[2,3,4,5]]
 
     # All submodels use the same full derivative structure
-    base_der_indices_1 = utils.gen_OTI_indices(n_bases, n_order)
-    base_der_indices_2 = utils.gen_OTI_indices(n_bases, 1)
-    der_indices = [base_der_indices_1, base_der_indices_2]
+    base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
+    der_indices = [base_der_indices for _ in index]
 
     # Assemble training data for each submodel
     y_train_data = []
@@ -53,15 +62,16 @@ if __name__ == "__main__":
 
         y_hc = oti.array([true_function(x, alg=oti) for x in X_sub])
 
-        y_sub = [y_real]
-        for i in range(len(der_indices[k])):
-            for j in range(len(der_indices[k][i])):
-                deriv = y_hc.get_deriv(der_indices[k][i][j]).reshape(-1, 1)
+        y_sub = [y_real.reshape(-1,1)]
+        for i in range(len(base_der_indices)):
+            for j in range(len(base_der_indices[i])):
+                deriv = y_hc.get_deriv(base_der_indices[i][j]).reshape(-1, 1)
                 y_sub.append(deriv)
 
         y_train_data.append(y_sub)
-
     # Build the weighted GP model
+    print(y_train_data)
+    input('press enter to continue...')
     gp = wdegp(
         X_train,
         y_train_data,
@@ -77,7 +87,7 @@ if __name__ == "__main__":
     # Optimize hyperparameters
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=15,
-        swarm_size=100
+        swarm_size=200
     )
 
     # Generate test inputs and predict

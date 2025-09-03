@@ -30,40 +30,32 @@ if __name__ == "__main__":
     lb_y, ub_y = -1, 1
     num_points = 4
 
+
     x_vals = np.linspace(lb_x, ub_x, num_points)
     y_vals = np.linspace(lb_y, ub_y, num_points)
     X_train = np.array(list(itertools.product(x_vals, y_vals)))
 
-    old_index = [
-        [1, 2, 4, 8, 7, 11, 13, 14, 0, 3, 12, 15],
-        [5, 6, 9, 10]  # Interior submodel
-    ]
+    old_index = [5, 6, 9, 10]   # Interior submodel
+    new_index = [12, 13, 14, 15]S
 
-    index = [
-        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-        [12, 13, 14, 15]
-    ]
+    index = [[12,13,14,15]]
+    index = [new_index]
+    # Make a copy to swap
+    X_new = X_train.copy()
 
-    old_flat = list(itertools.chain.from_iterable(old_index))
-    new_flat = list(itertools.chain.from_iterable(index))
-    reorder = np.zeros(num_points**2, dtype=int)
-    for i in range(num_points**2):
-        reorder[new_flat[i]] = old_flat[i]
+    # Swap rows between old_index and new_index
+    X_new[old_index], X_new[new_index] = X_train[new_index], X_train[old_index]
 
-    X_train = X_train[reorder]
-
-    der_indices_1 = [
-        [[[1, 1]], [[2, 1]]],  # First-order derivatives: ∂f/∂x1, ∂f/∂x2
-    ]
-
-    der_indices_2 = [
+    X_train = X_new.copy()
+    der_indices = [
         [[[1, 1]], [[2, 1]]],  # First-order derivatives: ∂f/∂x1, ∂f/∂x2
         [[[1, 2]], [[2, 2]]],  # Second-order: ∂²f/∂x1², ∂²f/∂x2²
     ]
 
     der_indices = [
-        der_indices_1, der_indices_2
+        der_indices for _ in range(len(index))
     ]
+    print(der_indices)
 
     def true_function(X, alg=oti):
         x1 = X[:, 0]
@@ -90,7 +82,7 @@ if __name__ == "__main__":
                     der_indices[k][i][j]).reshape(-1, 1))
 
         y_train_data.append(y_sub)
-
+    print(y_train_data)
     gp = wdegp(
         X_train,
         y_train_data,
@@ -115,57 +107,57 @@ if __name__ == "__main__":
         X_test, params, calc_cov=False, return_submodels=True
     )
 
-    plotting_helper.make_submodel_plots(
-        X_train,
-        y_train_data,
-        X_test,
-        y_pred,
-        true_function,
-        X1_grid=X1_grid,
-        X2_grid=X2_grid,
-        n_order=n_order,
-        n_bases=n_bases,
-        plot_submodels=True,
-        submodel_vals=submodel_vals,
-    )
+    # plotting_helper.make_submodel_plots(
+    #     X_train,
+    #     y_train_data,
+    #     X_test,
+    #     y_pred,
+    #     true_function,
+    #     X1_grid=X1_grid,
+    #     X2_grid=X2_grid,
+    #     n_order=n_order,
+    #     n_bases=n_bases,
+    #     plot_submodels=True,
+    #     submodel_vals=submodel_vals,
+    # )
 
     y_true = true_function(X_test, alg=np)
     nrmse = utils.nrmse(y_true, y_pred)
     print("NRMSE between model and true function: {}".format(nrmse))
-    import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
-    # Reshape predictions and ground truth back to grid
-    y_true_grid = y_true.reshape(N_grid, N_grid)
-    y_pred_grid = y_pred.reshape(N_grid, N_grid)
-    abs_error_grid = np.abs(y_true_grid - y_pred_grid)
+# Reshape predictions and ground truth back to grid
+y_true_grid = y_true.reshape(N_grid, N_grid)
+y_pred_grid = y_pred.reshape(N_grid, N_grid)
+abs_error_grid = np.abs(y_true_grid - y_pred_grid)
 
-    fig, axes = plt.subplots(3, 1, figsize=(6, 15))
+fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-    # True function
-    c1 = axes[0].contourf(X1_grid, X2_grid, y_true_grid, levels=50, cmap="viridis")
-    fig.colorbar(c1, ax=axes[0])
-    axes[0].set_title("True Function")
-    axes[0].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50, label="Training Data")
+# True function
+c1 = axes[0].contourf(X1_grid, X2_grid, y_true_grid, levels=50, cmap="viridis")
+fig.colorbar(c1, ax=axes[0])
+axes[0].set_title("True Function")
+axes[0].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50, label="Training Data")
 
-    # GP Prediction
-    c2 = axes[1].contourf(X1_grid, X2_grid, y_pred_grid, levels=50, cmap="viridis")
-    fig.colorbar(c2, ax=axes[1])
-    axes[1].set_title("GP Prediction")
-    axes[1].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50)
+# GP Prediction
+c2 = axes[1].contourf(X1_grid, X2_grid, y_pred_grid, levels=50, cmap="viridis")
+fig.colorbar(c2, ax=axes[1])
+axes[1].set_title("GP Prediction")
+axes[1].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50)
 
-    # Absolute Error
-    c3 = axes[2].contourf(X1_grid, X2_grid, abs_error_grid, levels=50, cmap="magma")
-    fig.colorbar(c3, ax=axes[2])
-    axes[2].set_title("Absolute Error")
-    axes[2].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50)
+# Absolute Error
+c3 = axes[2].contourf(X1_grid, X2_grid, abs_error_grid, levels=50, cmap="magma")
+fig.colorbar(c3, ax=axes[2])
+axes[2].set_title("Absolute Error")
+axes[2].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50)
 
-    # Axis labels
-    for ax in axes:
-        ax.set_xlabel("x1")
-        ax.set_ylabel("x2")
+# Axis labels
+for ax in axes:
+    ax.set_xlabel("x1")
+    ax.set_ylabel("x2")
 
-    # Add legend only once (first axis already has it)
-    axes[0].legend()
+# Add legend only once (first axis already has it)
+axes[0].legend()
 
-    plt.tight_layout()
-    plt.show()
+plt.tight_layout()
+plt.show()
