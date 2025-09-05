@@ -95,7 +95,7 @@ class Optimizer:
         return self.negative_log_marginal_likelihood(x0)
 
     @profile
-    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True):
+    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True, x0= None, local_opt_every=15):
         """
         Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
 
@@ -125,6 +125,13 @@ class Optimizer:
             swarmsize=swarm_size,
             maxiter=n_restart_optimizer,
             debug=verbose,
+            # omega=0.4,       # High inertia encourages exploration
+            # phip=1.0,        # Moderate personal influence
+            # phig=1.2,        # Low social influence, avoids early convergence
+            minfunc=1e-4,
+            minstep=1e-4,
+            initial_positions=x0,
+            local_opt_every=local_opt_every
         )
 
         # Store the optimal solution

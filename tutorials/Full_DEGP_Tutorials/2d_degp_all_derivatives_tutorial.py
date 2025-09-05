@@ -231,11 +231,17 @@ def main():
     # Derivative Analysis
     # ==========================================================================
     
-    # Generate all derivative indices up to n_order
+    # Generate derivative indices for 2D functions up to n_order
+    # For 2 variables, 2nd order der_indices looks like:
+    # [[[[1, 1]], [[2, 1]]], [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]]
+    # This represents:
+    #   1st order: ∂f/∂x₁, ∂f/∂x₂  
+    #   2nd order: ∂²f/∂x₁², ∂²f/∂x₁∂x₂ (mixed), ∂²f/∂x₂²
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
     deriv_analysis = analyze_derivative_structure(der_indices, n_bases)
     
     print(f"\nDerivative Structure Analysis:")
+    print(f"  Example 2D structure: {der_indices}")
     print(f"  Total derivative types: {deriv_analysis['total_count']}")
     print(f"  Derivatives per training point: {deriv_analysis['derivatives_per_point']}")
     print(f"  Included derivatives:")
@@ -253,7 +259,9 @@ def main():
     X_train = create_training_grid(lb_x, ub_x, lb_y, ub_y, num_points, sampling_strategy)
     print(f"  Training points shape: {X_train.shape}")
     
-    # Setup hypercomplex perturbation for automatic differentiation
+    # Setup hypercomplex perturbation for automatic differentiation  
+    # Note: In practice, derivatives would typically come from the user
+    # rather than being computed this way
     X_train_pert = oti.array(X_train)
     for i in range(n_bases):
         X_train_pert[:, i] += oti.e(i + 1, order=n_order)
@@ -263,13 +271,15 @@ def main():
     y_train_real = y_train_hc.real
     
     # Extract function values and all derivatives
-    y_train = [y_train_real]
+    # The derivative information in y_train must match the exact order of der_indices
+    y_train = [y_train_real]  # Function values always come first
     total_derivative_obs = 0
     
+    # Add derivatives in the same order as specified by der_indices
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
             deriv = y_train_hc.get_deriv(der_indices[i][j])
-            y_train.append(deriv)
+            y_train.append(deriv)  # Order must match der_indices
             total_derivative_obs += len(deriv)
     
     data_gen_time = time.time() - start_time
@@ -303,6 +313,10 @@ def main():
         
     except Exception as e:
         print(f"  Model initialization: FAILED")
+        print(f"  Common causes:")
+        print(f"  - Inconsistent data: mismatch between y_train and der_indices")
+        print(f"  - Unsupported kernel type (use 'SE', 'RBF', etc.)")
+        print(f"  - Unsupported kernel_type (use 'anisotropic' or 'isotropic')")
         print(f"  Error: {e}")
         return
     
@@ -314,11 +328,12 @@ def main():
     optimization_start = time.time()
     
     try:
-        # Optimize using particle swarm optimization
-        # Increased swarm size for 2D complexity
+        # Optimize hyperparameters using particle swarm optimization  
+        # n_restart_optimizer: number of generations for the particle swarm optimizer
+        # swarm_size: number of particles in the swarm (increased for 2D complexity)
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=15,  # Number of optimization restarts
-            swarm_size=300          # Larger swarm for 2D problems
+            n_restart_optimizer=15,
+            swarm_size=300
         )
         
         optimization_time = time.time() - optimization_start
@@ -327,6 +342,10 @@ def main():
         
     except Exception as e:
         print(f"  Optimization: FAILED")
+        print(f"  Common causes:")
+        print(f"  - Cholesky decomposition failure due to numerical instability")
+        print(f"  - Insufficient computational resources (too much training data)")
+        print(f"  Solution: Ensure normalize=True in GP initialization (already set)")
         print(f"  Error: {e}")
         return
     
@@ -360,6 +379,9 @@ def main():
         
     except Exception as e:
         print(f"  Prediction: FAILED")
+        print(f"  Common causes:")
+        print(f"  - Insufficient computational resources (large test set)")
+        print(f"  - Cholesky decomposition failure (bug workaround implemented)")
         print(f"  Error: {e}")
         return
     
@@ -431,23 +453,6 @@ def main():
     print(f"Training efficiency: {total_observations} observations from {X_train.shape[0]} points")
     print(f"Observation multiplier: {observations_per_point}x (due to derivatives)")
     
-    print(f"\n2D-Specific Insights:")
-    print(f"• Partial derivatives provide directional information")
-    print(f"• Mixed derivatives (∂²f/∂x₁∂x₂) capture interaction effects")
-    print(f"• {num_points}²={num_points**2} points → {total_observations} total observations")
-    print(f"• Spatial error varies: center vs. boundary performance")
-    
-    print(f"\nKey Advantages of 2D DEGP:")
-    print(f"• Captures anisotropic function behavior")  
-    print(f"• Handles complex interaction terms")
-    print(f"• Efficient use of limited training data")
-    print(f"• Provides gradient information for optimization")
-    
-    print(f"\nNext Steps for 2D DEGP:")
-    print(f"• Try different sampling strategies (Chebyshev, random)")
-    print(f"• Experiment with selective derivative inclusion")
-    print(f"• Apply to real 2D engineering/science problems")
-    print(f"• Compare with standard 2D GP regression")
 
 if __name__ == "__main__":
     main()

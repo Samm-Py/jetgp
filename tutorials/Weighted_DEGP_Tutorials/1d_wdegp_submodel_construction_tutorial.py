@@ -26,7 +26,7 @@ if __name__ == "__main__":
         return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # GP configuration
-    n_order = 3
+    n_order = 2
     n_bases = 1
     lb_x, ub_x = 0.5, 2.5
     num_points = 10
@@ -41,6 +41,9 @@ if __name__ == "__main__":
     base_der_indices_1 = utils.gen_OTI_indices(n_bases, n_order)
     base_der_indices_2 = utils.gen_OTI_indices(n_bases, 1)
     der_indices = [base_der_indices_1, base_der_indices_2]
+
+    print(der_indices)
+    input("Press Enter to continue...")
 
     # Assemble training data for each submodel
     y_train_data = []

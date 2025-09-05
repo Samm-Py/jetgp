@@ -5,10 +5,15 @@ from wddegp.wddegp import wddegp
 import utils
 import plotting_helper
 
-
-def true_function(X, alg=oti):
+def true_function(X, alg=np):
+    """Six-Hump Camel function with directional structure."""
     x1, x2 = X[:, 0], X[:, 1]
-    return x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
+    return (
+        (4 - 2.1 * x1**2 + (x1**4) / 3.0) * x1**2
+        + x1 * x2
+        + (-4 + 4 * x2**2) * x2**2
+    )
+
 
 
 def generate_training_data(num_points=5):
@@ -45,14 +50,14 @@ def build_gp_model(X_train, index, n_order=2, n_bases=2):
     ]
 
     thetas = [
-        [-np.pi/2, 0, np.pi/2],
-        [-np.pi, -np.pi/2, 0],
-        [-np.pi, np.pi/2, 0],
-        [-np.pi/2, -np.pi, np.pi/2],
+        [-np.pi/4, 0, np.pi/4],
+        [-np.pi/4, 0, np.pi/4],
+        [-np.pi/4, 0, np.pi/4],
+        [-np.pi/4, 0, np.pi/4],
         [-np.pi/2, 0, -np.pi/4],
         [np.pi/2, 0, np.pi/4],
         [np.pi/2, 0, np.pi/4],
-        [-np.pi/2, -np.pi, -np.pi/4 - np.pi/2],
+        [-np.pi/2, 0, -np.pi/4],
         [np.pi/2, np.pi/4, np.pi/4 + np.pi/2]
     ]
 
@@ -139,7 +144,43 @@ def main():
     nrmse = utils.nrmse(y_true, y_pred)
 
     print("NRMSE between model and true function: {}".format(nrmse))
+    import matplotlib.pyplot as plt
 
+    # Reshape predictions and ground truth back to grid
+    y_true_grid = y_true.reshape(N_grid, N_grid)
+    y_pred_grid = y_pred.reshape(N_grid, N_grid)
+    abs_error_grid = np.abs(y_true_grid - y_pred_grid)
+
+    fig, axes = plt.subplots(3, 1, figsize=(6, 15))
+
+    # True function
+    c1 = axes[0].contourf(X1_grid, X2_grid, y_true_grid, levels=50, cmap="viridis")
+    fig.colorbar(c1, ax=axes[0])
+    axes[0].set_title("True Function")
+    axes[0].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50, label="Training Data")
+
+    # GP Prediction
+    c2 = axes[1].contourf(X1_grid, X2_grid, y_pred_grid, levels=50, cmap="viridis")
+    fig.colorbar(c2, ax=axes[1])
+    axes[1].set_title("GP Prediction")
+    axes[1].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50)
+
+    # Absolute Error
+    c3 = axes[2].contourf(X1_grid, X2_grid, abs_error_grid, levels=50, cmap="magma")
+    fig.colorbar(c3, ax=axes[2])
+    axes[2].set_title("Absolute Error")
+    axes[2].scatter(X_train[:, 0], X_train[:, 1], c="red", edgecolor="k", s=50)
+
+    # Axis labels
+    for ax in axes:
+        ax.set_xlabel("x1")
+        ax.set_ylabel("x2")
+
+    # Add legend only once (first axis already has it)
+    axes[0].legend()
+
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()

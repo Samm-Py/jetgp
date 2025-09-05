@@ -254,10 +254,13 @@ def main():
         [[[1, 2]], [[2, 2]], [[3, 2]], [[4, 2]]],  # ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃², ∂²f/∂x₄²
     ]
     
-    print(f"\nSelective Derivative Strategy:")
-    print(f"  First-order: ∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃, ∂f/∂x₄")
-    print(f"  Second-order: ∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃², ∂²f/∂x₄²")
-    print(f"  Excluded: All mixed derivatives (e.g., ∂²f/∂x₁∂x₂)")
+    print(f"\nSelective vs Complete Derivative Set Comparison:")
+    print(f"  Selective strategy: {len(der_indices[0]) + len(der_indices[1])} derivatives")
+    print(f"    - First-order: {len(der_indices[0])} (∂f/∂x₁, ∂f/∂x₂, ∂f/∂x₃, ∂f/∂x₄)")
+    print(f"    - Second-order: {len(der_indices[1])} (∂²f/∂x₁², ∂²f/∂x₂², ∂²f/∂x₃², ∂²f/∂x₄²)")
+    print(f"  Complete derivative set: {complexity_analysis['complete_derivative_count']} derivatives")
+    print(f"    - Includes mixed terms: ∂²f/∂x₁∂x₂, ∂²f/∂x₁∂x₃, ∂²f/∂x₁∂x₄, etc.")
+    print(f"  Computational reduction: {complexity_analysis['complexity_reduction']:.1f}x fewer derivatives")
     print(f"  Rationale: Capture main directional effects without exponential cost")
     
     # ==========================================================================
@@ -279,19 +282,23 @@ def main():
     print(f"  Training points shape: {X_train.shape}")
     print(f"  Sample coverage: Each dimension spans [{lower_bounds[0]:.3f}, {upper_bounds[0]:.3f}]")
     
-    # Setup hypercomplex perturbation
+    # Setup hypercomplex perturbation for automatic differentiation
+    # Note: In practice, derivatives would typically come from the user
+    # rather than being computed this way
     X_train_pert = oti.array(X_train)
     for i in range(n_bases):
         X_train_pert[:, i] += oti.e(i + 1, order=n_order)
     
     # Evaluate function and extract derivatives
     y_train_hc = true_function(X_train_pert)
-    y_train = [y_train_hc.real]
+    # The derivative information in y_train must match the exact order of der_indices
+    y_train = [y_train_hc.real]  # Function values always come first
     
     derivative_obs = 0
+    # Add derivatives in the same order as specified by der_indices
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
-            y_train.append(y_train_hc.get_deriv(der_indices[i][j]))
+            y_train.append(y_train_hc.get_deriv(der_indices[i][j]))  # Order must match der_indices
             derivative_obs += num_points_train
     
     data_gen_time = time.time() - start_time
@@ -322,14 +329,16 @@ def main():
         print(f"  Kernel: SE (anisotropic) - allows different length scales per dimension")
         print(f"  Normalization: Enabled - crucial for high-dimensional stability")
         
-        # Optimize hyperparameters
+        # Optimize hyperparameters using particle swarm optimization
+        # n_restart_optimizer: number of generations for the particle swarm optimizer
+        # swarm_size: number of particles in the swarm (increased for high-dimensional complexity)
         print(f"  Optimizing hyperparameters...")
         opt_start = time.time()
         
         params = gp.optimize_hyperparameters(
             n_restart_optimizer=15,
             swarm_size=250,
-            verbose=True  # Reduce output for cleaner tutorial
+            verbose=True
         )
         
         opt_time = time.time() - opt_start
@@ -340,7 +349,13 @@ def main():
         print(f"  Total training time: {training_time:.2f}s")
         
     except Exception as e:
-        print(f"  Training FAILED: {e}")
+        print(f"  Training FAILED")
+        print(f"  Common causes:")
+        print(f"  - Inconsistent data: mismatch between y_train and der_indices")
+        print(f"  - Cholesky decomposition failure due to numerical instability")
+        print(f"  - Insufficient computational resources (high-dimensional complexity)")
+        print(f"  - Unsupported kernel type (use 'SE', 'RBF', etc.)")
+        print(f"  Error: {e}")
         return
     
     # ==========================================================================
@@ -435,12 +450,7 @@ def main():
     
     total_time = time.time() - start_time
     main_nrmse = slice_results['zero_slice']['nrmse']
-    
-    print(f"\nHigh-Dimensional DEGP Tutorial Summary:")
-    print("=" * 55)
-    print(f"Total execution time: {total_time:.2f}s")
-    print(f"Final NRMSE (x₁-x₂ slice): {main_nrmse:.8f}")
-    
+
 
 if __name__ == "__main__":
     main()

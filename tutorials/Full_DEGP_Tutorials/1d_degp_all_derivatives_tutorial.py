@@ -84,7 +84,11 @@ for idx, n_order in enumerate(orders):
     print(f"Processing Order {n_order}...")
     start_time = time.time()
     
-    # Setup derivative indices
+    # Setup derivative indices structure
+    # der_indices are structured as nested lists representing derivative terms
+    # For 1D functions:
+    #   Order 1: [[[[1, 1]]]] → ∂f/∂x₁ 
+    #   Order 2: [[[[1, 1]]], [[[1, 2]]]] → ∂f/∂x₁, ∂²f/∂x₁²
     n_bases = 1  # Number of input dimensions
     der_indices = utils.gen_OTI_indices(n_bases, n_order)
     
@@ -93,7 +97,9 @@ for idx, n_order in enumerate(orders):
     # Generate training data with derivatives using automatic differentiation
     X_train_pert = oti.array(X_train)
     
-    # Add perturbation for automatic differentiation
+    # Add hypercomplex perturbation for automatic differentiation
+    # Note: In practice, derivatives would typically come from the user
+    # rather than being computed this way
     for i in range(1, n_bases + 1):
         X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(i, order=n_order)
 
@@ -101,16 +107,22 @@ for idx, n_order in enumerate(orders):
     y_train_hc = true_function(X_train_pert)
     
     # Extract function values and derivatives
-    y_train = [y_train_hc.real]  # Function values
+    # The derivative information in y_train must match the exact order of der_indices
+    y_train = [y_train_hc.real]  # Function values always come first
     total_derivatives = 0
     
+    # Add derivatives in the same order as specified by der_indices
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
+            # Extract the specific derivative according to the index structure
             derivative = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
-            y_train.append(derivative)
+            y_train.append(derivative)  # Order must match der_indices
             total_derivatives += 1
     
-    print(f"  Total training observations: {len(y_train[0]) + total_derivatives * len(y_train[0])}")
+    # Calculate total observations for understanding covariance matrix size
+    # Each training point contributes: 1 function value + total_derivatives derivative values
+    total_observations = len(y_train[0]) + total_derivatives * len(y_train[0])
+    print(f"  Total training observations: {total_observations}")
     
     # Initialize and train DEGP
     gp = degp(
@@ -120,10 +132,14 @@ for idx, n_order in enumerate(orders):
         kernel_type="anisotropic"
     )
     
-    # Optimize hyperparameters
+    # Optimize hyperparameters using particle swarm optimization
+    # n_restart_optimizer: number of generations for the particle swarm optimizer
+    # swarm_size: number of particles in the swarm
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=10, 
-        swarm_size=100
+        n_restart_optimizer=20, 
+        swarm_size=100,
+        x0 = None,  # Initial guess for [length_scale, variance, noise]
+        local_opt_every = 10
     )
     
     # Make predictions
@@ -138,7 +154,7 @@ for idx, n_order in enumerate(orders):
         'mse': mse,
         'mae': mae,
         'time': time.time() - start_time,
-        'n_observations': len(y_train[0]) + total_derivatives * len(y_train[0])
+        'n_observations': total_observations
     }
     
     print(f"  MSE: {mse:.6f}, MAE: {mae:.6f}, Time: {time.time() - start_time:.2f}s")

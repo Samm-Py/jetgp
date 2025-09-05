@@ -826,10 +826,10 @@ def make_submodel_plots(
                 
                 # ----- Plotting the Results -----
                 # Create a figure with two subplots: one for the GP prediction and one for the absolute error
-                plt.figure(23984 + 1, figsize=(12, 5))
+                plt.figure(23984 + i, figsize=(6, 5))
 
                 # Subplot (a): GP Prediction
-                plt.subplot(1, 2, 1)
+                plt.subplot(1, 1, 1)
                 plt.title(
                     "Order {0} Enhanced Gaussian Process\nSubmodel {1}, Index Set {2}".format(
                         n_order, i + 1, i
@@ -852,25 +852,25 @@ def make_submodel_plots(
                 plt.ylabel("X2")
                 plt.legend()
 
-                # Subplot (b): Absolute Error
-                plt.subplot(1, 2, 2)
-                plt.title("Absolute Error\n|Predicted - True|")
-                # Contour plot of the absolute error
-                contour2 = plt.contourf(
-                    X1_grid, X2_grid, absolute_error, levels=25, cmap="magma"
-                )
-                plt.colorbar(contour2)
-                # Overlay the training points on the error plot
-                plt.scatter(
-                    X_train[:, 0], 
-                    X_train[:, 1], 
-                    c="white", 
-                    edgecolors="k",
-                    label="Train pts"
-                )
-                plt.xlabel("X1")
-                plt.ylabel("X2")
-                plt.legend()
+                # # Subplot (b): Absolute Error
+                # plt.subplot(1, 2, 2)
+                # plt.title("Absolute Error\n|Predicted - True|")
+                # # Contour plot of the absolute error
+                # contour2 = plt.contourf(
+                #     X1_grid, X2_grid, absolute_error, levels=25, cmap="magma"
+                # )
+                # plt.colorbar(contour2)
+                # # Overlay the training points on the error plot
+                # plt.scatter(
+                #     X_train[:, 0], 
+                #     X_train[:, 1], 
+                #     c="white", 
+                #     edgecolors="k",
+                #     label="Train pts"
+                # )
+                # plt.xlabel("X1")
+                # plt.ylabel("X2")
+                # plt.legend()
                 
-                plt.tight_layout(pad=2.0)
-                plt.show()
+                # plt.tight_layout(pad=2.0)
+                # plt.show()
