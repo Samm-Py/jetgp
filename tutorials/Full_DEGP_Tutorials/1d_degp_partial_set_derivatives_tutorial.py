@@ -136,15 +136,16 @@ def main():
     # Derivative Selection Strategy
     # ==========================================================================
     
-    # Custom derivative indices: include 1st and 4th order derivatives
+    # Custom derivative indices: demonstrate selective derivative inclusion
+    # This example shows we can choose ANY derivatives we want - here 1st and 4th order
+    # while skipping 2nd and 3rd order derivatives entirely
     # Format: [[[[variable_index, derivative_order]]]]
-    # This selective approach reduces computational cost while capturing
-    # both local slope information (1st) and higher-order curvature (4th)
     der_indices = [[[[1, 1]], [[1, 4]]]]
     
     print(f"\nDerivative Selection:")
-    print(f"  Including derivatives: 1st order (local slope)")
-    print(f"                        4th order (higher curvature)")
+    print(f"  Including derivatives: 1st order and 4th order")
+    print(f"  Skipping: 2nd and 3rd order derivatives")
+    print(f"  This demonstrates flexible derivative selection capability")
     print(f"  Derivative indices format: {der_indices}")
     
     # ==========================================================================
@@ -159,6 +160,8 @@ def main():
     print(f"  Training locations: {X_train.ravel()}")
     
     # Setup hypercomplex perturbation for automatic differentiation
+    # Note: In practice, derivatives would typically come from the user
+    # rather than being computed this way
     X_train_pert = oti.array(X_train)
     for i in range(1, n_bases + 1):
         X_train_pert[:, i - 1] = X_train_pert[:, i - 1] + oti.e(i, order=n_order)
@@ -167,13 +170,15 @@ def main():
     y_train_hc = true_function(X_train_pert)
     
     # Extract function values and selected derivatives
-    y_train = [y_train_hc.real]  # Function values
+    # The derivative information in y_train must match the exact order of der_indices
+    y_train = [y_train_hc.real]  # Function values always come first
     total_derivative_observations = 0
     
+    # Add derivatives in the same order as specified by der_indices
     for i in range(len(der_indices)):
         for j in range(len(der_indices[i])):
             derivative_data = y_train_hc.get_deriv(der_indices[i][j]).reshape(-1, 1)
-            y_train.append(derivative_data)
+            y_train.append(derivative_data)  # Order must match der_indices
             total_derivative_observations += len(derivative_data)
     
     data_gen_time = time.time() - start_time
@@ -207,6 +212,10 @@ def main():
         
     except Exception as e:
         print(f"  Model initialization: FAILED")
+        print(f"  Common causes:")
+        print(f"  - Inconsistent data: mismatch between y_train and der_indices")
+        print(f"  - Unsupported kernel type (use 'SE', 'RBF', etc.)")
+        print(f"  - Unsupported kernel_type (use 'anisotropic' or 'isotropic')")
         print(f"  Error: {e}")
         return
     
@@ -218,10 +227,12 @@ def main():
     optimization_start = time.time()
     
     try:
-        # Optimize using particle swarm optimization
+        # Optimize hyperparameters using particle swarm optimization
+        # n_restart_optimizer: number of generations for the particle swarm optimizer
+        # swarm_size: number of particles in the swarm
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=25,  # Number of optimization restarts
-            swarm_size=100          # PSO swarm size
+            n_restart_optimizer=25,
+            swarm_size=100
         )
         
         optimization_time = time.time() - optimization_start
@@ -234,6 +245,10 @@ def main():
         
     except Exception as e:
         print(f"  Optimization: FAILED")
+        print(f"  Common causes:")
+        print(f"  - Cholesky decomposition failure due to numerical instability")
+        print(f"  - Insufficient computational resources (too much training data)")
+        print(f"  Solution: Ensure normalize=True in GP initialization (already set)")
         print(f"  Error: {e}")
         return
     
@@ -262,6 +277,9 @@ def main():
         
     except Exception as e:
         print(f"  Prediction: FAILED")
+        print(f"  Common causes:")
+        print(f"  - Insufficient computational resources (large test set)")
+        print(f"  - Cholesky decomposition failure (bug workaround implemented)")
         print(f"  Error: {e}")
         return
     

@@ -33,7 +33,8 @@ if __name__ == "__main__":
     # Each submodel uses the same full derivative index structure
     base_der_indices = utils.gen_OTI_indices(n_bases, n_order)
     der_indices = [base_der_indices for _ in range(num_points)]
-
+    print(der_indices)
+    input("Press Enter to continue...")
     # Construct training data for each submodel
     y_train_data = []
     y_train_real = true_function(X_train, alg=np)
