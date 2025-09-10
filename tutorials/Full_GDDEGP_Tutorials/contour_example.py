@@ -1,17 +1,23 @@
 """
-ddgp_lhs_contour.py
-------------------------------------------------------------
-• 16 Latin–Hypercube points inside a box  [–2,2] × [–2,2]
-• Steepest–ascent (or descent) ray at each point, chosen to point
-  TOWARD the quadratic-plus-linear contour  f(x,y)=17
-• Hyper-complex tagging  (one tag per point) so a DD-GP can use
-  function values + first / second directional derivatives.
-• Fit with full_gddegp.gddegp   (anisotropic SE kernel)
-• Plot
-    1. true contour  f(x,y)=true_function
-    2. GP mean contour  (same levels)
-    3. training points  + white arrows showing the rays
-------------------------------------------------------------
+================================================================================
+DEGP Tutorial: Contour-Seeking Directional Derivatives
+================================================================================
+
+This tutorial demonstrates an advanced strategy for Directional-Derivative GPs
+(DD-GP) where the derivative information is intelligently chosen to improve the
+model's understanding of a specific feature—in this case, a contour line.
+
+Instead of using random or gradient-aligned rays, the directional derivatives
+are chosen to always point *toward* a target contour line (e.g., f(x,y)=4).
+This forces the model to learn the shape and location of this feature with
+high fidelity, even from sparse training data.
+
+Key concepts covered:
+-   Intelligent, feature-focused directional derivative (ray) generation.
+-   Using Latin Hypercube Sampling (LHS) for efficient 2D sampling.
+-   The specific pointwise hypercomplex AD workflow for the `gddegp` model.
+-   Advanced visualization comparing the predicted vs. true contour lines.
+-   Using the Shapely library for robustly plotting clipped arrows.
 """
 
 import itertools
@@ -19,98 +25,244 @@ import numpy as np
 import pyoti.sparse as oti
 from scipy.stats import qmc
 from matplotlib import pyplot as plt
-from full_gddegp.gddegp import gddegp          # <- your DD-GP class
+from full_gddegp.gddegp import gddegp
 from matplotlib.patches import FancyArrowPatch
 from matplotlib.lines import Line2D
 from shapely.geometry import LineString, box
-# ------------------------------------------------------------------
-# 0.  quadratic-plus-linear toy function  f(x,y)=3x²+2y²+x
-# ------------------------------------------------------------------
+from dataclasses import dataclass
+from typing import Dict, Callable
+
+plt.rcParams.update({'font.size': 12})
+
+
+@dataclass
+class ContourConfig:
+    """Configuration for the Contour-Seeking DEGP tutorial."""
+    n_order: int = 2
+    n_bases: int = 2
+    num_training_pts: int = 16
+    domain_box: tuple = ((-2, 2), (-2, 2))
+    contour_threshold: float = 4.0
+    test_grid_resolution: int = 50
+    normalize_data: bool = True
+    kernel: str = "SE"
+    kernel_type: str = "anisotropic"
+    n_restarts: int = 15
+    swarm_size: int = 500
+    random_seed: int = 42
+
+
+class ContourSeekingDEGPTutorial:
+    """
+    Manages and executes the tutorial on using DEGP with contour-seeking rays.
+    """
+
+    def __init__(self, config: ContourConfig, true_function: Callable, true_gradient: Callable):
+        self.config = config
+        self.true_function = true_function
+        self.true_gradient = true_gradient
+        self.training_data: Dict = {}
+        self.gp_model = None
+        self.params = None
+        self.results: Dict = {}
+        np.random.seed(config.random_seed)
+
+    def _generate_training_data(self):
+        """
+        Generates training data with rays pointing towards a specific contour.
+        """
+        print("\n" + "="*50 +
+              "\nGenerating Training Data with Contour-Seeking Rays\n" + "="*50)
+        cfg = self.config
+
+        sampler = qmc.LatinHypercube(d=cfg.n_bases, seed=cfg.random_seed)
+        unit_samples = sampler.random(n=cfg.num_training_pts)
+        X_train = qmc.scale(unit_samples, [b[0] for b in cfg.domain_box], [
+                            b[1] for b in cfg.domain_box])
+
+        rays_list, rays_plot, tag_map = [], [], []
+        for i, (x, y) in enumerate(X_train):
+            f_val = self.true_function(np.array([[x, y]]))[0]
+            g = self.true_gradient(x, y)
+            direction = g if f_val < cfg.contour_threshold else -g
+            norm = np.linalg.norm(direction)
+            v = direction / norm if norm > 1e-12 else np.array([1.0, 0.0])
+
+            rays_list.append(v.reshape(2, 1))
+            rays_plot.append(v.reshape(2, 1) * 0.4)
+            tag_map.append(i + 1)
+
+        print(
+            f"  Generated {len(X_train)} training points with rays pointing toward f(x)={cfg.contour_threshold}.")
+
+        X_pert = oti.array(X_train)
+        for i, ray in enumerate(rays_list):
+            e_tag = oti.e(1, order=cfg.n_order)
+            perturbation = oti.array(ray) * e_tag
+            X_pert[i, :] += perturbation.T
+
+        f_hc = self.true_function(X_pert, alg=oti)
+        for combo in itertools.combinations(tag_map, 2):
+            f_hc = f_hc.truncate(combo)
+
+        y_train_list = [f_hc.real.reshape(-1, 1)]
+        der_indices_to_extract = [[[1, i+1]] for i in range(cfg.n_order)]
+        for idx in der_indices_to_extract:
+            y_train_list.append(f_hc.get_deriv(idx).reshape(-1, 1))
+
+        self.training_data = {
+            'X_train': X_train,
+            'y_train_list': y_train_list,
+            'rays_list': rays_list,
+            'rays_plot': rays_plot
+        }
+        print(
+            f"  Extracted function values and {cfg.n_order} directional derivatives.")
+
+    def _train_model(self):
+        """Initializes and trains the GD-DEGP model."""
+        print("\n" + "="*50 + "\nTraining GD-DEGP Model\n" + "="*50)
+        cfg, data = self.config, self.training_data
+        rays_array = np.hstack(data['rays_list'])
+
+        self.gp_model = gddegp(
+            data['X_train'], data['y_train_list'], n_order=cfg.n_order, rays_array=rays_array,
+            normalize=cfg.normalize_data, kernel=cfg.kernel, kernel_type=cfg.kernel_type
+        )
+        print("  Model initialization: SUCCESS")
+
+        print("  Optimizing hyperparameters...")
+        self.params = self.gp_model.optimize_hyperparameters(
+            n_restart_optimizer=cfg.n_restarts, swarm_size=cfg.swarm_size
+        )
+        print("  Hyperparameter optimization: SUCCESS")
+
+    def _evaluate_model(self):
+        """Creates a test grid and evaluates the model's performance."""
+        print("\n" + "="*50 + "\nModel Prediction and Evaluation\n" + "="*50)
+        cfg = self.config
+
+        gx = np.linspace(
+            cfg.domain_box[0][0] - 0.5, cfg.domain_box[0][1] + 0.5, cfg.test_grid_resolution)
+        gy = np.linspace(
+            cfg.domain_box[1][0] - 0.5, cfg.domain_box[1][1] + 0.5, cfg.test_grid_resolution)
+        X1_grid, X2_grid = np.meshgrid(gx, gy)
+        X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
+
+        dummy_ray = np.array([[1.0], [0.0]])
+        rays_pred = np.hstack([dummy_ray] * X_test.shape[0])
+
+        y_pred, y_var = self.gp_model.predict(
+            X_test, rays_pred, self.params, calc_cov=True, return_deriv=False)
+        y_true = self.true_function(X_test, alg=np)
+
+        self.results = {
+            'y_pred': y_pred, 'y_var': y_var, 'y_true': y_true,
+            'X1_grid': X1_grid, 'X2_grid': X2_grid
+        }
+        print(f"  Evaluation complete.")
+
+    def visualize_results(self):
+        """Generates the 3-panel plot comparing contours and showing variance."""
+        print("\n" + "="*50 + "\nGenerating Visualizations\n" + "="*50)
+        res, cfg = self.results, self.config
+        # ===================== Plotting ===============================
+        threshold = 4.0
+        fig, (ax_gp, ax_true, ax_var) = plt.subplots(1, 3, figsize=(19, 5),
+                                                     sharex=True, sharey=True)
+        y_pred = self.results['y_pred']
+        y_true = self.results['y_true']
+        y_var = self.results['y_var']
+        X1 = self.results['X1_grid']
+        X2 = self.results['X2_grid']
+        X_train = self.training_data['X_train']
+        rays_plot = self.training_data['rays_plot']
+        Zp = y_pred.reshape(X1.shape)      # GP mean grid
+        Zt = y_true.reshape(X1.shape)      # true grid
+        Zv = y_var.reshape(X1.shape)       # GP variance grid
+
+        # common filled-contour levels for mean/true
+        levels = np.linspace(min(Zp.min(), Zt.min()),
+                             max(Zp.max(), Zt.max()), 40)
+
+        # variance levels (separate since variance has different scale)
+        var_levels = np.linspace(Zv.min(), Zv.max(), 40)
+
+        # ===== GP panel ==================================================
+        cf1 = ax_gp.contourf(X1, X2, Zp, levels=levels, cmap="viridis")
+        fig.colorbar(cf1, ax=ax_gp, fraction=0.046)
+        ax_gp.set_title("GP mean")
+        gp_line = ax_gp.contour(X1, X2, Zp, levels=[threshold],
+                                colors="red", linewidths=1.8, linestyles="-")
+        true_line = ax_gp.contour(X1, X2, Zt, levels=[threshold],
+                                  colors="black", linewidths=1.8, linestyles="--")
+        ax_gp.scatter(X_train[:, 0], X_train[:, 1],
+                      c="red", edgecolor="k", s=35, zorder=3)
+        for pt, v in zip(X_train, rays_plot):
+            clipped_arrow(ax_gp, pt, v.flatten(), color="white")
+        handles = [Line2D([], [], color="red", lw=2, label="GP  f=4"),
+                   Line2D([], [], color="black", lw=2, ls="--", label="True f=4")]
+        ax_gp.legend(handles=handles, loc="upper right")
+
+        # ===== True panel =================================================
+        cf2 = ax_true.contourf(X1, X2, Zt, levels=levels, cmap="viridis")
+        fig.colorbar(cf2, ax=ax_true, fraction=0.046)
+        ax_true.set_title("True function")
+        ax_true.contour(X1, X2, Zt, levels=[threshold],
+                        colors="black", linewidths=1.8, linestyles="--")
+        ax_true.contour(X1, X2, Zp, levels=[threshold],
+                        colors="red", linewidths=1.8, linestyles="-")
+        ax_true.scatter(X_train[:, 0], X_train[:, 1],
+                        c="red", edgecolor="k", s=35, zorder=3)
+        for pt, v in zip(X_train, rays_plot):
+            clipped_arrow(ax_true, pt, v.flatten(), color="white")
+
+        # ===== Variance panel =============================================
+        cf3 = ax_var.contourf(X1, X2, Zv, levels=var_levels, cmap="plasma")
+        fig.colorbar(cf3, ax=ax_var, fraction=0.046)
+        ax_var.set_title("GP variance")
+        ax_var.scatter(X_train[:, 0], X_train[:, 1],
+                       c="white", edgecolor="k", s=35, zorder=3)
+        for pt, v in zip(X_train, rays_plot):
+            clipped_arrow(ax_var, pt, v.flatten(), color="black")
+
+        # ===== Axis Formatting ============================================
+        for ax in (ax_gp, ax_true, ax_var):
+            ax.set_xlim([-2.5, 2.5])
+            ax.set_ylim([-2.5, 2.5])
+            ax.set_aspect("equal")
+            ax.set_xlabel("x₁")
+            ax.set_ylabel("x₂")
+
+        plt.tight_layout()
+        plt.show()
+
+    def run(self):
+        """Executes the complete tutorial workflow."""
+        print("DEGP Tutorial: Contour-Seeking Directional Derivatives")
+        print("=" * 75)
+
+        self._generate_training_data()
+        self._train_model()
+        self._evaluate_model()
+        self.visualize_results()
+
+        print("\nTutorial Complete.")
+
+# --- Helper Functions ---
 
 
 def true_function(X, alg=np):
+    """Quadratic-plus-linear toy function with oscillations."""
     x, y = X[:, 0], X[:, 1]
     return 3*x**2 + 2*y**2 + x + 2*alg.sin(2*x)*alg.cos(1.5*y)
 
 
-def grad_true(x, y):
+def true_gradient(x, y):
+    """Analytical gradient of the true function."""
     gx = 6*x + 1 + 4*np.cos(2*x)*np.cos(1.5*y)
     gy = 4*y - 3*np.sin(2*x)*np.sin(1.5*y)
     return np.array([gx, gy])
-
-
-# ------------------------------------------------------------------
-# 1.  helper: Latin-Hypercube points in a 2-D box
-# ------------------------------------------------------------------
-
-
-def lhs_points(n_samples, box, seed=None):
-    sampler = qmc.LatinHypercube(d=2, seed=seed)
-    unit = sampler.random(n_samples)
-    X = np.empty_like(unit)
-    for j, (lo, hi) in enumerate(box):
-        X[:, j] = lo + (hi - lo) * unit[:, j]
-    return X
-
-# ------------------------------------------------------------------
-# 2.  rays pointing toward the f(x)=threshold contour
-# ------------------------------------------------------------------
-
-
-def rays_to_contour(X, threshold=17.0, eps=1e-12):
-    rays, tags, rays_plot = [], [], []
-    for idx, (x, y) in enumerate(X):
-        f_val = true_function(np.array([[x, y]]))[0]
-        g = grad_true(x, y)
-        if np.linalg.norm(g) < eps:
-            v = np.array([[1.0], [0.0]])            # arbitrary axis
-        else:
-            direction = g if f_val < threshold else -g
-            v = (direction / np.linalg.norm(direction)).reshape(2, 1)
-        rays.append(v)
-        rays_plot.append(v * .4)
-        tags.append(idx + 1)
-    return rays, tags, rays_plot
-
-# ------------------------------------------------------------------
-# 3.  build training data  (f, D_v f, D_v² f)
-# ------------------------------------------------------------------
-
-
-def generate_training_data_lhs(n_samples=16,
-                               box=((-2, 2), (-2, 2)),
-                               n_order=2,
-                               max_order=2,
-                               threshold=17.0,
-                               seed=None):
-    X_train = lhs_points(n_samples, box, seed)
-    rays_list, tag_map, rays_plot = rays_to_contour(X_train, threshold)
-
-    # hyper-complex inputs
-    X_hc = oti.array(X_train)
-    for i, tag in enumerate(tag_map):
-        e_tag = oti.e(1, order=n_order)   # create dual-unit
-        perturb = (oti.array(rays_list[i]) * e_tag)        # (2,)
-        X_hc[i, :] += perturb.T
-
-    # evaluate in HC algebra
-    f_hc = true_function(X_hc, alg=oti)
-    for a, b in itertools.combinations(tag_map, 2):
-        f_hc = f_hc.truncate((a, b))
-
-    # targets
-    y_blocks = [f_hc.real.reshape(-1, 1)]                # f
-    der_indices = [[[1, i+1]] for i in range(n_order)]
-    for idx in der_indices:
-        y_blocks.append(f_hc.get_deriv(idx).reshape(-1, 1))
-
-    return X_train, y_blocks, rays_list, rays_plot
-
-# ------------------------------------------------------------------
-# arrow helper (clipped to axes)
-# ------------------------------------------------------------------
-
-# ------------- Clipped Arrow Function ------------------------
 
 
 def clipped_arrow(ax, start, vec, color="white", **kwargs):
@@ -144,112 +296,12 @@ def clipped_arrow(ax, start, vec, color="white", **kwargs):
                                      mutation_scale=10,
                                      **kwargs))
 
-# ------------------------------------------------------------------
-# main demo
-# ------------------------------------------------------------------
-
 
 def main():
-    n_order = 3
-    X_train, y_blocks, rays_list, rays_plot = generate_training_data_lhs(
-        n_samples=16,
-        box=((-2, 2), (-2, 2)),
-        n_order=n_order,
-        max_order=2,
-        threshold=4.0,
-        seed=42)
-    rays_array = np.hstack(rays_list)
-    # ---- fit DD-GP -------------------------------------------------
-    gp = gddegp(X_train, y_blocks,
-                n_order=n_order,
-                rays_array=rays_array,
-                normalize=True,
-                kernel="SE",
-                kernel_type="anisotropic",)
-
-    params = gp.optimize_hyperparameters(
-        n_restart_optimizer=30, swarm_size=500, verbose=True)
-
-    # ---- prediction grid ------------------------------------------
-    gx = np.linspace(-2.5, 2.5, 40)
-    gy = np.linspace(-2.5, 2.5, 40)
-    X1, X2 = np.meshgrid(gx, gy)
-    X_pred = np.column_stack([X1.ravel(), X2.ravel()])
-
-    # same global ray for prediction (not used for f)
-    ray0 = np.array([[1.0], [0.0]])
-    rays_pred = [ray0 for _ in range(X_pred.shape[0])]
-    rays_pred = np.hstack(rays_pred)
-    y_pred, y_var = gp.predict(X_pred, rays_pred, params,
-                               calc_cov=True, return_deriv=False)
-    y_pred_train = gp.predict(X_train, rays_array, params,
-                              calc_cov=False, return_deriv=False)
-    y_true = true_function(X_pred).ravel()
-
-    # ===================== Plotting ===============================
-    threshold = 4.0
-    fig, (ax_gp, ax_true, ax_var) = plt.subplots(1, 3, figsize=(19, 5),
-                                                 sharex=True, sharey=True)
-
-    Zp = y_pred.reshape(X1.shape)      # GP mean grid
-    Zt = y_true.reshape(X1.shape)      # true grid
-    Zv = y_var.reshape(X1.shape)       # GP variance grid
-
-    # common filled-contour levels for mean/true
-    levels = np.linspace(min(Zp.min(), Zt.min()),
-                         max(Zp.max(), Zt.max()), 40)
-
-    # variance levels (separate since variance has different scale)
-    var_levels = np.linspace(Zv.min(), Zv.max(), 40)
-
-    # ===== GP panel ==================================================
-    cf1 = ax_gp.contourf(X1, X2, Zp, levels=levels, cmap="viridis")
-    fig.colorbar(cf1, ax=ax_gp, fraction=0.046)
-    ax_gp.set_title("GP mean")
-    gp_line = ax_gp.contour(X1, X2, Zp, levels=[threshold],
-                            colors="red", linewidths=1.8, linestyles="-")
-    true_line = ax_gp.contour(X1, X2, Zt, levels=[threshold],
-                              colors="black", linewidths=1.8, linestyles="--")
-    ax_gp.scatter(X_train[:, 0], X_train[:, 1],
-                  c="red", edgecolor="k", s=35, zorder=3)
-    for pt, v in zip(X_train, rays_plot):
-        clipped_arrow(ax_gp, pt, v.flatten(), color="white")
-    handles = [Line2D([], [], color="red", lw=2, label="GP  f=4"),
-               Line2D([], [], color="black", lw=2, ls="--", label="True f=4")]
-    ax_gp.legend(handles=handles, loc="upper right")
-
-    # ===== True panel =================================================
-    cf2 = ax_true.contourf(X1, X2, Zt, levels=levels, cmap="viridis")
-    fig.colorbar(cf2, ax=ax_true, fraction=0.046)
-    ax_true.set_title("True function")
-    ax_true.contour(X1, X2, Zt, levels=[threshold],
-                    colors="black", linewidths=1.8, linestyles="--")
-    ax_true.contour(X1, X2, Zp, levels=[threshold],
-                    colors="red", linewidths=1.8, linestyles="-")
-    ax_true.scatter(X_train[:, 0], X_train[:, 1],
-                    c="red", edgecolor="k", s=35, zorder=3)
-    for pt, v in zip(X_train, rays_plot):
-        clipped_arrow(ax_true, pt, v.flatten(), color="white")
-
-    # ===== Variance panel =============================================
-    cf3 = ax_var.contourf(X1, X2, Zv, levels=var_levels, cmap="plasma")
-    fig.colorbar(cf3, ax=ax_var, fraction=0.046)
-    ax_var.set_title("GP variance")
-    ax_var.scatter(X_train[:, 0], X_train[:, 1],
-                   c="white", edgecolor="k", s=35, zorder=3)
-    for pt, v in zip(X_train, rays_plot):
-        clipped_arrow(ax_var, pt, v.flatten(), color="black")
-
-    # ===== Axis Formatting ============================================
-    for ax in (ax_gp, ax_true, ax_var):
-        ax.set_xlim([-2.5, 2.5])
-        ax.set_ylim([-2.5, 2.5])
-        ax.set_aspect("equal")
-        ax.set_xlabel("x₁")
-        ax.set_ylabel("x₂")
-
-    plt.tight_layout()
-    plt.show()
+    """Main execution block."""
+    config = ContourConfig()
+    tutorial = ContourSeekingDEGPTutorial(config, true_function, true_gradient)
+    tutorial.run()
 
 
 if __name__ == "__main__":
