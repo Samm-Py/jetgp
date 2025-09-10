@@ -38,7 +38,7 @@ class HighDimConfig:
     lower_bounds: List[float] = field(default_factory=lambda: [-5.0] * 4)
     upper_bounds: List[float] = field(default_factory=lambda: [5.0] * 4)
     normalize_data: bool = True
-    kernel: str = "SE"
+    kernel: str = "RQ"
     kernel_type: str = "anisotropic"
     n_restarts: int = 15
     swarm_size: int = 250
