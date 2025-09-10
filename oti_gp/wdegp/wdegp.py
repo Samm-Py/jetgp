@@ -168,7 +168,7 @@ class wdegp:
         submodel_vals = []
         submodel_cov = []
 
-        if len(self.index) == 1:   
+        if len(self.index) == 1:
             i = 0
             index_i = self.index[i]
             diffs_train_test = wdegp_utils.differences_by_dim_func(
@@ -179,7 +179,7 @@ class wdegp:
                 diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
-            
+
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             K += self.sigma_data[i]**2
             # L = cholesky(K)
@@ -187,19 +187,18 @@ class wdegp:
             # print(K)
             try:
                 cho_solve_failed = False
-                L,low = cho_factor(K, lower=True)
+                L, low = cho_factor(K, lower=True)
                 alpha = cho_solve(
-                            (L,low), 
-                            self.y_train[i]
-                        )
+                    (L, low),
+                    self.y_train[i]
+                )
             except:
                 cho_solve_failed = True
                 L = cholesky(K)
                 alpha = np.linalg.solve(K, self.y_train[i])
-                print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+                print(
+                    'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
             # If Cholesky fails, fall back to standard solve
-            
-
 
             K_s = wdegp_utils.rbf_kernel(
                 diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
@@ -209,7 +208,7 @@ class wdegp:
             if self.normalize:
                 f_mean = self.mu_y + f_mean * self.sigma_y
 
-            y_val +=f_mean
+            y_val += f_mean
             if return_submodels:
                 submodel_vals.append(f_mean)
 
@@ -222,19 +221,18 @@ class wdegp:
                 )
                 # v = solve(L, K_s[:, :n_test])
                 if cho_solve_failed:
-                    f_cov = ( K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
-                    )
+                    f_cov = (K_ss[:len(X_test), :len(X_test)] - K_s[:, :len(X_test)].T @ np.linalg.solve(K, K_s[:, :len(X_test)])
+                             )
                 else:
                     v = solve_triangular(L, K_s, lower=low)
                     f_cov = (K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
-                    )
+                             )
 
                 if self.normalize:
                     f_var = utils.transform_cov(f_cov, self.sigma_y, self.sigmas_x,
                                                 self.flattened_der_indicies[i], X_test)
                 else:
                     f_var = np.diag(np.abs(f_cov))
-
 
                 y_var += np.sqrt(f_var)
                 if return_submodels:
@@ -255,7 +253,7 @@ class wdegp:
                     diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
-                
+
                 K += (10 ** sigma_n) ** 2 * np.eye(len(K))
                 K += self.sigma_data[i]**2
                 # L = cholesky(K)
@@ -263,19 +261,17 @@ class wdegp:
                 # print(K)
                 try:
                     cho_solve_failed = False
-                    L,low = cho_factor(K, lower=True)
+                    L, low = cho_factor(K, lower=True)
                     alpha = cho_solve(
-                                (L,low), 
-                                self.y_train[i]
-                            )
+                        (L, low),
+                        self.y_train[i]
+                    )
                 except:
                     cho_solve_failed = True
-                    L = cholesky(K)
                     alpha = np.linalg.solve(K, self.y_train[i])
-                    print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+                    print(
+                        'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
                 # If Cholesky fails, fall back to standard solve
-                
-
 
                 K_s = wdegp_utils.rbf_kernel(
                     diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
@@ -299,12 +295,12 @@ class wdegp:
                     )
                     # v = solve(L, K_s[:, :n_test])
                     if cho_solve_failed:
-                        f_cov = ( K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
-                        )
+                        f_cov = (K_ss[:len(X_test), :len(X_test)] - K_s[:, :len(X_test)].T @ np.linalg.solve(K, K_s[:, :len(X_test)])
+                                 )
                     else:
                         v = solve_triangular(L, K_s, lower=low)
                         f_cov = (K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
-                        )
+                                 )
 
                     if self.normalize:
                         f_var = utils.transform_cov(f_cov, self.sigma_y, self.sigmas_x,

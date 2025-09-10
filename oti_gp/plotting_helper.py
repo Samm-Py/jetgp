@@ -547,15 +547,15 @@ def make_submodel_plots(
                 # the original function values (as opposed to the stacked derivative entries).
                 plt.scatter(
                     X_train,
-                    y_train[: X_train.shape[0]],
+                    y_train[0][0][: X_train.shape[0]],
                     color="k",
                     label="Training points",
                 )
 
                 # GP mean prediction
                 plt.plot(
-                    X_test,
-                    y_pred[: X_test.shape[0]],
+                    X_test.reshape(-1, 1),
+                    y_pred[: X_test.shape[0]].reshape(-1, 1),
                     "b",
                     label="GP Prediction",
                 )
@@ -563,9 +563,9 @@ def make_submodel_plots(
                 # 95% confidence interval (approx. ±1.96 * std dev)
                 plt.fill_between(
                     X_test.ravel(),
-                    y_pred[0: X_test.shape[0]]
+                    y_pred[0: X_test.shape[0]].flatten()
                     - 1.96 * sigma[0: X_test.shape[0]],
-                    y_pred[0: X_test.shape[0]]
+                    y_pred[0: X_test.shape[0]].flatten()
                     + 1.96 * sigma[0: X_test.shape[0]],
                     color="b",
                     alpha=0.2,
@@ -813,17 +813,17 @@ def make_submodel_plots(
             # ----- Performance Evaluation -----
             # Compute the root mean squared error (RMSE) between the GP prediction and the true function.
 
-
             for i in range(0, len(submodel_vals)):
                 sigma = np.sqrt(abs(np.diag(submodel_cov[i])))
                 y_pred = submodel_vals[i]
                 f_mean_2d = y_pred.reshape(N_grid, N_grid)
-                
+
                 # Calculate absolute error (assuming you have true_values available)
                 # true_values should be reshaped to match f_mean_2d dimensions
-                true_values_2d = true_values.reshape(N_grid, N_grid)  # Adjust this line based on your true_values format
+                # Adjust this line based on your true_values format
+                true_values_2d = true_values.reshape(N_grid, N_grid)
                 absolute_error = np.abs(f_mean_2d - true_values_2d)
-                
+
                 # ----- Plotting the Results -----
                 # Create a figure with two subplots: one for the GP prediction and one for the absolute error
                 plt.figure(23984 + i, figsize=(6, 5))
@@ -862,15 +862,15 @@ def make_submodel_plots(
                 # plt.colorbar(contour2)
                 # # Overlay the training points on the error plot
                 # plt.scatter(
-                #     X_train[:, 0], 
-                #     X_train[:, 1], 
-                #     c="white", 
+                #     X_train[:, 0],
+                #     X_train[:, 1],
+                #     c="white",
                 #     edgecolors="k",
                 #     label="Train pts"
                 # )
                 # plt.xlabel("X1")
                 # plt.ylabel("X2")
                 # plt.legend()
-                
+
                 # plt.tight_layout(pad=2.0)
                 # plt.show()

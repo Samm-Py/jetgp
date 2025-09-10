@@ -3,20 +3,16 @@
 DEGP Tutorial: 2D Derivative-Enhanced Gaussian Process Regression
 ================================================================================
 
-This tutorial demonstrates how to apply derivative-enhanced Gaussian Process 
+This tutorial demonstrates how to apply derivative-enhanced Gaussian Process
 regression to two-dimensional functions. We'll explore how partial derivatives
 in multiple dimensions can dramatically improve function approximation with
 limited training data.
 
 Key concepts covered:
 - 2D hypercomplex automatic differentiation
-- Partial derivative extraction (∂f/∂x₁, ∂f/∂x₂, ∂²f/∂x₁∂x₂, etc.)
+- Full partial derivative inclusion (∂f/∂x₁, ∂f/∂x₂, ∂²f/∂x₁∂x₂, etc.)
 - Multi-dimensional GP regression with derivative constraints
-- Performance comparison strategies
-- 2D visualization of results
-
-The example uses a complex 2D function combining polynomial and oscillatory
-terms to showcase DEGP capabilities in higher dimensions.
+- Spatial performance analysis and 2D visualization of results
 ================================================================================
 """
 
@@ -27,432 +23,223 @@ from full_degp.degp import degp
 import utils
 import plotting_helper
 import time
-import matplotlib.pyplot as plt
-from typing import List, Tuple, Optional, Dict
+from dataclasses import dataclass
+from typing import List, Dict, Callable
+
+
+@dataclass
+class TwoDimConfig:
+    """Configuration for the 2D DEGP tutorial."""
+    n_order: int = 2
+    n_bases: int = 2
+    lb_x: float = -1.0
+    ub_x: float = 1.0
+    lb_y: float = -1.0
+    ub_y: float = 1.0
+    num_pts_per_axis: int = 5
+    sampling_strategy: str = 'uniform'  # 'uniform', 'chebyshev', or 'random'
+    test_grid_resolution: int = 25
+    normalize_data: bool = True
+    kernel: str = "SE"
+    kernel_type: str = "anisotropic"
+    n_restarts: int = 15
+    swarm_size: int = 300
+
+
+class TwoDimDEGPTutorial:
+    """
+    Manages and executes a detailed, step-by-step 2D DEGP tutorial.
+    """
+
+    def __init__(self, config: TwoDimConfig, true_function: Callable):
+        self.config = config
+        self.true_function = true_function
+        self.training_data: Dict = {}
+        self.gp_model = None
+        self.params = None
+        self.results: Dict = {}
+
+    def _analyze_derivative_structure(self):
+        """Generates and analyzes the full 2D derivative structure."""
+        print("\n" + "="*50 + "\nDerivative Structure Analysis\n" + "="*50)
+        cfg = self.config
+
+        der_indices = utils.gen_OTI_indices(cfg.n_bases, cfg.n_order)
+        self.training_data['der_indices'] = der_indices
+
+        total_derivatives = sum(len(group) for group in der_indices)
+        print(f"  Including all derivatives up to order {cfg.n_order}.")
+        print(
+            f"  Total derivative types per point: {total_derivatives} (including mixed partials like ∂²f/∂x₁∂x₂)")
+
+    def _generate_training_data(self):
+        """Generates 2D training data using the specified sampling strategy."""
+        print("\n" + "="*50 + "\nGenerating Training Data\n" + "="*50)
+        start_time = time.time()
+        cfg = self.config
+
+        X_train = self._create_training_grid()
+        print(
+            f"  Training points generated ({cfg.sampling_strategy} sampling): {X_train.shape}")
+
+        X_train_pert = oti.array(X_train)
+        for i in range(cfg.n_bases):
+            X_train_pert[:, i] += oti.e(i + 1, order=cfg.n_order)
+
+        y_train_hc = self.true_function(X_train_pert)
+        y_train_list = [y_train_hc.real]
+        for group in self.training_data['der_indices']:
+            for sub_group in group:
+                y_train_list.append(y_train_hc.get_deriv(sub_group))
+
+        self.training_data.update(
+            {'X_train': X_train, 'y_train_list': y_train_list})
+        print(
+            f"  Total observations created: {sum(d.shape[0] for d in y_train_list)}")
+        print(f"  Data generation time: {time.time() - start_time:.3f}s")
+
+    def _create_training_grid(self) -> np.ndarray:
+        """Helper to create 2D training points based on the configured strategy."""
+        cfg = self.config
+        n = cfg.num_pts_per_axis
+        if cfg.sampling_strategy == 'uniform':
+            x_vals = np.linspace(cfg.lb_x, cfg.ub_x, n)
+            y_vals = np.linspace(cfg.lb_y, cfg.ub_y, n)
+            return np.array(list(itertools.product(x_vals, y_vals)))
+        elif cfg.sampling_strategy == 'random':
+            np.random.seed(42)
+            return np.random.uniform([cfg.lb_x, cfg.lb_y], [cfg.ub_x, cfg.ub_y], (n**2, 2))
+        else:  # chebyshev
+            k = np.arange(1, n + 1)
+            x_cheb = 0.5 * (cfg.lb_x + cfg.ub_x) + 0.5 * (cfg.ub_x -
+                                                          cfg.lb_x) * np.cos((2*k - 1) * np.pi / (2*n))
+            y_cheb = 0.5 * (cfg.lb_y + cfg.ub_y) + 0.5 * (cfg.ub_y -
+                                                          cfg.lb_y) * np.cos((2*k - 1) * np.pi / (2*n))
+            return np.array(list(itertools.product(x_cheb, y_cheb)))
+
+    def _train_model(self):
+        """Initializes, trains, and optimizes the 2D DEGP model."""
+        print("\n" + "="*50 + "\nDEGP Model Setup and Training\n" + "="*50)
+        training_start = time.time()
+        cfg = self.config
+        data = self.training_data
+
+        try:
+            self.gp_model = degp(
+                data['X_train'], data['y_train_list'], cfg.n_order, cfg.n_bases,
+                data['der_indices'], normalize=cfg.normalize_data,
+                kernel=cfg.kernel, kernel_type=cfg.kernel_type
+            )
+            print("  Model initialization: SUCCESS")
+
+            print("  Optimizing hyperparameters...")
+            self.params = self.gp_model.optimize_hyperparameters(
+                n_restart_optimizer=cfg.n_restarts, swarm_size=cfg.swarm_size
+            )
+            print("  Hyperparameter optimization: SUCCESS")
+            print(
+                f"  Total training time: {time.time() - training_start:.2f}s")
+        except Exception as e:
+            print(f"  Training FAILED\n  Error: {e}")
+            raise
+
+    def _evaluate_model(self):
+        """Makes predictions and computes comprehensive 2D performance metrics."""
+        print("\n" + "="*50 + "\nModel Prediction and Evaluation\n" + "="*50)
+        cfg = self.config
+
+        x_lin = np.linspace(cfg.lb_x, cfg.ub_x, cfg.test_grid_resolution)
+        y_lin = np.linspace(cfg.lb_y, cfg.ub_y, cfg.test_grid_resolution)
+        X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
+        X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
+
+        y_pred = self.gp_model.predict(X_test, self.params, calc_cov=False)
+        y_true = self.true_function(X_test, alg=np)
+
+        self.results = self._evaluate_2d_performance(
+            y_true, y_pred, (cfg.test_grid_resolution, cfg.test_grid_resolution))
+        self.results.update(
+            {'X_test': X_test, 'X1_grid': X1_grid, 'X2_grid': X2_grid, 'y_pred': y_pred})
+
+        print("Performance Metrics:")
+        print(f"  NRMSE:            {self.results['nrmse']:.6f}")
+        print(f"  RMSE:             {self.results['rmse']:.6f}")
+        print(f"  Max Error:        {self.results['max_error']:.6f}")
+
+        print("\nSpatial Error Analysis (Mean Absolute Error):")
+        print(
+            f"  Corner regions:   {self.results['spatial_errors']['corners']:.6f}")
+        print(
+            f"  Edge regions:     {self.results['spatial_errors']['edges']:.6f}")
+        print(
+            f"  Center region:    {self.results['spatial_errors']['center']:.6f}")
+
+    def _evaluate_2d_performance(self, y_true, y_pred, grid_shape) -> Dict:
+        """Helper to compute 2D-specific metrics."""
+        y_true_flat, y_pred_flat = y_true.flatten(), y_pred.flatten()
+        errors = np.abs(y_true_flat - y_pred_flat).reshape(grid_shape)
+        return {
+            'rmse': np.sqrt(np.mean((y_true_flat - y_pred_flat)**2)),
+            'nrmse': utils.nrmse(y_true_flat, y_pred_flat),
+            'max_error': np.max(np.abs(y_true_flat - y_pred_flat)),
+            'spatial_errors': {
+                'corners': np.mean([errors[0, 0], errors[0, -1], errors[-1, 0], errors[-1, -1]]),
+                'edges': np.mean([np.mean(errors[0, :]), np.mean(errors[-1, :]), np.mean(errors[:, 0]), np.mean(errors[:, -1])]),
+                'center': np.mean(errors[grid_shape[0]//4:-grid_shape[0]//4, grid_shape[1]//4:-grid_shape[1]//4])
+            }
+        }
+
+    def visualize_results(self):
+        """Generates 2D surface plots comparing predictions with the ground truth."""
+        print("\n" + "="*50 + "\nGenerating 2D Visualizations\n" + "="*50)
+        try:
+            plotting_helper.make_plots(
+                self.training_data['X_train'], self.training_data['y_train_list'],
+                self.results['X_test'], self.results['y_pred'], self.true_function,
+                X1_grid=self.results['X1_grid'], X2_grid=self.results['X2_grid'],
+                n_order=self.config.n_order, n_bases=self.config.n_bases,
+                der_indices=self.training_data['der_indices']
+            )
+            print("  Visualization: SUCCESS")
+        except Exception as e:
+            print(f"  Visualization: FAILED\n  Error: {e}")
+
+    def run(self):
+        """Executes the complete tutorial workflow."""
+        start_time = time.time()
+        cfg = self.config
+        print("2D DEGP Tutorial: Multi-Dimensional Function Approximation")
+        print("=" * 70)
+        print(
+            f"Configuration: {cfg.num_pts_per_axis**2} training points on a {cfg.num_pts_per_axis}x{cfg.num_pts_per_axis} grid ({cfg.sampling_strategy})")
+
+        self._analyze_derivative_structure()
+        self._generate_training_data()
+        self._train_model()
+        self._evaluate_model()
+        self.visualize_results()
+
+        print("\n" + "="*60 + "\n2D DEGP Tutorial Summary\n" + "="*60)
+        print(f"Total execution time: {time.time() - start_time:.2f}s")
+        print(f"Final NRMSE: {self.results['nrmse']:.6f}")
+        obs_per_pt = 1 + sum(len(group)
+                             for group in self.training_data['der_indices'])
+        print(
+            f"Training efficiency: {obs_per_pt * cfg.num_pts_per_axis**2} observations from {cfg.num_pts_per_axis**2} points ({obs_per_pt}x multiplier).")
+
 
 def true_function(X, alg=oti):
-    """
-    Complex 2D test function with polynomial and oscillatory components.
-    
-    This function combines:
-    - Polynomial term: x₁²x₂ (provides smooth variation)
-    - High-frequency oscillations: cos(10x₁) + cos(10x₂) (challenging features)
-    
-    This combination tests the GP's ability to handle both smooth trends
-    and rapid oscillations in 2D space.
-    
-    Parameters:
-    -----------
-    X : array-like, shape (n_samples, 2)
-        Input points with columns [x1, x2]
-    alg : module
-        Numerical library (numpy or pyoti for automatic differentiation)
-        
-    Returns:
-    --------
-    y : array-like
-        Function values
-    """
-    x1 = X[:, 0]
-    x2 = X[:, 1]
+    """Complex 2D test function with polynomial and oscillatory components."""
+    x1, x2 = X[:, 0], X[:, 1]
     return x1**2 * x2 + alg.cos(10 * x1) + alg.cos(10 * x2)
 
-def analyze_derivative_structure(der_indices: List, n_bases: int) -> Dict:
-    """
-    Analyze the structure of derivatives being used.
-    
-    Parameters:
-    -----------
-    der_indices : list
-        Derivative indices structure
-    n_bases : int
-        Number of input dimensions
-        
-    Returns:
-    --------
-    analysis : dict
-        Analysis of derivative structure
-    """
-    total_derivatives = 0
-    derivative_types = []
-    
-    for i in range(len(der_indices)):
-        for j in range(len(der_indices[i])):
-            deriv_spec = der_indices[i][j]
-            total_derivatives += 1
-            
-            # Parse derivative specification
-            if len(deriv_spec) == 1:
-                # Single variable derivative
-                var_idx, order = deriv_spec[0]
-                derivative_types.append(f"∂^{order}/∂x_{var_idx}^{order}")
-            else:
-                # Mixed partial derivative  
-                desc = "∂^{len(deriv_spec)}/"
-                for var_idx, order in deriv_spec:
-                    desc += f"∂x_{var_idx}^{order}"
-                derivative_types.append(desc)
-    
-    return {
-        'total_count': total_derivatives,
-        'types': derivative_types,
-        'derivatives_per_point': total_derivatives
-    }
-
-def evaluate_2d_performance(y_true: np.ndarray, y_pred: np.ndarray, 
-                           X_test: np.ndarray, grid_shape: Tuple[int, int]) -> Dict:
-    """
-    Compute comprehensive performance metrics for 2D function approximation.
-    
-    Parameters:
-    -----------
-    y_true : array
-        True function values
-    y_pred : array
-        Predicted values  
-    X_test : array
-        Test input points
-    grid_shape : tuple
-        Shape of the evaluation grid (N_grid, N_grid)
-        
-    Returns:
-    --------
-    metrics : dict
-        Dictionary of performance metrics
-    """
-    # Flatten arrays for consistent computation
-    y_true_flat = y_true.flatten()
-    y_pred_flat = y_pred.flatten()
-    
-    # Basic error metrics
-    mse = np.mean((y_true_flat - y_pred_flat)**2)
-    mae = np.mean(np.abs(y_true_flat - y_pred_flat))
-    rmse = np.sqrt(mse)
-    nrmse = utils.nrmse(y_true_flat, y_pred_flat)
-    max_error = np.max(np.abs(y_true_flat - y_pred_flat))
-    
-    # Spatial error distribution
-    errors = np.abs(y_true_flat - y_pred_flat).reshape(grid_shape)
-    mean_error_by_region = {
-        'corners': np.mean([errors[0,0], errors[0,-1], errors[-1,0], errors[-1,-1]]),
-        'edges': np.mean([np.mean(errors[0,1:-1]), np.mean(errors[-1,1:-1]), 
-                         np.mean(errors[1:-1,0]), np.mean(errors[1:-1,-1])]),
-        'center': np.mean(errors[grid_shape[0]//4:3*grid_shape[0]//4, 
-                                grid_shape[1]//4:3*grid_shape[1]//4])
-    }
-    
-    return {
-        'mse': mse,
-        'mae': mae,
-        'rmse': rmse, 
-        'nrmse': nrmse,
-        'max_error': max_error,
-        'spatial_errors': mean_error_by_region,
-        'error_std': np.std(y_true_flat - y_pred_flat)
-    }
-
-def create_training_grid(lb_x: float, ub_x: float, lb_y: float, ub_y: float, 
-                        num_points: int, strategy: str = 'uniform') -> np.ndarray:
-    """
-    Create 2D training grid with different sampling strategies.
-    
-    Parameters:
-    -----------
-    lb_x, ub_x : float
-        X-dimension bounds
-    lb_y, ub_y : float  
-        Y-dimension bounds
-    num_points : int
-        Number of points per dimension
-    strategy : str
-        Sampling strategy ('uniform', 'chebyshev', 'random')
-        
-    Returns:
-    --------
-    X_train : array
-        Training input points
-    """
-    if strategy == 'uniform':
-        x_vals = np.linspace(lb_x, ub_x, num_points)
-        y_vals = np.linspace(lb_y, ub_y, num_points)
-        return np.array(list(itertools.product(x_vals, y_vals)))
-    
-    elif strategy == 'chebyshev':
-        # Chebyshev nodes for better conditioning
-        k = np.arange(1, num_points + 1)
-        x_cheb = 0.5 * (lb_x + ub_x) + 0.5 * (ub_x - lb_x) * np.cos((2*k - 1) * np.pi / (2 * num_points))
-        y_cheb = 0.5 * (lb_y + ub_y) + 0.5 * (ub_y - lb_y) * np.cos((2*k - 1) * np.pi / (2 * num_points))
-        return np.array(list(itertools.product(x_cheb, y_cheb)))
-    
-    elif strategy == 'random':
-        np.random.seed(42)  # For reproducibility
-        n_total = num_points ** 2
-        x_rand = np.random.uniform(lb_x, ub_x, n_total)
-        y_rand = np.random.uniform(lb_y, ub_y, n_total)
-        return np.column_stack([x_rand, y_rand])
-    
-    else:
-        raise ValueError(f"Unknown sampling strategy: {strategy}")
 
 def main():
-    """
-    Main 2D DEGP tutorial execution with comprehensive analysis.
-    """
-    print("2D DEGP Tutorial: Multi-Dimensional Function Approximation")
-    print("=" * 70)
-    
-    # ==========================================================================
-    # Configuration Parameters
-    # ==========================================================================
-    
-    # Derivative configuration
-    n_order = 2      # Maximum derivative order to include
-    n_bases = 2      # Number of input dimensions (x₁, x₂)
-    
-    # Domain configuration  
-    lb_x, ub_x = -1, 1
-    lb_y, ub_y = -1, 1
-    
-    # Training configuration
-    num_points = 5   # Points per dimension (total: num_points²)
-    sampling_strategy = 'uniform'  # 'uniform', 'chebyshev', 'random'
-    
-    # Test grid configuration
-    N_grid = 25      # Grid resolution for evaluation
-    
-    print(f"Configuration:")
-    print(f"  Domain: [{lb_x}, {ub_x}] × [{lb_y}, {ub_y}]")
-    print(f"  Training grid: {num_points}×{num_points} = {num_points**2} points")
-    print(f"  Sampling strategy: {sampling_strategy}")
-    print(f"  Maximum derivative order: {n_order}")
-    print(f"  Test grid resolution: {N_grid}×{N_grid}")
-    
-    # ==========================================================================
-    # Derivative Analysis
-    # ==========================================================================
-    
-    # Generate derivative indices for 2D functions up to n_order
-    # For 2 variables, 2nd order der_indices looks like:
-    # [[[[1, 1]], [[2, 1]]], [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]]
-    # This represents:
-    #   1st order: ∂f/∂x₁, ∂f/∂x₂  
-    #   2nd order: ∂²f/∂x₁², ∂²f/∂x₁∂x₂ (mixed), ∂²f/∂x₂²
-    der_indices = utils.gen_OTI_indices(n_bases, n_order)
-    deriv_analysis = analyze_derivative_structure(der_indices, n_bases)
-    
-    print(f"\nDerivative Structure Analysis:")
-    print(f"  Example 2D structure: {der_indices}")
-    print(f"  Total derivative types: {deriv_analysis['total_count']}")
-    print(f"  Derivatives per training point: {deriv_analysis['derivatives_per_point']}")
-    print(f"  Included derivatives:")
-    for i, deriv_type in enumerate(deriv_analysis['types'], 1):
-        print(f"    {i}. {deriv_type}")
-    
-    # ==========================================================================
-    # Training Data Generation
-    # ==========================================================================
-    
-    print(f"\nGenerating Training Data...")
-    start_time = time.time()
-    
-    # Create training grid
-    X_train = create_training_grid(lb_x, ub_x, lb_y, ub_y, num_points, sampling_strategy)
-    print(f"  Training points shape: {X_train.shape}")
-    
-    # Setup hypercomplex perturbation for automatic differentiation  
-    # Note: In practice, derivatives would typically come from the user
-    # rather than being computed this way
-    X_train_pert = oti.array(X_train)
-    for i in range(n_bases):
-        X_train_pert[:, i] += oti.e(i + 1, order=n_order)
-    
-    # Evaluate function with all derivatives up to n_order
-    y_train_hc = true_function(X_train_pert)
-    y_train_real = y_train_hc.real
-    
-    # Extract function values and all derivatives
-    # The derivative information in y_train must match the exact order of der_indices
-    y_train = [y_train_real]  # Function values always come first
-    total_derivative_obs = 0
-    
-    # Add derivatives in the same order as specified by der_indices
-    for i in range(len(der_indices)):
-        for j in range(len(der_indices[i])):
-            deriv = y_train_hc.get_deriv(der_indices[i][j])
-            y_train.append(deriv)  # Order must match der_indices
-            total_derivative_obs += len(deriv)
-    
-    data_gen_time = time.time() - start_time
-    print(f"  Function observations: {len(y_train[0])}")
-    print(f"  Derivative observations: {total_derivative_obs}")
-    print(f"  Total training observations: {len(y_train[0]) + total_derivative_obs}")
-    print(f"  Data generation time: {data_gen_time:.3f}s")
-    
-    # ==========================================================================
-    # DEGP Model Setup and Training
-    # ==========================================================================
-    
-    print(f"\nSetting up 2D DEGP Model...")
-    
-    try:
-        # Initialize DEGP model
-        gp = degp(
-            X_train,           # Training inputs (2D)
-            y_train,           # Training outputs (function + all derivatives)
-            n_order,           # Maximum derivative order
-            n_bases,           # Input dimensionality (2D)
-            der_indices,       # All derivatives up to n_order
-            normalize=True,    # Normalize inputs/outputs
-            kernel="SE",       # Squared Exponential kernel
-            kernel_type="anisotropic"  # Different length scales per dimension
-        )
-        
-        print("  Model initialization: SUCCESS")
-        print(f"  Kernel: Squared Exponential (anisotropic)")
-        print(f"  Input normalization: Enabled")
-        
-    except Exception as e:
-        print(f"  Model initialization: FAILED")
-        print(f"  Common causes:")
-        print(f"  - Inconsistent data: mismatch between y_train and der_indices")
-        print(f"  - Unsupported kernel type (use 'SE', 'RBF', etc.)")
-        print(f"  - Unsupported kernel_type (use 'anisotropic' or 'isotropic')")
-        print(f"  Error: {e}")
-        return
-    
-    # ==========================================================================
-    # Hyperparameter Optimization
-    # ==========================================================================
-    
-    print(f"\nOptimizing Hyperparameters...")
-    optimization_start = time.time()
-    
-    try:
-        # Optimize hyperparameters using particle swarm optimization  
-        # n_restart_optimizer: number of generations for the particle swarm optimizer
-        # swarm_size: number of particles in the swarm (increased for 2D complexity)
-        params = gp.optimize_hyperparameters(
-            n_restart_optimizer=15,
-            swarm_size=300
-        )
-        
-        optimization_time = time.time() - optimization_start
-        print(f"  Optimization time: {optimization_time:.2f}s")
-        print(f"  Optimization: SUCCESS")
-        
-    except Exception as e:
-        print(f"  Optimization: FAILED")
-        print(f"  Common causes:")
-        print(f"  - Cholesky decomposition failure due to numerical instability")
-        print(f"  - Insufficient computational resources (too much training data)")
-        print(f"  Solution: Ensure normalize=True in GP initialization (already set)")
-        print(f"  Error: {e}")
-        return
-    
-    # ==========================================================================
-    # Model Prediction
-    # ==========================================================================
-    
-    print(f"\nGenerating 2D Predictions...")
-    prediction_start = time.time()
-    
-    # Create 2D test grid
-    x_lin = np.linspace(lb_x, ub_x, N_grid)
-    y_lin = np.linspace(lb_y, ub_y, N_grid)
-    X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
-    X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
-    
-    print(f"  Test grid points: {X_test.shape[0]} ({N_grid}×{N_grid})")
-    
-    try:
-        # Generate predictions
-        y_pred = gp.predict(
-            X_test,              # Test inputs (2D grid)
-            params,              # Optimized hyperparameters
-            calc_cov=False,      # Skip covariance for speed in 2D
-            return_deriv=False   # Only return function predictions
-        )
-        
-        prediction_time = time.time() - prediction_start
-        print(f"  Prediction time: {prediction_time:.3f}s")
-        print(f"  Predictions shape: {y_pred.shape}")
-        
-    except Exception as e:
-        print(f"  Prediction: FAILED")
-        print(f"  Common causes:")
-        print(f"  - Insufficient computational resources (large test set)")
-        print(f"  - Cholesky decomposition failure (bug workaround implemented)")
-        print(f"  Error: {e}")
-        return
-    
-    # ==========================================================================
-    # Performance Evaluation
-    # ==========================================================================
-    
-    print(f"\nEvaluating 2D Model Performance...")
-    
-    # Compute true function values for comparison
-    y_true = true_function(X_test, alg=np)
-    
-    # Calculate comprehensive 2D metrics
-    metrics = evaluate_2d_performance(y_true, y_pred, X_test, (N_grid, N_grid))
-    
-    print(f"\nPerformance Metrics:")
-    print(f"  NRMSE:           {metrics['nrmse']:.6f}")
-    print(f"  RMSE:            {metrics['rmse']:.6f}")
-    print(f"  MAE:             {metrics['mae']:.6f}")
-    print(f"  Max Error:       {metrics['max_error']:.6f}")
-    print(f"  Error Std:       {metrics['error_std']:.6f}")
-    
-    print(f"\nSpatial Error Analysis:")
-    print(f"  Corner regions:  {metrics['spatial_errors']['corners']:.6f}")
-    print(f"  Edge regions:    {metrics['spatial_errors']['edges']:.6f}")
-    print(f"  Center region:   {metrics['spatial_errors']['center']:.6f}")
-    
-    # ==========================================================================
-    # Visualization
-    # ==========================================================================
-    
-    print(f"\nGenerating 2D Visualizations...")
-    
-    try:
-        # Create plots comparing predictions with ground truth
-        plotting_helper.make_plots(
-            X_train,                    # Training inputs
-            y_train,                    # Training outputs  
-            X_test,                     # Test inputs
-            y_pred,                     # Predictions
-            true_function,              # True function
-            X1_grid=X1_grid,           # X mesh for plotting
-            X2_grid=X2_grid,           # Y mesh for plotting
-            n_order=n_order,            # Derivative order
-            n_bases=n_bases,            # Input dimensionality
-            plot_derivative_surrogates=False,  # Focus on function approximation
-            der_indices=der_indices     # Derivative configuration
-        )
-        
-        print("  2D Visualization: SUCCESS")
-        
-    except Exception as e:
-        print(f"  Visualization: FAILED")
-        print(f"  Error: {e}")
-        print("  Continuing without plots...")
-    
-    # ==========================================================================
-    # Tutorial Summary and Insights
-    # ==========================================================================
-    
-    total_time = time.time() - start_time
-    observations_per_point = 1 + deriv_analysis['derivatives_per_point']
-    total_observations = X_train.shape[0] * observations_per_point
-    
-    print(f"\n2D DEGP Tutorial Summary:")
-    print(f"=" * 60)
-    print(f"Total execution time: {total_time:.2f}s")
-    print(f"Final NRMSE: {metrics['nrmse']:.6f}")
-    print(f"Training efficiency: {total_observations} observations from {X_train.shape[0]} points")
-    print(f"Observation multiplier: {observations_per_point}x (due to derivatives)")
-    
+    """Main execution block."""
+    config = TwoDimConfig(sampling_strategy='uniform')
+    tutorial = TwoDimDEGPTutorial(config, true_function)
+    tutorial.run()
+
 
 if __name__ == "__main__":
     main()

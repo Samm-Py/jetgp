@@ -31,7 +31,7 @@ class GroupedSubmodelConfig:
     n_order: int = 2                     # Maximum derivative order
     n_bases: int = 1                     # Number of input dimensions (1D case)
     lb_x: float = 0.5                    # Lower bound of domain
-    ub_x: float = 2.5                    # Upper bound of domain
+    ub_x: float = 10.0                    # Upper bound of domain
     num_points: int = 10                 # Number of training points
     kernel: str = "SE"                   # Kernel type (Squared Exponential)
     kernel_type: str = "anisotropic"     # Kernel parameterization
@@ -85,11 +85,16 @@ class GroupedSubmodelGP:
         Returns:
             Array of training point coordinates.
         """
-        return np.linspace(
-            self.config.lb_x,
-            self.config.ub_x,
-            self.config.num_points
-        ).reshape(-1, 1)
+        self.config.random_seed = 2
+        self.rng = np.random.RandomState(self.config.random_seed)
+
+        # 1. Generate Training Points
+        X_candidates = np.linspace(
+            self.config.lb_x, self.config.ub_x, 1000).reshape(-1, 1)
+        training_indices = self.rng.choice(
+            np.arange(X_candidates.shape[0]), size=self.config.num_points, replace=False)
+        X_train = np.sort(X_candidates[training_indices], axis=0)
+        return X_train
 
     def create_grouped_submodel_structure(self) -> Tuple[List[List[int]], List]:
         """
@@ -387,10 +392,10 @@ class GroupedSubmodelGP:
         return results
 
 
-def oscillatory_function_with_trend(X, alg=oti):
-    """Example function with complex behavior."""
-    x1 = X[:, 0]
-    return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
+def true_function(X, alg=oti):
+    """Test function f(x) = x * sin(x)."""
+    x = X[:, 0]
+    return x * alg.sin(x)
 
 
 def main():
@@ -404,15 +409,15 @@ def main():
     # - The second submodel uses points 5-9 with 1st order derivatives.
     config = GroupedSubmodelConfig(
         n_order=3,  # Max order needed for any submodel
-        num_points=10,
-        submodel_groups=[[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
-        submodel_orders=[2, 2],  # Order for submodel 1, order for submodel 2
+        num_points=6,
+        submodel_groups=[[0, 1, 2], [3, 4, 5]],
+        submodel_orders=[2, 3],  # Order for submodel 1, order for submodel 2
         n_restart_optimizer=15,
         swarm_size=200
     )
 
     # 2. Create and run the experiment
-    experiment = GroupedSubmodelGP(config, oscillatory_function_with_trend)
+    experiment = GroupedSubmodelGP(config, true_function)
     # Run with both the standard visualization and the new analysis plot
     results = experiment.run_complete_experiment(visualize=True, analyze=True)
 

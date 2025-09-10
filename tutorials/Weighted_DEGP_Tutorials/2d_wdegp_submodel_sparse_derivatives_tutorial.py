@@ -1,22 +1,23 @@
 """
-2D Grouped GP with Uniform Derivatives per Submodel
-=====================================================
+2D Grouped Submodel Derivative-Enhanced Gaussian Process
+=========================================================
 
-This module demonstrates a derivative-enhanced GP for a 2D function where
-training points are grouped into submodels. In this implementation, every
-submodel uses the same, uniform set of derivatives.
+This module demonstrates an advanced derivative-enhanced GP for a 2D function.
+It showcases a highly flexible approach where training points are grouped into
+submodels, and each submodel can be assigned a different derivative order.
 
 The model uses function values (y) from all training points to inform the
 global fit. However, it only computes and uses derivative information for a
 specified subset of these points, which are defined in the `submodel_point_groups`
-list. This is useful for excluding certain points from the more computationally
-intensive derivative calculations.
+list. This allows for a tailored modeling strategy where computational effort
+and model complexity (i.e., high-order derivatives) can be focused on specific
+regions of interest.
 
 Key Features:
 - Approximation of a 2D function.
 - Submodel creation from arbitrary groups of training points.
 - **Selective Derivative Utilization**: Only points included in submodel groups contribute derivative information.
-- **Uniform Derivative Structure**: Every submodel is built using the same complete set of high-order derivatives.
+- **Heterogeneous Derivative Orders**: Each submodel can be assigned a different maximum derivative order (e.g., no derivatives, 1st order only, or full high-order derivatives).
 - **Automatic Data Reordering**: The script automatically reorders the training data to satisfy the sequential indexing requirements of the underlying GP framework.
 """
 
@@ -34,20 +35,21 @@ from dataclasses import dataclass, field
 @dataclass
 class TwoDimGPConfig:
     """Configuration for a 2D grouped submodel derivative-enhanced GP."""
-    n_order: int = 3
+    n_order: int = 3                     # Max derivative order used in any submodel
+    # Number of input dimensions (must be 2)
     n_bases: int = 2
-    lb_x: float = -1.0
-    ub_x: float = 1.0
-    lb_y: float = -1.0
-    ub_y: float = 1.0
-    points_per_axis: int = 4
-    kernel: str = "SE"
-    kernel_type: str = "anisotropic"
-    normalize: bool = True
-    n_restart_optimizer: int = 15
-    swarm_size: int = 100
-    test_points_per_axis: int = 35
-    random_seed: Optional[int] = 0
+    lb_x: float = -1.0                   # Lower bound of domain (x-axis)
+    ub_x: float = 1.0                    # Upper bound of domain (x-axis)
+    lb_y: float = -1.0                   # Lower bound of domain (y-axis)
+    ub_y: float = 1.0                    # Upper bound of domain (y-axis)
+    points_per_axis: int = 4             # Number of points along each axis
+    kernel: str = "SE"                   # Kernel type
+    kernel_type: str = "anisotropic"     # Kernel parameterization
+    normalize: bool = True               # Whether to normalize training data
+    n_restart_optimizer: int = 15        # Hyperparameter optimization restarts
+    swarm_size: int = 100                # Particle swarm optimization size
+    test_points_per_axis: int = 35       # Grid size for test evaluation
+    random_seed: Optional[int] = 0       # Random seed for reproducibility
     # User-defined groupings of point indices FOR DERIVATIVE CALCULATION.
     # Points not in this list will contribute function values but not derivatives.
     submodel_point_groups: List[List[int]] = field(default_factory=list)
@@ -55,11 +57,18 @@ class TwoDimGPConfig:
 
 class TwoDimGroupedGP:
     """
-    Manages a 2D GP experiment with data reordering and a uniform
-    derivative structure across all submodels.
+    Manages a 2D derivative-enhanced GP experiment with data reordering
+    and heterogeneous derivative structures.
     """
 
     def __init__(self, config: TwoDimGPConfig, true_function: Callable):
+        """
+        Initialize the 2D grouped submodel GP experiment.
+
+        Args:
+            config: Configuration object with experiment parameters.
+            true_function: The 2D target function to approximate.
+        """
         self.config = config
         self.true_function = true_function
         self.gp_model = None
@@ -84,6 +93,16 @@ class TwoDimGroupedGP:
     ) -> Tuple[np.ndarray, List[List[int]]]:
         """
         Reorders training data based on the subset of points used for derivatives.
+
+        This method ensures that the points with derivative information are placed
+        at the beginning of the `X_train` array, which is a requirement for the
+        `wdegp` model's indexing scheme.
+
+        Returns:
+            A tuple containing:
+            - X_train_reordered: The training points sorted correctly.
+            - sequential_indices: The new, sequential indices for the submodels
+                                  that use derivatives.
         """
         print("Reordering training data based on points selected for derivatives...")
 
@@ -122,14 +141,22 @@ class TwoDimGroupedGP:
         submodel_indices: List[List[int]]
     ) -> Tuple[List[List[np.ndarray]], List]:
         """
-        Prepare training data, using a uniform derivative set for all submodels.
+        Prepare training data, assigning different derivative orders to submodels.
         """
-        print("Preparing submodel data with uniform derivatives...")
+        print("Preparing submodel data with heterogeneous derivatives...")
 
-        # --- Define a single, uniform derivative structure for all submodels ---
+        # --- Define Derivative Structures for each Submodel ---
+        # This example creates three distinct derivative structures.
+        # The order here must correspond to the order of the point groups
+        # defined in the `main` function.
         base_der_indices = utils.gen_OTI_indices(
             self.config.n_bases, self.config.n_order)
-        derivative_specs = [base_der_indices for _ in submodel_indices]
+        derivative_specs = [
+            [],  # Submodel 1 (Corners): No derivatives
+            # Submodel 2 (Exterior): 1st order derivatives
+            utils.gen_OTI_indices(self.config.n_bases, 1),
+            base_der_indices  # Submodel 3 (Center): Full 3rd order derivatives
+        ]
 
         # Function values from ALL training points are always used
         y_function_values = self.true_function(X_train, alg=np)
@@ -145,12 +172,13 @@ class TwoDimGroupedGP:
             y_with_derivatives = oti.array(
                 [self.true_function(x, alg=oti) for x in X_sub_oti])
 
-            # Assemble data: all function values + the uniform set of derivatives
+            # Assemble data: all function values + derivatives specific to this submodel
             current_submodel_data = [y_function_values]
-            for i in range(len(base_der_indices)):
-                for j in range(len(base_der_indices[i])):
+            current_derivative_spec = derivative_specs[k]
+            for i in range(len(current_derivative_spec)):
+                for j in range(len(current_derivative_spec[i])):
                     deriv = y_with_derivatives.get_deriv(
-                        base_der_indices[i][j]).reshape(-1, 1)
+                        current_derivative_spec[i][j]).reshape(-1, 1)
                     current_submodel_data.append(deriv)
             submodel_data.append(current_submodel_data)
 
@@ -189,7 +217,7 @@ class TwoDimGroupedGP:
         X1_grid, X2_grid = np.meshgrid(x_lin, y_lin)
         X_test = np.column_stack([X1_grid.ravel(), X2_grid.ravel()])
 
-        y_pred, _ = self.gp_model.predict(
+        y_pred, submodel_vals = self.gp_model.predict(
             X_test, params, calc_cov=False, return_submodels=True
         )
 
@@ -202,7 +230,8 @@ class TwoDimGroupedGP:
         print(f"Model evaluation complete. NRMSE: {nrmse:.6f}")
 
         return {
-            'X_test': X_test, 'y_pred': y_pred, 'y_true': y_true, 'nrmse': nrmse,
+            'X_test': X_test, 'y_pred': y_pred, 'y_true': y_true,
+            'submodel_vals': submodel_vals, 'nrmse': nrmse,
             'X1_grid': X1_grid, 'X2_grid': X2_grid,
             'y_true_grid': y_true.reshape(grid_shape),
             'y_pred_grid': y_pred.reshape(grid_shape),
@@ -248,7 +277,7 @@ class TwoDimGroupedGP:
 
     def run_complete_experiment(self, contour_plot: bool = True) -> Dict[str, Any]:
         """Execute the complete 2D GP experiment."""
-        print("=== 2D Grouped Submodel GP with Uniform Derivatives ===")
+        print("=== 2D Grouped Submodel GP Experiment with Reordering ===")
 
         X_train_initial = self.generate_training_points()
         X_train_reordered, sequential_indices = self.reorder_training_data(
@@ -278,12 +307,12 @@ class TwoDimGroupedGP:
         print(
             f"Points used for derivatives: {len(list(itertools.chain.from_iterable(self.config.submodel_point_groups)))}")
         print(f"Number of submodels: {len(self.config.submodel_point_groups)}")
-        print(
-            f"All submodels used derivatives up to order: {self.config.n_order}")
         print(f"Final NRMSE: {results['nrmse']:.6f}")
         print("\nSubmodel Groups (for Derivatives):")
-        for i, group in enumerate(self.config.submodel_point_groups):
-            print(f"  Submodel {i+1}: Original Point Indices {group}")
+        for i, (group, spec) in enumerate(zip(self.config.submodel_point_groups, self.training_data['derivative_specs'])):
+            order = "None" if not spec else str(len(spec))
+            print(
+                f"  Submodel {i+1}: Original Indices {group} -> Max Derivative Order: {order}")
 
         return results
 
@@ -298,21 +327,25 @@ def six_hump_camel_function(X, alg=np):
 
 def main():
     """Main execution block to demonstrate the 2D GP."""
-
+    # This example demonstrates assigning different derivative orders to
+    # different regions of the input space.
     arbitrary_point_groups = [
         # Group 1: The four corner points.
+        # These will be assigned NO derivative information.
         [0, 3, 12, 15],
 
         # Group 2: The exterior points (excluding corners).
+        # These will be assigned 1st ORDER derivatives.
         [1, 2, 4, 8, 7, 11, 13, 14],
 
         # Group 3: The central 2x2 block.
+        # These will be assigned the FULL high-order derivatives.
         [5, 6, 9, 10]
     ]
 
     config = TwoDimGPConfig(
         submodel_point_groups=arbitrary_point_groups,
-        n_order=3  # This single order will be applied to all submodels
+        n_order=3  # Set the max order for the most complex group
     )
 
     experiment = TwoDimGroupedGP(config, six_hump_camel_function)
