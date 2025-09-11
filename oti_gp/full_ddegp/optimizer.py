@@ -20,8 +20,8 @@ class Optimizer:
 
     def __init__(self, model):
         self.model = model
-    
-    @profile 
+
+    @profile
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the negative log marginal likelihood (NLL) of the model.
@@ -44,6 +44,7 @@ class Optimizer:
             self.model.differences_by_dim,
             ell,
             self.model.n_order,
+            self.model.n_rays,
             self.model.kernel_func,
             self.model.flattened_der_indicies,
             self.model.powers
@@ -52,11 +53,11 @@ class Optimizer:
         K += self.model.sigma_data**2
 
         try:
-            L,low = cho_factor(K)
+            L, low = cho_factor(K)
             alpha = cho_solve(
-                        (L,low), 
-                        self.model.y_train
-                    )
+                (L, low),
+                self.model.y_train
+            )
 
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
