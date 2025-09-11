@@ -43,8 +43,8 @@ class TwoDimGPConfig:
     lb_y: float = -1.0                   # Lower bound of domain (y-axis)
     ub_y: float = 1.0                    # Upper bound of domain (y-axis)
     points_per_axis: int = 4             # Number of points along each axis
-    kernel: str = "SE"                   # Kernel type
-    kernel_type: str = "anisotropic"     # Kernel parameterization
+    kernel: str = "RQ"                   # Kernel type
+    kernel_type: str = "isotropic"     # Kernel parameterization
     normalize: bool = True               # Whether to normalize training data
     n_restart_optimizer: int = 15        # Hyperparameter optimization restarts
     swarm_size: int = 100                # Particle swarm optimization size

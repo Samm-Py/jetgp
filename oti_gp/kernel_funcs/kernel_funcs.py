@@ -207,7 +207,6 @@ class KernelFactory:
     # -------------------------------------------------------------------
     # Anisotropic Kernel Implementations (MAC Mod 2)
     # -------------------------------------------------------------------
-    @profile
     def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """
         Anisotropic Squared Exponential (SE) kernel.
@@ -291,7 +290,6 @@ class KernelFactory:
     #                      ** 2 for i in range(self.dim))
     #     return (10 ** sigma_f) ** 2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
-    @profile
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """
         Anisotropic Rational Quadratic (RQ) kernel using in-place operations.
@@ -353,7 +351,7 @@ class KernelFactory:
     #                      differences_by_dim[i])) ** 2 for i in range(self.dim))
     #     return (10 ** sigma_f) ** 2 * oti.exp(-2 * sqdist)
 
-    @profile
+    # @profile
     def sine_exp_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """
         Anisotropic Sine-Exponential kernel using in-place operations.

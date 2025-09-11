@@ -7,6 +7,7 @@ from full_ddegp import ddegp_utils
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
 from numpy.linalg import cholesky, solve
 
+
 class ddegp:
     """
     Directional Derivative-Enhanced Gaussian Process (dDEGP) model.
@@ -116,7 +117,7 @@ class ddegp:
         sigma_n = params[-1]
 
         K = ddegp_utils.rbf_kernel(
-            self.differences_by_dim, length_scales, self.n_order,
+            self.differences_by_dim, length_scales, self.n_order, self.n_rays,
             self.kernel_func, self.flattened_der_indicies, self.powers)
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
@@ -133,7 +134,8 @@ class ddegp:
         except:
             cho_solve_failed = True
             alpha = np.linalg.solve(K, self.y_train)
-            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+            print(
+                'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
             # If Cholesky fails, fall back to standard solve
 
         if self.normalize:
@@ -143,7 +145,7 @@ class ddegp:
         diff_x_test_x_train = ddegp_utils.differences_by_dim_func(
             self.x_train, X_test, self.rays, self.n_order)
         K_s = ddegp_utils.rbf_kernel(
-            diff_x_test_x_train, length_scales, self.n_order,
+            diff_x_test_x_train, length_scales, self.n_order, self.n_rays,
             self.kernel_func, self.flattened_der_indicies, self.powers)
 
         f_mean = K_s.T @ alpha if return_deriv else K_s[:,
@@ -163,14 +165,14 @@ class ddegp:
         diff_x_test_x_test = ddegp_utils.differences_by_dim_func(
             X_test, X_test, self.rays, self.n_order)
         K_ss = ddegp_utils.rbf_kernel(
-            diff_x_test_x_test, length_scales, self.n_order,
+            diff_x_test_x_test, length_scales, self.n_order, self.n_rays,
             self.kernel_func, self.flattened_der_indicies, self.powers)
 
         if cho_solve_failed:
             f_cov = (
                 K_ss - K_s.T @ np.linalg.inv(K) @ K_s
                 if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
+                else K_ss[:len(X_test), :len(X_test)] - K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
             )
         else:
             v = solve_triangular(L, K_s, lower=low)
@@ -180,7 +182,6 @@ class ddegp:
                 if return_deriv
                 else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
             )
-
 
         if self.normalize:
             if return_deriv:

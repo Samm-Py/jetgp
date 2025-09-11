@@ -168,69 +168,69 @@ def make_der_indices(num_directions: int, max_order: int):
 
 #     return K_dd
 
+# @profile
+# def rbf_kernel(differences, length_scales, max_order, kernel_func, index=-1, return_deriv=True):
+#     """
+#     Assemble the full DD-GP covariance matrix, blockâ€“row by blockâ€“row,
+#     strictly using the derivative calls and conventions you verified.
 
-def rbf_kernel(differences, length_scales, max_order, kernel_func, index=-1, return_deriv=True):
-    """
-    Assemble the full DD-GP covariance matrix, blockâ€“row by blockâ€“row,
-    strictly using the derivative calls and conventions you verified.
+#     Parameters
+#     ----------
+#     phi : (n Ã— n) hypercomplex ndarray
+#         Kernel matrix with all directional tags embedded.
+#     num_directions : int
+#     max_order      : int
 
-    Parameters
-    ----------
-    phi : (n Ã— n) hypercomplex ndarray
-        Kernel matrix with all directional tags embedded.
-    num_directions : int
-    max_order      : int
+#     Returns
+#     -------
+#     K : ndarray   # square, size  n Â· (1 + num_directions Â· max_order)
+#     """
 
-    Returns
-    -------
-    K : ndarray   # square, size  n Â· (1 + num_directions Â· max_order)
-    """
+#     # ---------- 0)  top block-row  ---------------------------------
+#     #      [ K_ff  |  K_fd(order=1) | K_fd(order=2) | ... ]
+#     # shape (n , n + n*T*max_order)
 
-    # ---------- 0)  top block-row  ---------------------------------
-    #      [ K_ff  |  K_fd(order=1) | K_fd(order=2) | ... ]
-    # shape (n , n + n*T*max_order)
+#     phi = kernel_func(differences, length_scales, index)
+#     nderivs = max_order
+#     PHIrows = phi.shape[0]
+#     PHIcols = phi.shape[1]
+#     if max_order == 0:
+#         return phi.real
+#     if not return_deriv:
+#         nderivs = max_order
+#         K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
+#         iters = 1
+#     else:
+#         K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
+#         iters = max_order + 1
 
-    phi = kernel_func(differences, length_scales, index)
-    nderivs = max_order
-    PHIrows = phi.shape[0]
-    PHIcols = phi.shape[1]
-    if max_order == 0:
-        return phi.real
-    if not return_deriv:
-        nderivs = max_order
-        K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
-        iters = 1
-    else:
-        K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
-        iters = max_order + 1
+#     for i in range(0, max_order + 1):
+#         for j in range(0, iters):
+#             # Get local view of the global array.
+#             Klocal = K[i*PHIrows: (i+1)*PHIrows, j*PHIcols: (j+1)*PHIcols]
+#             if j == 0 and i == 0:
+#                 Klocal[:, :] = phi.real
+#             elif j > 0 and i == 0:
+#                 Klocal[:, :] = phi.get_deriv([[2, j]])
+#             elif j == 0 and i > 0:
+#                 Klocal[:, :] = phi.get_deriv([[1, i]])
+#             else:
 
-    for i in range(0, max_order + 1):
-        for j in range(0, iters):
-            # Get local view of the global array.
-            Klocal = K[i*PHIrows: (i+1)*PHIrows, j*PHIcols: (j+1)*PHIcols]
-            if j == 0 and i == 0:
-                Klocal[:, :] = phi.real
-            elif j > 0 and i == 0:
-                Klocal[:, :] = phi.get_deriv([[2, j]])
-            elif j == 0 and i > 0:
-                Klocal[:, :] = phi.get_deriv([[1, i]])
-            else:
+#                 # imdir1 = der_ind_order[j-1]
+#                 # imdir2 = der_ind_order[i-1]
+#                 # idx, ord = dh.mult_dir(
+#                 #     imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+#                 # idx = der_map[ord][idx]
 
-                # imdir1 = der_ind_order[j-1]
-                # imdir2 = der_ind_order[i-1]
-                # idx, ord = dh.mult_dir(
-                #     imdir1[0], imdir1[1], imdir2[0], imdir2[1])
-                # idx = der_map[ord][idx]
+#                 Klocal[:, :] = phi.get_deriv([[1, i], [2, j]])
 
-                Klocal[:, :] = phi.get_deriv([[1, i], [2, j]])
+#     # print(f'Shape final: ({K.shape})')
+#     # print(f'Shape final factors: ')
+#     # print(f' -> nrows: {K.shape[0]/phi.shape[0]}x')
+#     # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
+#     # print(80*'-')
 
-    # print(f'Shape final: ({K.shape})')
-    # print(f'Shape final factors: ')
-    # print(f' -> nrows: {K.shape[0]/phi.shape[0]}x')
-    # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
-    # print(80*'-')
-
-    return K
+#     return K
 
 
 def deriv_map(nbases, order):
@@ -262,3 +262,77 @@ def transform_der_indices(der_indices, der_map):
         deriv_ind_transf.append(der_map[order][idx])
         deriv_ind_order.append(imdir)
     return deriv_ind_transf, deriv_ind_order
+
+
+@profile
+def rbf_kernel(differences, length_scales, max_order, kernel_func, index=-1, return_deriv=True):
+    """
+    Assembles the full DD-GP covariance matrix using an efficient, pre-computed
+    derivative array and block-wise matrix filling.
+
+    Parameters
+    ----------
+    (Parameters are the same as the original function, with n_bases added)
+
+    Returns
+    -------
+    K : ndarray
+        Full kernel matrix with function values and derivative blocks.
+    """
+    # Get the pyoti derivative helper for multiplying derivative indices
+    dh = coti.get_dHelp()
+    n_bases = 2
+    # 1. Evaluate the kernel once to get the hypercomplex result
+    phi = kernel_func(differences, length_scales, index)
+
+    # 2. Extract ALL derivative components into a single flat array (highly efficient)
+    # The order must be 2 * max_order to capture mixed derivative terms
+    phi_exp = phi.get_all_derivs(n_bases, 2 * max_order)
+
+    # 3. Create maps to translate derivative specifications to flat indices
+    der_map = deriv_map(n_bases, 2 * max_order)
+
+    # 4. Pre-allocate the full covariance matrix
+    PHIrows, PHIcols = phi.shape
+
+    if max_order == 0:
+        return phi.real
+
+    if not return_deriv:
+        nderivs = max_order
+        K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
+        iters = 1
+    else:
+        nderivs = max_order
+        K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
+        iters = max_order + 1
+
+    # 5. Fill the matrix block by block using the pre-computed derivative array
+    for i in range(max_order + 1):  # Block-row index (corresponds to derivatives of X1)
+        for j in range(iters):      # Block-column index (corresponds to derivatives of X2)
+
+            Klocal = K[i*PHIrows:(i+1)*PHIrows, j*PHIcols:(j+1)*PHIcols]
+
+            if j == 0 and i == 0:
+                # K_ff: Access the real part (index 0 of the flat array)
+                idx = 0
+            elif j > 0 and i == 0:
+                # K_fd: Derivative w.r.t. X2's tag, e(2)
+                imdir = coti.imdir([[2, j]])
+                idx = der_map[imdir[1]][imdir[0]]
+            elif j == 0 and i > 0:
+                # K_df: Derivative w.r.t. X1's tag, e(1)
+                imdir = coti.imdir([[1, i]])
+                idx = der_map[imdir[1]][imdir[0]]
+            else:
+                # K_dd: Mixed derivative w.r.t. e(1) and e(2)
+                imdir1 = coti.imdir([[1, i]])
+                imdir2 = coti.imdir([[2, j]])
+                new_idx, new_ord = dh.mult_dir(
+                    imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+                idx = der_map[new_ord][new_idx]
+
+            # Assign content from the flat array using the calculated index
+            Klocal[:, :] = phi_exp[idx]
+
+    return K
