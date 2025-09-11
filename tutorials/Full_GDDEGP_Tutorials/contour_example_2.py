@@ -52,10 +52,10 @@ class DualPeakConfig:
 
     # Model & Optimizer
     normalize_data: bool = True
-    kernel: str = "SE"
-    kernel_type: str = "anisotropic"
+    kernel: str = "RQ"
+    kernel_type: str = "isotropic"
     n_restarts: int = 15
-    swarm_size: int =100
+    swarm_size: int = 100
     random_seed: int = 42
 
 

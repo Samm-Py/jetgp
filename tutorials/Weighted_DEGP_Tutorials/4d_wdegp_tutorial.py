@@ -45,8 +45,8 @@ class HighDimGPConfig:
     lower_bounds: List[float] = field(default_factory=lambda: [-5] * 4)
     upper_bounds: List[float] = field(default_factory=lambda: [5] * 4)
     n_clusters: int = 3  # Number of submodels to create via KMeans
-    kernel: str = "SE"
-    kernel_type: str = "anisotropic"
+    kernel: str = "RQ"
+    kernel_type: str = "isotropic"
     normalize: bool = True
     n_restart_optimizer: int = 15
     swarm_size: int = 200

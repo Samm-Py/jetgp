@@ -44,8 +44,8 @@ class DirectionalDEGPConfig:
     domain_bounds: tuple = ((-5.0, 10.0), (0.0, 15.0))
     test_grid_resolution: int = 100
     normalize_data: bool = True
-    kernel: str = "SE"
-    kernel_type: str = "anisotropic"
+    kernel: str = "SineExp"
+    kernel_type: str = "isotropic"
     n_restarts: int = 15
     swarm_size: int = 200
     random_seed: int = 1

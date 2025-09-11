@@ -41,8 +41,8 @@ class TwoDimGPConfig:
     lb_y: float = -1.0
     ub_y: float = 1.0
     points_per_axis: int = 4
-    kernel: str = "SE"
-    kernel_type: str = "anisotropic"
+    kernel: str = "RQ"
+    kernel_type: str = "isotropic"
     normalize: bool = True
     n_restart_optimizer: int = 15
     swarm_size: int = 100

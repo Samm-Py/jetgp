@@ -47,8 +47,8 @@ class GlobalDirectionalConfig:
 
     # Model & Optimizer
     normalize_data: bool = True
-    kernel: str = "SE"
-    kernel_type: str = "anisotropic"
+    kernel: str = "RQ"
+    kernel_type: str = "isotropic"
     n_restarts: int = 15
     swarm_size: int = 250
     random_seed: int = 0

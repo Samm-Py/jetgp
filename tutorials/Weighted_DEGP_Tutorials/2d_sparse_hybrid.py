@@ -40,8 +40,9 @@ class GPConfig2D:
     ub_y: float = 1.0                   # Upper bound for y dimension
     # Points per dimension (creates 4x4 = 16 total)
     num_points: int = 4
-    kernel: str = "SE"                  # Kernel type (Squared Exponential)
-    kernel_type: str = "anisotropic"    # Kernel parameterization
+    # Kernel type (Squared Exponential)
+    kernel: str = "RQ"
+    kernel_type: str = "isotropic"    # Kernel parameterization
     normalize: bool = True              # Whether to normalize data
     n_restart_optimizer: int = 15       # Hyperparameter optimization restarts
     swarm_size: int = 50               # Particle swarm size
