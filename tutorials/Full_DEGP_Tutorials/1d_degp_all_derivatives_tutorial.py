@@ -44,7 +44,7 @@ class DEGPConfig:
 
     # GP model parameters
     normalize_data: bool = False
-    kernel: str = "SE"
+    kernel: str = "Matern"
     kernel_type: str = "anisotropic"
 
     # Optimizer settings
