@@ -26,7 +26,8 @@ from wdegp.wdegp import wdegp
 import utils
 import matplotlib.pyplot as plt
 from dataclasses import dataclass, field
-from typing import List, Dict, Callable
+from typing import List, Tuple, Callable, Optional, Dict, Any
+import plotting_helper
 
 
 @dataclass
@@ -34,13 +35,13 @@ class GroupedSubmodelConfig:
     """Configuration for the grouped submodel DEGP tutorial."""
     lb_x: float = 0.0
     ub_x: float = 10.0
-    num_training_pts: int = 7
+    num_training_pts: int = 6
     num_test_pts: int = 500
     n_order: int = 1
     n_bases: int = 1
     # Define how points are grouped into submodels
     submodel_groups: List[List[int]] = field(
-        default_factory=lambda: [[0, 1, 2], [3, 4, 5, 6]])
+        default_factory=lambda: [[0, 1, 2], [3, 4, 5]])
     function_noise_ratio: float = 0.00
     derivative_noise_ratio: float = 1.00
     normalize_data: bool = True
@@ -178,7 +179,7 @@ class GroupedSubmodelGPTutorial:
                              self.config.num_test_pts).reshape(-1, 1)
         y_true = self.true_function(X_test, alg=np)
 
-        y_pred_degp, y_cov_degp, _, _ = self.degp_model.predict(
+        y_pred_degp, y_cov_degp, submodel_vals, submodel_cov = self.degp_model.predict(
             X_test, self.degp_params, calc_cov=True, return_submodels=True)
         y_pred_std, y_cov_std, _, _ = self.std_gp_model.predict(
             X_test, self.std_gp_params, calc_cov=True, return_submodels=True)
@@ -191,12 +192,16 @@ class GroupedSubmodelGPTutorial:
             'degp_nrmse': nrmse_degp, 'std_nrmse': nrmse_std,
             'improvement_percent': (nrmse_std - nrmse_degp) / nrmse_std * 100,
             'degp_pred': y_pred_degp, 'std_pred': y_pred_std,
-            'degp_cov': y_cov_degp, 'std_cov': y_cov_std
+            'degp_cov': y_cov_degp, 'std_cov': y_cov_std,
+            'degp_submodel_vals': submodel_vals, 'degp_submodel_cov': submodel_cov
         }
         print(
             f"  DEGP NRMSE: {nrmse_degp:.6f} | Standard GP NRMSE: {nrmse_std:.6f}")
         print(
             f"  Improvement with Derivatives: {self.results['improvement_percent']:.2f}%")
+
+    def _visualize_results(self, results: Dict[str, Any], plot_submodels: bool = True):
+        """Generate visualization plots."""
 
     def visualize_comparison(self):
         """Generates the 4-panel plot comparing DEGP and Standard GP."""
@@ -205,6 +210,19 @@ class GroupedSubmodelGPTutorial:
         X_train, X_test = self.training_data['X_train'], res['X_test']
         y_train_func = self.training_data['y_train_data'][0][0]
         y_true = res['y_true'].flatten()
+
+        plotting_helper.make_submodel_plots(
+            self.training_data['X_train'],
+            self.training_data['y_train_data'],
+            res['X_test'],
+            res['degp_pred'],
+            self.true_function,
+            cov=res['degp_cov'],
+            n_order=self.config.n_order,
+            n_bases=self.config.n_bases,
+            plot_submodels=True,
+            submodel_vals=res['degp_submodel_vals'],
+            submodel_cov=res['degp_submodel_cov'])
 
         plt.figure(figsize=(16, 8))
 
@@ -285,7 +303,7 @@ def true_function(X, alg=oti):
 def main():
     """Main execution block."""
     config = GroupedSubmodelConfig(
-        num_training_pts=7, derivative_noise_ratio=.01)
+        num_training_pts=6, derivative_noise_ratio=0.1)
     tutorial = GroupedSubmodelGPTutorial(config, true_function)
     tutorial.run()
 
