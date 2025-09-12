@@ -72,7 +72,7 @@ class HeterogeneousConfig:
     kernel: str = "SE"
     kernel_type: str = "anisotropic"
     n_restarts: int = 15
-    swarm_size: int = 200
+    swarm_size: int = 100
     random_seed: int = 0
 
 
