@@ -241,7 +241,7 @@ class wdegp:
             if return_submodels:
                 return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
             else:
-                return (y_val, y_var) if calc_cov else y_val
+                return (y_val, y_var**2) if calc_cov else y_val
         else:
             for i in range(len(self.index)):
                 index_i = self.index[i]
@@ -280,9 +280,12 @@ class wdegp:
                 f_mean = K_s[:, :n_test].T @ alpha
                 if self.normalize:
                     f_mean = self.mu_y + f_mean * self.sigma_y
-
+                weight = 0
                 for j in range(len(self.index[i])):
-                    y_val += weights_matrix[:, self.index[i][j]] * f_mean
+                    weight = weight + weights_matrix[:, self.index[i][j]]
+                # for j in range(len(self.index[i])):
+                #     y_val += weights_matrix[:, self.index[i][j]] * f_mean
+                y_val += weight * f_mean
                 if return_submodels:
                     submodel_vals.append(f_mean)
 
@@ -317,4 +320,4 @@ class wdegp:
             if return_submodels:
                 return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
             else:
-                return (y_val, y_var) if calc_cov else y_val
+                return (y_val, y_var**2) if calc_cov else y_val
