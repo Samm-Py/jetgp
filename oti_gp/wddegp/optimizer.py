@@ -25,7 +25,7 @@ class Optimizer:
 
     @profile
     def negative_log_marginal_likelihood(self, x0, x_train, y_train, sigma_n,
-                                         n_order, n_bases, der_indices, index):
+                                         n_order, n_rays_list, der_indices, index):
         """
         Compute the total negative log marginal likelihood (NLL) across all wdDEGP submodels.
 
@@ -67,8 +67,8 @@ class Optimizer:
             diffs = self.model.differences_by_dim_submodels[i]
 
             K = utils.rbf_kernel(
-                diffs, ell, n_order, n_bases, self.model.kernel_func,
-                der_indices_sub, powers, index=idx, index_list=idx
+                diffs, ell, n_order, n_rays_list[i], self.model.kernel_func,
+                der_indices_sub, powers, index=idx
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             K += self.model.sigma_data[i] ** 2
@@ -110,7 +110,7 @@ class Optimizer:
             self.model.y_train,
             self.model.sigma_data,
             self.model.n_order,
-            self.model.n_bases,
+            self.model.n_rays_list,
             self.model.der_indices,
             self.model.index,
         )
