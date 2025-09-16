@@ -166,10 +166,10 @@ for idx, num_dirs in enumerate(direction_counts):
                            cmap=colors[idx], alpha=0.8, linewidth=0, antialiased=True)
 
     ax.set_title(f'{num_dirs} Directional Derivatives\nSpeedup vs Full Gradient',
-                 fontsize=14, fontweight='bold')
-    ax.set_xlabel('Training Points', fontsize=12)
-    ax.set_ylabel('Dimensions', fontsize=12)
-    ax.set_zlabel('Speedup Factor', fontsize=12)
+                 fontsize=18, fontweight='bold')
+    ax.set_xlabel('Training Points', fontsize=18)
+    ax.set_ylabel('Dimensions', fontsize=18)
+    ax.set_zlabel('Speedup Factor', fontsize=18)
     ax.view_init(elev=30, azim=40)
 
 plt.tight_layout()
@@ -199,10 +199,10 @@ for idx, num_dirs in enumerate(direction_counts):
     ax1.plot(points_range, speedups_vs_points[num_dirs],
              linewidth=3, marker='o', label=f'{num_dirs} directions')
 
-ax1.set_xlabel('Training Points', fontsize=12, fontweight='bold')
-ax1.set_ylabel('Speedup Factor', fontsize=12, fontweight='bold')
+ax1.set_xlabel('Training Points', fontsize=18, fontweight='bold')
+ax1.set_ylabel('Speedup Factor', fontsize=18, fontweight='bold')
 ax1.set_title(f'Speedup vs Training Points\n(d={fixed_d} dimensions)',
-              fontsize=14, fontweight='bold')
+              fontsize=18, fontweight='bold')
 ax1.set_xscale('log')
 ax1.set_yscale('log')
 ax1.legend()
@@ -229,10 +229,10 @@ for idx, num_dirs in enumerate(direction_counts):
     ax2.plot(dims_range, speedups_vs_dims[num_dirs],
              linewidth=3, marker='s', label=f'{num_dirs} directions')
 
-ax2.set_xlabel('Dimensions', fontsize=12, fontweight='bold')
-ax2.set_ylabel('Speedup Factor', fontsize=12, fontweight='bold')
+ax2.set_xlabel('Dimensions', fontsize=18, fontweight='bold')
+ax2.set_ylabel('Speedup Factor', fontsize=18, fontweight='bold')
 ax2.set_title(f'Speedup vs Dimensions\n({fixed_n} training points)',
-              fontsize=14, fontweight='bold')
+              fontsize=18, fontweight='bold')
 ax2.set_yscale('log')
 ax2.legend()
 ax2.grid(True, alpha=0.3)
@@ -271,10 +271,10 @@ for idx, (n, d) in enumerate(problem_sizes):
             color=colors_frontier[idx], label=f'n={n}, d={d}')
 
 ax.set_xlabel('Computational Cost (fraction of full gradient)',
-              fontsize=12, fontweight='bold')
-ax.set_ylabel('Speedup Factor', fontsize=12, fontweight='bold')
+              fontsize=18, fontweight='bold')
+ax.set_ylabel('Speedup Factor', fontsize=18, fontweight='bold')
 ax.set_title('Efficiency Frontier: Directional Derivatives',
-             fontsize=14, fontweight='bold')
+             fontsize=18, fontweight='bold')
 ax.set_xscale('log')
 ax.set_yscale('log')
 ax.legend()
@@ -484,9 +484,9 @@ for idx, num_dirs in enumerate(direction_counts):
     ax.plot_surface(N, D, ratio_data, cmap=colors[idx],
                     alpha=alphas[idx], linewidth=0, antialiased=True)
 
-ax.set_xlabel('Training Points', fontsize=14, fontweight='bold')
-ax.set_ylabel('Dimensions', fontsize=14, fontweight='bold')
-ax.set_zlabel('Speedup Factor', fontsize=14, fontweight='bold')
+ax.set_xlabel('Training Points', fontsize=18, fontweight='bold')
+ax.set_ylabel('Dimensions', fontsize=18, fontweight='bold')
+ax.set_zlabel('Speedup Factor', fontsize=18, fontweight='bold')
 ax.set_title('Directional Derivatives Speedup Analysis',
              fontsize=16, fontweight='bold')
 ax.view_init(elev=25, azim=-45)
@@ -550,10 +550,10 @@ ax2.plot(dims_range, time, color='tab:red', linewidth=3)
 ax2.plot(dims_range, time_1, color='tab:purple', linewidth=3)
 ax2.plot(dims_range, time_2, color='tab:blue', linewidth=3)
 ax2.plot(dims_range, time_3, color='tab:green', linewidth=3,)
-ax2.set_xlabel('Dimensions', fontsize=12, fontweight='bold')
-ax2.set_ylabel('Speedup Factor', fontsize=12, fontweight='bold')
+ax2.set_xlabel('Dimensions', fontsize=18, fontweight='bold')
+ax2.set_ylabel('Speedup Factor', fontsize=18, fontweight='bold')
 ax2.set_title(
-    f'Speedup vs Dimensions\n({fixed_n} training points)', fontsize=14, fontweight='bold')
+    f'Speedup vs Dimensions\n({fixed_n} training points)', fontsize=18, fontweight='bold')
 ax2.set_yscale('log')
 # ax2.legend()
 ax2.grid(True, alpha=0.3)

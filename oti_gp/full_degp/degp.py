@@ -7,7 +7,6 @@ from kernel_funcs.kernel_funcs import KernelFactory
 from full_degp.optimizer import Optimizer
 
 
-
 class degp:
     def __init__(
         self,
@@ -158,7 +157,8 @@ class degp:
         except:
             cho_solve_failed = True
             alpha = np.linalg.solve(K, self.y_train)
-            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+            print(
+                'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
             # If Cholesky fails, fall back to standard solve
 
         if self.normalize:
@@ -218,9 +218,9 @@ class degp:
 
         if cho_solve_failed:
             f_cov = (
-                K_ss - K_s @ np.linalg.solve(K,K_s[:, :len(X_test)])
+                K_ss - K_s.T @ np.linalg.solve(K, K_s)
                 if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] -  K_s[:, :len(X_test)].T @ np.linalg.solve(K,K_s[:, :len(X_test)])
+                else K_ss[:len(X_test), :len(X_test)] - K_s[:, :len(X_test)].T @ np.linalg.solve(K, K_s[:, :len(X_test)])
             )
         else:
             v = solve_triangular(L, K_s, lower=low)

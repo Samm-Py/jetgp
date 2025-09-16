@@ -178,7 +178,7 @@ for idx, j in enumerate(j_values):
     ax.set_xlabel('Training Points', fontsize=10)
     ax.set_ylabel('Dimensions', fontsize=10)
     ax.set_zlabel('Time (s)', fontsize=10)
-    ax.set_title(f'j = {j} submodels', fontsize=12, fontweight='bold')
+    ax.set_title(f'j = {j} submodels', fontsize=18, fontweight='bold')
     ax.view_init(elev=20, azim=45)
 
 # Full GP in the last subplot
@@ -190,7 +190,7 @@ surf_full = ax_full.plot_surface(N_mesh, D_mesh, full_times_clipped,
 ax_full.set_xlabel('Training Points', fontsize=10)
 ax_full.set_ylabel('Dimensions', fontsize=10)
 ax_full.set_zlabel('Time (s)', fontsize=10)
-ax_full.set_title('Full GP (baseline)', fontsize=12, fontweight='bold')
+ax_full.set_title('Full GP (baseline)', fontsize=18, fontweight='bold')
 ax_full.view_init(elev=30, azim=-45)
 
 plt.suptitle('Submodeling GP Training Time Analysis',
@@ -234,6 +234,7 @@ time = []
 time_2 = []
 time_4 = []
 time_8 = []
+time_n = []
 for d in dims_range:
     full_matrix_size = full_gp_matrix_size(fixed_n, d)
     full_time = flops_to_time(
@@ -247,20 +248,25 @@ for d in dims_range:
     sub_matrix_size = submodeling_matrix_size(fixed_n, d, 8)
     time_8_submodels = flops_to_time(
         calculate_cholesky_flops(sub_matrix_size))
+    sub_matrix_size = submodeling_matrix_size(fixed_n, d, fixed_n)
+    time_n_submodels = flops_to_time(
+        calculate_cholesky_flops(sub_matrix_size))
 
     time.append(full_time/full_time)
     time_2.append(full_time/time_2_submodels)
     time_4.append(full_time / time_4_submodels)
     time_8.append(full_time / time_8_submodels)
+    time_n.append(full_time/time_n_submodels)
 
 ax2.plot(dims_range, time, color='tab:red', linewidth=3)
 ax2.plot(dims_range, time_2, color='tab:green', linewidth=3)
 ax2.plot(dims_range, time_4, color='tab:blue', linewidth=3)
 ax2.plot(dims_range, time_8, color='tab:purple', linewidth=3,)
-ax2.set_xlabel('Dimensions', fontsize=12, fontweight='bold')
-ax2.set_ylabel('Speedup Factor', fontsize=12, fontweight='bold')
+ax2.plot(dims_range, time_n, color='tab:orange', linewidth=3,)
+ax2.set_xlabel('Dimensions', fontsize=18, fontweight='bold')
+ax2.set_ylabel('Speedup Factor', fontsize=18, fontweight='bold')
 ax2.set_title(
-    f'Speedup vs Dimensions\n({fixed_n} training points)', fontsize=14, fontweight='bold')
+    f'Speedup vs Dimensions\n({fixed_n} training points)', fontsize=18, fontweight='bold')
 ax2.set_yscale('log')
 # ax2.legend()
 ax2.grid(True, alpha=0.3)
@@ -271,7 +277,7 @@ plt.show()
 # Analysis parameters
 n_points_range = np.logspace(1, 2, 20)  # 10 to 100 training points
 dimensions_range = np.arange(1, 101)     # 1 to 100 dimensions
-j_values = [2, 4, 8]             # Different numbers of submodels
+j_values = [2, 4, 8, 100]             # Different numbers of submodels
 
 # Create meshgrid
 N_mesh, D_mesh = np.meshgrid(n_points_range, dimensions_range)
@@ -303,7 +309,11 @@ for n, d, description in test_cases:
     print("-" * 50)
 
     for j in j_values:
-        ratio = calculate_performance_ratio(n, d, j)
+        if j == 100:
+            tmp = n
+        else:
+            tmp = j
+        ratio = calculate_performance_ratio(n, d, tmp)
         if ratio > 1.5:
             interpretation = f"{ratio:.1f}x faster (significant speedup)"
         elif ratio > 1.0:
