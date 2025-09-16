@@ -1,22 +1,3 @@
-"""
-================================================================================
-DEGP Tutorial: Introduction to Derivative Enhanced Gaussian Processes
-================================================================================
-
-This tutorial demonstrates the fundamental benefit of using derivative information
-to improve Gaussian Process regression. We will train several GP models on the
-same small set of training points, systematically including more derivative
-information (from order 0 up to order 4) to show how the quality and reliability
-of predictions improve.
-
-Key Concepts Demonstrated:
-- Training a standard GP (Order 0) vs. a DEGP (Order > 0).
-- Using automatic differentiation to generate derivative training data.
-- The direct impact of higher-order derivative information on model accuracy.
-- The trade-off between model accuracy and computational cost.
-- The significant advantage of DEGP when training data is sparse.
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti
@@ -44,7 +25,7 @@ class DEGPConfig:
 
     # GP model parameters
     normalize_data: bool = False
-    kernel: str = "Matern"
+    kernel: str = "SE"
     kernel_type: str = "anisotropic"
 
     # Optimizer settings
@@ -95,15 +76,19 @@ class DEGPComparisonTutorial:
             n_restart_optimizer=self.config.n_restarts, swarm_size=self.config.swarm_size
         )
 
-        # 3. Make Predictions
-        y_pred, y_var = gp.predict(self.X_test, params, calc_cov=True)
+        # 3. Make Predictions (including derivatives)
+        y_pred_full, y_var_full = gp.predict(
+            self.X_test, params, calc_cov=True, return_deriv=True
+        )
 
         # 4. Calculate and store metrics
+        # MSE is calculated only on the function prediction (0th derivative)
+        y_pred_func = y_pred_full[:self.config.num_test_pts]
         y_true_flat = self.true_function(self.X_test, alg=np).ravel()
-        mse = np.mean((y_pred.ravel() - y_true_flat)**2)
+        mse = np.mean((y_pred_func.ravel() - y_true_flat)**2)
 
         self.results[n_order] = {
-            'y_pred': y_pred, 'y_var': y_var, 'mse': mse,
+            'y_pred_full': y_pred_full, 'y_var_full': y_var_full, 'mse': mse,
             'time': time.time() - start_time,
             'n_observations': sum(len(y) for y in y_train_list)
         }
@@ -143,7 +128,9 @@ class DEGPComparisonTutorial:
 
         for i, (order, r) in enumerate(self.results.items()):
             ax = axs[i]
-            y_pred, y_var = r['y_pred'], r['y_var']
+            # Extract only the function prediction and variance for this plot
+            y_pred = r['y_pred_full'][:self.config.num_test_pts]
+            y_var = r['y_var_full'][:self.config.num_test_pts]
 
             ax.plot(self.X_test, y_true, 'k-', lw=2.5, label="True $f(x)$")
             ax.plot(self.X_test, y_pred, 'b--', lw=2, label="GP mean")
@@ -160,12 +147,116 @@ class DEGPComparisonTutorial:
             ax.set(xlabel="$x$", ylabel="$f(x)$")
             ax.grid(True, alpha=0.3)
 
-        fig.suptitle('Derivative Enhanced Gaussian Process Comparison',
+        fig.suptitle('Function Prediction Comparison',
                      fontsize=16, fontweight='bold', y=0.98)
         handles, labels = axs[0].get_legend_handles_labels()
         fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(
             0.5, 0.02), ncol=len(handles), frameon=True, fancybox=True, shadow=True)
         plt.tight_layout(rect=[0, 0.1, 1, 0.95])
+        plt.show()
+
+    def visualize_derivative_results(self):
+        """
+        Creates plots comparing the predicted derivatives from each model,
+        including uncertainty bounds and training data points, with a single global legend.
+        """
+        # Determine the maximum derivative order we need to plot
+        max_order_to_plot = max(self.config.orders_to_test)
+
+        # 1. Calculate true derivatives for the TEST points (for the true line)
+        X_test_pert = oti.array(self.X_test) + \
+            oti.e(1, order=max_order_to_plot)
+        y_test_hc = self.true_function(X_test_pert)
+        true_derivs = {0: y_test_hc.real}
+        der_indices_true = utils.gen_OTI_indices(1, max_order_to_plot)
+        idx = 1
+        for i in range(len(der_indices_true)):
+            for j in range(len(der_indices_true[i])):
+                true_derivs[idx] = y_test_hc.get_deriv(der_indices_true[i][j])
+                idx += 1
+
+        # 2. Calculate true derivatives for the TRAINING points (for the scatter plot)
+        X_train_pert = oti.array(self.X_train) + \
+            oti.e(1, order=max_order_to_plot)
+        y_train_hc = self.true_function(X_train_pert)
+        true_train_derivs = {0: y_train_hc.real}
+        idx = 1
+        for i in range(len(der_indices_true)):
+            for j in range(len(der_indices_true[i])):
+                true_train_derivs[idx] = y_train_hc.get_deriv(
+                    der_indices_true[i][j])
+                idx += 1
+
+        # Define which derivative orders to display and their titles
+        deriv_orders_to_show = [1, 2, 4]
+        plot_titles = [
+            "1st Derivative Prediction ($f'(x)$)",
+            "2nd Derivative Prediction ($f''(x)$)",
+            "4th Derivative Prediction ($f^{(4)}(x)$)"
+        ]
+
+        fig, axs = plt.subplots(len(deriv_orders_to_show),
+                                1, figsize=(12, 12), sharex=True)
+        if len(deriv_orders_to_show) == 1:
+            axs = [axs]
+        else:
+            axs = axs.flatten()
+
+        model_colors = plt.cm.viridis(np.linspace(0, 1, len(self.results)))
+
+        for i, deriv_idx in enumerate(deriv_orders_to_show):
+            ax = axs[i]
+            # Plot the true derivative line
+            if deriv_idx in true_derivs:
+                ax.plot(self.X_test, true_derivs[deriv_idx], 'k-',
+                        lw=3, label="True $f^{{({n})}}(x)$", zorder=10)
+
+            # Plot the derivative training data as scatter points
+            if deriv_idx <= max(self.config.orders_to_test) and deriv_idx in true_train_derivs:
+                ax.scatter(self.X_train, true_train_derivs[deriv_idx],
+                           c='red', s=60, zorder=11,
+                           edgecolors='black', linewidth=1, label="Training Data")
+
+            # Plot predictions from each trained model
+            for j, (trained_order, r) in enumerate(self.results.items()):
+                if deriv_idx <= trained_order:
+                    start_idx = deriv_idx * self.config.num_test_pts
+                    end_idx = (deriv_idx + 1) * self.config.num_test_pts
+
+                    y_pred_deriv = r['y_pred_full'][start_idx:end_idx]
+                    y_var_deriv = r['y_var_full'][start_idx:end_idx]
+                    std_dev = np.sqrt(y_var_deriv.ravel())
+
+                    ax.plot(self.X_test, y_pred_deriv, '--', lw=2, color=model_colors[j],
+                            label=f"Prediction from Order {trained_order} DEGP", zorder=10)
+
+                    ax.fill_between(
+                        self.X_test.ravel(),
+                        y_pred_deriv.ravel() - 2 * std_dev,
+                        y_pred_deriv.ravel() + 2 * std_dev,
+                        color=model_colors[j],
+                        alpha=0.15
+                    )
+
+            ax.set_title(plot_titles[i], fontsize=14)
+            ax.set_ylabel("Value")
+            ax.grid(True, linestyle=':', alpha=0.6)
+            # ⭐ The individual legend call is now removed from the loop
+            # ax.legend()
+
+        ax.set_xlabel("$x$")
+        fig.suptitle('Derivative Prediction Comparison with Uncertainty',
+                     fontsize=18, fontweight='bold', y=0.99)
+
+        # ⭐ 1. Collect unique handles and labels from all subplots
+        handles, labels = axs[0].get_legend_handles_labels()
+
+        # ⭐ 2. Create a single figure-level legend
+        fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(
+            0.5, 0.02), ncol=2, frameon=True, fancybox=True, shadow=True)
+
+        # ⭐ 3. Adjust the layout to make room for the legend
+        plt.tight_layout(rect=[0, .1, 0.85, 0.96])
         plt.show()
 
     def display_educational_content(self):
@@ -194,6 +285,7 @@ class DEGPComparisonTutorial:
         self.run_comparison()
         self.display_summary()
         self.visualize_results()
+        self.visualize_derivative_results()  # <-- Added the new plot call
         self.display_educational_content()
 
 
