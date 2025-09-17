@@ -11,6 +11,8 @@ Functions
 
    degp_utils.differences_by_dim_func
    degp_utils.rbf_kernel
+   degp_utils.deriv_map
+   degp_utils.transform_der_indices
 
 
 Module Contents
@@ -134,4 +136,8 @@ Module Contents
 
    ..
        !! processed by numpydoc !!
+
+.. py:function:: deriv_map(nbases, order)
+
+.. py:function:: transform_der_indices(der_indices, der_map)
 

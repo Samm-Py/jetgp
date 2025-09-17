@@ -72,6 +72,7 @@
   <h1>Source code for wdegp</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">solve</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">cho_solve</span><span class="p">,</span> <span class="n">cho_factor</span><span class="p">,</span> <span class="n">solve_triangular</span>
 <span class="kn">from</span> <span class="nn">wdegp</span> <span class="kn">import</span> <span class="n">wdegp_utils</span> <span class="k">as</span> <span class="n">wdegp_utils</span>
 <span class="kn">import</span> <span class="nn">utils</span> <span class="k">as</span> <span class="nn">utils</span>
 <span class="kn">from</span> <span class="nn">kernel_funcs.kernel_funcs</span> <span class="kn">import</span> <span class="n">KernelFactory</span>
@@ -171,12 +172,8 @@
         <span class="n">flattened_base_der_indicies</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">i</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">base_der_indices</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">sigma_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">flattened_base_der_indicies</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-                           <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">)</span>
-            <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">)</span>
-
+            <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">flattened_base_der_indicies</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                                  <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ders</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                 <span class="n">utils</span><span class="o">.</span><span class="n">build_companion_array</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">ders</span><span class="p">))</span>
@@ -187,7 +184,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ders</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">der_indices</span><span class="p">):</span>
                 <span class="n">y_norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data</span><span class="p">(</span>
-                    <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">sigma_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                    <span class="n">sigma_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_norm</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_train</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
@@ -222,6 +220,10 @@
             <span class="n">kernel_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span><span class="p">,</span>
         <span class="p">)</span></div>
 
+<div class="viewcode-block" id="wdegp.sigma_data">
+<a class="viewcode-back" href="../autoapi/wdegp/index.html#wdegp.wdegp.sigma_data">[docs]</a>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="wdegp.bounds">
 <a class="viewcode-back" href="../autoapi/wdegp/index.html#wdegp.wdegp.bounds">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span><span class="o">.</span><span class="n">bounds</span></div>
@@ -231,11 +233,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="wdegp.sigma_data">
-<a class="viewcode-back" href="../autoapi/wdegp/index.html#wdegp.wdegp.sigma_data">[docs]</a>
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">generate_submodel_noise_matricies</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">,</span> <span class="n">flattened_base_der_indicies</span><span class="p">)</span></div>
-
+            <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">,</span> <span class="n">flattened_base_der_indicies</span><span class="p">)</span>
 
 <div class="viewcode-block" id="wdegp.optimize_hyperparameters">
 <a class="viewcode-back" href="../autoapi/wdegp/index.html#wdegp.wdegp.optimize_hyperparameters">[docs]</a>
@@ -295,9 +294,9 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="p">):</span>
             <span class="n">x_k</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">diffs_train_test</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">x_k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
             <span class="n">weights</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">determine_weights</span><span class="p">(</span>
-                <span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">)</span>
+                <span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">)</span>
             <span class="n">weights_matrix</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
 
         <span class="n">y_val</span> <span class="o">=</span> <span class="mi">0</span>
@@ -305,7 +304,8 @@
         <span class="n">submodel_vals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">submodel_cov</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">index_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">diffs_train_test</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span><span class="p">)</span>
@@ -315,10 +315,26 @@
                 <span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span>
             <span class="p">)</span>
+
             <span class="n">K</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">))</span>
             <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
-            <span class="n">L</span> <span class="o">=</span> <span class="n">cholesky</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
-            <span class="n">alpha</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="c1"># L = cholesky(K)</span>
+            <span class="c1"># alpha = solve(L.T, solve(L, self.y_train[i]))</span>
+            <span class="c1"># print(K)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">L</span> <span class="o">=</span> <span class="n">cholesky</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s1">&#39;Warning: Cholesky decomposition failed via scipy, using standard np solve instead.&#39;</span><span class="p">)</span>
+            <span class="c1"># If Cholesky fails, fall back to standard solve</span>
 
             <span class="n">K_s</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
                 <span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
@@ -328,8 +344,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
                 <span class="n">f_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span> <span class="o">+</span> <span class="n">f_mean</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span>
 
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
-                <span class="n">y_val</span> <span class="o">+=</span> <span class="n">weights_matrix</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">*</span> <span class="n">f_mean</span>
+            <span class="n">y_val</span> <span class="o">+=</span> <span class="n">f_mean</span>
             <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
                 <span class="n">submodel_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_mean</span><span class="p">)</span>
 
@@ -340,8 +355,14 @@
                     <span class="n">diffs_test_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span>
                 <span class="p">)</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="n">n_test</span><span class="p">])</span>
-                <span class="n">f_cov</span> <span class="o">=</span> <span class="n">K_ss</span><span class="p">[:</span><span class="n">n_test</span><span class="p">,</span> <span class="p">:</span><span class="n">n_test</span><span class="p">]</span> <span class="o">-</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">v</span>
+                <span class="c1"># v = solve(L, K_s[:, :n_test])</span>
+                <span class="k">if</span> <span class="n">cho_solve_failed</span><span class="p">:</span>
+                    <span class="n">f_cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">K_ss</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span> <span class="o">-</span> <span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)])</span>
+                             <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="n">solve_triangular</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">K_s</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">low</span><span class="p">)</span>
+                    <span class="n">f_cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">K_ss</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span> <span class="o">-</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span>
+                             <span class="p">)</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
                     <span class="n">f_var</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_cov</span><span class="p">(</span><span class="n">f_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
@@ -349,16 +370,93 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">f_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
 
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
-                    <span class="n">y_var</span> <span class="o">+=</span> <span class="n">weights_matrix</span><span class="p">[:,</span>
-                                            <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f_var</span><span class="p">)</span>
+                <span class="n">y_var</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f_var</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
                     <span class="n">submodel_cov</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_var</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">,</span> <span class="n">submodel_cov</span><span class="p">)</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">,</span> <span class="n">submodel_cov</span><span class="p">)</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="n">y_val</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span><span class="p">)</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="n">y_val</span></div>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">)):</span>
+                <span class="n">index_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">diffs_train_test</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span><span class="p">)</span>
+                <span class="n">diffs_train_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim_submodels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                <span class="n">K</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+                    <span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span>
+                <span class="p">)</span>
+
+                <span class="n">K</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">))</span>
+                <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+                <span class="c1"># L = cholesky(K)</span>
+                <span class="c1"># alpha = solve(L.T, solve(L, self.y_train[i]))</span>
+                <span class="c1"># print(K)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="nb">print</span><span class="p">(</span>
+                        <span class="s1">&#39;Warning: Cholesky decomposition failed via scipy, using standard np solve instead.&#39;</span><span class="p">)</span>
+                <span class="c1"># If Cholesky fails, fall back to standard solve</span>
+
+                <span class="n">K_s</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+                    <span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span>
+                <span class="p">)</span>
+                <span class="n">f_mean</span> <span class="o">=</span> <span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="n">n_test</span><span class="p">]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">alpha</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+                    <span class="n">f_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span> <span class="o">+</span> <span class="n">f_mean</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span>
+                <span class="n">weight</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+                    <span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">+</span> <span class="n">weights_matrix</span><span class="p">[:,</span> <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span>
+                <span class="c1"># for j in range(len(self.index[i])):</span>
+                <span class="c1">#     y_val += weights_matrix[:, self.index[i][j]] * f_mean</span>
+                <span class="n">y_val</span> <span class="o">+=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">f_mean</span>
+                <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                    <span class="n">submodel_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_mean</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">calc_cov</span><span class="p">:</span>
+                    <span class="n">diffs_test_test</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                        <span class="n">X_test</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span><span class="p">)</span>
+                    <span class="n">K_ss</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+                        <span class="n">diffs_test_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="n">index_i</span>
+                    <span class="p">)</span>
+                    <span class="c1"># v = solve(L, K_s[:, :n_test])</span>
+                    <span class="k">if</span> <span class="n">cho_solve_failed</span><span class="p">:</span>
+                        <span class="n">f_cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">K_ss</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span> <span class="o">-</span> <span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">K_s</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)])</span>
+                                 <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">v</span> <span class="o">=</span> <span class="n">solve_triangular</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">K_s</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">low</span><span class="p">)</span>
+                        <span class="n">f_cov</span> <span class="o">=</span> <span class="p">(</span><span class="n">K_ss</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">),</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span> <span class="o">-</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">v</span><span class="p">[:,</span> <span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)]</span>
+                                 <span class="p">)</span>
+
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+                        <span class="n">f_var</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_cov</span><span class="p">(</span><span class="n">f_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                                                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">X_test</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">f_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
+
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+                        <span class="n">y_var</span> <span class="o">+=</span> <span class="n">weights_matrix</span><span class="p">[:,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f_var</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                        <span class="n">submodel_cov</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_var</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">,</span> <span class="n">submodel_cov</span><span class="p">)</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="n">y_val</span></div>
 </div>
 
 </pre></div>

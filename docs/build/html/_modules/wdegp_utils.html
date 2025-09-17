@@ -70,16 +70,62 @@
            <div itemprop="articleBody">
              
   <h1>Source code for wdegp_utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span></span><span class="kn">import</span> <span class="nn">pyoti.core</span> <span class="k">as</span> <span class="nn">coti</span>  <span class="c1"># Required for the advanced implementation</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyoti.sparse</span> <span class="k">as</span> <span class="nn">oti</span>
+<span class="kn">from</span> <span class="nn">line_profiler</span> <span class="kn">import</span> <span class="n">profile</span>
+
+
+<span class="c1"># @profile</span>
+<span class="c1"># def differences_by_dim_func(X1, X2, n_order, index=-1):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Compute dimension-wise differences between two sets of points X1 and X2,</span>
+<span class="c1">#     introducing hypercomplex perturbation for selected indices.</span>
+
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     X1 : ndarray of shape (n1, d)</span>
+<span class="c1">#         First input array.</span>
+<span class="c1">#     X2 : ndarray of shape (n2, d)</span>
+<span class="c1">#         Second input array.</span>
+<span class="c1">#     n_order : int</span>
+<span class="c1">#         Derivative order used to set the hypercomplex type.</span>
+<span class="c1">#     index : list or int, optional</span>
+<span class="c1">#         Indices in X1 or X2 to apply hypercomplex tagging (default is -1, no tagging).</span>
+
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     differences_by_dim : list of ndarray</span>
+<span class="c1">#         List of length d. Each entry is an (n1, n2) array of differences for a single dimension.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     X1 = oti.array(X1)</span>
+<span class="c1">#     X2 = oti.array(X2)</span>
+<span class="c1">#     n1, d = X1.shape</span>
+<span class="c1">#     n2, _ = X2.shape</span>
+<span class="c1">#     differences_by_dim = []</span>
+
+<span class="c1">#     for k in range(d):</span>
+<span class="c1">#         diffs_k = oti.zeros((n1, n2))</span>
+<span class="c1">#         for i in range(n1):</span>
+<span class="c1">#             for j in range(n2):</span>
+<span class="c1">#                 if i in index or j in index:</span>
+<span class="c1">#                     diffs_k[i, j] = (</span>
+<span class="c1">#                         X1[i, k] + oti.e(k + 1, order=2 * n_order)) - X2[j, k]</span>
+<span class="c1">#                 else:</span>
+<span class="c1">#                     diffs_k[i, j] = X1[i, k] - X2[j, k]</span>
+<span class="c1">#         differences_by_dim.append(diffs_k)</span>
+<span class="c1">#     return differences_by_dim</span>
 
 
 <div class="viewcode-block" id="differences_by_dim_func">
 <a class="viewcode-back" href="../autoapi/wdegp_utils/index.html#wdegp_utils.differences_by_dim_func">[docs]</a>
 <span class="k">def</span> <span class="nf">differences_by_dim_func</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute dimension-wise differences between two sets of points X1 and X2,</span>
-<span class="sd">    introducing hypercomplex perturbation for selected indices.</span>
+<span class="sd">    Computes dimension-wise differences, applying a single hypercomplex</span>
+<span class="sd">    perturbation if either the row (i) or column (j) index is selected.</span>
+
+<span class="sd">    This optimized version avoids broadcasting and boolean mask indexing</span>
+<span class="sd">    to work correctly with OTI arrays.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -88,100 +134,273 @@
 <span class="sd">    X2 : ndarray of shape (n2, d)</span>
 <span class="sd">        Second input array.</span>
 <span class="sd">    n_order : int</span>
-<span class="sd">        Derivative order used to set the hypercomplex type.</span>
+<span class="sd">        Derivative order for the hypercomplex type.</span>
 <span class="sd">    index : list or int, optional</span>
-<span class="sd">        Indices in X1 or X2 to apply hypercomplex tagging (default is -1, no tagging).</span>
+<span class="sd">        Indices where derivative information is present. Default is -1 (no tagging).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    differences_by_dim : list of ndarray</span>
-<span class="sd">        List of length d. Each entry is an (n1, n2) array of differences for a single dimension.</span>
+<span class="sd">    differences_by_dim : list of oti.array</span>
+<span class="sd">        List of length d. Each entry is an (n1, n2) array of differences.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">X1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
-    <span class="n">X2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
     <span class="n">n1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">X1</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">n2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">X2</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># --- Convert to OTI arrays for hypercomplex math ---</span>
+    <span class="n">X1_oti</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
+    <span class="n">X2_oti</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
+
     <span class="n">differences_by_dim</span> <span class="o">=</span> <span class="p">[]</span>
 
+    <span class="c1"># --- Create boolean masks for selective tagging ---</span>
+    <span class="n">row_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="n">col_mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">index</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">index_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">index</span>
+        <span class="n">valid_indices1</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index_list</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n1</span><span class="p">]</span>
+        <span class="n">valid_indices2</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index_list</span> <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n2</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">valid_indices1</span><span class="p">:</span>
+            <span class="n">row_mask</span><span class="p">[</span><span class="n">valid_indices1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">valid_indices2</span><span class="p">:</span>
+            <span class="n">col_mask</span><span class="p">[</span><span class="n">valid_indices2</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+        <span class="c1"># 1. Compute the standard, un-tagged difference matrix efficiently</span>
         <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span> <span class="ow">or</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">index</span><span class="p">:</span>
-                    <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                        <span class="n">X1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">))</span> <span class="o">-</span> <span class="n">X2</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">X1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X1_oti</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_oti</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="c1"># 2. Apply the single perturbation only where needed</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">row_mask</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">col_mask</span><span class="p">):</span>
+            <span class="n">pert</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">)</span>
+
+            <span class="c1"># Create a 2D boolean mask where (i in index OR j in index) is true</span>
+            <span class="n">combined_mask</span> <span class="o">=</span> <span class="n">row_mask</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">|</span> <span class="n">col_mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:]</span>
+
+            <span class="c1"># --- FIX: Find integer coordinates and loop through them ---</span>
+            <span class="c1"># This is necessary because OTI arrays don&#39;t support boolean mask indexing.</span>
+            <span class="n">rows_to_pert</span><span class="p">,</span> <span class="n">cols_to_pert</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">combined_mask</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rows_to_pert</span><span class="p">,</span> <span class="n">cols_to_pert</span><span class="p">):</span>
+                <span class="n">diffs_k</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">pert</span>
+
         <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">differences_by_dim</span></div>
 
 
 
+<span class="c1"># @profile</span>
+<span class="c1"># def rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1):</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     Constructs the RBF kernel matrix with derivative entries using hypercomplex representation.</span>
+
+<span class="c1">#     Parameters</span>
+<span class="c1">#     ----------</span>
+<span class="c1">#     differences : list of ndarrays</span>
+<span class="c1">#         Differences between training points by dimension.</span>
+<span class="c1">#     length_scales : array-like</span>
+<span class="c1">#         Kernel hyperparameters in log10 space.</span>
+<span class="c1">#     n_order : int</span>
+<span class="c1">#         Maximum derivative order.</span>
+<span class="c1">#     n_bases : int</span>
+<span class="c1">#         Number of OTI basis terms used in the analysis.</span>
+<span class="c1">#     kernel_func : callable</span>
+<span class="c1">#         Base kernel function (e.g., SE, RQ).</span>
+<span class="c1">#     der_indices : list of lists</span>
+<span class="c1">#         Derivative multi-indices.</span>
+<span class="c1">#     powers : list of ints</span>
+<span class="c1">#         Parity powers for each derivative term.</span>
+<span class="c1">#     index : list of int</span>
+<span class="c1">#         Indices used for slicing derivative blocks.</span>
+
+<span class="c1">#     Returns</span>
+<span class="c1">#     -------</span>
+<span class="c1">#     K : ndarray</span>
+<span class="c1">#         Full RBF kernel matrix with mixed function and derivative entries.</span>
+<span class="c1">#     &quot;&quot;&quot;</span>
+<span class="c1">#     phi = kernel_func(differences, length_scales, index)</span>
+
+<span class="c1">#     # Preallocate K</span>
+
+<span class="c1">#     for i in range(0, len(der_indices) + 1):</span>
+<span class="c1">#         row_j = 0</span>
+<span class="c1">#         for j in range(0, len(der_indices) + 1):</span>
+<span class="c1">#             if j == 0 and i == 0:</span>
+<span class="c1">#                 row_j = phi.real * (-1)**(powers[j])</span>
+<span class="c1">#             elif j &gt; 0 and i == 0:</span>
+<span class="c1">#                 row_j = np.hstack((</span>
+<span class="c1">#                     row_j,</span>
+<span class="c1">#                     (-1)**(powers[j]) * phi[:, index[0]                                            : index[-1] + 1].get_deriv(der_indices[j - 1])</span>
+<span class="c1">#                 ))</span>
+<span class="c1">#             elif j == 0 and i &gt; 0:</span>
+<span class="c1">#                 row_j = phi[index[0]: index[-1] + 1,</span>
+<span class="c1">#                             :].get_deriv(der_indices[i - 1])</span>
+<span class="c1">#             else:</span>
+<span class="c1">#                 row_j = np.hstack((</span>
+<span class="c1">#                     row_j,</span>
+<span class="c1">#                     (-1)**(powers[j]) * np.array(</span>
+<span class="c1">#                         phi[index[0]: index[-1] + 1, index[0]: index[-1] + 1].get_deriv(</span>
+<span class="c1">#                             der_indices[j - 1] + der_indices[i - 1]</span>
+<span class="c1">#                         )</span>
+<span class="c1">#                     )</span>
+<span class="c1">#                 ))</span>
+<span class="c1">#         if i == 0:</span>
+<span class="c1">#             K = row_j</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             K = np.vstack((K, row_j))</span>
+<span class="c1">#     return K</span>
+
+
+<div class="viewcode-block" id="deriv_map">
+<a class="viewcode-back" href="../autoapi/wdegp_utils/index.html#wdegp_utils.deriv_map">[docs]</a>
+<span class="k">def</span> <span class="nf">deriv_map</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a mapping from (order, index_within_order) to a single</span>
+<span class="sd">    flattened index for all derivative components.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">map_deriv</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ordi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">ndir</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">ndir_order</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">ordi</span><span class="p">)</span>
+        <span class="n">map_deriv_i</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ndir</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndir</span><span class="p">):</span>
+            <span class="n">map_deriv_i</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">map_deriv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">map_deriv_i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">map_deriv</span></div>
+
+
+
+<div class="viewcode-block" id="transform_der_indices">
+<a class="viewcode-back" href="../autoapi/wdegp_utils/index.html#wdegp_utils.transform_der_indices">[docs]</a>
+<span class="k">def</span> <span class="nf">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a list of user-facing derivative specifications into the</span>
+<span class="sd">    internal (order, index) format and the final flattened index.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">deriv_ind_transf</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">deriv_ind_order</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">deriv</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
+        <span class="n">imdir</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">imdir</span><span class="p">(</span><span class="n">deriv</span><span class="p">)</span>
+        <span class="n">idx</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">imdir</span>
+        <span class="n">deriv_ind_transf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">der_map</span><span class="p">[</span><span class="n">order</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">deriv_ind_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imdir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">deriv_ind_transf</span><span class="p">,</span> <span class="n">deriv_ind_order</span></div>
+
+
+
+<span class="nd">@profile</span>
 <div class="viewcode-block" id="rbf_kernel">
 <a class="viewcode-back" href="../autoapi/wdegp_utils/index.html#wdegp_utils.rbf_kernel">[docs]</a>
-<span class="k">def</span> <span class="nf">rbf_kernel</span><span class="p">(</span><span class="n">differences</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">powers</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">rbf_kernel</span><span class="p">(</span>
+    <span class="n">differences</span><span class="p">,</span>
+    <span class="n">length_scales</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="p">,</span>
+    <span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">kernel_func</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">powers</span><span class="p">,</span>
+    <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Constructs the RBF kernel matrix with derivative entries using hypercomplex representation.</span>
+<span class="sd">    Constructs the RBF kernel matrix with derivative entries using an</span>
+<span class="sd">    efficient pre-allocation strategy combined with a single call to</span>
+<span class="sd">    extract all derivative components.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    differences : list of ndarrays</span>
-<span class="sd">        Differences between training points by dimension.</span>
-<span class="sd">    length_scales : array-like</span>
-<span class="sd">        Kernel hyperparameters in log10 space.</span>
-<span class="sd">    n_order : int</span>
-<span class="sd">        Maximum derivative order.</span>
-<span class="sd">    n_bases : int</span>
-<span class="sd">        Number of OTI basis terms used in the analysis.</span>
-<span class="sd">    kernel_func : callable</span>
-<span class="sd">        Base kernel function (e.g., SE, RQ).</span>
-<span class="sd">    der_indices : list of lists</span>
-<span class="sd">        Derivative multi-indices.</span>
-<span class="sd">    powers : list of ints</span>
-<span class="sd">        Parity powers for each derivative term.</span>
-<span class="sd">    index : list of int</span>
-<span class="sd">        Indices used for slicing derivative blocks.</span>
+<span class="sd">    (Parameters are the same as the original function)</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    K : ndarray</span>
 <span class="sd">        Full RBF kernel matrix with mixed function and derivative entries.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># --- 1. Initial Setup and Efficient Derivative Extraction ---</span>
+    <span class="n">dh</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">get_dHelp</span><span class="p">()</span>
     <span class="n">phi</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">differences</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">row_j</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
-            <span class="k">elif</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span>
-                    <span class="n">row_j</span><span class="p">,</span>
-                    <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">phi</span><span class="p">[:,</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
-                <span class="p">))</span>
-            <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">phi</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
-                            <span class="p">:]</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span>
-                    <span class="n">row_j</span><span class="p">,</span>
-                    <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
-                        <span class="n">phi</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span>
-                            <span class="n">der_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">der_indices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                        <span class="p">)</span>
-                    <span class="p">)</span>
-                <span class="p">))</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">K</span> <span class="o">=</span> <span class="n">row_j</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">row_j</span><span class="p">))</span>
+    <span class="c1"># Extract ALL derivative components into a single flat array (highly efficient)</span>
+    <span class="n">phi_exp</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">)</span>
+
+    <span class="c1"># Create maps to translate derivative specifications to flat indices</span>
+    <span class="n">der_map</span> <span class="o">=</span> <span class="n">deriv_map</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">)</span>
+    <span class="n">der_indices_tr</span><span class="p">,</span> <span class="n">der_ind_order</span> <span class="o">=</span> <span class="n">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">)</span>
+
+    <span class="c1"># --- 2. Determine Block Sizes and Pre-allocate Matrix ---</span>
+    <span class="n">n_rows_func</span><span class="p">,</span> <span class="n">n_cols_func</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n_pts_deriv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">n_deriv_types</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
+
+    <span class="n">total_rows</span> <span class="o">=</span> <span class="n">n_rows_func</span> <span class="o">+</span> <span class="n">n_pts_deriv</span> <span class="o">*</span> <span class="n">n_deriv_types</span>
+    <span class="n">total_cols</span> <span class="o">=</span> <span class="n">n_cols_func</span> <span class="o">+</span> <span class="n">n_pts_deriv</span> <span class="o">*</span> <span class="n">n_deriv_types</span>
+
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_rows</span><span class="p">,</span> <span class="n">total_cols</span><span class="p">))</span>
+
+    <span class="c1"># The full content blocks are always the size of the original phi matrix</span>
+    <span class="n">base_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_rows_func</span><span class="p">,</span> <span class="n">n_cols_func</span><span class="p">)</span>
+
+    <span class="c1"># --- 3. Fill the Matrix Block by Block ---</span>
+
+    <span class="c1"># Block (0,0): Function-Function (K_ff)</span>
+    <span class="c1"># The real part is always at index 0 of the flat array</span>
+    <span class="n">content_full</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span>
+    <span class="n">K</span><span class="p">[:</span><span class="n">n_rows_func</span><span class="p">,</span> <span class="p">:</span><span class="n">n_cols_func</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_full</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># First Block-Row: Function-Derivative (K_fd)</span>
+    <span class="n">col_offset</span> <span class="o">=</span> <span class="n">n_cols_func</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_deriv_types</span><span class="p">):</span>
+        <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_indices_tr</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">content_full</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">flat_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span>
+        <span class="c1"># Slice the content to match the number of derivative points</span>
+        <span class="n">content_sliced</span> <span class="o">=</span> <span class="n">content_full</span><span class="p">[:,</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">K</span><span class="p">[:</span><span class="n">n_rows_func</span><span class="p">,</span> <span class="n">col_offset</span><span class="p">:</span> <span class="n">col_offset</span> <span class="o">+</span>
+            <span class="n">n_pts_deriv</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">col_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+
+    <span class="c1"># First Block-Column: Derivative-Function (K_df)</span>
+    <span class="n">row_offset</span> <span class="o">=</span> <span class="n">n_rows_func</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_deriv_types</span><span class="p">):</span>
+        <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_indices_tr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">content_full</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">flat_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span>
+        <span class="c1"># Slice the content to match the number of derivative points</span>
+        <span class="n">content_sliced</span> <span class="o">=</span> <span class="n">content_full</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="n">K</span><span class="p">[</span><span class="n">row_offset</span><span class="p">:</span> <span class="n">row_offset</span> <span class="o">+</span> <span class="n">n_pts_deriv</span><span class="p">,</span>
+            <span class="p">:</span><span class="n">n_cols_func</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">row_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+
+    <span class="c1"># Inner Blocks: Derivative-Derivative (K_dd)</span>
+    <span class="n">row_offset</span> <span class="o">=</span> <span class="n">n_rows_func</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_deriv_types</span><span class="p">):</span>
+        <span class="n">col_offset</span> <span class="o">=</span> <span class="n">n_cols_func</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_deriv_types</span><span class="p">):</span>
+            <span class="c1"># Multiply the derivative indices to find the correct flat index</span>
+            <span class="n">imdir1</span> <span class="o">=</span> <span class="n">der_ind_order</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">imdir2</span> <span class="o">=</span> <span class="n">der_ind_order</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">new_idx</span><span class="p">,</span> <span class="n">new_ord</span> <span class="o">=</span> <span class="n">dh</span><span class="o">.</span><span class="n">mult_dir</span><span class="p">(</span>
+                <span class="n">imdir1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_map</span><span class="p">[</span><span class="n">new_ord</span><span class="p">][</span><span class="n">new_idx</span><span class="p">]</span>
+
+            <span class="n">content_full</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">flat_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span>
+            <span class="c1"># Slice the content for the derivative-derivative block</span>
+            <span class="n">content_sliced</span> <span class="o">=</span> <span class="n">content_full</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">K</span><span class="p">[</span><span class="n">row_offset</span><span class="p">:</span> <span class="n">row_offset</span> <span class="o">+</span> <span class="n">n_pts_deriv</span><span class="p">,</span> <span class="n">col_offset</span><span class="p">:</span> <span class="n">col_offset</span> <span class="o">+</span>
+                <span class="n">n_pts_deriv</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">col_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+        <span class="n">row_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+
     <span class="k">return</span> <span class="n">K</span></div>
 
 
 
 <div class="viewcode-block" id="determine_weights">
 <a class="viewcode-back" href="../autoapi/wdegp_utils/index.html#wdegp_utils.determine_weights">[docs]</a>
-<span class="k">def</span> <span class="nf">determine_weights</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">determine_weights</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute interpolation weights for Weighted Coefficient Kriging (WCK)</span>
 <span class="sd">    using a radial basis function (RBF) kernel.</span>
@@ -221,7 +440,7 @@
 <span class="sd">      - μ is the Lagrange multiplier,</span>
 <span class="sd">      - w contains the interpolation weights used in Weighted Coefficient Kriging.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n1</span> <span class="o">=</span> <span class="n">diffs_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">n1</span> <span class="o">=</span> <span class="n">diffs_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="n">phi</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
@@ -229,7 +448,7 @@
 
     <span class="n">K</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">real</span>
     <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">real</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">r</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
 
     <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>

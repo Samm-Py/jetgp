@@ -26,8 +26,8 @@ if __name__ == "__main__":
     n_bases = 1
 
     # lb_x, ub_x: domain bounds for sampling training data
-    lb_x, ub_x = -2*np.pi, 2*np.pi
-    num_points = 4
+    lb_x, ub_x = .5, 2.5
+    num_points = 10
 
     # der_indices: uniform subset of derivatives to include at each point.
     # Here we include only first-order and fourth-order derivatives with respect to x.
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # Define the true underlying function (combines exponential, sinusoidal, and linear terms)
     def true_function(X, alg=oti):
         x1 = X[:, 0]
-        return alg.sin(x1)
+        return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
 
     # Evaluate function at hypercomplex (perturbed) inputs
     y_train_hc = true_function(X_train_pert)
@@ -73,12 +73,7 @@ if __name__ == "__main__":
         kernel="SE",
         kernel_type="anisotropic",
     )
-    print(X_train)
-    print(y_train)
-    print(n_order)
-    print(n_bases)
-    print(der_indices)
-    input('press enter to continue...')
+
     # Optimize hyperparameters using particle swarm optimization
     params = gp.optimize_hyperparameters(
         n_restart_optimizer=15,

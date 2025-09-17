@@ -312,7 +312,7 @@ def main():
 
     config = TwoDimGPConfig(
         submodel_point_groups=arbitrary_point_groups,
-        n_order=3  # This single order will be applied to all submodels
+        n_order=2  # This single order will be applied to all submodels
     )
 
     experiment = TwoDimGroupedGP(config, six_hump_camel_function)

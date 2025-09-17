@@ -88,6 +88,9 @@ Module Contents
    .. py:attribute:: n_rays
 
 
+   .. py:attribute:: n_rays_list
+
+
    .. py:attribute:: dim
 
 

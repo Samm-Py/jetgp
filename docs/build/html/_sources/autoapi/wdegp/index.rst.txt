@@ -119,17 +119,15 @@ Module Contents
    .. py:attribute:: kernel_func
 
 
+   .. py:attribute:: sigma_data
+
+
    .. py:attribute:: bounds
       :value: []
 
 
 
    .. py:attribute:: optimizer
-
-
-   .. py:attribute:: sigma_data
-      :value: []
-
 
 
    .. py:method:: optimize_hyperparameters(*args, **kwargs)

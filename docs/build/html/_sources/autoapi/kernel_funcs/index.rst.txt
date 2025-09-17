@@ -273,8 +273,16 @@ Module Contents
    .. py:method:: rq_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
 
       
-      Anisotropic Rational Quadratic (RQ) kernel.
+      Anisotropic Rational Quadratic (RQ) kernel using in-place operations.
 
+      :param differences_by_dim:
+      :type differences_by_dim: list of ndarray
+      :param length_scales:
+      :type length_scales: list
+      :param index:
+      :type index: int, optional
+
+      :rtype: ndarray
 
 
 
@@ -297,8 +305,18 @@ Module Contents
    .. py:method:: sine_exp_kernel_anisotropic(differences_by_dim, length_scales, index=-1)
 
       
-      Anisotropic Sine-Exponential kernel.
+      Anisotropic Sine-Exponential kernel using in-place operations.
 
+      This is also known as the Exp-Sine-Squared or Periodic kernel.
+
+      :param differences_by_dim:
+      :type differences_by_dim: list of ndarray
+      :param length_scales:
+      :type length_scales: list
+      :param index:
+      :type index: int, optional
+
+      :rtype: ndarray
 
 
 

@@ -72,6 +72,7 @@
   <h1>Source code for degp_utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyoti.sparse</span> <span class="k">as</span> <span class="nn">oti</span>
+<span class="kn">from</span> <span class="nn">line_profiler</span> <span class="kn">import</span> <span class="n">profile</span>
 
 
 <div class="viewcode-block" id="differences_by_dim_func">
@@ -140,12 +141,11 @@
 
         <span class="c1"># Nested loops to fill diffs_k</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
-            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n2</span><span class="p">):</span>
-                <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">X1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
-                    <span class="o">+</span> <span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">)</span>
-                    <span class="o">-</span> <span class="p">(</span><span class="n">X2</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
-                <span class="p">)</span>
+            <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">X1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+                <span class="o">+</span> <span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">(</span><span class="n">k</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">)</span>
+                <span class="o">-</span> <span class="p">(</span><span class="n">X2</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="p">)</span>
 
         <span class="c1"># Append to our list</span>
         <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
@@ -153,6 +153,7 @@
 
 
 
+<span class="nd">@profile</span>
 <div class="viewcode-block" id="rbf_kernel">
 <a class="viewcode-back" href="../autoapi/degp_utils/index.html#degp_utils.rbf_kernel">[docs]</a>
 <span class="k">def</span> <span class="nf">rbf_kernel</span><span class="p">(</span>
@@ -213,30 +214,97 @@
 <span class="sd">    &gt;&gt;&gt; K = rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers)</span>
 <span class="sd">    &gt;&gt;&gt; K.shape == (n_bases, n_bases)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">pyoti.core</span> <span class="k">as</span> <span class="nn">coti</span>
+    <span class="n">dh</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">get_dHelp</span><span class="p">()</span>
 
     <span class="n">phi</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">differences</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+    <span class="n">phi_exp</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">n_order</span><span class="p">)</span>
+    <span class="c1"># print(phi_exp.shape)</span>
+    <span class="n">der_map</span> <span class="o">=</span> <span class="n">deriv_map</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">n_order</span><span class="p">)</span>
+    <span class="c1"># print(der_map)</span>
+    <span class="c1"># for i in range(0, len(der_indices) ):</span>
+    <span class="c1">#     print(der_indices[i])</span>
+    <span class="n">der_indices_tr</span><span class="p">,</span> <span class="n">der_ind_order</span> <span class="o">=</span> <span class="n">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">)</span>
+    <span class="c1"># print(&quot;&quot;)</span>
+    <span class="c1"># for i in range(0, len(der_indices_tr) ):</span>
+    <span class="c1">#     print(der_indices[i] , der_indices_tr[i])</span>
+    <span class="c1"># print(&quot;&quot;)</span>
 
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-        <span class="n">row_j</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="c1"># TODO: Preallocate matrix (and indices) to optimize matrix generation:</span>
+    <span class="n">nderivs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
+    <span class="n">PHIrows</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">PHIcols</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">PHIrows</span> <span class="o">*</span> <span class="p">(</span><span class="n">nderivs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">PHIcols</span> <span class="o">*</span> <span class="p">(</span><span class="n">nderivs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+
+    <span class="c1"># print(f&#39;len(der_indices): ({len(der_indices)})&#39;)</span>
+    <span class="c1"># print(f&#39;Shape before: ({phi.shape})&#39;)</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">signj</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c1"># Get local view of the global array.</span>
+            <span class="n">Klocal</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">PHIrows</span><span class="p">:</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">PHIrows</span><span class="p">,</span> <span class="n">j</span><span class="o">*</span><span class="n">PHIcols</span><span class="p">:</span> <span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">PHIcols</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                <span class="n">Klocal</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">signj</span>
             <span class="k">elif</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">row_j</span><span class="p">,</span>  <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])))</span>
+                <span class="n">Klocal</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">signj</span> <span class="o">*</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">der_indices_tr</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
             <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="n">Klocal</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">der_indices_tr</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">row_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span>
-                    <span class="p">(</span><span class="n">row_j</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="n">powers</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span>
-                     <span class="n">phi</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">der_indices</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]))</span>
-                <span class="p">)</span>
-        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">K</span> <span class="o">=</span> <span class="n">row_j</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">row_j</span><span class="p">))</span>
+
+                <span class="n">imdir1</span> <span class="o">=</span> <span class="n">der_ind_order</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">imdir2</span> <span class="o">=</span> <span class="n">der_ind_order</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">idx</span><span class="p">,</span> <span class="nb">ord</span> <span class="o">=</span> <span class="n">dh</span><span class="o">.</span><span class="n">mult_dir</span><span class="p">(</span>
+                    <span class="n">imdir1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">der_map</span><span class="p">[</span><span class="nb">ord</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+
+                <span class="n">Klocal</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">signj</span> <span class="o">*</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+    <span class="c1"># print(f&#39;Shape final: ({K.shape})&#39;)</span>
+    <span class="c1"># print(f&#39;Shape final factors: &#39;)</span>
+    <span class="c1"># print(f&#39; -&gt; nrows: {K.shape[0]/phi.shape[0]}x&#39;)</span>
+    <span class="c1"># print(f&#39; -&gt; ncols: {K.shape[1]/phi.shape[1]}x&#39;)</span>
+    <span class="c1"># print(80*&#39;-&#39;)</span>
 
     <span class="k">return</span> <span class="n">K</span></div>
+
+
+
+<div class="viewcode-block" id="deriv_map">
+<a class="viewcode-back" href="../autoapi/degp_utils/index.html#degp_utils.deriv_map">[docs]</a>
+<span class="k">def</span> <span class="nf">deriv_map</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">pyoti.core</span> <span class="k">as</span> <span class="nn">coti</span>
+    <span class="c1"># dh = coti.get_dHelp()</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">map_deriv</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># np.arange(coti.ndir_total(nbases,order),dtype=np.int64)</span>
+    <span class="k">for</span> <span class="n">ordi</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">ndir</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">ndir_order</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">ordi</span><span class="p">)</span>
+        <span class="n">map_deriv_i</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">ndir</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndir</span><span class="p">):</span>
+            <span class="n">map_deriv_i</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">map_deriv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">map_deriv_i</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">map_deriv</span></div>
+
+
+
+<div class="viewcode-block" id="transform_der_indices">
+<a class="viewcode-back" href="../autoapi/degp_utils/index.html#degp_utils.transform_der_indices">[docs]</a>
+<span class="k">def</span> <span class="nf">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">pyoti.core</span> <span class="k">as</span> <span class="nn">coti</span>
+    <span class="n">deriv_ind_transf</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">deriv_ind_order</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">deriv</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
+        <span class="c1"># deriv_ind_transf_i = []</span>
+        <span class="c1"># for deriv in der_list:</span>
+        <span class="c1">#     deriv_ind_transf_i.append(coti.imdir(deriv))</span>
+        <span class="n">imdir</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">imdir</span><span class="p">(</span><span class="n">deriv</span><span class="p">)</span>
+        <span class="n">idx</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">imdir</span>
+        <span class="n">deriv_ind_transf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">der_map</span><span class="p">[</span><span class="n">order</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span>
+        <span class="n">deriv_ind_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">imdir</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">deriv_ind_transf</span><span class="p">,</span> <span class="n">deriv_ind_order</span></div>
 
 </pre></div>
 

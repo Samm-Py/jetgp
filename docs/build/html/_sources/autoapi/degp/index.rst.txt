@@ -26,6 +26,9 @@ Module Contents
    .. py:attribute:: dim
 
 
+   .. py:attribute:: num_points
+
+
    .. py:attribute:: kernel
       :value: 'SE'
 

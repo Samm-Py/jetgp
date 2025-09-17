@@ -10,6 +10,8 @@ Functions
 .. autoapisummary::
 
    wdegp_utils.differences_by_dim_func
+   wdegp_utils.deriv_map
+   wdegp_utils.transform_der_indices
    wdegp_utils.rbf_kernel
    wdegp_utils.determine_weights
 
@@ -20,20 +22,71 @@ Module Contents
 .. py:function:: differences_by_dim_func(X1, X2, n_order, index=-1)
 
    
-   Compute dimension-wise differences between two sets of points X1 and X2,
-   introducing hypercomplex perturbation for selected indices.
+   Computes dimension-wise differences, applying a single hypercomplex
+   perturbation if either the row (i) or column (j) index is selected.
+
+   This optimized version avoids broadcasting and boolean mask indexing
+   to work correctly with OTI arrays.
 
    :param X1: First input array.
    :type X1: ndarray of shape (n1, d)
    :param X2: Second input array.
    :type X2: ndarray of shape (n2, d)
-   :param n_order: Derivative order used to set the hypercomplex type.
+   :param n_order: Derivative order for the hypercomplex type.
    :type n_order: int
-   :param index: Indices in X1 or X2 to apply hypercomplex tagging (default is -1, no tagging).
+   :param index: Indices where derivative information is present. Default is -1 (no tagging).
    :type index: list or int, optional
 
-   :returns: **differences_by_dim** -- List of length d. Each entry is an (n1, n2) array of differences for a single dimension.
-   :rtype: list of ndarray
+   :returns: **differences_by_dim** -- List of length d. Each entry is an (n1, n2) array of differences.
+   :rtype: list of oti.array
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: deriv_map(nbases, order)
+
+   
+   Creates a mapping from (order, index_within_order) to a single
+   flattened index for all derivative components.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: transform_der_indices(der_indices, der_map)
+
+   
+   Transforms a list of user-facing derivative specifications into the
+   internal (order, index) format and the final flattened index.
+
 
 
 
@@ -55,24 +108,11 @@ Module Contents
 .. py:function:: rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1)
 
    
-   Constructs the RBF kernel matrix with derivative entries using hypercomplex representation.
+   Constructs the RBF kernel matrix with derivative entries using an
+   efficient pre-allocation strategy combined with a single call to
+   extract all derivative components.
 
-   :param differences: Differences between training points by dimension.
-   :type differences: list of ndarrays
-   :param length_scales: Kernel hyperparameters in log10 space.
-   :type length_scales: array-like
-   :param n_order: Maximum derivative order.
-   :type n_order: int
-   :param n_bases: Number of OTI basis terms used in the analysis.
-   :type n_bases: int
-   :param kernel_func: Base kernel function (e.g., SE, RQ).
-   :type kernel_func: callable
-   :param der_indices: Derivative multi-indices.
-   :type der_indices: list of lists
-   :param powers: Parity powers for each derivative term.
-   :type powers: list of ints
-   :param index: Indices used for slicing derivative blocks.
-   :type index: list of int
+   :param (Parameters are the same as the original function):
 
    :returns: **K** -- Full RBF kernel matrix with mixed function and derivative entries.
    :rtype: ndarray
@@ -94,7 +134,7 @@ Module Contents
    ..
        !! processed by numpydoc !!
 
-.. py:function:: determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func)
+.. py:function:: determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigma_n)
 
    
    Compute interpolation weights for Weighted Coefficient Kriging (WCK)

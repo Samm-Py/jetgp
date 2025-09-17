@@ -73,7 +73,7 @@
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyoti.sparse</span> <span class="k">as</span> <span class="nn">oti</span>
 <span class="kn">import</span> <span class="nn">utils</span>
-
+<span class="kn">from</span> <span class="nn">line_profiler</span> <span class="kn">import</span> <span class="n">profile</span>
 <span class="c1"># -------------------------------------------------------------------</span>
 <span class="c1"># Utility Functions</span>
 <span class="c1"># -------------------------------------------------------------------</span>
@@ -194,16 +194,17 @@
         <span class="n">sigma_n_bound</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SE&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">se_kernel_anisotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;RQ&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rq_kernel_anisotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SineExp&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span>
-                             <span class="p">[(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span>
+                             <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sine_exp_kernel_anisotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;Matern&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_anisotropic</span>
         <span class="k">else</span><span class="p">:</span>
@@ -228,21 +229,21 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">get_bounds_from_data</span><span class="p">()</span>
             <span class="n">core_bounds</span> <span class="o">=</span> <span class="p">[(</span>
-                <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="o">.</span><span class="n">real</span><span class="p">])),</span>
-                <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="o">.</span><span class="n">real</span><span class="p">]))</span>
+                <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">])),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">]))</span>
             <span class="p">)]</span>
 
         <span class="k">if</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SE&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">se_kernel_isotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;RQ&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rq_kernel_isotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SineExp&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1e2</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">9</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sine_exp_kernel_isotropic</span>
         <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;Matern&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_isotropic</span>
         <span class="k">else</span><span class="p">:</span>
@@ -266,10 +267,56 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">+=</span> <span class="n">extra_bounds</span></div>
 
 
-    <span class="c1"># -------------------------------------------------------------------</span>
-    <span class="c1"># Anisotropic Kernel Implementations</span>
-    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># # -------------------------------------------------------------------</span>
+    <span class="c1"># # Anisotropic Kernel Implementations</span>
+    <span class="c1"># # -------------------------------------------------------------------</span>
+    <span class="c1"># @profile</span>
+    <span class="c1"># def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Anisotropic Squared Exponential (SE) kernel.</span>
 
+    <span class="c1">#     Parameters</span>
+    <span class="c1">#     ----------</span>
+    <span class="c1">#     differences_by_dim : list of ndarray</span>
+    <span class="c1">#     length_scales : list</span>
+    <span class="c1">#     index : int, optional</span>
+
+    <span class="c1">#     Returns</span>
+    <span class="c1">#     -------</span>
+    <span class="c1">#     ndarray</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     # print(differences_by_dim[0].shape)</span>
+    <span class="c1">#     ell = 10 ** (length_scales[:-1])</span>
+    <span class="c1">#     sigma_f = length_scales[-1]</span>
+    <span class="c1">#     # sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x&#39;[i] )**2 )</span>
+    <span class="c1">#     # sqdist = sum(</span>
+    <span class="c1">#     #     (</span>
+    <span class="c1">#     #          (-0.5 * ell[i] * ell[i] )</span>
+    <span class="c1">#     #         *</span>
+    <span class="c1">#     #         ( differences_by_dim[i] * differences_by_dim[i] )</span>
+    <span class="c1">#     #     ) for i in range(self.dim)</span>
+    <span class="c1">#     # )</span>
+    <span class="c1">#     tmp1 = oti.zeros(differences_by_dim[0].shape)</span>
+    <span class="c1">#     tmp2 = oti.zeros(differences_by_dim[0].shape)</span>
+    <span class="c1">#     sqdist = oti.zeros(differences_by_dim[0].shape)</span>
+    <span class="c1">#     for i in range(self.dim):</span>
+    <span class="c1">#         # subdivide by terms</span>
+    <span class="c1">#         # tmp1 = differences_by_dim[i] * differences_by_dim[i]</span>
+    <span class="c1">#         oti.mul(differences_by_dim[i] , differences_by_dim[i], out = tmp1)</span>
+    <span class="c1">#         t1 =  ell[i] * ell[i] * (-0.5)</span>
+    <span class="c1">#         # tmp2 = t1 * tmp1</span>
+    <span class="c1">#         oti.mul(t1, tmp1, out = tmp2)</span>
+    <span class="c1">#         # sqdist += tmp2</span>
+    <span class="c1">#         oti.sum(sqdist, tmp2, out = sqdist)</span>
+    <span class="c1">#     # end for</span>
+    <span class="c1">#     oti.exp( sqdist,out=tmp1)</span>
+    <span class="c1">#     oti.mul( ((10 ** sigma_f) ** 2), tmp1, out=tmp2)</span>
+    <span class="c1">#     # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)</span>
+    <span class="c1">#     return tmp2</span>
+
+    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># Anisotropic Kernel Implementations (MAC Mod 2)</span>
+    <span class="c1"># -------------------------------------------------------------------</span>
 <div class="viewcode-block" id="KernelFactory.se_kernel_anisotropic">
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.se_kernel_anisotropic">[docs]</a>
     <span class="k">def</span> <span class="nf">se_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
@@ -286,39 +333,207 @@
 <span class="sd">        -------</span>
 <span class="sd">        ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print(differences_by_dim[0].shape)</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sqdist</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                     <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">)</span></div>
+        <span class="c1"># sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x&#39;[i] )**2 )</span>
+        <span class="c1"># sqdist = sum(</span>
+        <span class="c1">#     (</span>
+        <span class="c1">#          (-0.5 * ell[i] * ell[i] )</span>
+        <span class="c1">#         *</span>
+        <span class="c1">#         ( differences_by_dim[i] * differences_by_dim[i] )</span>
+        <span class="c1">#     ) for i in range(self.dim)</span>
+        <span class="c1"># )</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="c1"># subdivide by terms</span>
+            <span class="c1"># tmp1 = differences_by_dim[i] * differences_by_dim[i]</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="c1"># oti.pow(tmp1 , 2, out = tmp2)</span>
+            <span class="c1"># t1 =  ell[i] * ell[i] #* (-0.5)</span>
+            <span class="c1"># tmp2 = t1 * tmp1</span>
+            <span class="c1"># oti.mul(t1, tmp1, out = tmp2)</span>
+            <span class="c1"># sqdist += tmp2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+        <span class="c1"># end for</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(((</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="c1"># return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)</span>
+        <span class="k">return</span> <span class="n">tmp2</span></div>
 
+
+    <span class="c1"># # -------------------------------------------------------------------</span>
+    <span class="c1"># # Anisotropic Kernel Implementations (Sam&#39;s original)</span>
+    <span class="c1"># # -------------------------------------------------------------------</span>
+    <span class="c1"># @profile</span>
+    <span class="c1"># def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Anisotropic Squared Exponential (SE) kernel.</span>
+
+    <span class="c1">#     Parameters</span>
+    <span class="c1">#     ----------</span>
+    <span class="c1">#     differences_by_dim : list of ndarray</span>
+    <span class="c1">#     length_scales : list</span>
+    <span class="c1">#     index : int, optional</span>
+
+    <span class="c1">#     Returns</span>
+    <span class="c1">#     -------</span>
+    <span class="c1">#     ndarray</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     ell = 10 ** (length_scales[:-1])</span>
+    <span class="c1">#     sigma_f = length_scales[-1]</span>
+    <span class="c1">#     # sqdist = sum((ell[i] * ell[i] * (differences_by_dim[i]*differences_by_dim[i] ))</span>
+    <span class="c1">#     #              for i in range(self.dim))</span>
+    <span class="c1">#     sqdist = sum( ( (ell[i]) * (differences_by_dim[i]))**2</span>
+    <span class="c1">#                  for i in range(self.dim))</span>
+    <span class="c1">#     return (10 ** sigma_f) ** 2 * oti.exp(-0.5 * sqdist)</span>
+
+    <span class="c1"># @profile</span>
+    <span class="c1"># def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Anisotropic Rational Quadratic (RQ) kernel.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     ell = 10 ** (length_scales[:self.dim])</span>
+    <span class="c1">#     alpha = np.exp(length_scales[self.dim])</span>
+    <span class="c1">#     sigma_f = length_scales[-1]</span>
+    <span class="c1">#     sqdist = 1 + sum((ell[i] * differences_by_dim[i])</span>
+    <span class="c1">#                      ** 2 for i in range(self.dim))</span>
+    <span class="c1">#     return (10 ** sigma_f) ** 2 * (1 + sqdist / (2 * alpha)) ** (-alpha)</span>
 
 <div class="viewcode-block" id="KernelFactory.rq_kernel_anisotropic">
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.rq_kernel_anisotropic">[docs]</a>
     <span class="k">def</span> <span class="nf">rq_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Anisotropic Rational Quadratic (RQ) kernel.</span>
+<span class="sd">        Anisotropic Rational Quadratic (RQ) kernel using in-place operations.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">        index : int, optional</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># --- Hyperparameter Setup ---</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
-        <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sqdist</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-                         <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sqdist</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span></div>
+
+        <span class="c1"># --- Pre-allocate Temporary Arrays ---</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate Squared Distance Term ---</span>
+        <span class="c1"># sqdist = sum((ell[i] * differences_by_dim[i])**2 for i in range(self.dim))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate Final Kernel Value ---</span>
+        <span class="c1"># Formula: (10**sigma_f)**2 * (1 + sqdist / (2 * alpha))**(-alpha)</span>
+
+        <span class="c1"># tmp1 = sqdist / (2 * alpha)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="c1"># tmp2 = 1 + tmp1</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+        <span class="c1"># tmp1 = tmp2**(-alpha)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">tmp2</span><span class="p">,</span> <span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="c1"># tmp2 = (10**sigma_f)**2 * tmp1</span>
+        <span class="n">signal_variance</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">signal_variance</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tmp2</span></div>
 
 
+    <span class="c1"># def sine_exp_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     Anisotropic Sine-Exponential kernel.</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     ell = 10 ** (length_scales[:self.dim])</span>
+    <span class="c1">#     p = length_scales[self.dim:-1]</span>
+    <span class="c1">#     sigma_f = length_scales[-1]</span>
+    <span class="c1">#     sqdist = 1 + sum((ell[i] * oti.sin((np.pi / p[i]) *</span>
+    <span class="c1">#                      differences_by_dim[i])) ** 2 for i in range(self.dim))</span>
+    <span class="c1">#     return (10 ** sigma_f) ** 2 * oti.exp(-2 * sqdist)</span>
+
+    <span class="c1"># @profile</span>
 <div class="viewcode-block" id="KernelFactory.sine_exp_kernel_anisotropic">
 <a class="viewcode-back" href="../autoapi/kernel_funcs/index.html#kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic">[docs]</a>
     <span class="k">def</span> <span class="nf">sine_exp_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Anisotropic Sine-Exponential kernel.</span>
+<span class="sd">        Anisotropic Sine-Exponential kernel using in-place operations.</span>
+
+<span class="sd">        This is also known as the Exp-Sine-Squared or Periodic kernel.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">        index : int, optional</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># --- Hyperparameter Setup ---</span>
+        <span class="c1"># Note: For this kernel, length_scales typically includes length-scale (ell),</span>
+        <span class="c1"># periodicity (p), and signal variance (sigma_f). We assume one p per dimension.</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># Periodicity parameter for each dimension</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sqdist</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span>
-                         <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">)</span></div>
+
+        <span class="c1"># --- Pre-allocate Temporary Arrays ---</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate the argument inside the exponent ---</span>
+        <span class="c1"># sqdist = sum( ( sin(π * |x-x&#39;| / p) / ell )^2 )</span>
+        <span class="c1"># The user&#39;s original formula was slightly different, this is a common form.</span>
+        <span class="c1"># We will implement: sum((ell[i] * sin((π / p[i]) * diff)) ** 2)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="c1"># tmp1 = (np.pi / p[i]) * differences_by_dim[i]</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+            <span class="c1"># tmp2 = sin(tmp1)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+            <span class="c1"># tmp1 = ell[i] * tmp2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+            <span class="c1"># tmp2 = tmp1**2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+            <span class="c1"># sqdist += tmp2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate Final Kernel Value ---</span>
+        <span class="c1"># Formula: (10**sigma_f)**2 * exp(-2 * sqdist)</span>
+
+        <span class="c1"># tmp1 = -2 * sqdist</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="c1"># tmp2 = exp(tmp1)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+        <span class="c1"># tmp1 = (10**sigma_f)**2 * tmp2</span>
+        <span class="n">signal_variance</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">signal_variance</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tmp1</span></div>
 
 
 <div class="viewcode-block" id="KernelFactory.matern_kernel_anisotropic">
@@ -344,11 +559,36 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Squared Exponential (SE) kernel.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># print(differences_by_dim[0].shape)</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sqdist</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">ell</span> <span class="o">*</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">)</span></div>
+        <span class="c1"># sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x&#39;[i] )**2 )</span>
+        <span class="c1"># sqdist = sum(</span>
+        <span class="c1">#     (</span>
+        <span class="c1">#          (-0.5 * ell[i] * ell[i] )</span>
+        <span class="c1">#         *</span>
+        <span class="c1">#         ( differences_by_dim[i] * differences_by_dim[i] )</span>
+        <span class="c1">#     ) for i in range(self.dim)</span>
+        <span class="c1"># )</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="c1"># subdivide by terms</span>
+            <span class="c1"># tmp1 = differences_by_dim[i] * differences_by_dim[i]</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="c1"># oti.pow(tmp1 , 2, out = tmp2)</span>
+            <span class="c1"># t1 =  ell[i] * ell[i] #* (-0.5)</span>
+            <span class="c1"># tmp2 = t1 * tmp1</span>
+            <span class="c1"># oti.mul(t1, tmp1, out = tmp2)</span>
+            <span class="c1"># sqdist += tmp2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+        <span class="c1"># end for</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(((</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">),</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="c1"># return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)</span>
+        <span class="k">return</span> <span class="n">tmp2</span></div>
 
 
 <div class="viewcode-block" id="KernelFactory.rq_kernel_isotropic">
@@ -357,12 +597,41 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Rational Quadratic (RQ) kernel.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># --- Hyperparameter Setup ---</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sqdist</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> \
-            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span> <span class="o">*</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">sqdist</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">alpha</span><span class="p">)</span></div>
+
+        <span class="c1"># --- Pre-allocate Temporary Arrays ---</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate Squared Distance Term ---</span>
+        <span class="c1"># sqdist = sum((ell[i] * differences_by_dim[i])**2 for i in range(self.dim))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate Final Kernel Value ---</span>
+        <span class="c1"># Formula: (10**sigma_f)**2 * (1 + sqdist / (2 * alpha))**(-alpha)</span>
+
+        <span class="c1"># tmp1 = sqdist / (2 * alpha)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="c1"># tmp2 = 1 + tmp1</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+        <span class="c1"># tmp1 = tmp2**(-alpha)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">tmp2</span><span class="p">,</span> <span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="c1"># tmp2 = (10**sigma_f)**2 * tmp1</span>
+        <span class="n">signal_variance</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">signal_variance</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tmp2</span></div>
 
 
 <div class="viewcode-block" id="KernelFactory.sine_exp_kernel_isotropic">
@@ -372,11 +641,49 @@
 <span class="sd">        Isotropic Sine-Exponential kernel.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">p</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">sqdist</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span>
-                     <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">p</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">)</span></div>
+
+        <span class="c1"># --- Pre-allocate Temporary Arrays ---</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">tmp1</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate the argument inside the exponent ---</span>
+        <span class="c1"># sqdist = sum( ( sin(π * |x-x&#39;| / p) / ell )^2 )</span>
+        <span class="c1"># The user&#39;s original formula was slightly different, this is a common form.</span>
+        <span class="c1"># We will implement: sum((ell[i] * sin((π / p[i]) * diff)) ** 2)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="c1"># tmp1 = (np.pi / p[i]) * differences_by_dim[i]</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">p</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+            <span class="c1"># tmp2 = sin(tmp1)</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+            <span class="c1"># tmp1 = ell[i] * tmp2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+            <span class="c1"># tmp2 = tmp1**2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+            <span class="c1"># sqdist += tmp2</span>
+            <span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="c1"># --- Calculate Final Kernel Value ---</span>
+        <span class="c1"># Formula: (10**sigma_f)**2 * exp(-2 * sqdist)</span>
+
+        <span class="c1"># tmp1 = -2 * sqdist</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="c1"># tmp2 = exp(tmp1)</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+
+        <span class="c1"># tmp1 = (10**sigma_f)**2 * tmp2</span>
+        <span class="n">signal_variance</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_f</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">signal_variance</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tmp1</span></div>
 
 
 <div class="viewcode-block" id="KernelFactory.matern_kernel_isotropic">

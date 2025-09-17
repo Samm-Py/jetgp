@@ -406,7 +406,7 @@ def main():
         n_order=3,  # Max order needed for any submodel
         num_points=10,
         submodel_groups=[[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
-        submodel_orders=[2, 2],  # Order for submodel 1, order for submodel 2
+        submodel_orders=[3, 3],  # Order for submodel 1, order for submodel 2
         n_restart_optimizer=15,
         swarm_size=200
     )

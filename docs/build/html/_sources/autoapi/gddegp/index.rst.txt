@@ -1,0 +1,184 @@
+gddegp
+======
+
+.. py:module:: gddegp
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   gddegp.gddegp
+
+
+Module Contents
+---------------
+
+.. py:class:: gddegp(x_train, y_train, n_order, rays_array, normalize=True, sigma_data=None, kernel='SE', kernel_type='anisotropic')
+
+   
+   Directional Derivative-Enhanced Gaussian Process (dDEGP) model.
+
+   Supports multiple directional derivatives, hypercomplex representation,
+   and automatic normalization. Includes methods for training, prediction,
+   and uncertainty quantification using kernel methods.
+
+   :param x_train: Training input data of shape (n_samples, n_features).
+   :type x_train: ndarray
+   :param y_train: Training targets or list of directional derivatives.
+   :type y_train: list or ndarray
+   :param n_order: Maximum derivative order.
+   :type n_order: int
+   :param der_indices: Derivative multi-indices corresponding to each derivative term.
+   :type der_indices: list of lists
+   :param rays: Array of shape (d, n_rays), where each column is a direction vector.
+   :type rays: ndarray
+   :param normalize: Whether to normalize inputs and outputs.
+   :type normalize: bool, default=True
+   :param sigma_data: Observation noise standard deviation or diagonal noise values.
+   :type sigma_data: float or array-like, optional
+   :param kernel: Kernel type ('SE', 'RQ', 'Matern', etc.).
+   :type kernel: str, default='SE'
+   :param kernel_type: Kernel anisotropy ('anisotropic' or 'isotropic').
+   :type kernel_type: str, default='anisotropic'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+   .. py:attribute:: x_train
+
+
+   .. py:attribute:: y_train
+
+
+   .. py:attribute:: sigma_data
+      :value: None
+
+
+
+   .. py:attribute:: n_order
+
+
+   .. py:attribute:: rays_array
+
+
+   .. py:attribute:: dim
+
+
+   .. py:attribute:: num_points
+
+
+   .. py:attribute:: kernel
+      :value: 'SE'
+
+
+
+   .. py:attribute:: kernel_type
+      :value: 'anisotropic'
+
+
+
+   .. py:attribute:: normalize
+      :value: True
+
+
+
+   .. py:attribute:: flattened_der_indices
+      :value: []
+
+
+
+   .. py:attribute:: differences_by_dim
+      :value: []
+
+
+
+   .. py:attribute:: kernel_factory
+
+
+   .. py:attribute:: kernel_func
+
+
+   .. py:attribute:: bounds
+      :value: []
+
+
+
+   .. py:attribute:: optimizer
+
+
+   .. py:method:: optimize_hyperparameters(*args, **kwargs)
+
+      
+      Run the optimizer to find the best kernel hyperparameters.
+      Returns optimized hyperparameter vector.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
+   .. py:method:: predict(X_test, rays_predict, params, calc_cov=False, return_deriv=False)
+
+      
+      Predict posterior mean and optional variance at test points.
+
+      :param X_test: Test input points of shape (n_test, n_features).
+      :type X_test: ndarray
+      :param params: Log-scaled kernel hyperparameters.
+      :type params: ndarray
+      :param calc_cov: Whether to compute predictive variance.
+      :type calc_cov: bool, default=False
+      :param return_deriv: Whether to return derivative predictions.
+      :type return_deriv: bool, default=False
+
+      :returns: * **f_mean** (*ndarray*) -- Predictive mean vector.
+                * **f_var** (*ndarray, optional*) -- Predictive variance vector (only if calc_cov=True).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      ..
+          !! processed by numpydoc !!
+
+
