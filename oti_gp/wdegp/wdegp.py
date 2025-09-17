@@ -81,18 +81,14 @@ class wdegp:
             self.x_train = x_train
             self.sigma_data = sigma_data
 
-        self.differences_by_dim_submodels = [
-            wdegp_utils.differences_by_dim_func(
-                self.x_train, self.x_train, self.n_order, idx
-            )
-            for idx in self.index
-        ]
+        self.differences_by_dim = wdegp_utils.differences_by_dim_func(
+            self.x_train, self.x_train, self.n_order)
 
         self.kernel_factory = KernelFactory(
             dim=self.dim,
             normalize=self.normalize,
             n_order=self.n_order,
-            differences_by_dim=self.differences_by_dim_submodels[0],
+            differences_by_dim=self.differences_by_dim
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -172,11 +168,17 @@ class wdegp:
             i = 0
             index_i = self.index[i]
             diffs_train_test = wdegp_utils.differences_by_dim_func(
-                self.x_train, X_test, self.n_order, index=index_i)
-            diffs_train_train = self.differences_by_dim_submodels[i]
+                self.x_train, X_test, self.n_order)
+            diffs_train_train = self.differences_by_dim
+
+            phi_train_train = self.model.kernel_func(diffs_train_train, ell)
+
+            # Extract ALL derivative components into a single flat array (highly efficient)
+            phi_exp_train_train = phi_train_train.get_all_derivs(
+                self.n_bases, 2 * self.n_order)
 
             K = wdegp_utils.rbf_kernel(
-                diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
+                phi_train_train, phi_exp_train_train,  self.n_order, self.n_bases,
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
 
@@ -199,9 +201,13 @@ class wdegp:
                 print(
                     'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
             # If Cholesky fails, fall back to standard solve
+            phi_train_test = self.model.kernel_func(diffs_train_test, ell)
 
+            # Extract ALL derivative components into a single flat array (highly efficient)
+            phi_exp_train_test = phi_train_test.get_all_derivs(
+                self.n_bases, 2 * self.n_order)
             K_s = wdegp_utils.rbf_kernel(
-                diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
+                phi_train_test, phi_exp_train_test, self.n_order, self.n_bases,
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
             f_mean = K_s[:, :n_test].T @ alpha
@@ -214,9 +220,15 @@ class wdegp:
 
             if calc_cov:
                 diffs_test_test = wdegp_utils.differences_by_dim_func(
-                    X_test, X_test, self.n_order, index=index_i)
+                    X_test, X_test, self.n_order)
+                # If Cholesky fails, fall back to standard solve
+                phi_test_test = self.model.kernel_func(diffs_test_test, ell)
+
+                # Extract ALL derivative components into a single flat array (highly efficient)
+                phi_exp_test_test = phi_test_test.get_all_derivs(
+                    self.n_bases, 2 * self.n_order)
                 K_ss = wdegp_utils.rbf_kernel(
-                    diffs_test_test, ell, self.n_order, self.n_bases, self.kernel_func,
+                    phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
                 # v = solve(L, K_s[:, :n_test])
@@ -246,11 +258,18 @@ class wdegp:
             for i in range(len(self.index)):
                 index_i = self.index[i]
                 diffs_train_test = wdegp_utils.differences_by_dim_func(
-                    self.x_train, X_test, self.n_order, index=index_i)
-                diffs_train_train = self.differences_by_dim_submodels[i]
+                    self.x_train, X_test, self.n_order)
+                diffs_train_train = self.differences_by_dim
+
+                phi_train_train = self.kernel_func(
+                    diffs_train_train, ell)
+
+                # Extract ALL derivative components into a single flat array (highly efficient)
+                phi_exp_train_train = phi_train_train.get_all_derivs(
+                    self.n_bases, 2 * self.n_order)
 
                 K = wdegp_utils.rbf_kernel(
-                    diffs_train_train, ell, self.n_order, self.n_bases, self.kernel_func,
+                    phi_train_train, phi_exp_train_train, self.n_order, self.n_bases,
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
 
@@ -273,8 +292,14 @@ class wdegp:
                         'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
                 # If Cholesky fails, fall back to standard solve
 
+                 # If Cholesky fails, fall back to standard solve
+                phi_train_test = self.kernel_func(diffs_train_test, ell)
+
+                # Extract ALL derivative components into a single flat array (highly efficient)
+                phi_exp_train_test = phi_train_test.get_all_derivs(
+                    self.n_bases, 2 * self.n_order)
                 K_s = wdegp_utils.rbf_kernel(
-                    diffs_train_test, ell, self.n_order, self.n_bases, self.kernel_func,
+                    phi_train_test, phi_exp_train_test, self.n_order, self.n_bases,
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
                 f_mean = K_s[:, :n_test].T @ alpha
@@ -291,9 +316,16 @@ class wdegp:
 
                 if calc_cov:
                     diffs_test_test = wdegp_utils.differences_by_dim_func(
-                        X_test, X_test, self.n_order, index=index_i)
+                        X_test, X_test, self.n_order)
+                    # If Cholesky fails, fall back to standard solve
+                    phi_test_test = self.kernel_func(
+                        diffs_test_test, ell)
+
+                    # Extract ALL derivative components into a single flat array (highly efficient)
+                    phi_exp_test_test = phi_test_test.get_all_derivs(
+                        self.n_bases, 2 * self.n_order)
                     K_ss = wdegp_utils.rbf_kernel(
-                        diffs_test_test, ell, self.n_order, self.n_bases, self.kernel_func,
+                        phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,
                         self.flattened_der_indicies[i], self.powers[i], index=index_i
                     )
                     # v = solve(L, K_s[:, :n_test])

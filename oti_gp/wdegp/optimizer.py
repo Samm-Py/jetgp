@@ -69,15 +69,19 @@ class Optimizer:
         sigma_n = x0[-1]
         llhood = 0
 
+        diffs = self.model.differences_by_dim
+        phi = self.model.kernel_func(diffs, ell, index)
+
+        # Extract ALL derivative components into a single flat array (highly efficient)
+        phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
         for i in range(len(index)):
             y_train_sub = y_train[i]
             der_indices_sub = self.model.flattened_der_indicies[i]
             powers = self.model.powers[i]
             idx = index[i]
-            diffs = self.model.differences_by_dim_submodels[i]
 
             K = utils.rbf_kernel(
-                diffs, ell, n_order, n_bases, self.model.kernel_func,
+                phi, phi_exp, n_order, n_bases,
                 der_indices_sub, powers, index=idx
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))

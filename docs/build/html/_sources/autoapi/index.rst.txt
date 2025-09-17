@@ -7,16 +7,17 @@ This page contains auto-generated API reference documentation [#f1]_.
    :titlesonly:
 
    /autoapi/degp/index
-   /autoapi/utils/index
    /autoapi/ddegp/index
    /autoapi/wdegp/index
+   /autoapi/oti_gp/index
+   /autoapi/gddegp/index
    /autoapi/wddegp/index
    /autoapi/optimizer/index
    /autoapi/degp_utils/index
    /autoapi/ddegp_utils/index
    /autoapi/wdegp_utils/index
+   /autoapi/gddegp_utils/index
    /autoapi/wddegp_utils/index
    /autoapi/kernel_funcs/index
-   /autoapi/plotting_helper/index
 
 .. [#f1] Created with `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`_

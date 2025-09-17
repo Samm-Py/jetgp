@@ -47,71 +47,76 @@ from line_profiler import profile
 
 def differences_by_dim_func(X1, X2, n_order, index=-1):
     """
-    Computes dimension-wise differences, applying a single hypercomplex
-    perturbation if either the row (i) or column (j) index is selected.
+    Compute pairwise differences between two input arrays X1 and X2 for each dimension,
+    embedding hypercomplex units along each dimension for automatic differentiation.
 
-    This optimized version avoids broadcasting and boolean mask indexing
-    to work correctly with OTI arrays.
+    For each dimension k, this function computes:
+        diff_k[i, j] = X1[i, k] + e_{k+1} - X2[j, k]
+    where e_{k+1} is a hypercomplex unit for the (k+1)-th dimension with order 2 * n_order.
 
     Parameters
     ----------
-    X1 : ndarray of shape (n1, d)
-        First input array.
-    X2 : ndarray of shape (n2, d)
-        Second input array.
+    X1 : array_like of shape (n1, d)
+        First set of input points with n1 samples in d dimensions.
+
+    X2 : array_like of shape (n2, d)
+        Second set of input points with n2 samples in d dimensions.
+
     n_order : int
-        Derivative order for the hypercomplex type.
-    index : list or int, optional
-        Indices where derivative information is present. Default is -1 (no tagging).
+        The base order used to construct hypercomplex units (e_{k+1}) with order 2 * n_order.
+
+    index : int, optional
+        Currently unused. Reserved for future enhancements.
 
     Returns
     -------
-    differences_by_dim : list of oti.array
-        List of length d. Each entry is an (n1, n2) array of differences.
+    differences_by_dim : list of length d
+        A list where each element is an array of shape (n1, n2), containing the differences
+        between corresponding dimensions of X1 and X2, augmented with hypercomplex units.
+
+    Notes
+    -----
+    - The function leverages hypercomplex arithmetic from the pyOTI library.
+    - This routine is typically used in the construction of hypercomplex kernels for Gaussian processes
+      or other applications involving automatic differentiation.
+
+    Example
+    -------
+    >>> X1 = [[1.0, 2.0], [3.0, 4.0]]
+    >>> X2 = [[1.5, 2.5], [3.5, 4.5]]
+    >>> n_order = 1
+    >>> diffs = differences_by_dim_func(X1, X2, n_order)
+    >>> len(diffs)
+    2
+    >>> diffs[0].shape
+    (2, 2)
     """
+
+    X1 = oti.array(X1)
+    X2 = oti.array(X2)
+
     n1, d = X1.shape
-    n2, _ = X2.shape
 
-    # --- Convert to OTI arrays for hypercomplex math ---
-    X1_oti = oti.array(X1)
-    X2_oti = oti.array(X2)
+    n2, d = X2.shape
 
+    # Prepare the output: a list of d arrays, each of shape (n, m)
     differences_by_dim = []
 
-    # --- Create boolean masks for selective tagging ---
-    row_mask = np.zeros(n1, dtype=bool)
-    col_mask = np.zeros(n2, dtype=bool)
-    if index is not None and not (isinstance(index, int) and index == -1):
-        index_list = [index] if isinstance(index, int) else index
-        valid_indices1 = [i for i in index_list if i < n1]
-        valid_indices2 = [i for i in index_list if i < n2]
-        if valid_indices1:
-            row_mask[valid_indices1] = True
-        if valid_indices2:
-            col_mask[valid_indices2] = True
-
+    # Loop over each dimension k
     for k in range(d):
-        # 1. Compute the standard, un-tagged difference matrix efficiently
+        # Create an empty (n, m) array for this dimension
         diffs_k = oti.zeros((n1, n2))
+
+        # Nested loops to fill diffs_k
         for i in range(n1):
-            diffs_k[i, :] = X1_oti[i, k] - X2_oti[:, k].T
+            diffs_k[i, :] = (
+                X1[i, k]
+                + oti.e(k + 1, order=2 * n_order)
+                - (X2[:, k].T)
+            )
 
-        # 2. Apply the single perturbation only where needed
-        if np.any(row_mask) or np.any(col_mask):
-            pert = oti.e(k + 1, order=2 * n_order)
-
-            # Create a 2D boolean mask where (i in index OR j in index) is true
-            combined_mask = row_mask[:, np.newaxis] | col_mask[np.newaxis, :]
-
-            # --- FIX: Find integer coordinates and loop through them ---
-            # This is necessary because OTI arrays don't support boolean mask indexing.
-            rows_to_pert, cols_to_pert = np.where(combined_mask)
-
-            for r, c in zip(rows_to_pert, cols_to_pert):
-                diffs_k[int(r), int(c)] += pert
-
+        # Append to our list
         differences_by_dim.append(diffs_k)
-
     return differences_by_dim
 
 
@@ -211,11 +216,10 @@ def transform_der_indices(der_indices, der_map):
 
 @profile
 def rbf_kernel(
-    differences,
-    length_scales,
+        phi,
+    phi_exp,
     n_order,
     n_bases,
-    kernel_func,
     der_indices,
     powers,
     index=-1,
@@ -236,11 +240,6 @@ def rbf_kernel(
     """
     # --- 1. Initial Setup and Efficient Derivative Extraction ---
     dh = coti.get_dHelp()
-    phi = kernel_func(differences, length_scales, index)
-
-    # Extract ALL derivative components into a single flat array (highly efficient)
-    phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
-
     # Create maps to translate derivative specifications to flat indices
     der_map = deriv_map(n_bases, 2 * n_order)
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)

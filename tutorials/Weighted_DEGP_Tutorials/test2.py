@@ -37,7 +37,7 @@ class GroupedSubmodelConfig:
     kernel_type: str = "anisotropic"     # Kernel parameterization
     normalize: bool = False           # Whether to normalize training data
     n_restart_optimizer: int = 15        # Hyperparameter optimization restarts
-    swarm_size: int = 500                 # Particle swarm optimization size
+    swarm_size: int = 200                # Particle swarm optimization size
     test_points: int = 250               # Number of test points for evaluation
     random_seed: Optional[int] = None    # Random seed for reproducibility
     # Defines how points are grouped, e.g., [[0,1,2],[3,4,5]]

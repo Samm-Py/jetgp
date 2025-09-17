@@ -20,7 +20,6 @@
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="plotting_helper" href="../plotting_helper/index.html" />
     <link rel="prev" title="wddegp_utils" href="../wddegp_utils/index.html" /> 
 </head>
 
@@ -47,14 +46,16 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../degp/index.html">degp</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oti_gp/index.html">oti_gp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp/index.html">gddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../optimizer/index.html">optimizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../degp_utils/index.html">degp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp_utils/index.html">ddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp_utils/index.html">wdegp_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp_utils/index.html">gddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp_utils/index.html">wddegp_utils</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">kernel_funcs</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#classes">Classes</a></li>
@@ -64,7 +65,6 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="../plotting_helper/index.html">plotting_helper</a></li>
 </ul>
 </li>
 </ul>
@@ -311,13 +311,38 @@ in isotropic and anisotropic forms.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory.rq_kernel_anisotropic">
 <span class="sig-name descname"><span class="pre">rq_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory.rq_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory.rq_kernel_anisotropic" title="Link to this definition"></a></dt>
-<dd><p>Anisotropic Rational Quadratic (RQ) kernel.</p>
+<dd><p>Anisotropic Rational Quadratic (RQ) kernel using in-place operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>)</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>)</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic">
 <span class="sig-name descname"><span class="pre">sine_exp_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/kernel_funcs.html#KernelFactory.sine_exp_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic" title="Link to this definition"></a></dt>
-<dd><p>Anisotropic Sine-Exponential kernel.</p>
+<dd><p>Anisotropic Sine-Exponential kernel using in-place operations.</p>
+<p>This is also known as the Exp-Sine-Squared or Periodic kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>)</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>)</p></li>
+<li><p><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>ndarray</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -360,7 +385,6 @@ in isotropic and anisotropic forms.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../wddegp_utils/index.html" class="btn btn-neutral float-left" title="wddegp_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../plotting_helper/index.html" class="btn btn-neutral float-right" title="plotting_helper" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

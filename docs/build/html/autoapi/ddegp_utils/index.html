@@ -47,9 +47,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../degp/index.html">degp</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oti_gp/index.html">oti_gp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp/index.html">gddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../optimizer/index.html">optimizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../degp_utils/index.html">degp_utils</a></li>
@@ -57,15 +58,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp_utils/index.html">wdegp_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp_utils/index.html">gddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp_utils/index.html">wddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_funcs/index.html">kernel_funcs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plotting_helper/index.html">plotting_helper</a></li>
 </ul>
 </li>
 </ul>
@@ -104,8 +107,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ddegp_utils.differences_by_dim_func" title="ddegp_utils.differences_by_dim_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">differences_by_dim_func</span></code></a>(X1, X2, rays, n_order[, index])</p></td>
 <td><p>Compute dimension-wise pairwise differences between X1 and X2,</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ddegp_utils.deriv_map" title="ddegp_utils.deriv_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deriv_map</span></code></a>(nbases, order)</p></td>
+<td><p>Creates a mapping from (order, index_within_order) to a single</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ddegp_utils.transform_der_indices" title="ddegp_utils.transform_der_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_der_indices</span></code></a>(der_indices, der_map)</p></td>
+<td><p>Transforms a list of user-facing derivative specifications into the</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ddegp_utils.rbf_kernel" title="ddegp_utils.rbf_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rbf_kernel</span></code></a>(differences, length_scales, n_order, ...[, ...])</p></td>
-<td><p>Compute a radial basis function (RBF) kernel matrix with hypercomplex derivative augmentation.</p></td>
+<td><p>Assembles the full DD-GP covariance matrix using an efficient, pre-computed</p></td>
 </tr>
 </tbody>
 </table>
@@ -117,18 +126,20 @@
 <span class="sig-prename descclassname"><span class="pre">ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">differences_by_dim_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ddegp_utils.html#differences_by_dim_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ddegp_utils.differences_by_dim_func" title="Link to this definition"></a></dt>
 <dd><p>Compute dimension-wise pairwise differences between X1 and X2,
 including hypercomplex perturbations in the directions specified by <cite>rays</cite>.</p>
+<p>This optimized version pre-calculates the perturbation and uses a single
+efficient loop for subtraction, avoiding broadcasting issues with OTI arrays.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>X1</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n1</em><em>, </em><em>d</em><em>)</em>) – First input array.</p></li>
-<li><p><strong>X2</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n2</em><em>, </em><em>d</em><em>)</em>) – Second input array.</p></li>
-<li><p><strong>rays</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>n_rays</em><em>)</em>) – Direction vectors applied for each dimension using hypercomplex algebra.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Derivative order used to define the hypercomplex perturbation.</p></li>
-<li><p><strong>index</strong> (<em>list</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Index to determine which points receive tagging. Default is -1 (all tagged).</p></li>
+<li><p><strong>X1</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n1</em><em>, </em><em>d</em><em>)</em>)</p></li>
+<li><p><strong>X2</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n2</em><em>, </em><em>d</em><em>)</em>)</p></li>
+<li><p><strong>rays</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>n_rays</em><em>)</em>)</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>)</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> or </em><em>int</em><em>, </em><em>optional</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>differences_by_dim</strong> – List of length d. Each entry is an (n1, n2) array of directional differences for one dimension.</p>
+<dd class="field-even"><p><strong>differences_by_dim</strong></p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>list of ndarray</p>
@@ -137,19 +148,29 @@ including hypercomplex perturbations in the directions specified by <cite>rays</
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="ddegp_utils.deriv_map">
+<span class="sig-prename descclassname"><span class="pre">ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">deriv_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ddegp_utils.html#deriv_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ddegp_utils.deriv_map" title="Link to this definition"></a></dt>
+<dd><p>Creates a mapping from (order, index_within_order) to a single
+flattened index for all derivative components.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ddegp_utils.transform_der_indices">
+<span class="sig-prename descclassname"><span class="pre">ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">transform_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ddegp_utils.html#transform_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ddegp_utils.transform_der_indices" title="Link to this definition"></a></dt>
+<dd><p>Transforms a list of user-facing derivative specifications into the
+internal (order, index) format and the final flattened index.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="ddegp_utils.rbf_kernel">
-<span class="sig-prename descclassname"><span class="pre">ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">powers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ddegp_utils.rbf_kernel" title="Link to this definition"></a></dt>
-<dd><p>Compute a radial basis function (RBF) kernel matrix with hypercomplex derivative augmentation.</p>
+<span class="sig-prename descclassname"><span class="pre">ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">powers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/ddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ddegp_utils.rbf_kernel" title="Link to this definition"></a></dt>
+<dd><p>Assembles the full DD-GP covariance matrix using an efficient, pre-computed
+derivative array and block-wise matrix filling.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>differences</strong> (<em>list</em><em> of </em><em>ndarray</em>) – List of difference arrays for each input dimension.</p></li>
-<li><p><strong>length_scales</strong> (<em>ndarray</em>) – Log-scaled length scale parameters.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
-<li><p><strong>kernel_func</strong> (<em>callable</em>) – Kernel function to be used for evaluating pairwise differences.</p></li>
-<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Multi-index derivatives specifying derivative evaluation directions.</p></li>
-<li><p><strong>powers</strong> (<em>list</em><em> of </em><em>int</em>) – Parity powers used to scale contributions.</p></li>
-<li><p><strong>index</strong> (<em>list</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Index for submodel selection or evaluation region.</p></li>
+<li><p><strong>function</strong> (<em>(</em><em>Parameters are the same as your original</em>)</p></li>
+<li><p><strong>added</strong><strong>)</strong> (<em>with n_bases</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

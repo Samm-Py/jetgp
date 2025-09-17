@@ -47,9 +47,10 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../degp/index.html">degp</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oti_gp/index.html">oti_gp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp/index.html">gddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../optimizer/index.html">optimizer</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">degp_utils</a><ul>
@@ -57,15 +58,17 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#degp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#degp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#degp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#degp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp_utils/index.html">ddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp_utils/index.html">wdegp_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp_utils/index.html">gddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp_utils/index.html">wddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_funcs/index.html">kernel_funcs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plotting_helper/index.html">plotting_helper</a></li>
 </ul>
 </li>
 </ul>
@@ -106,6 +109,12 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#degp_utils.rbf_kernel" title="degp_utils.rbf_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rbf_kernel</span></code></a>(differences, length_scales, n_order, ...[, ...])</p></td>
 <td><p>Compute the derivative-enhanced Radial Basis Function (RBF) kernel matrix</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#degp_utils.deriv_map" title="degp_utils.deriv_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deriv_map</span></code></a>(nbases, order)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#degp_utils.transform_der_indices" title="degp_utils.transform_der_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_der_indices</span></code></a>(der_indices, der_map)</p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
@@ -207,6 +216,16 @@ Must return an object with:
 </ul>
 </section>
 </dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="degp_utils.deriv_map">
+<span class="sig-prename descclassname"><span class="pre">degp_utils.</span></span><span class="sig-name descname"><span class="pre">deriv_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/degp_utils.html#deriv_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#degp_utils.deriv_map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="degp_utils.transform_der_indices">
+<span class="sig-prename descclassname"><span class="pre">degp_utils.</span></span><span class="sig-name descname"><span class="pre">transform_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/degp_utils.html#transform_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#degp_utils.transform_der_indices" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </section>
 </section>

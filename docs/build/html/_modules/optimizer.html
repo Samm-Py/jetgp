@@ -71,9 +71,10 @@
              
   <h1>Source code for optimizer</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="kn">import</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">solve</span>
-<span class="kn">from</span> <span class="nn">pyswarm</span> <span class="kn">import</span> <span class="n">pso</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">cho_solve</span><span class="p">,</span> <span class="n">cho_factor</span>
 <span class="kn">from</span> <span class="nn">wdegp</span> <span class="kn">import</span> <span class="n">wdegp_utils</span> <span class="k">as</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">line_profiler</span> <span class="kn">import</span> <span class="n">profile</span>
+<span class="kn">import</span> <span class="nn">utils</span> <span class="k">as</span> <span class="nn">gen_utils</span>
 
 
 <div class="viewcode-block" id="Optimizer">
@@ -103,6 +104,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span></div>
 
 
+    <span class="nd">@profile</span>
 <div class="viewcode-block" id="Optimizer.negative_log_marginal_likelihood">
 <a class="viewcode-back" href="../autoapi/optimizer/index.html#optimizer.Optimizer.negative_log_marginal_likelihood">[docs]</a>
     <span class="k">def</span> <span class="nf">negative_log_marginal_likelihood</span><span class="p">(</span>
@@ -161,8 +163,11 @@
             <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
 
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">L</span> <span class="o">=</span> <span class="n">cholesky</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
-                <span class="n">alpha</span> <span class="o">=</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">solve</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">y_train_sub</span><span class="p">))</span>
+                <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span>
+                    <span class="n">y_train_sub</span>
+                <span class="p">)</span>
 
                 <span class="n">data_fit</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">y_train_sub</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
                 <span class="n">log_det</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">L</span><span class="p">)))</span>
@@ -227,7 +232,7 @@
         <span class="n">lb</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">]</span>
         <span class="n">ub</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bounds</span><span class="p">]</span>
 
-        <span class="n">best_x</span><span class="p">,</span> <span class="n">best_nll</span> <span class="o">=</span> <span class="n">pso</span><span class="p">(</span>
+        <span class="n">best_x</span><span class="p">,</span> <span class="n">best_nll</span> <span class="o">=</span> <span class="n">gen_utils</span><span class="o">.</span><span class="n">pso</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nll_wrapper</span><span class="p">,</span>
             <span class="n">lb</span><span class="p">,</span>
             <span class="n">ub</span><span class="p">,</span>

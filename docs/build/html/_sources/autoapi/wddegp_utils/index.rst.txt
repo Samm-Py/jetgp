@@ -10,6 +10,8 @@ Functions
 .. autoapisummary::
 
    wddegp_utils.differences_by_dim_func
+   wddegp_utils.deriv_map
+   wddegp_utils.transform_der_indices
    wddegp_utils.rbf_kernel
    wddegp_utils.determine_weights
 
@@ -55,31 +57,79 @@ Module Contents
    ..
        !! processed by numpydoc !!
 
-.. py:function:: rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1, index_list=[])
+.. py:function:: deriv_map(nbases, order)
 
    
-   Construct the kernel matrix for the weighted directional derivative-enhanced GP.
+   Creates a mapping from (order, index_within_order) to a single
+   flattened index for all derivative components.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: transform_der_indices(der_indices, der_map)
+
+   
+   Transforms a list of user-facing derivative specifications into the
+   internal (order, index) format and the final flattened index.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ..
+       !! processed by numpydoc !!
+
+.. py:function:: rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1)
+
+   
+   Constructs the RBF kernel matrix with derivative entries using an
+   efficient pre-allocation strategy combined with a single call to
+   extract all derivative components.
 
    :param differences: Precomputed pairwise differences by dimension.
    :type differences: list of ndarray
-   :param length_scales: Array of length scales (hyperparameters).
+   :param length_scales: Kernel hyperparameters.
    :type length_scales: ndarray
    :param n_order: Maximum derivative order.
    :type n_order: int
-   :param n_bases: Number of OTI bases.
+   :param n_bases: Number of hypercomplex bases (input dimensions).
    :type n_bases: int
-   :param kernel_func: Kernel function evaluated over differences.
+   :param kernel_func: Base kernel function that returns a hypercomplex result.
    :type kernel_func: callable
-   :param der_indices: Indices indicating derivative orders.
+   :param der_indices: List of derivative multi-indices to include.
    :type der_indices: list
-   :param powers: Powers of each term based on OTI basis structure.
+   :param powers: Parity powers for applying sign conventions.
    :type powers: list
-   :param index: Dummy argument for compatibility.
-   :type index: int, default=-1
-   :param index_list: List identifying index subsets for directional derivatives.
-   :type index_list: list, default=[]
+   :param index: Indices of points that have derivative information.
+   :type index: list or int, optional
 
-   :returns: **K** -- Fully assembled kernel matrix including derivatives.
+   :returns: **K** -- Fully assembled kernel matrix with function and derivative blocks.
    :rtype: ndarray
 
 

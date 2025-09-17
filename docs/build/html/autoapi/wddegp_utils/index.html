@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="kernel_funcs" href="../kernel_funcs/index.html" />
-    <link rel="prev" title="wdegp_utils" href="../wdegp_utils/index.html" /> 
+    <link rel="prev" title="gddegp_utils" href="../gddegp_utils/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -47,18 +47,22 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">API Reference</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../degp/index.html">degp</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../utils/index.html">utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp/index.html">ddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp/index.html">wdegp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../oti_gp/index.html">oti_gp</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp/index.html">gddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wddegp/index.html">wddegp</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../optimizer/index.html">optimizer</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../degp_utils/index.html">degp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ddegp_utils/index.html">ddegp_utils</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../wdegp_utils/index.html">wdegp_utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../gddegp_utils/index.html">gddegp_utils</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">wddegp_utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#functions">Functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-contents">Module Contents</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#wddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#wddegp_utils.determine_weights"><code class="docutils literal notranslate"><span class="pre">determine_weights()</span></code></a></li>
 </ul>
@@ -66,7 +70,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../kernel_funcs/index.html">kernel_funcs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../plotting_helper/index.html">plotting_helper</a></li>
 </ul>
 </li>
 </ul>
@@ -105,8 +108,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#wddegp_utils.differences_by_dim_func" title="wddegp_utils.differences_by_dim_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">differences_by_dim_func</span></code></a>(X1, X2, rays, n_order[, ...])</p></td>
 <td><p>Compute directional differences between input arrays X1 and X2 along specified rays.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#wddegp_utils.deriv_map" title="wddegp_utils.deriv_map"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deriv_map</span></code></a>(nbases, order)</p></td>
+<td><p>Creates a mapping from (order, index_within_order) to a single</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#wddegp_utils.transform_der_indices" title="wddegp_utils.transform_der_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_der_indices</span></code></a>(der_indices, der_map)</p></td>
+<td><p>Transforms a list of user-facing derivative specifications into the</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#wddegp_utils.rbf_kernel" title="wddegp_utils.rbf_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rbf_kernel</span></code></a>(differences, length_scales, n_order, ...[, ...])</p></td>
-<td><p>Construct the kernel matrix for the weighted directional derivative-enhanced GP.</p></td>
+<td><p>Constructs the RBF kernel matrix with derivative entries using an</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#wddegp_utils.determine_weights" title="wddegp_utils.determine_weights"><code class="xref py py-obj docutils literal notranslate"><span class="pre">determine_weights</span></code></a>(diffs_by_dim, diffs_test, ...)</p></td>
 <td><p>Solve for Kriging weights using a Weighted Coefficient Kriging model.</p></td>
@@ -141,25 +150,40 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="wddegp_utils.deriv_map">
+<span class="sig-prename descclassname"><span class="pre">wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">deriv_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp_utils.html#deriv_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp_utils.deriv_map" title="Link to this definition"></a></dt>
+<dd><p>Creates a mapping from (order, index_within_order) to a single
+flattened index for all derivative components.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wddegp_utils.transform_der_indices">
+<span class="sig-prename descclassname"><span class="pre">wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">transform_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp_utils.html#transform_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp_utils.transform_der_indices" title="Link to this definition"></a></dt>
+<dd><p>Transforms a list of user-facing derivative specifications into the
+internal (order, index) format and the final flattened index.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="wddegp_utils.rbf_kernel">
-<span class="sig-prename descclassname"><span class="pre">wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">powers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp_utils.rbf_kernel" title="Link to this definition"></a></dt>
-<dd><p>Construct the kernel matrix for the weighted directional derivative-enhanced GP.</p>
+<span class="sig-prename descclassname"><span class="pre">wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">powers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/wddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp_utils.rbf_kernel" title="Link to this definition"></a></dt>
+<dd><p>Constructs the RBF kernel matrix with derivative entries using an
+efficient pre-allocation strategy combined with a single call to
+extract all derivative components.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>differences</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Precomputed pairwise differences by dimension.</p></li>
-<li><p><strong>length_scales</strong> (<em>ndarray</em>) – Array of length scales (hyperparameters).</p></li>
+<li><p><strong>length_scales</strong> (<em>ndarray</em>) – Kernel hyperparameters.</p></li>
 <li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
-<li><p><strong>n_bases</strong> (<em>int</em>) – Number of OTI bases.</p></li>
-<li><p><strong>kernel_func</strong> (<em>callable</em>) – Kernel function evaluated over differences.</p></li>
-<li><p><strong>der_indices</strong> (<em>list</em>) – Indices indicating derivative orders.</p></li>
-<li><p><strong>powers</strong> (<em>list</em>) – Powers of each term based on OTI basis structure.</p></li>
-<li><p><strong>index</strong> (<em>int</em><em>, </em><em>default=-1</em>) – Dummy argument for compatibility.</p></li>
-<li><p><strong>index_list</strong> (<em>list</em><em>, </em><em>default=</em><em>[</em><em>]</em>) – List identifying index subsets for directional derivatives.</p></li>
+<li><p><strong>n_bases</strong> (<em>int</em>) – Number of hypercomplex bases (input dimensions).</p></li>
+<li><p><strong>kernel_func</strong> (<em>callable</em>) – Base kernel function that returns a hypercomplex result.</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em>) – List of derivative multi-indices to include.</p></li>
+<li><p><strong>powers</strong> (<em>list</em>) – Parity powers for applying sign conventions.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Indices of points that have derivative information.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>K</strong> – Fully assembled kernel matrix including derivatives.</p>
+<dd class="field-even"><p><strong>K</strong> – Fully assembled kernel matrix with function and derivative blocks.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray</p>
@@ -199,7 +223,7 @@ derivative-enhanced GP structure.</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../wdegp_utils/index.html" class="btn btn-neutral float-left" title="wdegp_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../gddegp_utils/index.html" class="btn btn-neutral float-left" title="gddegp_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../kernel_funcs/index.html" class="btn btn-neutral float-right" title="kernel_funcs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
