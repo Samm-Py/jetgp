@@ -678,7 +678,7 @@ def normalize_directions_2(sigmas_x, rays_array):
             [0. , 1. ]])
     """
 
-    return rays_array / sigmas_x.flatten()[:, None]
+    return [rays_array[i] / sigmas_x.flatten()[:, None] for i in range(len(rays_array))]
 
 
 def normalize_y_data(X_train, y_train, sigma_data, der_indices):

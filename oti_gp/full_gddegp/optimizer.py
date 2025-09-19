@@ -4,6 +4,7 @@ from full_gddegp import gddegp_utils as utils
 import utils as gen_utils
 from scipy.linalg import cho_solve, cho_factor
 
+
 class Optimizer:
     def __init__(self, model):
         """
@@ -44,7 +45,7 @@ class Optimizer:
             ell,
             self.model.n_order,
             self.model.kernel_func,
-            self.model.flattened_der_indices,
+            # self.model.flattened_der_indices,
             # self.model.der_indices_tr,
             # self.model.der_ind_order,
             # self.model.der_map,
@@ -55,11 +56,11 @@ class Optimizer:
         K += self.model.sigma_data**2
 
         try:
-            L,low = cho_factor(K)
+            L, low = cho_factor(K)
             alpha = cho_solve(
-                        (L,low), 
-                        self.model.y_train
-                    )
+                (L, low),
+                self.model.y_train
+            )
 
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))

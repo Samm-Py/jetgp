@@ -1,6 +1,4 @@
-#
 """
-
 ================================================================================
 DEGP Tutorial: Directional Derivative-Enhanced Gaussian Processes (GD-DEGP)
 ================================================================================
@@ -31,7 +29,7 @@ from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
 from dataclasses import dataclass
-from typing import Dict, Callable
+from typing import Dict, Callable, List
 import utils
 
 plt.rcParams.update({'font.size': 12})
@@ -42,9 +40,10 @@ class DirectionalDEGPConfig:
     """Configuration for the Directional DEGP tutorial."""
     n_order: int = 2
     n_bases: int = 2
+    num_directions_per_point: int = 2
     num_training_pts: int = 15
     domain_bounds: tuple = ((-5.0, 10.0), (0.0, 15.0))
-    test_grid_resolution: int = 100
+    test_grid_resolution: int = 50
     normalize_data: bool = True
     kernel: str = "SE"
     kernel_type: str = "anisotropic"
@@ -71,45 +70,62 @@ class DirectionalDEGPTutorial:
 
     def _generate_training_data(self):
         """
-        Generates all training data using the specific pointwise directional AD method.
-        This method encapsulates the logic from the original procedural script.
+        Generates all training data using the specified global perturbation methodology.
+        This means each training point is perturbed by the *same set of rays*
+        (which correspond to the global `rays_array` passed to `gddegp`).
+        The derivatives are then extracted based on the indices of these global rays.
         """
-        print("\n" + "="*50 + "\nGenerating Training Data and Rays\n" + "="*50)
+        print("\n" + "="*50 + "\nGenerating Training Data and Global Rays\n" + "="*50)
         cfg = self.config
 
-        # 1. Generate Points and Rays (from `generate_pointwise_rays` and `gradient_angles_lhs`)
+        # 1. Generate Points
         sampler = qmc.LatinHypercube(d=cfg.n_bases, seed=cfg.random_seed)
         unit_samples = sampler.random(n=cfg.num_training_pts)
         X_train = qmc.scale(unit_samples, [b[0] for b in cfg.domain_bounds], [
-                            b[1] for b in cfg.domain_bounds])
+            b[1] for b in cfg.domain_bounds])
 
-        rays_list, tag_map = [], []
-        for i, (x, y) in enumerate(X_train):
-            gx, gy = self.true_gradient(x, y)
-            theta = np.arctan2(gy, gx)
-            ray = np.array([[np.cos(theta)], [np.sin(theta)]])
-            rays_list.append(ray)
-            tag_map.append(i + 1)  # Tags are 1-indexed
+        # NEW: Generate Rays for each point (Gradient and Perpendicular)
+        # Store them in the grouped structure:
+        # rays_list: [[ray_grad_pt0, ray_grad_pt1, ...], [ray_perp_pt0, ray_perp_pt1, ...]]
+
+        rays_list: List[List[np.ndarray]] = [[]
+                                             for _ in range(cfg.num_directions_per_point)]
+
+        for i, (x_coord, y_coord) in enumerate(X_train):
+            # Gradient direction
+            gx, gy = self.true_gradient(x_coord, y_coord)
+            theta_grad = np.arctan2(gy, gx)
+            ray_grad = np.array([np.cos(theta_grad), np.sin(
+                theta_grad)]).reshape(1, cfg.n_bases)
+
+            # Perpendicular direction (+90 degrees)
+            theta_perp = theta_grad + np.pi / 2
+            ray_perp = np.array([np.cos(theta_perp), np.sin(
+                theta_perp)]).reshape(1, cfg.n_bases)
+
+            # Store rays into their respective grouped lists
+            rays_list[0].append(ray_grad.reshape(-1, 1))  # All gradient rays
+            # All perpendicular rays
+            rays_list[1].append(ray_perp.reshape(-1, 1))
 
         print(
-            f"  Generated {len(X_train)} training points and gradient-aligned rays.")
+            f"  Generated {len(X_train)} training points with {cfg.num_directions_per_point} rays each.")
 
-        # 2. Apply Pointwise Perturbation (from `apply_pointwise_perturb`)
-        # This logic is specific and crucial: it uses e(1) for every point.
         X_pert = oti.array(X_train)
-        for i, ray in enumerate(rays_list):
-            e_tag = oti.e(1, order=cfg.n_order)
-            perturbation = oti.array(ray) * e_tag
-            X_pert[i, :] += perturbation.T
+        for i in range(len(rays_list)):
+            e_tag = oti.e(i+1, order=cfg.n_order)
+            for j in range(len(rays_list[i])):
+                perturbation = oti.array(rays_list[i][j]) * e_tag
+                X_pert[j, :] += perturbation.T
 
         # 3. Evaluate, Truncate, and Extract Derivatives (from `generate_training_data`)
         f_hc = self.true_function(X_pert, alg=oti)
-        for combo in itertools.combinations(tag_map, 2):
+        for combo in itertools.combinations(range(1, cfg.num_directions_per_point + 1), 2):
             f_hc = f_hc.truncate(combo)
 
         y_train_list = [f_hc.real.reshape(-1, 1)]
         # These indices refer to the e(1) basis used in the perturbation step.
-        der_indices_to_extract = [[[1, 1]], [[1, 2]]]
+        der_indices_to_extract = [[[1, 1]], [[1, 2]], [[2, 1]], [[2, 2]]]
         for idx in der_indices_to_extract:
             y_train_list.append(f_hc.get_deriv(idx).reshape(-1, 1))
 
@@ -128,11 +144,12 @@ class DirectionalDEGPTutorial:
         cfg = self.config
         data = self.training_data
 
-        rays_array = np.hstack(data['rays_list'])
+        rays_array = [[] for _ in range(cfg.num_directions_per_point)]
+        for i in range(cfg.num_directions_per_point):
+            rays_array[i] = np.hstack(data['rays_list'][i])
 
         self.gp_model = gddegp(
-            data['X_train'], data['y_train_list'], n_order=[cfg.n_order], rays_array=[
-                rays_array], der_indices=data['der_indices'],
+            data['X_train'], data['y_train_list'], n_order=[2, 2], rays_array=rays_array, der_indices=data['der_indices'],
             normalize=cfg.normalize_data, kernel=cfg.kernel, kernel_type=cfg.kernel_type
         )
         print("  Model initialization: SUCCESS")
@@ -158,9 +175,9 @@ class DirectionalDEGPTutorial:
 
         dummy_ray = np.array([[1.0], [0.0]])
         rays_pred = np.hstack([dummy_ray for _ in range(N_test)])
-
+        rays_pred = [rays_pred for _ in range(cfg.num_directions_per_point)]
         y_pred_full = self.gp_model.predict(
-            X_test, [rays_pred], self.params, calc_cov=False, return_deriv=True)
+            X_test, rays_pred, self.params, calc_cov=False, return_deriv=True)
         y_pred = y_pred_full[:N_test]  # Extract only the function predictions
 
         y_true = self.true_function(X_test, alg=np)
@@ -188,9 +205,10 @@ class DirectionalDEGPTutorial:
         axs[0].scatter(X_train[:, 0], X_train[:, 1], c='red',
                        s=40, edgecolors='k', zorder=5)
         xlim, ylim = (cfg.domain_bounds[0], cfg.domain_bounds[1])
-        for pt, ray in zip(X_train, rays_list):
-            clipped_arrow(axs[0], pt, ray.flatten(), length=.5,
-                          bounds=(xlim, ylim), color="black")
+        for i in range(len(rays_list)):
+            for pt, ray in zip(X_train, rays_list[i]):
+                clipped_arrow(axs[0], pt, ray.flatten(), length=.5,
+                              bounds=(xlim, ylim), color="black")
         axs[0].set_title("GD-DEGP Prediction")
         fig.colorbar(cf1, ax=axs[0])
 
