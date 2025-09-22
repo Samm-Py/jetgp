@@ -3,7 +3,7 @@ import pyoti.sparse as oti
 from line_profiler import profile
 
 
-def differences_by_dim_func(X1, X2, n_order, index=-1):
+def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
     """
     Compute pairwise differences between two input arrays X1 and X2 for each dimension,
     embedding hypercomplex units along each dimension for automatic differentiation.
@@ -49,10 +49,8 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
     >>> diffs[0].shape
     (2, 2)
     """
-
     X1 = oti.array(X1)
     X2 = oti.array(X2)
-
     n1, d = X1.shape
 
     n2, d = X2.shape
@@ -61,20 +59,31 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
     differences_by_dim = []
 
     # Loop over each dimension k
-    for k in range(d):
-        # Create an empty (n, m) array for this dimension
-        diffs_k = oti.zeros((n1, n2))
+    if n_order == 0:
+        for k in range(d):
+            diffs_k = oti.zeros((n1, n2))
+            for i in range(n1):
+                diffs_k[i, :] = (
+                    X1[i, k]
+                    - (X2[:, k].T)
+                )
+                differences_by_dim.append(diffs_k)
+    else:
 
-        # Nested loops to fill diffs_k
-        for i in range(n1):
-            diffs_k[i, :] = (
-                X1[i, k]
-                + oti.e(k + 1, order=2 * n_order)
-                - (X2[:, k].T)
-            )
+        for k in range(d):
+            # Create an empty (n, m) array for this dimension
+            diffs_k = oti.zeros((n1, n2))
 
-        # Append to our list
-        differences_by_dim.append(diffs_k)
+            # Nested loops to fill diffs_k
+            for i in range(n1):
+                diffs_k[i, :] = (
+                    X1[i, k]
+                    + oti.e(k + 1, order=2 * n_order)
+                    - (X2[:, k].T)
+                )
+
+            # Append to our list
+            differences_by_dim.append(diffs_k)
     return differences_by_dim
 
 
@@ -88,6 +97,7 @@ def rbf_kernel(
     der_indices,
     powers,
     index=-1,
+    return_deriv=True
 ):
     """
     Compute the derivative-enhanced Radial Basis Function (RBF) kernel matrix 
@@ -141,6 +151,8 @@ def rbf_kernel(
     dh = coti.get_dHelp()
 
     phi = kernel_func(differences, length_scales, index)
+    if not return_deriv:
+        return phi.real
     phi_exp = phi.get_all_derivs(n_bases, 2*n_order)
     # print(phi_exp.shape)
     der_map = deriv_map(n_bases, 2*n_order)

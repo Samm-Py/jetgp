@@ -167,7 +167,7 @@ class degp:
 
         # Compute train-test kernel
         diff_x_test_x_train = degp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.n_order
+            self.x_train, X_test, self.n_order, return_deriv=return_deriv
         )
         K_s = degp_utils.rbf_kernel(
             diff_x_test_x_train,
@@ -177,6 +177,7 @@ class degp:
             self.kernel_func,
             self.flattened_der_indicies,
             self.powers,
+            return_deriv=return_deriv
         )
 
         # Compute posterior mean
@@ -204,7 +205,7 @@ class degp:
 
         # Compute test-test kernel and covariance
         diff_x_test_x_test = degp_utils.differences_by_dim_func(
-            X_test, X_test, self.n_order
+            X_test, X_test, self.n_order, return_deriv=return_deriv
         )
         K_ss = degp_utils.rbf_kernel(
             diff_x_test_x_test,
@@ -214,6 +215,7 @@ class degp:
             self.kernel_func,
             self.flattened_der_indicies,
             self.powers,
+            return_deriv=return_deriv
         )
 
         if cho_solve_failed:
