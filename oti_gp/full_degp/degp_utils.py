@@ -68,7 +68,7 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
                     - (X2[:, k].T)
                 )
                 differences_by_dim.append(diffs_k)
-    else:
+    elif not return_deriv:
 
         for k in range(d):
             # Create an empty (n, m) array for this dimension
@@ -78,7 +78,22 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
             for i in range(n1):
                 diffs_k[i, :] = (
                     X1[i, k]
-                    + oti.e(k + 1, order=2 * n_order)
+                    + oti.e(k + 1, order=n_order)
+                    - (X2[:, k].T)
+                )
+
+            # Append to our list
+            differences_by_dim.append(diffs_k)
+    else:
+        for k in range(d):
+            # Create an empty (n, m) array for this dimension
+            diffs_k = oti.zeros((n1, n2))
+
+            # Nested loops to fill diffs_k
+            for i in range(n1):
+                diffs_k[i, :] = (
+                    X1[i, k]
+                    + oti.e(k + 1, order=2*n_order)
                     - (X2[:, k].T)
                 )
 
@@ -151,11 +166,24 @@ def rbf_kernel(
     dh = coti.get_dHelp()
 
     phi = kernel_func(differences, length_scales, index)
-    if not return_deriv:
+    PHIrows = phi.shape[0]
+    PHIcols = phi.shape[1]
+    nderivs = len(der_indices)
+    
+    if n_order == 0:
         return phi.real
-    phi_exp = phi.get_all_derivs(n_bases, 2*n_order)
-    # print(phi_exp.shape)
-    der_map = deriv_map(n_bases, 2*n_order)
+    elif not return_deriv:
+        phi_exp = phi.get_all_derivs(n_bases, n_order)
+        # print(phi_exp.shape)
+        der_map = deriv_map(n_bases, n_order)
+        K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
+        outer_loop_index = 1
+    else:
+        phi_exp = phi.get_all_derivs(n_bases, 2*n_order)
+        # print(phi_exp.shape)
+        der_map = deriv_map(n_bases, 2*n_order)
+        K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
+        outer_loop_index = len(der_indices) + 1
     # print(der_map)
     # for i in range(0, len(der_indices) ):
     #     print(der_indices[i])
@@ -166,16 +194,12 @@ def rbf_kernel(
     # print("")
 
     # TODO: Preallocate matrix (and indices) to optimize matrix generation:
-    nderivs = len(der_indices)
-    PHIrows = phi.shape[0]
-    PHIcols = phi.shape[1]
 
-    K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
 
     # print(f'len(der_indices): ({len(der_indices)})')
     # print(f'Shape before: ({phi.shape})')
 
-    for j in range(0, len(der_indices) + 1):
+    for j in range(0, outer_loop_index):
         signj = (-1)**(powers[j])
         for i in range(0, len(der_indices) + 1):
             # Get local view of the global array.

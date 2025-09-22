@@ -177,7 +177,7 @@ class DirectionalDEGPTutorial:
         rays_pred = np.hstack([dummy_ray for _ in range(N_test)])
         rays_pred = [rays_pred for _ in range(cfg.num_directions_per_point)]
         y_pred_full = self.gp_model.predict(
-            X_test, rays_pred, self.params, calc_cov=False, return_deriv=True)
+            X_test, rays_pred, self.params, calc_cov=False, return_deriv=False)
         y_pred = y_pred_full[:N_test]  # Extract only the function predictions
 
         y_true = self.true_function(X_test, alg=np)

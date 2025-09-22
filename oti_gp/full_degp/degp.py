@@ -181,11 +181,7 @@ class degp:
         )
 
         # Compute posterior mean
-        f_mean = (
-            (K_s[:, :len(X_test)].T @ alpha)
-            if not return_deriv
-            else (K_s.T @ alpha)
-        )
+        f_mean = K_s.T@alpha
 
         if self.normalize:
             if return_deriv:

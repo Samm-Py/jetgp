@@ -323,17 +323,11 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func, inde
 
     # 1. Evaluate the kernel once
     phi = kernel_func(differences, length_scales, index)
-    if not return_deriv:
-        return phi.real
-    # 2. Extract ALL derivative components into a single flat array
-    # The order must be 2 * highest_order to capture mixed derivative terms
-    phi_exp = phi.get_all_derivs(n_bases, 2 * highest_order)
-
-    # 3. Create maps to translate derivative specifications to flat indices
-    der_map = deriv_map(n_bases, 2 * highest_order)
-
-    # 4. Pre-allocate the full covariance matrix
     PHIrows, PHIcols = phi.shape
+    if max_orders_per_dim == 0:
+        return phi.real
+        # 2. Extract ALL derivative components into a single flat array
+        # The order must be 2 * highest_order to capture mixed derivative terms
 
     # --- BUILD DERIVATIVE INDEX MAPS ---
     # Create explicit maps from a linear derivative index (1, 2, 3...) to the
@@ -354,10 +348,22 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func, inde
     total_derivs = len(deriv_map_x1)
 
     if not return_deriv:
+
+        phi_exp = phi.get_all_derivs(n_bases,  highest_order)
+
+        # 3. Create maps to translate derivative specifications to flat indices
+        der_map = deriv_map(n_bases, highest_order)
+
+        # 4. Pre-allocate the full covariance matrix
+
         K = np.zeros((PHIrows * (total_derivs + 1), PHIcols))
         row_iters = total_derivs + 1
         col_iters = 1
     else:
+        phi_exp = phi.get_all_derivs(n_bases, 2 * highest_order)
+
+        # 3. Create maps to translate derivative specifications to flat indices
+        der_map = deriv_map(n_bases, 2 * highest_order)
         K = np.zeros((PHIrows * (total_derivs + 1),
                      PHIcols * (total_derivs + 1)))
         row_iters = total_derivs + 1
