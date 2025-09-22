@@ -54,8 +54,8 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, n_order, num_directions_pe
 
     if n_order == 0:
         for i in range(m):
-            e_tags_1.append(oti.e((2*i + 1), order=2*n_order[i]))
-            e_tags_2.append(oti.e((2*i + 2), order=2*n_order[i]))
+            e_tags_1.append(0)
+            e_tags_2.append(0)
 
     differences_by_dim = []
 
@@ -323,7 +323,8 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func, inde
 
     # 1. Evaluate the kernel once
     phi = kernel_func(differences, length_scales, index)
-
+    if not return_deriv:
+        return phi.real
     # 2. Extract ALL derivative components into a single flat array
     # The order must be 2 * highest_order to capture mixed derivative terms
     phi_exp = phi.get_all_derivs(n_bases, 2 * highest_order)
@@ -333,9 +334,6 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func, inde
 
     # 4. Pre-allocate the full covariance matrix
     PHIrows, PHIcols = phi.shape
-
-    if not any(o > 0 for o in max_orders_per_dim):
-        return phi.real
 
     # --- BUILD DERIVATIVE INDEX MAPS ---
     # Create explicit maps from a linear derivative index (1, 2, 3...) to the
