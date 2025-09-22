@@ -78,7 +78,7 @@ class DEGPComparisonTutorial:
 
         # 3. Make Predictions (including derivatives)
         y_pred_full, y_var_full = gp.predict(
-            self.X_test, params, calc_cov=True, return_deriv=True
+            self.X_test, params, calc_cov=True, return_deriv=False
         )
 
         # 4. Calculate and store metrics
