@@ -68,7 +68,7 @@ class Optimizer:
             # Compute NLL components
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
-            complexity = log_det_K
+            complexity = .5 * log_det_K
             N = len(self.model.y_train)
             const = 0.5 * N * np.log(2 * np.pi)
 

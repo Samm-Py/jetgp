@@ -19,6 +19,7 @@ class degp:
         sigma_data=None,
         kernel="SE",
         kernel_type="anisotropic",
+        smoothness_parameter = None
     ):
         """
         Initialize the Derivative-Enhanced Gaussian Process (DEGP) model.
@@ -78,9 +79,14 @@ class degp:
             self.y_train = utils.reshape_y_train(y_train)
 
         # Compute differences for the kernel
-        self.differences_by_dim = degp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, n_order
-        )
+        if kernel == 'SI':
+            self.differences_by_dim = degp_utils.differences_by_dim_func_SI(
+                self.x_train, self.x_train, n_order
+            )
+        else:
+            self.differences_by_dim = degp_utils.differences_by_dim_func(
+                self.x_train, self.x_train, n_order
+            )
 
         # Initialize noise matrix
         self.sigma_data = (
@@ -95,6 +101,7 @@ class degp:
             normalize=normalize,
             differences_by_dim=self.differences_by_dim,
             n_order=n_order,
+            smoothness_parameter=smoothness_parameter
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel, kernel_type=self.kernel_type
@@ -165,11 +172,18 @@ class degp:
         if self.normalize:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
+            
+        if self.kernel == 'SI':
+            diff_x_test_x_train = degp_utils.differences_by_dim_func_SI(
+                self.x_train, X_test, self.n_order, return_deriv=return_deriv
+            )
+        else:
+            diff_x_test_x_train = degp_utils.differences_by_dim_func(
+                self.x_train, X_test, self.n_order, return_deriv=return_deriv
+            )
 
         # Compute train-test kernel
-        diff_x_test_x_train = degp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.n_order, return_deriv=return_deriv
-        )
+
         K_s = degp_utils.rbf_kernel(
             diff_x_test_x_train,
             length_scales,
@@ -201,9 +215,15 @@ class degp:
             return f_mean
 
         # Compute test-test kernel and covariance
-        diff_x_test_x_test = degp_utils.differences_by_dim_func(
-            X_test, X_test, self.n_order, return_deriv=return_deriv
-        )
+        if self.kernel == 'SI':
+            diff_x_test_x_test = degp_utils.differences_by_dim_func_SI(
+                X_test, X_test, self.n_order, return_deriv=return_deriv
+            )
+        else:
+            diff_x_test_x_test = degp_utils.differences_by_dim_func(
+                X_test, X_test, self.n_order, return_deriv=return_deriv
+            )
+
         K_ss = degp_utils.rbf_kernel(
             diff_x_test_x_test,
             length_scales,
