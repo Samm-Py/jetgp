@@ -6,7 +6,7 @@ from scipy.linalg import cholesky, solve_triangular, LinAlgError
 from full_degp.degp import degp
 from scipy.linalg import cho_solve, cho_factor
 import utils
-
+from line_profiler import profile
 
 # def imse_reduction_verify(gp, params, x_train, y_train_list,der_indices, candidate_points, full_domain, noise_var=None):
 #     """
@@ -72,6 +72,7 @@ import utils
 #         imse_brute[i_cand] = np.mean((sigma2_orig - sigma2_new))
 #     return imse_brute
 
+@profile
 def imse_reduction_efficient(
     gp, params, x_train, y_train_list,y_var,
     candidate_points, full_domain, noise_var=None,
@@ -102,18 +103,12 @@ def imse_reduction_efficient(
     sigma_n = params[-1]
 
     # --- 1. Training kernel ---
-    diff_train_train = degp_utils.differences_by_dim_func(X_train, X_train, gp.n_order, return_deriv=True)
-    K = degp_utils.rbf_kernel(
-        diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-        gp.flattened_der_indicies, gp.powers, return_deriv=True
-    )
+    #diff_train_train = gp.differences_by_dim
+    K = gp.K
 
     # --- 2. Kernel matrices for full domain ---
-    diff_train_domain = degp_utils.differences_by_dim_func(X_train, full_domain, gp.n_order, return_deriv=False)
-    K_s = degp_utils.rbf_kernel(
-        diff_train_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-        gp.flattened_der_indicies, gp.powers, return_deriv=False
-    )
+    #diff_train_domain = gp.diff_x_test_x_train
+    K_s = gp.K_s
 
     # --- 3. Vectorized differences ---
     # Candidate to training
