@@ -76,7 +76,7 @@ from line_profiler import profile
 def imse_reduction_efficient(
     gp, params, x_train, y_train_list,y_var,
     candidate_points, full_domain, noise_var=None,
-    return_deriv=False, normalize=True
+    return_deriv=False, normalize=True, build_Ks = False
 ):
     """
     Vectorized exact IMSE reduction for scalar GP (function only).
@@ -101,35 +101,42 @@ def imse_reduction_efficient(
     candidate_points = np.sort(candidate_points, axis = 0)
     length_scales = params[:-1]
     sigma_n = params[-1]
-
     # --- 1. Training kernel ---
     #diff_train_train = gp.differences_by_dim
     K = gp.K
-
-    # --- 2. Kernel matrices for full domain ---
-    #diff_train_domain = gp.diff_x_test_x_train
-    K_s = gp.K_s
+    
+    if build_Ks:
+        # --- 2. Kernel matrices for full domain ---
+        diff_train_domain = degp_utils.differences_by_dim_func(X_train, full_domain, gp.n_order, return_deriv=return_deriv)
+        K_s = degp_utils.rbf_kernel(
+            diff_train_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
+            gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
+        )
+    else:
+        # --- 2. Kernel matrices for full domain ---
+        #diff_train_domain = gp.diff_x_test_x_train
+        K_s = gp.K_s
 
     # --- 3. Vectorized differences ---
     # Candidate to training
-    diff_train_cand = degp_utils.differences_by_dim_func(X_train, candidate_points, gp.n_order, return_deriv=False)
+    diff_train_cand = degp_utils.differences_by_dim_func(X_train, candidate_points, gp.n_order, return_deriv=return_deriv)
     K_train_cand = degp_utils.rbf_kernel(
         diff_train_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-        gp.flattened_der_indicies, gp.powers, return_deriv=False
+        gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
     )  # shape: (n_train, n_candidates)
 
     # Candidate self-covariance
-    diff_cand_cand = degp_utils.differences_by_dim_func(candidate_points, candidate_points, gp.n_order, return_deriv=False)
+    diff_cand_cand = degp_utils.differences_by_dim_func(candidate_points, candidate_points, gp.n_order, return_deriv=return_deriv)
     K_cand_cand = np.diag(degp_utils.rbf_kernel(
         diff_cand_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-        gp.flattened_der_indicies, gp.powers, return_deriv=False
+        gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
     ))  # shape: (n_candidates,)
 
     # Candidate to full domain
-    diff_domain_cand = degp_utils.differences_by_dim_func(full_domain, candidate_points, gp.n_order, return_deriv=False)
+    diff_domain_cand = degp_utils.differences_by_dim_func(full_domain, candidate_points, gp.n_order, return_deriv=return_deriv)
     K_domain_cand = degp_utils.rbf_kernel(
         diff_domain_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-        gp.flattened_der_indicies, gp.powers, return_deriv=False
+        gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
     )  # shape: (n_domain, n_candidates)
 
     # Solve K^{-1} @ K_train_cand for all candidates
