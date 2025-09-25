@@ -16,17 +16,19 @@ import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
 import plotting_helper
+import torch
 
 if __name__ == "__main__":
+    device = "cpu"
     # n_order: the maximum derivative order used for perturbation
     # (note: not all orders are included in training)
-    n_order = 2
+    n_order = 3
 
     # n_bases: the dimensionality of the input space (1D in this example)
     n_bases = 1
 
     # lb_x, ub_x: domain bounds for sampling training data
-    lb_x, ub_x = .5, 2.5
+    lb_x, ub_x = .0001, 1
     num_points = 10
 
     # der_indices: uniform subset of derivatives to include at each point.
@@ -36,7 +38,10 @@ if __name__ == "__main__":
 
     print(der_indices)
     # X_train: evenly spaced points over the domain
-    X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
+    X_train = np.array([[0.0439],
+            [0.5439],
+            [0.2939],
+            [0.7939]])
 
     # X_train_pert: convert to OTI array and apply perturbations up to order n_order
     # so we can later extract required derivatives (even if we only use some of them)
@@ -47,8 +52,8 @@ if __name__ == "__main__":
 
     # Define the true underlying function (combines exponential, sinusoidal, and linear terms)
     def true_function(X, alg=oti):
-        x1 = X[:, 0]
-        return alg.sin(10 * np.pi * x1) / (2 * x1) + (x1 - 1) ** 4
+        x = X[:, 0]
+        return 15*(x-1/2)**2*alg.sin(2*np.pi*x)
 
     # Evaluate function at hypercomplex (perturbed) inputs
     y_train_hc = true_function(X_train_pert)
@@ -69,20 +74,22 @@ if __name__ == "__main__":
         n_order,
         n_bases,
         der_indices,
-        normalize=True,
-        kernel="SE",
+        normalize=False,
+        kernel="SI",
         kernel_type="anisotropic",
+        smoothness_parameter = 4
     )
 
     # Optimize hyperparameters using particle swarm optimization
     params = gp.optimize_hyperparameters(
-        n_restart_optimizer=15,
-        swarm_size=200
+        n_restart_optimizer=30,
+        swarm_size=400,
+        local_opt_every=30
     )
 
     # Create test grid for prediction
-    N_grid = 100
-    X_test = np.linspace(lb_x, ub_x, N_grid).reshape(-1, 1)
+    N_grid = 250
+    X_test = torch.linspace(0,1,252,device=device)[1:-1,None].numpy()
 
     # Predict GP posterior mean and variance
     y_pred, y_var = gp.predict(

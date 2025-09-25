@@ -15,16 +15,16 @@ plt.rcParams.update({'font.size': 12})
 class DEGPConfig:
     """Configuration for the DEGP comparison tutorial."""
     # Domain and data points
-    lb_x: float = 0.2
-    ub_x: float = 10.0
-    num_training_pts: int = 3
+    lb_x: float = 0
+    ub_x: float = 1
+    num_training_pts: int = 4
     num_test_pts: int = 100
 
     # List of derivative orders to test and compare
     orders_to_test: List[int] = field(default_factory=lambda: [0, 1, 2, 4])
 
     # GP model parameters
-    normalize_data: bool = True
+    normalize_data: bool = False
     kernel: str = "SE"
     kernel_type: str = "anisotropic"
 
@@ -292,7 +292,7 @@ class DEGPComparisonTutorial:
 def true_function(X, alg=oti):
     """Test function combining exponential decay, oscillations, and linear trend."""
     x = X[:, 0]
-    return alg.sin(x)
+    return 15*(x - 1/2)**2*alg.sin(2*np.pi*x)
 
 
 def main():

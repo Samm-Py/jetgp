@@ -34,13 +34,15 @@ class KernelFactory:
         Order of derivatives for kernel smoothness.
     """
 
-    def __init__(self, dim, normalize, differences_by_dim, n_order, true_noise_std=None):
+    def __init__(self, dim, normalize, differences_by_dim, n_order, true_noise_std=None, smoothness_parameter = None):
         self.dim = dim
         self.normalize = normalize
         self.differences_by_dim = differences_by_dim
         self.true_noise_std = true_noise_std
         self.bounds = []
-        self.nu = 2 * n_order + 0.5
+        if smoothness_parameter is not None:
+            self.alpha = smoothness_parameter
+            self.nu = 2 * smoothness_parameter + 0.5
         self.n_order = n_order
 
     def get_bounds_from_data(self):
@@ -51,7 +53,7 @@ class KernelFactory:
         for diffs in self.differences_by_dim:
             min_val = float(diffs.real.min())
             max_val = float(diffs.real.max())
-            self.bounds.append((min_val, max_val))
+            self.bounds.append((-4, 10**(max_val)))
 
     def create_kernel(self, kernel_name, kernel_type):
         """
@@ -104,6 +106,10 @@ class KernelFactory:
             self._add_bounds([(-1, 5), sigma_n_bound])
             self.matern_kernel_prebuild = utils.matern_kernel_builder(self.nu)
             return self.matern_kernel_anisotropic
+        elif kernel == "SI":
+            self._add_bounds([(-5, 5), sigma_n_bound])
+            self.SI_kernel_prebuild = utils.generate_bernoulli_lambda(self.alpha)
+            return self.SI_kernel_anisotropic
         else:
             raise NotImplementedError("Anisotropic kernel not implemented")
 
@@ -140,6 +146,10 @@ class KernelFactory:
             self.bounds = core_bounds + [(-1, 5), sigma_n_bound]
             self.matern_kernel_prebuild = utils.matern_kernel_builder(self.nu)
             return self.matern_kernel_isotropic
+        elif kernel == "SI":
+            self.bounds = core_bounds + [(-5, 5), sigma_n_bound]
+            self.SI_kernel_prebuild = utils.generate_bernoulli_lambda(self.alpha)
+            return self.SI_kernel_prebuild 
         else:
             raise NotImplementedError("Isotropic kernel not implemented")
 
@@ -426,6 +436,16 @@ class KernelFactory:
         sqdist = oti.sqrt(
             sum((ell[i] * (differences_by_dim[i] + 1e-6)) ** 2 for i in range(self.dim)))
         return (10 ** sigma_f) ** 2 * self.matern_kernel_prebuild(sqdist)
+    def SI_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+        """
+        Anisotropic Matérn kernel (half-integer ν).
+        """
+        ell = 10 ** (length_scales[:-1])
+        sigma_f = length_scales[-1]
+        val = 1
+        for i in range(self.dim):
+            val = val * (1 + ell[i] * self.SI_kernel_prebuild(differences_by_dim[i]))
+        return (10 ** sigma_f) ** 2 * val
 
     # -------------------------------------------------------------------
     # Isotropic Kernel Implementations

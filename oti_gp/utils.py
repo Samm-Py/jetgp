@@ -9,10 +9,12 @@ import sys
 from scipy.linalg import null_space
 from full_gddegp import gddegp
 from line_profiler import profile
-from scipy.optimize import minimize
 from scipy.stats.qmc import Sobol
 import scipy.stats as stats
-
+from fractions import Fraction
+from scipy.special import comb
+from numpy.polynomial import Polynomial
+import math
 def scale_samples(samples, lower_bounds, upper_bounds):
     """
     Scale each column of samples from the unit interval [0, 1] to user-defined bounds [lb_j, ub_j].
@@ -903,6 +905,90 @@ def matern_kernel_builder(nu):
     custom_dict = {"exp": oti.exp}
     matern_kernel_func = sp.lambdify((r), expr, modules=[custom_dict, "numpy"])
     return matern_kernel_func
+
+
+
+def generate_bernoulli_numbers(n_max: int) -> list[Fraction]:
+    """
+    Generates Bernoulli numbers B_0 to B_n_max using their recurrence relation.
+
+    Args:
+        n_max: The maximum order of the Bernoulli number to generate.
+
+    Returns:
+        A list of Bernoulli numbers as Fraction objects.
+    """
+    if n_max < 0:
+        return []
+
+    B = [Fraction(0)] * (n_max + 1)
+    B[0] = Fraction(1)  # B_0 = 1
+
+    for n in range(1, n_max + 1):
+        # The recurrence relation sum: sum_{k=0 to n} C(n+1, k) * B_k = 0
+        # We solve for B_n: B_n = - (1 / C(n+1, n)) * sum_{k=0 to n-1} C(n+1, k) * B_k
+        sum_val = Fraction(0)
+        for k in range(n):
+            # Binomial coefficient C(n+1, k)
+            binomial_coeff = comb(n + 1, k, exact=True)
+            sum_val += binomial_coeff * B[k]
+        
+        # C(n+1, n) is just n+1
+        B[n] = -sum_val / (n + 1)
+        
+        # B_k is zero for all odd k > 1
+        if n > 1 and n % 2 != 0:
+            B[n] = Fraction(0)
+            
+    return B
+
+def generate_bernoulli_polynomial(alpha: int) -> Polynomial:
+    """
+    Generates the (2*alpha)-th Bernoulli polynomial, B_{2*alpha}(x).
+
+    Args:
+        alpha: A non-negative integer.
+
+    Returns:
+        A numpy.polynomial.Polynomial object representing the polynomial.
+    """
+    if not isinstance(alpha, int) or alpha < 0:
+        raise ValueError("alpha must be a non-negative integer.")
+
+    n = 2 * alpha
+    
+    # Step 1: Generate the required Bernoulli numbers
+    bernoulli_nums = generate_bernoulli_numbers(n)
+    
+    # Step 2: Construct the polynomial coefficients
+    # The polynomial is sum_{k=0 to n} C(n, k) * B_k * x^(n-k)
+    # The coefficient of x^j is C(n, n-j) * B_{n-j}
+    # numpy.polynomial expects coeffs from lowest power (x^0) to highest (x^n)
+    
+    coeffs = np.zeros(n + 1, dtype=object)
+    
+    for j in range(n + 1): # j represents the power of x
+        k = n - j
+        # Coefficient for x^j is C(n, k) * B_k
+        binomial_coeff = comb(n, k, exact=True)
+        term_coeff = binomial_coeff * bernoulli_nums[k]
+        coeffs[j] = float(term_coeff) # Convert fraction to float for Polynomial class
+        
+    # The Polynomial class takes coefficients from lowest power to highest
+    return Polynomial(coeffs)
+
+def generate_bernoulli_lambda(alpha: int) -> callable:
+    """
+    Generates a callable (lambda) function for the (2*alpha)-th Bernoulli polynomial.
+
+    Args:
+        alpha: A non-negative integer.
+
+    Returns:
+        A callable function that evaluates B_{2*alpha}(x).
+    """
+    # The numpy Polynomial object is already a callable function.
+    return ((-1)**(alpha + 1) * (2*np.pi)**(2 * alpha)) / (math.factorial(2 * alpha)) * generate_bernoulli_polynomial(alpha)
 
 
 def robust_local_optimization(func, x0, args=(), lb=None, ub=None, debug=False):
