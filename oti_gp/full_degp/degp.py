@@ -106,7 +106,8 @@ class degp:
         """
         Optimize model hyperparameters using the optimizer.
         """
-        return self.optimizer.optimize_hyperparameters(*args, **kwargs)
+        self.params = self.optimizer.optimize_hyperparameters(*args, **kwargs)
+        return self.params
 
     def predict(self, X_test, params, calc_cov=False, return_deriv=False):
         """

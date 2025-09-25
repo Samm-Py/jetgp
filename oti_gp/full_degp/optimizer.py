@@ -128,8 +128,8 @@ class Optimizer:
             # omega=0.4,       # High inertia encourages exploration
             # phip=1.0,        # Moderate personal influence
             # phig=1.2,        # Low social influence, avoids early convergence
-            minfunc=1e-4,
-            minstep=1e-4,
+            minfunc=1e-16,
+            minstep=1e-16,
             initial_positions=x0,
             local_opt_every=local_opt_every
         )

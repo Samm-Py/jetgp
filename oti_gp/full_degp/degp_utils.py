@@ -67,7 +67,7 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
                     X1[i, k]
                     - (X2[:, k].T)
                 )
-                differences_by_dim.append(diffs_k)
+            differences_by_dim.append(diffs_k)
     elif not return_deriv:
 
         for k in range(d):
@@ -169,7 +169,7 @@ def rbf_kernel(
     PHIrows = phi.shape[0]
     PHIcols = phi.shape[1]
     nderivs = len(der_indices)
-    
+
     if n_order == 0:
         return phi.real
     elif not return_deriv:
@@ -194,7 +194,6 @@ def rbf_kernel(
     # print("")
 
     # TODO: Preallocate matrix (and indices) to optimize matrix generation:
-
 
     # print(f'len(der_indices): ({len(der_indices)})')
     # print(f'Shape before: ({phi.shape})')

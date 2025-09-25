@@ -9,7 +9,9 @@ import sys
 from scipy.linalg import null_space
 from full_gddegp import gddegp
 from line_profiler import profile
-
+from scipy.optimize import minimize
+from scipy.stats.qmc import Sobol
+import scipy.stats as stats
 
 def scale_samples(samples, lower_bounds, upper_bounds):
     """
@@ -1634,3 +1636,215 @@ def maximize_ier_direction(
     v_opt /= np.linalg.norm(v_opt)
 
     return v_opt
+
+
+# utils.py
+
+
+# UPDATED function to use the new bounds logic
+def find_next_point(
+    gp,
+    params,
+    x_train,
+    y_train_list,
+    y_var,
+    integration_points,
+    dist_params,
+    acquisition_func,
+    n_coarse_points: int = 1024,
+    n_local_starts: int = 10,
+    **acq_kwargs
+):
+    """Finds the next point using distribution-aware optimization bounds."""
+    
+    # --- Stage 1: Coarse Global Search ---
+    shape, scale = get_pdf_params(dist_params)
+    
+    sampler = Sobol(d=x_train.shape[1], scramble=True)
+    coarse_points_unit = sampler.random(n=n_coarse_points)
+    coarse_points = get_inverse(dist_params, coarse_points_unit
+    )
+    
+    coarse_scores = acquisition_func(
+        gp, params, x_train, y_train_list, y_var,
+        coarse_points, integration_points, normalize=gp.normalize
+    )
+    
+    top_indices = np.argsort(coarse_scores.ravel())[-n_local_starts:]
+    top_starting_points = coarse_points[top_indices]
+
+    # --- Stage 2: Local Optimization ---
+    
+    # Get the correct bounds for the optimizer
+    bounds = get_optimization_bounds(dist_params)
+    all_unbounded = all(b[0] is None for b in bounds)
+
+    def objective_function(x: np.ndarray) -> float:
+        x_candidate = x.reshape(1, -1)
+        score = acquisition_func(
+            gp, params, x_train, y_train_list, y_var,
+            x_candidate, integration_points, normalize=gp.normalize
+        )
+        return -score[0]
+
+    best_x = None
+    best_score = -np.inf
+    
+    for start_point in top_starting_points:
+        if all_unbounded:
+            res = minimize(fun=objective_function, x0=start_point, method="BFGS")
+        else:
+            res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
+        
+        if -res.fun > best_score:
+            best_score = -res.fun
+            best_x = res.x
+            
+    return best_x.reshape(1, -1), best_score
+
+# def sample_from_dist(dist, means, var, shape, scale, size):
+#     num_cols = len(dist)
+#     num_rows = int(size)
+#     samples = np.zeros((num_rows, num_cols))
+#     for i in range(0, num_cols):
+#         if dist[i] == 'N':  # normal (Gaussian)
+#             samples[:, i] = stats.norm.rvs(
+#                 loc=shape[i], scale=scale[i], size=size)
+#         elif dist[i] == 'U':  # uniform
+#             samples[:, i] = stats.uniform.rvs(
+#                 loc=shape[i], scale=scale[i], size=size)
+#         elif dist[i] == 'LN':  # log-normal
+#             samples[:, i] = stats.lognorm.rvs(
+#                 scale[i], scale=np.exp(shape[i]), size=size)
+#         # elif dist[i] == 'B':  # beta
+#         #     frozen_dist = stats.beta(a=shape[i], b=scale[i])
+#         #     transformed_samples[:, i] = frozen_dist.ppf(samples[:, i])
+#         elif dist[i] == 'T':  # triangle (symmetric)
+#             c = .5
+#             samples[:, i] = stats.triang.rvs(
+#                 c, loc=shape[i], scale=scale[i], size=size)
+#         elif dist[i] == 'UTN':
+#             # samples[:, i] = stats.uniform.rvs(
+#             #     loc=shape[i], scale=scale[i] - shape[i], size=size)
+#             cf = 3
+#             # lb = shape[i] + cf*shape[i]
+#             # ub = scale[i] - cf*shape[i]
+#             # transformed_samples[:, i] = (
+#             #     ub - lb)*samples[:, i] + lb
+#             a, b = (shape[i] - means[i]) / \
+#                 (cf*var[i]*means[i]), (scale[i] -
+#                                        means[i]) / (cf*var[i]*means[i])
+#             samples[:, i] = stats.truncnorm.rvs(
+#                 a, b, loc=means[i], scale=cf*var[i]*means[i], size=size)
+
+#     return samples
+def get_pdf_params(dist_params):
+    """
+    Computes scipy-specific loc/scale parameters. Prioritizes explicit bounds if provided.
+    """
+    dists = dist_params['dists']
+    nVar = len(dists)
+    rv_a = np.zeros(nVar)  # loc
+    rv_b = np.zeros(nVar)  # scale
+
+    # Check for optional explicit bounds
+    has_bounds = 'lower_bounds' in dist_params and 'upper_bounds' in dist_params
+
+    for i, dist_name in enumerate(dists):
+        # --- Logic for when explicit bounds ARE provided ---
+        if has_bounds and dist_name in ['U', 'TN']:
+            lb = dist_params['lower_bounds'][i]
+            ub = dist_params['upper_bounds'][i]
+            if dist_name == 'U':
+                rv_a[i] = lb       # loc = lower bound
+                rv_b[i] = ub - lb  # scale = width
+            elif dist_name == 'TN':
+                rv_a[i] = dist_params['means'][i]
+                rv_b[i] = np.sqrt(dist_params['vars'][i])
+        
+        # --- Fallback logic when bounds are NOT provided ---
+        else:
+            stdev = np.sqrt(dist_params['vars'][i])
+            mean = dist_params['means'][i]
+            if dist_name == 'U':
+                rv_a[i] = mean - np.sqrt(3) * stdev
+                rv_b[i] = 2 * np.sqrt(3) * stdev
+            elif dist_name == 'N':
+                rv_a[i] = mean
+                rv_b[i] = stdev
+            # (Add other fallbacks here if needed)
+            
+    return rv_a, rv_b
+
+def get_optimization_bounds(dist_params):
+    """
+    Determines optimization bounds. Prioritizes explicit bounds if provided.
+    """
+    bounds = []
+    has_bounds = 'lower_bounds' in dist_params and 'upper_bounds' in dist_params
+
+    for i, dist_name in enumerate(dist_params['dists']):
+        # --- Use explicit bounds if available for bounded distributions ---
+        if has_bounds and dist_name in ['U', 'TN', 'B']:
+            bounds.append((dist_params['lower_bounds'][i], dist_params['upper_bounds'][i]))
+        
+        # --- Fallback logic or for other distributions ---
+        elif dist_name == 'B': # Beta is on [0, 1] by default
+            bounds.append((0, 1))
+        elif dist_name in ['N', 'LN']: # Unbounded
+            bounds.append((None, None))
+        else: # Fallback for U/TN if bounds were not explicitly given
+            stdev = np.sqrt(dist_params['vars'][i])
+            mean = dist_params['means'][i]
+            if dist_name == 'U':
+                lb = mean - np.sqrt(3) * stdev
+                ub = mean + np.sqrt(3) * stdev
+                bounds.append((lb, ub))
+            elif dist_name == 'TN':
+                lb = mean - 3 * stdev
+                ub = mean + 3 * stdev
+                bounds.append((lb, ub))
+            else:
+                bounds.append((None, None))
+    return bounds
+
+
+def get_inverse(dist_params, samples):
+    """
+    Transforms uniform samples to a specified distribution via inverse CDF.
+    """
+    dists = dist_params['dists']
+    loc_params, scale_params = get_pdf_params(dist_params)
+    has_bounds = 'lower_bounds' in dist_params and 'upper_bounds' in dist_params
+    
+    transformed_samples = np.zeros(samples.shape)
+    for i in range(samples.shape[1]):
+        dist_name = dists[i]
+        loc = loc_params[i]
+        scale = scale_params[i]
+
+        if dist_name == 'TN':
+            mean = dist_params['means'][i]
+            stdev = np.sqrt(dist_params['vars'][i])
+            if has_bounds:
+                lb = dist_params['lower_bounds'][i]
+                ub = dist_params['upper_bounds'][i]
+            else: # Fallback
+                lb = mean - 3 * stdev
+                ub = mean + 3 * stdev
+            
+            a, b = (lb - mean) / stdev, (ub - mean) / stdev
+            frozen_dist = stats.truncnorm(a, b, loc=mean, scale=stdev)
+        
+        elif dist_name == 'U':
+            frozen_dist = stats.uniform(loc=loc, scale=scale)
+        
+        elif dist_name == 'N':
+            frozen_dist = stats.norm(loc=loc, scale=scale)
+
+        # (Add other distributions here)
+
+        transformed_samples[:, i] = frozen_dist.ppf(samples[:, i])
+    return transformed_samples
+
+# (The find_next_point function does not need to be changed from the previous version)
