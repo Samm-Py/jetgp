@@ -142,7 +142,7 @@ class degp:
         sigma_n = params[-1]
 
         # Compute training kernel matrix and its Cholesky factor
-        K = degp_utils.rbf_kernel(
+        self.K = degp_utils.rbf_kernel(
             self.differences_by_dim,
             length_scales,
             self.n_order,
@@ -151,11 +151,11 @@ class degp:
             self.flattened_der_indicies,
             self.powers,
         )
-        K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
-        K += self.sigma_data**2
+        self.K += (10**sigma_n) ** 2 * np.eye(self.K.shape[0])
+        self.K += self.sigma_data**2
         try:
             cho_solve_failed = True
-            L, low = cho_factor(K, lower=True)
+            L, low = cho_factor(self.K, lower=True)
             # L = cholesky(K)
             # low = True
             alpha = cho_solve(
@@ -164,7 +164,7 @@ class degp:
             )
         except:
             cho_solve_failed = True
-            alpha = np.linalg.solve(K, self.y_train)
+            alpha = np.linalg.solve(self.K, self.y_train)
             print(
                 'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
             # If Cholesky fails, fall back to standard solve
@@ -184,7 +184,7 @@ class degp:
 
         # Compute train-test kernel
 
-        K_s = degp_utils.rbf_kernel(
+        self.K_s = degp_utils.rbf_kernel(
             diff_x_test_x_train,
             length_scales,
             self.n_order,
@@ -196,7 +196,7 @@ class degp:
         )
 
         # Compute posterior mean
-        f_mean = K_s.T@alpha
+        f_mean = self.K_s.T@alpha
 
         if self.normalize:
             if return_deriv:
@@ -224,7 +224,7 @@ class degp:
                 X_test, X_test, self.n_order, return_deriv=return_deriv
             )
 
-        K_ss = degp_utils.rbf_kernel(
+        self.K_ss = degp_utils.rbf_kernel(
             diff_x_test_x_test,
             length_scales,
             self.n_order,
@@ -237,17 +237,17 @@ class degp:
 
         if cho_solve_failed:
             f_cov = (
-                K_ss - K_s.T @ np.linalg.solve(K, K_s)
+                self.K_ss - self.K_s.T @ np.linalg.solve(self.K, self.K_s)
                 if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] - K_s[:, :len(X_test)].T @ np.linalg.solve(K, K_s[:, :len(X_test)])
+                else self.K_ss[:len(X_test), :len(X_test)] - self.K_s[:, :len(X_test)].T @ np.linalg.solve(self.K, self.K_s[:, :len(X_test)])
             )
         else:
-            v = solve_triangular(L, K_s, lower=low)
+            v = solve_triangular(L, self.K_s, lower=low)
 
             f_cov = (
-                K_ss - v.T @ v
+                self.K_ss - v.T @ v
                 if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
+                else self.K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
             )
 
         # Normalize or return raw covariance
