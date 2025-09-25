@@ -16,7 +16,7 @@ class DEGPConfig:
     """Configuration for the DEGP comparison tutorial."""
     # Domain and data points
     lb_x: float = 0.2
-    ub_x: float = 5.0
+    ub_x: float = 10.0
     num_training_pts: int = 3
     num_test_pts: int = 100
 
@@ -24,7 +24,7 @@ class DEGPConfig:
     orders_to_test: List[int] = field(default_factory=lambda: [0, 1, 2, 4])
 
     # GP model parameters
-    normalize_data: bool = False
+    normalize_data: bool = True
     kernel: str = "SE"
     kernel_type: str = "anisotropic"
 
@@ -133,7 +133,7 @@ class DEGPComparisonTutorial:
             y_var = r['y_var_full'][:self.config.num_test_pts]
 
             ax.plot(self.X_test, y_true, 'k-', lw=2.5, label="True $f(x)$")
-            ax.plot(self.X_test, y_pred, 'b--', lw=2, label="GP mean")
+            ax.plot(self.X_test, y_pred.flatten(), 'b--', lw=2, label="GP mean")
             ax.fill_between(
                 self.X_test.ravel(),
                 y_pred.ravel() - 2 * np.sqrt(y_var.ravel()),
@@ -292,7 +292,7 @@ class DEGPComparisonTutorial:
 def true_function(X, alg=oti):
     """Test function combining exponential decay, oscillations, and linear trend."""
     x = X[:, 0]
-    return alg.exp(-x) + alg.sin(2 * x) + alg.cos(3 * x) + 0.2 * x + 1.0
+    return alg.sin(x)
 
 
 def main():
