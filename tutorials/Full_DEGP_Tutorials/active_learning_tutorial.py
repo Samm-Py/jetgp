@@ -27,11 +27,11 @@ class ActiveLearningConfig:
     # --- Domain and Candidate Points ---
     lb_x: float = 0.5
     ub_x: float = 2.5
-    num_candidate_pts: int = 500
+    num_integration_pts: int = 1000
 
     # --- Active Learning Loop Settings ---
     num_initial_points: int = 5
-    num_points_to_add: int = 1
+    num_points_to_add: int = 5
     n_order: int = 1  # The derivative order to use for this experiment
 
     # --- GP Model Parameters ---
@@ -131,11 +131,28 @@ def main():
     config = ActiveLearningConfig()
     
     # --- Define Distribution Parameters with EXPLICIT BOUNDS ---
-    # dist = ["TN"] 
-    # means = np.array([1])
-    # variances = np.array([(.5)**2])
-    # lower_bounds = np.array([0.0])  # Explicit lower bound for the distribution
-    # upper_bounds = np.array([(0.0) + 4 * (.5)])  # Explicit upper bound
+    # dist = ["TN"] * 15
+    dimension = 1
+    # # Create the first element as a list
+    # first_element = [1/4000]
+    
+    # # Create the next 14 elements as a list
+    # next_14_elements = [1/4] * 14
+    
+    # # Concatenate them into a single flat list and then create the array
+    # means = np.array(first_element + next_14_elements)
+    
+    
+    # # Create the first element as a list
+    # first_variance = [(1/12000)**2]
+    
+    # # Create the next 14 elements as a list
+    # next_14_variances = [(1/12)**2] * 14
+    
+    # # Concatenate them into a single flat list, then create the array
+    # variances = np.array(first_variance + next_14_variances)
+    # lower_bounds = means - 3 * np.sqrt(variances) # Explicit lower bound for the distribution
+    # upper_bounds = means + 3 * np.sqrt(variances)  # Explicit upper bound
     
     # dist_params = {
     #     'dists': dist, 
@@ -145,6 +162,8 @@ def main():
     #     'upper_bounds': upper_bounds
     # }
     
+    
+    
     # You could also define a Uniform distribution this way:
     dist = ["U"]
     lower_bounds = np.array([0.5])
@@ -152,15 +171,15 @@ def main():
     dist_params = {'dists': dist, 'lower_bounds': lower_bounds, 'upper_bounds': upper_bounds}
 
     
-    acquisition_function_to_use = acq.imse_reduction_efficient
+    acquisition_function_to_use = acq.imse_reduction
     print(f"Using Acquisition Function: IMSE Reduction ({acquisition_function_to_use.__name__})")
 
     # --- Generate candidate and training points from the distribution ---
     print(f"Generating points from a {dist[0]} distribution...")
-    sampler = Sobol(d=1, scramble=True)
+    sampler = Sobol(d=dimension, scramble=True)
     
     # Generate integration_points
-    uniform_samples_int = sampler.random(n=config.num_candidate_pts)
+    uniform_samples_int = sampler.random(n=config.num_integration_pts)
     integration_points = utils.get_inverse(dist_params, uniform_samples_int)
     integration_points = np.sort(integration_points, axis=0)
 
@@ -193,10 +212,12 @@ def main():
         if i < config.num_points_to_add:
             print("  Finding next point using two-stage optimization...")
             next_point, score = utils.find_next_point(
-                gp, params, X_train, y_train_list, y_var,
-                integration_points, dist_params, acquisition_function_to_use,
-                n_coarse_points=128, n_local_starts=10
+                gp, params, X_train, y_train_list,dist_params,acquisition_function_to_use, integration_points = integration_points,
+                n_candidate_points=256, n_local_starts=10
             )
+            
+
+                
             print(f"  -> Next point chosen: x = {next_point.item():.4f}\n")
             X_train = np.vstack([X_train, next_point])
 

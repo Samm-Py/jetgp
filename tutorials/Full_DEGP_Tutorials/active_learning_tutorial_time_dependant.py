@@ -7,7 +7,7 @@ import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
 from dataclasses import dataclass
-
+from scipy.stats.qmc import Sobol
 # --- Import your acquisition functions ---
 from acquisition_functions import acquisition_funcs as acq
 
@@ -206,20 +206,34 @@ def visualize_time_dependent_results(history, config, final_gps):
 
 def main():
     config = ActiveLearningConfig()
-    acquisition_function_to_use = acq.imse_reduction_efficient
+
 
     # --- Setup ---
-    domain_bounds = [(config.lb_x, config.ub_x)]
+    # You could also define a Uniform distribution this way:
+    dist = ["U"]
+    lower_bounds = np.array([-1.5])
+    upper_bounds = np.array([1.5])
+    dist_params = {'dists': dist, 'lower_bounds': lower_bounds, 'upper_bounds': upper_bounds}
+    use_agg_al = True
+    acquisition_function_to_use = acq.aggrigated_variance
+    dimension = 1
+
     time_steps = np.arange(config.t_start, config.t_end + config.t_step, config.t_step)
-    integration_points = np.linspace(config.lb_x, config.ub_x, config.num_candidate_pts).reshape(-1, 1)
-    
-    # Initial spatial training points
-    X_train_spatial = np.linspace(config.lb_x, config.ub_x, config.num_initial_points).reshape(-1, 1)
+    # Generate integration_points
+    sampler = Sobol(d=dimension, scramble=True)
+    uniform_samples_int = sampler.random(n=config.num_candidate_pts)
+    integration_points = utils.get_inverse(dist_params, uniform_samples_int)
+    integration_points = np.sort(integration_points, axis=0)
+
+    # Sample Initial Training Data
+    uniform_samples_train = sampler.random(n=config.num_initial_points)
+    X_train_spatial = utils.get_inverse(dist_params, uniform_samples_train)
     
     # --- FIX 1: Initialize time_of_points ONCE before the loop ---
     time_of_points = np.full(X_train_spatial.shape[0], config.t_start)
     
     history = []
+    history_var = []
     print("=" * 70)
     print("Starting Time-Dependent Active Learning")
     print(f"Spatial Domain (x): [{config.lb_x}, {config.ub_x}]")
@@ -232,7 +246,7 @@ def main():
         print(f"\n--- Iteration {i+1}/{config.num_points_to_add} | Current Training Points: {num_pts} ---")
 
         candidate_points_info = []
-
+        history_var = []
         # --- Inner loop: Train a "scout" GP for each time slice ---
         for t in time_steps:
             y_train_list = get_training_data_for_model(X_train_spatial, t, config.n_order)
@@ -249,23 +263,34 @@ def main():
             # Find the best point for THIS time slice
             _, y_var = gp.predict(integration_points, params, calc_cov=True, return_deriv=False)
             
-            next_point, score = utils.find_next_point(
-                gp, params, X_train_spatial, y_train_list, y_var, integration_points,
-                domain_bounds=domain_bounds, acquisition_func=acquisition_function_to_use,
-                n_coarse_points=8, n_local_starts=8
-            )
-            candidate_points_info.append({'t': t, 'next_x': next_point, 'score': score})
+            if not use_agg_al:
+                next_point, score = utils.find_next_point(
+                    gp, params, X_train_spatial, y_train_list,dist_params,acquisition_function_to_use, integration_points = integration_points,
+                    n_candidate_points=256, n_local_starts=10
+                )
+                candidate_points_info.append({'t': t, 'next_x': next_point, 'score': score})
+            history_var.append(y_var)
 
         # --- Global Point Selection ---
-        best_candidate = max(candidate_points_info, key=lambda item: item['score'])
-        next_point_to_add = best_candidate['next_x']
-        best_overall_score = best_candidate['score']
-        time_of_best_point = best_candidate['t']
-        
-        print(f"Highest IMSE reduction found at t={time_of_best_point:.3f}")
-        print(f"-> Globally chosen next point: x = {next_point_to_add.item():.4f}\n")
+        if not use_agg_al:
+            best_candidate = max(candidate_points_info, key=lambda item: item['score'])
+            next_point_to_add = best_candidate['next_x']
+            best_overall_score = best_candidate['score']
+            time_of_best_point = best_candidate['t']
+            
+            print(f"Highest IMSE reduction found at t={time_of_best_point:.3f}")
+            print(f"-> Globally chosen next point: x = {next_point_to_add.item():.4f}\n")
+    
+            # --- FIX 2: Store the CURRENT state to history BEFORE updating ---
 
-        # --- FIX 2: Store the CURRENT state to history BEFORE updating ---
+        else:
+            next_point_to_add, best_overall_score = utils.find_next_point(
+                gp, params, X_train_spatial, y_train_list, dist_params,
+                 acquisition_func=acquisition_function_to_use, integration_points=integration_points,
+                use_agg_al = use_agg_al, var_hist = history_var
+            )
+            
+        time_of_best_point = 1.0
         history.append({
             "X_train_spatial": X_train_spatial.copy(),
             "time_of_points": time_of_points.copy(),
@@ -275,7 +300,6 @@ def main():
         # --- FIX 3: Update state for the NEXT iteration AFTER saving history ---
         X_train_spatial = np.vstack([X_train_spatial, next_point_to_add])
         time_of_points = np.append(time_of_points, time_of_best_point)
-
     # Append the final state to the history for the final plot
     history.append({
         "X_train_spatial": X_train_spatial.copy(),
