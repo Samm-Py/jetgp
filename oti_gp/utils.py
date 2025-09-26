@@ -1733,60 +1733,66 @@ def find_next_point(
     params,
     x_train,
     y_train_list,
-    y_var,
-    integration_points,
     dist_params,
     acquisition_func,
-    n_coarse_points: int = 1024,
+    integration_points = None,
+    n_candidate_points: int = 1024,
     n_local_starts: int = 10,
+    use_agg_al = False,
+    var_hist = [],
     **acq_kwargs
 ):
     """Finds the next point using distribution-aware optimization bounds."""
     
-    # --- Stage 1: Coarse Global Search ---
-    shape, scale = get_pdf_params(dist_params)
-    
-    sampler = Sobol(d=x_train.shape[1], scramble=True)
-    coarse_points_unit = sampler.random(n=n_coarse_points)
-    coarse_points = get_inverse(dist_params, coarse_points_unit
-    )
-    
-    coarse_scores = acquisition_func(
-        gp, params, x_train, y_train_list, y_var,
-        coarse_points, integration_points, normalize=gp.normalize
-    )
-    
-    top_indices = np.argsort(coarse_scores.ravel())[-n_local_starts:]
-    top_starting_points = coarse_points[top_indices]
-
-    # --- Stage 2: Local Optimization ---
-    
-    # Get the correct bounds for the optimizer
-    bounds = get_optimization_bounds(dist_params)
-    all_unbounded = all(b[0] is None for b in bounds)
-
-    def objective_function(x: np.ndarray) -> float:
-        x_candidate = x.reshape(1, -1)
-        score = acquisition_func(
-            gp, params, x_train, y_train_list, y_var,
-            x_candidate, integration_points, normalize=gp.normalize
-        )
-        return -score[0]
-
-    best_x = None
-    best_score = -np.inf
-    
-    for start_point in top_starting_points:
-        if all_unbounded:
-            res = minimize(fun=objective_function, x0=start_point, method="BFGS")
-        else:
-            res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
+    if not use_agg_al:
+        # --- Stage 1: Coarse Global Search ---
+        shape, scale = get_pdf_params(dist_params)
         
-        if -res.fun > best_score:
-            best_score = -res.fun
-            best_x = res.x
+        sampler = Sobol(d=x_train.shape[1], scramble=True)
+        coarse_points_unit = sampler.random(n=n_candidate_points)
+        candidate_points = get_inverse(dist_params, coarse_points_unit
+        )
+        
+        candidate_scores = acquisition_func(
+            gp, params, x_train, y_train_list,
+            candidate_points, integration_points = integration_points, normalize=gp.normalize
+        )
+        
+        top_indices = np.argsort(candidate_scores.ravel())[-n_local_starts:]
+        top_starting_points = candidate_points[top_indices]
+    
+        # --- Stage 2: Local Optimization ---
+        
+        # Get the correct bounds for the optimizer
+        bounds = get_optimization_bounds(dist_params)
+        all_unbounded = all(b[0] is None for b in bounds)
+    
+        def objective_function(x: np.ndarray) -> float:
+            x_candidate = x.reshape(1, -1)
+            score = acquisition_func(
+                gp, params, x_train, y_train_list,
+                x_candidate, integration_points = integration_points, normalize=gp.normalize
+            )
+            return -score[0]
+    
+        best_x = None
+        best_score = -np.inf
+        
+        for start_point in top_starting_points:
+            if all_unbounded:
+                res = minimize(fun=objective_function, x0=start_point, method="BFGS")
+            else:
+                res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
             
-    return best_x.reshape(1, -1), best_score
+            if -res.fun > best_score:
+                best_score = -res.fun
+                best_x = res.x
+                
+        return best_x.reshape(1, -1), best_score
+    else:
+        agg_variance = acquisition_func(var_hist)
+        max_index = np.argmax(agg_variance)
+        return integration_points[max_index,:], agg_variance[0,max_index]
 
 # def sample_from_dist(dist, means, var, shape, scale, size):
 #     num_cols = len(dist)
