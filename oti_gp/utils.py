@@ -1728,71 +1728,201 @@ def maximize_ier_direction(
 
 
 # UPDATED function to use the new bounds logic
-def find_next_point(
+# def find_next_point(
+#     gp,
+#     params,
+#     x_train,
+#     y_train_list,
+#     dist_params,
+#     acquisition_func,
+#     integration_points = None,
+#     n_candidate_points: int = 1024,
+#     n_local_starts: int = 10,
+#     use_agg_al = False,
+#     var_hist = [],
+#     **acq_kwargs
+# ):
+#     """Finds the next point using distribution-aware optimization bounds."""
+    
+#     if not use_agg_al:
+#         # --- Stage 1: Coarse Global Search ---
+#         shape, scale = get_pdf_params(dist_params)
+        
+#         sampler = Sobol(d=x_train.shape[1], scramble=True)
+#         coarse_points_unit = sampler.random(n=n_candidate_points)
+#         candidate_points = get_inverse(dist_params, coarse_points_unit
+#         )
+        
+#         candidate_scores = acquisition_func(
+#             gp, params, x_train, y_train_list,
+#             candidate_points, integration_points = integration_points, normalize=gp.normalize
+#         )
+        
+#         top_indices = np.argsort(candidate_scores.ravel())[-n_local_starts:]
+#         top_starting_points = candidate_points[top_indices]
+    
+#         # --- Stage 2: Local Optimization ---
+        
+#         # Get the correct bounds for the optimizer
+#         bounds = get_optimization_bounds(dist_params)
+#         all_unbounded = all(b[0] is None for b in bounds)
+    
+#         def objective_function(x: np.ndarray) -> float:
+#             x_candidate = x.reshape(1, -1)
+#             score = acquisition_func(
+#                 gp, params, x_train, y_train_list,
+#                 x_candidate, integration_points = integration_points, normalize=gp.normalize
+#             )
+#             return -score[0]
+    
+#         best_x = None
+#         best_score = -np.inf
+        
+#         for start_point in top_starting_points:
+#             if all_unbounded:
+#                 res = minimize(fun=objective_function, x0=start_point, method="BFGS")
+#             else:
+#                 res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
+            
+#             if -res.fun > best_score:
+#                 best_score = -res.fun
+#                 best_x = res.x
+                
+#         return best_x.reshape(1, -1), best_score
+#     else:
+#         agg_variance = acquisition_func(var_hist)
+#         max_index = np.argmax(agg_variance)
+#         return integration_points[max_index,:], agg_variance[0,max_index]
+
+def _ensure_2d(x):
+    x = np.asarray(x)
+    if x.ndim == 1:
+        return x.reshape(1, -1)
+    return x
+
+def _format_y_to_add(y_pred):
+    """Convert gp.predict output at one x to list of 2D arrays for y_train_list append."""
+    if isinstance(y_pred, (list, tuple)):
+        return [np.atleast_2d(np.asarray(e)) for e in y_pred]
+    else:
+        return [np.atleast_2d(np.asarray(y_pred))]
+
+def find_next_point_batch(
     gp,
     params,
-    x_train,
-    y_train_list,
     dist_params,
     acquisition_func,
-    integration_points = None,
+    integration_points=None,
+    candidate_points=None,
     n_candidate_points: int = 1024,
-    n_local_starts: int = 10,
-    use_agg_al = False,
-    var_hist = [],
+    n_local_starts: int = 1,
+    n_batch_points: int = 10,
     **acq_kwargs
 ):
-    """Finds the next point using distribution-aware optimization bounds."""
-    
-    if not use_agg_al:
-        # --- Stage 1: Coarse Global Search ---
-        shape, scale = get_pdf_params(dist_params)
-        
-        sampler = Sobol(d=x_train.shape[1], scramble=True)
+    """
+    Batch active learning with support for aggregated mode (multi-GP).
+
+    If use_agg_al=False: single GP loop.
+    If use_agg_al=True: use gp_list + params_list and acquisition_func must handle them.
+    Returns: np.ndarray of selected points, shape (n_selected, d).
+    """
+
+    selected_points = []
+
+    # helper to generate candidates
+    def _generate_candidates(dimension, seed_offset=0):
+        sampler = Sobol(d=dimension, scramble=True, seed=acq_kwargs.get('seed', 0) + seed_offset)
         coarse_points_unit = sampler.random(n=n_candidate_points)
-        candidate_points = get_inverse(dist_params, coarse_points_unit
-        )
-        
-        candidate_scores = acquisition_func(
-            gp, params, x_train, y_train_list,
-            candidate_points, integration_points = integration_points, normalize=gp.normalize
-        )
-        
-        top_indices = np.argsort(candidate_scores.ravel())[-n_local_starts:]
+        return get_inverse(dist_params, coarse_points_unit)
+
+    if type(gp) is not list or type(params) is not list:
+        raise ValueError("gp and params must be provided as list")
+
+
+    for n in range(n_batch_points):
+        if candidate_points is None:
+            candidate_points = _generate_candidates(gp[0].n_bases,seed_offset=n)
+        # Score candidates across all GPs
+        cand_scores_all = []
+        for gp_t, params_t in zip(gp, params):
+            scores_t = acquisition_func(
+                gp_t,
+                params_t,
+                gp_t.x_train_input.copy(),
+                gp_t.y_train_input.copy(),
+                candidate_points,
+                integration_points=integration_points,
+                normalize=gp_t.normalize,
+            )
+            cand_scores_all.append(scores_t.reshape(-1, 1))
+            
+            
+        cand_scores = np.mean(np.hstack(cand_scores_all), axis=1)
+        # --- Pick top starting points from aggregated candidate scores ---
+        top_indices = np.argsort(cand_scores.ravel())[-n_local_starts:]
         top_starting_points = candidate_points[top_indices]
-    
-        # --- Stage 2: Local Optimization ---
         
-        # Get the correct bounds for the optimizer
+        # --- Get bounds for local optimization ---
         bounds = get_optimization_bounds(dist_params)
         all_unbounded = all(b[0] is None for b in bounds)
-    
-        def objective_function(x: np.ndarray) -> float:
-            x_candidate = x.reshape(1, -1)
-            score = acquisition_func(
-                gp, params, x_train, y_train_list,
-                x_candidate, integration_points = integration_points, normalize=gp.normalize
-            )
-            return -score[0]
-    
-        best_x = None
-        best_score = -np.inf
         
+        # --- Define objective function for local refinement ---
+        def objective_function(x: np.ndarray) -> float:
+            x_cand = x.reshape(1, -1)
+            # Compute aggregated score across all GPs
+            score_list = [
+                acquisition_func(
+                    gp_t,
+                    params_t,
+                    gp_t.x_train_input.copy(),
+                    gp_t.y_train_input.copy(),
+                    x_cand,
+                    integration_points=integration_points,
+                    normalize=gp_t.normalize,
+                )
+                for gp_t, params_t in zip(gp, params)
+            ]
+            return -np.mean([s[0] for s in score_list])
+        
+        # --- Local optimization loop ---
+        best_x, best_score = None, -np.inf
         for start_point in top_starting_points:
             if all_unbounded:
                 res = minimize(fun=objective_function, x0=start_point, method="BFGS")
             else:
                 res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
-            
+        
             if -res.fun > best_score:
-                best_score = -res.fun
-                best_x = res.x
-                
-        return best_x.reshape(1, -1), best_score
-    else:
-        agg_variance = acquisition_func(var_hist)
-        max_index = np.argmax(agg_variance)
-        return integration_points[max_index,:], agg_variance[0,max_index]
+                best_score, best_x = -res.fun, res.x
+        
+        best_x = best_x.reshape(1, -1)
+        selected_points.append(best_x)
+
+        # Augment each GP with predicted outputs at best_x
+        for t, gp_t in enumerate(gp):
+            params_t = params[t]
+            y_pred = gp_t.predict(best_x, params_t, calc_cov=False, return_deriv=True)
+            y_to_add = _format_y_to_add(y_pred)
+
+            x_aug = np.vstack([gp_t.x_train, best_x])
+            y_aug = []
+            for i_y, y_block in enumerate(gp_t.y_train_input):
+                if i_y < len(y_to_add):
+                    y_aug.append(np.vstack([y_block, y_to_add[i_y]]))
+                else:
+                    y_aug.append(y_block)
+
+            gp[t] = gp_t.__class__(
+                x_aug, y_aug,
+                gp_t.n_order,
+                n_bases=gp_t.n_bases,
+                der_indices=gp_t.der_indices,
+                normalize=gp_t.normalize,
+                kernel=gp_t.kernel,
+                kernel_type=gp_t.kernel_type,
+            )
+
+    return np.vstack(selected_points)
 
 # def sample_from_dist(dist, means, var, shape, scale, size):
 #     num_cols = len(dist)

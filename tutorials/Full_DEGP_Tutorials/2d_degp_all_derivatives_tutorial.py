@@ -40,10 +40,10 @@ class TwoDimConfig:
     sampling_strategy: str = 'uniform'  # 'uniform', 'chebyshev', or 'random'
     test_grid_resolution: int = 25
     normalize_data: bool = True
-    kernel: str = "SineExp"
-    kernel_type: str = "isotropic"
+    kernel: str = "SE"
+    kernel_type: str = "anisotropic"
     n_restarts: int = 15
-    swarm_size: int = 300
+    swarm_size: int = 100
 
 
 class TwoDimDEGPTutorial:

@@ -217,6 +217,7 @@ class KernelFactory:
     # -------------------------------------------------------------------
     # Anisotropic Kernel Implementations (MAC Mod 2)
     # -------------------------------------------------------------------
+    @profile
     def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """
         Anisotropic Squared Exponential (SE) kernel.
