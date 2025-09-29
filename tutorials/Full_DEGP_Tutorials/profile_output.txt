@@ -1,0 +1,416 @@
+Timer unit: 1e-09 s
+
+Total time: 0.0255549 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py
+Function: differences_by_dim_func at line 5
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+     5                                           @profile
+     6                                           def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
+     7                                               """
+     8                                               Compute pairwise differences between two input arrays X1 and X2 for each dimension,
+     9                                               embedding hypercomplex units along each dimension for automatic differentiation.
+    10                                           
+    11                                               For each dimension k, this function computes:
+    12                                                   diff_k[i, j] = X1[i, k] + e_{k+1} - X2[j, k]
+    13                                               where e_{k+1} is a hypercomplex unit for the (k+1)-th dimension with order 2 * n_order.
+    14                                           
+    15                                               Parameters
+    16                                               ----------
+    17                                               X1 : array_like of shape (n1, d)
+    18                                                   First set of input points with n1 samples in d dimensions.
+    19                                           
+    20                                               X2 : array_like of shape (n2, d)
+    21                                                   Second set of input points with n2 samples in d dimensions.
+    22                                           
+    23                                               n_order : int
+    24                                                   The base order used to construct hypercomplex units (e_{k+1}) with order 2 * n_order.
+    25                                           
+    26                                               index : int, optional
+    27                                                   Currently unused. Reserved for future enhancements.
+    28                                           
+    29                                               Returns
+    30                                               -------
+    31                                               differences_by_dim : list of length d
+    32                                                   A list where each element is an array of shape (n1, n2), containing the differences
+    33                                                   between corresponding dimensions of X1 and X2, augmented with hypercomplex units.
+    34                                           
+    35                                               Notes
+    36                                               -----
+    37                                               - The function leverages hypercomplex arithmetic from the pyOTI library.
+    38                                               - This routine is typically used in the construction of hypercomplex kernels for Gaussian processes
+    39                                                 or other applications involving automatic differentiation.
+    40                                           
+    41                                               Example
+    42                                               -------
+    43                                               >>> X1 = [[1.0, 2.0], [3.0, 4.0]]
+    44                                               >>> X2 = [[1.5, 2.5], [3.5, 4.5]]
+    45                                               >>> n_order = 1
+    46                                               >>> diffs = differences_by_dim_func(X1, X2, n_order)
+    47                                               >>> len(diffs)
+    48                                               2
+    49                                               >>> diffs[0].shape
+    50                                               (2, 2)
+    51                                               """
+    52         2      96299.0  48149.5      0.4      X1 = oti.array(X1)
+    53         2     745998.0 372999.0      2.9      X2 = oti.array(X2)
+    54         2       8700.0   4350.0      0.0      n1, d = X1.shape
+    55                                           
+    56         2       6301.0   3150.5      0.0      n2, d = X2.shape
+    57                                           
+    58                                               # Prepare the output: a list of d arrays, each of shape (n, m)
+    59         2       4200.0   2100.0      0.0      differences_by_dim = []
+    60                                           
+    61                                               # Loop over each dimension k
+    62         2       6100.0   3050.0      0.0      if n_order == 0:
+    63                                                   for k in range(d):
+    64                                                       diffs_k = oti.zeros((n1, n2))
+    65                                                       for i in range(n1):
+    66                                                           diffs_k[i, :] = (
+    67                                                               X1[i, k]
+    68                                                               - (X2[:, k].T)
+    69                                                           )
+    70                                                       differences_by_dim.append(diffs_k)
+    71         2       4900.0   2450.0      0.0      elif not return_deriv:
+    72                                           
+    73         3      22800.0   7600.0      0.1          for k in range(d):
+    74                                                       # Create an empty (n, m) array for this dimension
+    75         2    1173596.0 586798.0      4.6              diffs_k = oti.zeros((n1, n2))
+    76                                           
+    77                                                       # Nested loops to fill diffs_k
+    78        52      91498.0   1759.6      0.4              for i in range(n1):
+    79        50    8498265.0 169965.3     33.3                  diffs_k[i, :] = (
+    80       150    8248262.0  54988.4     32.3                      X1[i, k]
+    81        50     558798.0  11176.0      2.2                      + oti.e(k + 1, order=n_order)
+    82        50    5056086.0 101121.7     19.8                      - (X2[:, k].T)
+    83                                                           )
+    84                                           
+    85                                                       # Append to our list
+    86         2       9900.0   4950.0      0.0              differences_by_dim.append(diffs_k)
+    87                                               else:
+    88         3       6800.0   2266.7      0.0          for k in range(d):
+    89                                                       # Create an empty (n, m) array for this dimension
+    90         2      56700.0  28350.0      0.2              diffs_k = oti.zeros((n1, n2))
+    91                                           
+    92                                                       # Nested loops to fill diffs_k
+    93        52      27000.0    519.2      0.1              for i in range(n1):
+    94        50     105400.0   2108.0      0.4                  diffs_k[i, :] = (
+    95       100     170101.0   1701.0      0.7                      X1[i, k]
+    96        50     149400.0   2988.0      0.6                      - (X2[:, k].T)
+    97                                                           )
+    98                                           
+    99                                                       # Append to our list
+   100         2     505602.0 252801.0      2.0              differences_by_dim.append(diffs_k+ oti.e(k + 1, order=2*n_order))
+   101         2       2200.0   1100.0      0.0      return differences_by_dim
+
+Total time: 22.5417 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/kernel_funcs/kernel_funcs.py
+Function: se_kernel_anisotropic at line 220
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   220                                               @profile
+   221                                               def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+   222                                                   """
+   223                                                   Anisotropic Squared Exponential (SE) kernel.
+   224                                           
+   225                                                   Parameters
+   226                                                   ----------
+   227                                                   differences_by_dim : list of ndarray
+   228                                                   length_scales : list
+   229                                                   index : int, optional
+   230                                           
+   231                                                   Returns
+   232                                                   -------
+   233                                                   ndarray
+   234                                                   """
+   235                                                   # print(differences_by_dim[0].shape)
+   236      1677   56039711.0  33416.6      0.2          ell = 10 ** (length_scales[:-1])
+   237      1677    3589594.0   2140.5      0.0          sigma_f = length_scales[-1]
+   238                                                   # sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x'[i] )**2 )
+   239                                                   # sqdist = sum(
+   240                                                   #     (
+   241                                                   #          (-0.5 * ell[i] * ell[i] )
+   242                                                   #         *
+   243                                                   #         ( differences_by_dim[i] * differences_by_dim[i] )
+   244                                                   #     ) for i in range(self.dim)
+   245                                                   # )
+   246      1677   36383321.0  21695.5      0.2          tmp1 = oti.zeros(differences_by_dim[0].shape)
+   247      1677   11956386.0   7129.6      0.1          tmp2 = oti.zeros(differences_by_dim[0].shape)
+   248      1677   12346688.0   7362.4      0.1          sqdist = oti.zeros(differences_by_dim[0].shape)
+   249      5031   44652494.0   8875.5      0.2          for i in range(self.dim):
+   250                                                       # subdivide by terms
+   251                                                       # tmp1 = differences_by_dim[i] * differences_by_dim[i]
+   252      3354 1046070376.0 311887.4      4.6              oti.mul(ell[i], differences_by_dim[i], out=tmp1)
+   253      3354 1240118145.0 369743.0      5.5              oti.mul(tmp1, tmp1, out=tmp2)
+   254                                                       # oti.pow(tmp1 , 2, out = tmp2)
+   255                                                       # t1 =  ell[i] * ell[i] #* (-0.5)
+   256                                                       # tmp2 = t1 * tmp1
+   257                                                       # oti.mul(t1, tmp1, out = tmp2)
+   258                                                       # sqdist += tmp2
+   259      3354        1e+10    4e+06     62.9              oti.sum(sqdist, tmp2, out=sqdist)
+   260                                                   # end for
+   261      1677 5390597946.0    3e+06     23.9          oti.exp((-0.5)*sqdist, out=tmp1)
+   262      1677  508732814.0 303358.9      2.3          oti.mul(((10 ** sigma_f) ** 2), tmp1, out=tmp2)
+   263                                                   # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
+   264      1677    2486602.0   1482.8      0.0          return tmp2
+
+Total time: 25.0981 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py
+Function: rbf_kernel at line 196
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   196                                           @profile
+   197                                           def rbf_kernel(
+   198                                               differences,
+   199                                               length_scales,
+   200                                               n_order,
+   201                                               n_bases,
+   202                                               kernel_func,
+   203                                               der_indices,
+   204                                               powers,
+   205                                               index=-1,
+   206                                               return_deriv=True
+   207                                           ):
+   208                                               """
+   209                                               Compute the derivative-enhanced Radial Basis Function (RBF) kernel matrix 
+   210                                               with Automatic Relevance Determination (ARD) for multi-dimensional inputs.
+   211                                           
+   212                                               The kernel supports function values and mixed **partial derivatives** up to a specified order.
+   213                                           
+   214                                               General form of the ARD RBF kernel:
+   215                                               k(x, x') = exp(-0.5 * sum_d((x_d - x'_d)^2 / length_scale_d^2))
+   216                                           
+   217                                               Parameters:
+   218                                               ----------
+   219                                               differences : ndarray of shape (N, M, D)
+   220                                                   Pairwise differences between input points (X - X').
+   221                                               length_scales : ndarray of shape (D,)
+   222                                                   Length scales for each input dimension (ARD).
+   223                                               n_order : int
+   224                                                   Maximum derivative order considered.
+   225                                               n_bases : int
+   226                                                   Total number of bases (function value + derivative terms).
+   227                                               kernel_func : callable
+   228                                                   Function that computes the base RBF kernel and its derivatives.
+   229                                                   Must return an object with:
+   230                                                   - `.real`: the base kernel.
+   231                                                   - `.get_deriv(multi_index)`: derivatives of the kernel.
+   232                                               der_indices : list of lists
+   233                                                   Multi-index derivative structures for each derivative component.
+   234                                               powers : list of int
+   235                                                   Powers of (-1) applied to each term (for symmetry or sign conventions).
+   236                                               index : int, optional (default=-1)
+   237                                                   Index for selecting directional kernels or subspaces (if applicable).
+   238                                           
+   239                                               Returns:
+   240                                               -------
+   241                                               K : ndarray of shape (n_total, n_total)
+   242                                                   Kernel matrix including function values and derivative terms.
+   243                                           
+   244                                               Notes:
+   245                                               -----
+   246                                               - The kernel matrix is built by stacking:
+   247                                                 - Function value blocks.
+   248                                                 - Derivative blocks (including mixed partial derivatives).
+   249                                               - The sign convention for derivatives is controlled by `powers`.
+   250                                           
+   251                                               Example:
+   252                                               --------
+   253                                               >>> K = rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers)
+   254                                               >>> K.shape == (n_bases, n_bases)
+   255                                               """
+   256      1677   18658017.0  11125.8      0.1      import pyoti.core as coti
+   257      1677    4549412.0   2712.8      0.0      dh = coti.get_dHelp()
+   258                                           
+   259      1677        2e+10    1e+07     92.2      phi = kernel_func(differences, length_scales, index)
+   260      1677    9720202.0   5796.2      0.0      PHIrows = phi.shape[0]
+   261      1677    3545511.0   2114.2      0.0      PHIcols = phi.shape[1]
+   262      1677   10257711.0   6116.7      0.0      nderivs = len(der_indices)
+   263                                           
+   264      1677    5051304.0   3012.1      0.0      if n_order == 0:
+   265                                                   return phi.real
+   266      1677    1890193.0   1127.1      0.0      elif not return_deriv:
+   267         1    1891293.0    2e+06      0.0          phi_exp = phi.get_all_derivs(n_bases, n_order)
+   268                                                   # print(phi_exp.shape)
+   269         1      38200.0  38200.0      0.0          der_map = deriv_map(n_bases, n_order)
+   270         1      60000.0  60000.0      0.0          K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
+   271         1       1700.0   1700.0      0.0          outer_loop_index = 1
+   272                                               else:
+   273      1676  433567642.0 258691.9      1.7          phi_exp = phi.get_all_derivs(n_bases, 2*n_order)
+   274                                                   # print(phi_exp.shape)
+   275      1676  106145119.0  63332.4      0.4          der_map = deriv_map(n_bases, 2*n_order)
+   276      1676   35450923.0  21152.1      0.1          K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
+   277      1676    4898592.0   2922.8      0.0          outer_loop_index = len(der_indices) + 1
+   278                                               # print(der_map)
+   279                                               # for i in range(0, len(der_indices) ):
+   280                                               #     print(der_indices[i])
+   281      1677  193609515.0 115449.9      0.8      der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+   282                                               # print("")
+   283                                               # for i in range(0, len(der_indices_tr) ):
+   284                                               #     print(der_indices[i] , der_indices_tr[i])
+   285                                               # print("")
+   286                                           
+   287                                               # TODO: Preallocate matrix (and indices) to optimize matrix generation:
+   288                                           
+   289                                               # print(f'len(der_indices): ({len(der_indices)})')
+   290                                               # print(f'Shape before: ({phi.shape})')
+   291                                           
+   292     11734   14270409.0   1216.2      0.1      for j in range(0, outer_loop_index):
+   293     10057   40233134.0   4000.5      0.2          signj = (-1)**(powers[j])
+   294     70399   60970809.0    866.1      0.2          for i in range(0, len(der_indices) + 1):
+   295                                                       # Get local view of the global array.
+   296     60342   96553343.0   1600.1      0.4              Klocal = K[i*PHIrows: (i+1)*PHIrows, j*PHIcols: (j+1)*PHIcols]
+   297     60342   54251996.0    899.1      0.2              if j == 0 and i == 0:
+   298      1677   62192763.0  37085.7      0.2                  Klocal[:, :] = phi_exp[0] * signj
+   299     58665   35390313.0    603.3      0.1              elif j > 0 and i == 0:
+   300      8380   96072033.0  11464.4      0.4                  Klocal[:, :] = signj * phi_exp[der_indices_tr[j-1]]
+   301     50285   35257119.0    701.1      0.1              elif j == 0 and i > 0:
+   302      8385   26438009.0   3153.0      0.1                  Klocal[:, :] = phi_exp[der_indices_tr[i-1]]
+   303                                                       else:
+   304                                           
+   305     41900   29444696.0    702.7      0.1                  imdir1 = der_ind_order[j-1]
+   306     41900   24939699.0    595.2      0.1                  imdir2 = der_ind_order[i-1]
+   307     83800   90969235.0   1085.6      0.4                  idx, ord = dh.mult_dir(
+   308     41900   30670127.0    732.0      0.1                      imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+   309     41900   27661192.0    660.2      0.1                  idx = der_map[ord][idx]
+   310                                           
+   311     41900  404635457.0   9657.2      1.6                  Klocal[:, :] = signj * phi_exp[idx]
+   312                                           
+   313                                               # print(f'Shape final: ({K.shape})')
+   314                                               # print(f'Shape final factors: ')
+   315                                               # print(f' -> nrows: {K.shape[0]/phi.shape[0]}x')
+   316                                               # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
+   317                                               # print(80*'-')
+   318                                           
+   319      1677     950002.0    566.5      0.0      return K
+
+Total time: 27.9015 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py
+Function: negative_log_marginal_likelihood at line 20
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    20                                               @profile
+    21                                               def negative_log_marginal_likelihood(self, x0):
+    22                                                   """
+    23                                                   Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.
+    24                                           
+    25                                                   The NLL formula:
+    26                                                   NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5 * N * log(2 * pi)
+    27                                           
+    28                                                   Parameters:
+    29                                                   ----------
+    30                                                   x0 : ndarray
+    31                                                       Hyperparameters, where:
+    32                                                       - x0[:-1] are the length scales (ell).
+    33                                                       - x0[-1] is the log noise standard deviation (sigma_n).
+    34                                           
+    35                                                   Returns:
+    36                                                   -------
+    37                                                   float
+    38                                                       The computed NLL value. Returns a large value (1e6) if Cholesky fails.
+    39                                                   """
+    40      1675    5036815.0   3007.1      0.0          ell = x0[:-1]
+    41      1675    2232502.0   1332.8      0.0          sigma_n = x0[-1]
+    42                                           
+    43                                                   # Compute kernel matrix with current hyperparameters
+    44      3350        3e+10    8e+06     92.1          K = utils.rbf_kernel(
+    45      1675    6812888.0   4067.4      0.0              self.model.differences_by_dim,
+    46      1675     941299.0    562.0      0.0              ell,
+    47      1675    2584895.0   1543.2      0.0              self.model.n_order,
+    48      1675    1568305.0    936.3      0.0              self.model.n_bases,
+    49      1675    1502397.0    897.0      0.0              self.model.kernel_func,
+    50      1675    1780497.0   1063.0      0.0              self.model.flattened_der_indicies,
+    51      1675    2035497.0   1215.2      0.0              self.model.powers
+    52                                                   )
+    53                                           
+    54                                                   # Add noise terms
+    55      1675  271033218.0 161810.9      1.0          K += (10**sigma_n)**2 * np.eye(K.shape[0])
+    56      1675   81784966.0  48826.8      0.3          K += self.model.sigma_data**2
+    57                                           
+    58      1675    2575206.0   1537.4      0.0          try:
+    59                                                       # Cholesky decomposition for numerical stability
+    60                                                       # TODO: This seems to be very common accross models. Maybe worth
+    61                                                       # having as single and unified implementation.
+    62      1675 1459594848.0 871399.9      5.2              L, low = cho_factor(K)
+    63      2126  209639287.0  98607.4      0.8              alpha = cho_solve(
+    64      1063    1121199.0   1054.7      0.0                  (L, low),
+    65      1063    3138303.0   2952.3      0.0                  self.model.y_train
+    66                                                       )
+    67                                           
+    68                                                       # Compute NLL components
+    69      1063   24512889.0  23060.1      0.1              data_fit = 0.5 * np.dot(self.model.y_train, alpha)
+    70      1063   97594434.0  91810.4      0.3              log_det_K = np.sum(np.log(np.diag(L)))
+    71      1063    1678905.0   1579.4      0.0              complexity = .5 * log_det_K
+    72      1063    2360203.0   2220.3      0.0              N = len(self.model.y_train)
+    73      1063    9348305.0   8794.3      0.0              const = 0.5 * N * np.log(2 * np.pi)
+    74                                           
+    75      1063    1587302.0   1493.2      0.0              return data_fit + complexity + const
+    76       612    1439999.0   2352.9      0.0          except Exception:
+    77                                                       # Return large penalty if matrix is not positive definite
+    78       612    6554786.0  10710.4      0.0              return 1e6
+
+Total time: 28.1487 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py
+Function: optimize_hyperparameters at line 97
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    97                                               @profile
+    98                                               def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True, x0= None, local_opt_every=15):
+    99                                                   """
+   100                                                   Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
+   101                                           
+   102                                                   Parameters:
+   103                                                   ----------
+   104                                                   n_restart_optimizer : int, default=20
+   105                                                       Maximum number of iterations for PSO.
+   106                                                   swarm_size : int, default=20
+   107                                                       Number of particles in the swarm.
+   108                                                   verbose : bool, default=True
+   109                                                       Controls verbosity of PSO output.
+   110                                           
+   111                                                   Returns:
+   112                                                   -------
+   113                                                   best_x : ndarray
+   114                                                       The optimal set of hyperparameters found.
+   115                                                   """
+   116         1       2000.0   2000.0      0.0          bounds = self.model.bounds
+   117         1       6900.0   6900.0      0.0          lb = [b[0] for b in bounds]
+   118         1       2100.0   2100.0      0.0          ub = [b[1] for b in bounds]
+   119                                           
+   120                                                   # Run PSO to minimize the NLL
+   121         2        3e+10    1e+10    100.0          best_x, best_nll = gen_utils.pso(
+   122         1       1100.0   1100.0      0.0              self.nll_wrapper,
+   123         1        500.0    500.0      0.0              lb,
+   124         1        400.0    400.0      0.0              ub,
+   125         1        400.0    400.0      0.0              swarmsize=swarm_size,
+   126         1        400.0    400.0      0.0              maxiter=n_restart_optimizer,
+   127         1        300.0    300.0      0.0              debug=verbose,
+   128                                                       # omega=0.4,       # High inertia encourages exploration
+   129                                                       # phip=1.0,        # Moderate personal influence
+   130                                                       # phig=1.2,        # Low social influence, avoids early convergence
+   131         1        600.0    600.0      0.0              minfunc=1e-16,
+   132         1        500.0    500.0      0.0              minstep=1e-16,
+   133         1        200.0    200.0      0.0              initial_positions=x0,
+   134         1        200.0    200.0      0.0              local_opt_every=local_opt_every
+   135                                                   )
+   136                                           
+   137                                                   # Store the optimal solution
+   138         1       2200.0   2200.0      0.0          self.model.opt_x0 = best_x
+   139         1        800.0    800.0      0.0          self.model.opt_nll = best_nll
+   140                                           
+   141         1        600.0    600.0      0.0          if verbose:
+   142         1     289899.0 289899.0      0.0              print("Best solution:", best_x)
+   143         1      10000.0  10000.0      0.0              print("Objective value:", best_nll)
+   144                                           
+   145         1        400.0    400.0      0.0          return best_x
+
+  0.03 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py:5 - differences_by_dim_func
+ 22.54 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/kernel_funcs/kernel_funcs.py:220 - se_kernel_anisotropic
+ 25.10 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py:196 - rbf_kernel
+ 27.90 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py:20 - negative_log_marginal_likelihood
+ 28.15 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py:97 - optimize_hyperparameters

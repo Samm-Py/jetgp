@@ -25,7 +25,7 @@ class ActiveLearningConfig:
     # --- Spatial Domain (x) ---
     lb_x: float = -1.5
     ub_x: float = 1.5
-    num_candidate_pts: int = 200
+    num_integration_pts: int = 1000
 
     # --- Temporal Domain (t) ---
     t_start: float = 0.0
@@ -33,8 +33,8 @@ class ActiveLearningConfig:
     t_step: float = 0.1
 
     # --- Active Learning Loop Settings ---
-    num_initial_points: int = 4
-    num_points_to_add: int = 8
+    num_initial_points: int = 5
+    num_points_to_add: int = 3
     n_order: int = 1  # Derivative order for the GP models
 
     # --- GP Model Parameters ---
@@ -149,7 +149,7 @@ def visualize_time_dependent_results(history, config, final_gps):
     ax1 = fig.add_subplot(gs[0, 0])
     c1 = ax1.pcolormesh(xx, tt, true_surface, shading='auto', cmap='viridis')
     ax1.plot(initial_x, initial_t, 'x', color='cyan', markersize=10, mew=2.5, label='Initial Points')
-    ax1.plot(active_x, active_t, 'o', color='red', markersize=8, markeredgecolor='white', label='Active Points')
+    ax1.plot(active_x, np.ones(active_x.shape), 'o', color='red', markersize=8, markeredgecolor='white', label='Active Points')
     ax1.set_title('True Function $f(x, t)$ with Sample Points', fontweight='bold')
     ax1.set_xlabel('x')
     ax1.set_ylabel('time (t)')
@@ -168,7 +168,7 @@ def visualize_time_dependent_results(history, config, final_gps):
     ax3 = fig.add_subplot(gs[1, 0])
     c3 = ax3.pcolormesh(xx, tt, np.log10(var_surface), shading='auto', cmap='plasma')
     ax3.plot(initial_x, initial_t, 'x', color='cyan', markersize=10, mew=2.5)
-    ax3.plot(active_x, active_t, 'o', color='white', markersize=8, markeredgecolor='black')
+    ax3.plot(active_x, np.ones(active_x.shape), 'o', color='white', markersize=8, markeredgecolor='black')
     ax3.set_title('Final GP Log-Variance $\\log_{10}(\\sigma^2(x, t))$', fontweight='bold')
     ax3.set_xlabel('x')
     ax3.set_ylabel('time (t)')
@@ -178,7 +178,7 @@ def visualize_time_dependent_results(history, config, final_gps):
     ax_err = fig.add_subplot(gs[1, 1])
     c_err = ax_err.pcolormesh(xx, tt, abs_error_surface, shading='auto', cmap='inferno')
     ax_err.plot(initial_x, initial_t, 'x', color='cyan', markersize=10, mew=2.5)
-    ax_err.plot(active_x, active_t, 'o', color='white', markersize=8, markeredgecolor='black')
+    ax_err.plot(active_x, np.ones(active_x.shape), 'o', color='white', markersize=8, markeredgecolor='black')
     ax_err.set_title('Absolute Error $|f(x,t) - \\mu(x,t)|$', fontweight='bold')
     ax_err.set_xlabel('x')
     ax_err.set_ylabel('time (t)')
@@ -207,119 +207,115 @@ def visualize_time_dependent_results(history, config, final_gps):
 def main():
     config = ActiveLearningConfig()
 
-
-    # --- Setup ---
-    # You could also define a Uniform distribution this way:
+    # --- Spatial Domain Setup ---
     dist = ["U"]
-    lower_bounds = np.array([-1.5])
-    upper_bounds = np.array([1.5])
+    lower_bounds = np.array([config.lb_x])
+    upper_bounds = np.array([config.ub_x])
     dist_params = {'dists': dist, 'lower_bounds': lower_bounds, 'upper_bounds': upper_bounds}
     use_agg_al = True
-    acquisition_function_to_use = acq.aggrigated_variance
-    dimension = 1
+    acquisition_function_to_use = acq.mse_reduction
 
+    # --- Time Steps ---
     time_steps = np.arange(config.t_start, config.t_end + config.t_step, config.t_step)
-    # Generate integration_points
-    sampler = Sobol(d=dimension, scramble=True)
-    uniform_samples_int = sampler.random(n=config.num_candidate_pts)
+
+    # --- Integration Points ---
+    sampler = Sobol(d=1, scramble=True)
+    uniform_samples_int = sampler.random(n=config.num_integration_pts)
     integration_points = utils.get_inverse(dist_params, uniform_samples_int)
     integration_points = np.sort(integration_points, axis=0)
 
-    # Sample Initial Training Data
+    # --- Initial Training Data ---
     uniform_samples_train = sampler.random(n=config.num_initial_points)
     X_train_spatial = utils.get_inverse(dist_params, uniform_samples_train)
-    
-    # --- FIX 1: Initialize time_of_points ONCE before the loop ---
     time_of_points = np.full(X_train_spatial.shape[0], config.t_start)
-    
+
     history = []
-    history_var = []
+
     print("=" * 70)
     print("Starting Time-Dependent Active Learning")
-    print(f"Spatial Domain (x): [{config.lb_x}, {config.ub_x}]")
-    print(f"Temporal Domain (t): [{config.t_start}, {config.t_end}] with {len(time_steps)} slices")
+    print(f"Spatial Domain: [{config.lb_x}, {config.ub_x}]")
+    print(f"Temporal Domain: [{config.t_start}, {config.t_end}] with {len(time_steps)} slices")
     print("=" * 70)
 
-    # The loop now runs up to num_points_to_add, not +1
     for i in range(config.num_points_to_add):
-        num_pts = config.num_initial_points + i
-        print(f"\n--- Iteration {i+1}/{config.num_points_to_add} | Current Training Points: {num_pts} ---")
+        print(f"\n--- Iteration {i+1}/{config.num_points_to_add} | Training Points: {X_train_spatial.shape[0]} ---")
 
-        candidate_points_info = []
-        history_var = []
-        # --- Inner loop: Train a "scout" GP for each time slice ---
+        gp_list = []
+        params_list = []
+        y_train_list = []
+
+        # --- Train a GP for each time slice ---
         for t in time_steps:
-            y_train_list = get_training_data_for_model(X_train_spatial, t, config.n_order)
-            
+            y_list = get_training_data_for_model(X_train_spatial, t, config.n_order)
             der_indices = utils.gen_OTI_indices(1, config.n_order)
-            gp = degp(
-                X_train_spatial, y_train_list, config.n_order, n_bases=1, der_indices=der_indices,
+
+            gp_t = degp(
+                X_train_spatial, y_list, config.n_order,
+                n_bases=1, der_indices=der_indices,
                 normalize=config.normalize_data, kernel=config.kernel, kernel_type=config.kernel_type
             )
-            params = gp.optimize_hyperparameters(
-                n_restart_optimizer=config.n_restarts, swarm_size=config.swarm_size, verbose=False
-            )
-            
-            # Find the best point for THIS time slice
-            _, y_var = gp.predict(integration_points, params, calc_cov=True, return_deriv=False)
-            
-            if not use_agg_al:
-                next_point, score = utils.find_next_point(
-                    gp, params, X_train_spatial, y_train_list,dist_params,acquisition_function_to_use, integration_points = integration_points,
-                    n_candidate_points=256, n_local_starts=10
-                )
-                candidate_points_info.append({'t': t, 'next_x': next_point, 'score': score})
-            history_var.append(y_var)
 
-        # --- Global Point Selection ---
-        if not use_agg_al:
-            best_candidate = max(candidate_points_info, key=lambda item: item['score'])
-            next_point_to_add = best_candidate['next_x']
-            best_overall_score = best_candidate['score']
-            time_of_best_point = best_candidate['t']
-            
-            print(f"Highest IMSE reduction found at t={time_of_best_point:.3f}")
-            print(f"-> Globally chosen next point: x = {next_point_to_add.item():.4f}\n")
-    
-            # --- FIX 2: Store the CURRENT state to history BEFORE updating ---
-
-        else:
-            next_point_to_add, best_overall_score = utils.find_next_point(
-                gp, params, X_train_spatial, y_train_list, dist_params,
-                 acquisition_func=acquisition_function_to_use, integration_points=integration_points,
-                use_agg_al = use_agg_al, var_hist = history_var
+            params_t = gp_t.optimize_hyperparameters(
+                n_restart_optimizer=config.n_restarts,
+                swarm_size=config.swarm_size,
+                verbose=False
             )
-            
-        time_of_best_point = 1.0
+
+            gp_list.append(gp_t)
+            params_list.append(params_t)
+            y_train_list.append(y_list)
+
+        # --- Find the next point using aggregated acquisition function ---
+        next_points = utils.find_next_point_batch(
+            gp=gp_list,  
+            params=params_list,
+            dist_params=dist_params,
+            acquisition_func=acquisition_function_to_use,
+            integration_points=integration_points,
+            n_candidate_points=250,
+            n_local_starts=1,
+            n_batch_points=5,
+            seed=i
+        )
+        
+
+        next_points_to_add = next_points
+        best_overall_score = None
+        time_of_best_point = 1.0  # or any flag to indicate global selection
+
+        # --- Save history BEFORE updating training data ---
         history.append({
             "X_train_spatial": X_train_spatial.copy(),
             "time_of_points": time_of_points.copy(),
-            "best_score": best_overall_score,
+            "best_score": best_overall_score
         })
-        
-        # --- FIX 3: Update state for the NEXT iteration AFTER saving history ---
-        X_train_spatial = np.vstack([X_train_spatial, next_point_to_add])
+
+        # --- Update training data for next iteration ---
+        X_train_spatial = np.vstack([X_train_spatial, next_points_to_add])
         time_of_points = np.append(time_of_points, time_of_best_point)
-    # Append the final state to the history for the final plot
+
+    # --- Final state appended for visualization ---
     history.append({
         "X_train_spatial": X_train_spatial.copy(),
         "time_of_points": time_of_points.copy(),
-        "best_score": None, # No score for the final state
+        "best_score": None
     })
-    
-    # --- Final Model Training ---
-    print("\n--- Active learning complete. Training final models for visualization... ---")
+
+    # --- Train final GPs for visualization ---
     final_gps = []
     for t in time_steps:
         y_train_list = get_training_data_for_model(X_train_spatial, t, config.n_order)
         der_indices = utils.gen_OTI_indices(1, config.n_order)
-        gp = degp(X_train_spatial, y_train_list, config.n_order, n_bases=1, der_indices=der_indices,
-                  normalize=config.normalize_data, kernel=config.kernel, kernel_type=config.kernel_type)
-        gp.optimize_hyperparameters(n_restart_optimizer=config.n_restarts, swarm_size=config.swarm_size, verbose=False)
-        final_gps.append(gp)
+        gp_t = degp(
+            X_train_spatial, y_train_list, config.n_order,
+            n_bases=1, der_indices=der_indices,
+            normalize=config.normalize_data, kernel=config.kernel, kernel_type=config.kernel_type
+        )
+        gp_t.optimize_hyperparameters(n_restart_optimizer=config.n_restarts, swarm_size=config.swarm_size, verbose=False)
+        final_gps.append(gp_t)
 
     print("=" * 70)
-    print("Creating final visualization...")
+    print("Active learning complete. Creating final visualization...")
     visualize_time_dependent_results(history, config, final_gps)
 if __name__ == "__main__":
     main()

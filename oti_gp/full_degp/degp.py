@@ -54,7 +54,11 @@ class degp:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.normalize = normalize
-
+        
+        
+        self.y_train_input = y_train
+        self.x_train_input = x_train
+        
         # Prepare indices and powers
         indices = der_indices
         self.flattened_der_indicies = utils.flatten_der_indices(indices)

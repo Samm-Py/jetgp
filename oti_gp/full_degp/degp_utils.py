@@ -2,7 +2,7 @@ import numpy as np
 import pyoti.sparse as oti
 from line_profiler import profile
 
-
+@profile
 def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
     """
     Compute pairwise differences between two input arrays X1 and X2 for each dimension,

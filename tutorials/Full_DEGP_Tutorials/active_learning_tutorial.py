@@ -31,8 +31,8 @@ class ActiveLearningConfig:
 
     # --- Active Learning Loop Settings ---
     num_initial_points: int = 5
-    num_points_to_add: int = 5
-    n_order: int = 1  # The derivative order to use for this experiment
+    num_points_to_add: int = 1
+    n_order: int = 2  # The derivative order to use for this experiment
 
     # --- GP Model Parameters ---
     normalize_data: bool = True
@@ -197,7 +197,7 @@ def main():
         print(f"Iteration {i+1}/{config.num_points_to_add + 1} | Training with {num_pts} points...")
 
         y_train_list = get_training_data_for_model(X_train, config.n_order)
-        der_indices = utils.gen_OTI_indices(1, 1)
+        der_indices = utils.gen_OTI_indices(1, config.n_order)
         gp = degp(
             X_train, y_train_list, config.n_order, n_bases=1, der_indices=der_indices,
             normalize=config.normalize_data, kernel=config.kernel, kernel_type=config.kernel_type
@@ -211,15 +211,15 @@ def main():
         next_point = None
         if i < config.num_points_to_add:
             print("  Finding next point using two-stage optimization...")
-            next_point, score = utils.find_next_point(
-                gp, params, X_train, y_train_list,dist_params,acquisition_function_to_use, integration_points = integration_points,
-                n_candidate_points=256, n_local_starts=10
+            next_points= utils.find_next_point_batch(
+                [gp], [params],dist_params,acquisition_function_to_use, integration_points = integration_points,
+                n_candidate_points=100, n_local_starts=1, n_batch_points=5, seed = i
             )
             
 
                 
-            print(f"  -> Next point chosen: x = {next_point.item():.4f}\n")
-            X_train = np.vstack([X_train, next_point])
+            #sprint(f"  -> Next points chosen: x = {next_points.item():.4f}\n")
+            X_train = np.vstack([X_train, next_points])
 
         history.append({
             "X_train": X_train.copy(),
