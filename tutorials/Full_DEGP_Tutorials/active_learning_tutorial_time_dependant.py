@@ -25,7 +25,7 @@ class ActiveLearningConfig:
     # --- Spatial Domain (x) ---
     lb_x: float = -1.5
     ub_x: float = 1.5
-    num_integration_pts: int = 1000
+    num_integration_pts: int = 500
 
     # --- Temporal Domain (t) ---
     t_start: float = 0.0
@@ -212,7 +212,6 @@ def main():
     lower_bounds = np.array([config.lb_x])
     upper_bounds = np.array([config.ub_x])
     dist_params = {'dists': dist, 'lower_bounds': lower_bounds, 'upper_bounds': upper_bounds}
-    use_agg_al = True
     acquisition_function_to_use = acq.mse_reduction
 
     # --- Time Steps ---
