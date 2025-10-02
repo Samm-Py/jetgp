@@ -3,6 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - mauriaristi::pyoti
+  - ipython
   - numpy
   - scipy
   - sphinx >=7.1
