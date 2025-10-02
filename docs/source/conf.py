@@ -38,9 +38,13 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinxarg.ext",
     "sphinx_design",
-    "jupyter_sphinx",
     "sphinxcontrib.bibtex"
 ]
+bibtex_bibfiles = []
+bibtex_default_style = "unsrt"
+bibtex_reference_style = "label"
+
+templates_path = ['_templates']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -57,7 +61,7 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = "sphinx_book_theme"
-html_logo = "_static/OptiStepLib-removebg.png"
+html_logo = "_static/JetGP_logo.png"
 html_static_path = ['_static']
 html_theme_options = {
     "logo": {"text": release},
@@ -72,7 +76,7 @@ html_theme_options = {
     "home_page_in_toc": True,
     "use_repository_button": True,
 }
-extensions.append("autoapi.extension")
-extensions.append("numpydoc")
-autoapi_type = 'python'
-autoapi_dirs = ['../../oti_gp']
+# extensions.append("autoapi.extension")
+# extensions.append("numpydoc")
+# autoapi_type = 'python'
+# autoapi_dirs = ['../../oti_gp']
