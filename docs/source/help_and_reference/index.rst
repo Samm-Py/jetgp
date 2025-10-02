@@ -6,3 +6,8 @@ If there are any questions, please contact `Sam Roberts <samuel.de.roberts@gmail
 Contributors
 ------------
 - Sam Roberts (samuel.de.roberts@gmail.com)
+
+.. toctree::
+   :maxdepth: 2
+
+   changelog
