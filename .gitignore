@@ -14,3 +14,6 @@ __pycache__/*
 modules/*.c
 modules/build/
 modules/*.so
+
+# Ignore build directory for docs
+docs/build
