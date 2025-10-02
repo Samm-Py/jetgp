@@ -72,32 +72,37 @@ from line_profiler import profile
 #         imse_brute[i_cand] = np.mean((sigma2_orig - sigma2_new))
 #     return imse_brute
 
+@profile
+def mse_reduction(
+    gp, params, precomputed_diffs,
+    noise_var=None, return_deriv=False, **kwargs
+):
+    """
+    Compute MSE reduction (posterior variance) at candidate points.
+    
+    Args:
+        gp: GP object
+        params: Kernel hyperparameters
+        x_train: Training inputs
+        y_train_list: Training outputs
+        candidate_points: Normalized candidate points to evaluate
+        precomputed_diffs: Dict with precomputed difference matrices:
+            - 'train_cand': differences between training and candidate points
+            - 'cand_cand': differences between candidate points
+        noise_var: Observation noise variance
+        return_deriv: Whether to return derivatives
+        normalize: Whether to normalize y data (x data assumed already normalized)
+    
+    Returns:
+        1D array of posterior variances at candidate points
+    """
 
-def mse_reduction(    gp, params, x_train, y_train_list,
-    candidate_points, integration_points = None, noise_var=None,
-    return_deriv=False, normalize=True):
     
-    X_train = x_train
-    flattened_der_indicies = gp.flattened_der_indicies
-    n = len(candidate_points)
-    if normalize: 
-        (
-        y_train,
-        mu_y,
-        sigma_y,
-        sigmas_x,
-        mus_x,
-        sigma_data,
-        ) = utils.normalize_y_data(x_train, y_train_list, noise_var, flattened_der_indicies)
-        X_train = utils.normalize_x_data_test(x_train, sigmas_x, mus_x)
-        candidate_points = utils.normalize_x_data_test(candidate_points, sigmas_x, mus_x)
     
-    #candidate_points = np.sort(candidate_points, axis = 0)
     length_scales = params[:-1]
     sigma_n = params[-1]
     
-    
-    # --- 1. Training kernel ---
+    # Training kernel
     diff_train_train = gp.differences_by_dim
     K = degp_utils.rbf_kernel(
         diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
@@ -105,120 +110,102 @@ def mse_reduction(    gp, params, x_train, y_train_list,
     )
     K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
     
-
-    diff_train_domain = degp_utils.differences_by_dim_func(X_train, candidate_points, gp.n_order, return_deriv=return_deriv)
+    # Use precomputed differences
+    diff_train_cand = precomputed_diffs['train_cand']
+    diff_cand_cand = precomputed_diffs['cand_cand']
+    
+    # Compute kernels from differences
     K_s = degp_utils.rbf_kernel(
-        diff_train_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
+        diff_train_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
     )
     
-    diff_domain_domain = degp_utils.differences_by_dim_func(candidate_points, candidate_points, gp.n_order, return_deriv=return_deriv)
+    n = K_s.shape[1]
     
     K_ss = degp_utils.rbf_kernel(
-        diff_domain_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
+        diff_cand_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
     )
     
+    # Compute posterior covariance
     f_cov = (
         K_ss - K_s.T @ np.linalg.solve(K, K_s)
         if return_deriv
         else K_ss[:n, :n] - K_s[:, :n].T @ np.linalg.solve(K, K_s[:, :n])
     )
-
-
+    
     return np.diag(f_cov)
 
 
-def aggrigated_variance(var_hist):
-    
-    """
-    var_list: list of 1D arrays, one per time increment (length = n_candidates)
-    returns: 1D array aggregate variance per candidate
-    """
-    # simple sum; you can use trapezoidal weighting if you like
-    
-    return np.sum(np.stack(var_hist, axis=1), axis=1)
-    
-    
 def imse_reduction(
-    gp, params, x_train, y_train_list,
-    candidate_points, integration_points = None, noise_var=None,
-    return_deriv=False, normalize=True
+    gp, params, precomputed_diffs,
+    noise_var=None, return_deriv=False, **kwargs
 ):
     """
-    Vectorized exact IMSE reduction for scalar GP (function only).
-    Computes IMSE reduction for all candidates at once without looping.
-    """
-    X_train = x_train
-    flattened_der_indicies = gp.flattened_der_indicies
-    num_integraion_points= integration_points.shape[0]
-    if normalize: 
-        (
-        y_train,
-        mu_y,
-        sigma_y,
-        sigmas_x,
-        mus_x,
-        sigma_data,
-        ) = utils.normalize_y_data(x_train, y_train_list, noise_var, flattened_der_indicies)
-        X_train = utils.normalize_x_data_test(x_train, sigmas_x, mus_x)
-        candidate_points = utils.normalize_x_data_test(candidate_points, sigmas_x, mus_x)
-        integration_points= utils.normalize_x_data_test(integration_points, sigmas_x, mus_x)
+    Vectorized exact IMSE reduction with precomputed differences.
     
-    candidate_points = np.sort(candidate_points, axis = 0)
+    Args:
+        gp: GP object
+        params: Kernel hyperparameters
+        x_train: Training inputs
+        y_train_list: Training outputs
+        candidate_points: Normalized candidate points to evaluate
+        integration_points: Normalized integration points for IMSE
+        precomputed_diffs: Dict with precomputed difference matrices:
+            - 'train_domain': differences between training and integration points
+            - 'train_cand': differences between training and candidate points
+            - 'cand_cand': differences between candidate points
+            - 'domain_cand': differences between integration and candidate points
+        noise_var: Observation noise variance
+        return_deriv: Whether to return derivatives
+        normalize: Whether to normalize y data (x data assumed already normalized)
+    
+    Returns:
+        1D array of IMSE reductions for each candidate point
+    """
+
+   
+    
+    
     length_scales = params[:-1]
     sigma_n = params[-1]
-    
-    
-    # --- 1. Training kernel ---
+    n_integration_points = kwargs['n_integration_points']
+    # Training kernel
     diff_train_train = gp.differences_by_dim
     K = degp_utils.rbf_kernel(
         diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=True
     )
-    
     K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
     
-
-    diff_train_domain = degp_utils.differences_by_dim_func(X_train, integration_points, gp.n_order, return_deriv=return_deriv)
+    # Use precomputed differences
+    diff_train_domain = precomputed_diffs['train_domain']
+    diff_train_cand = precomputed_diffs['train_cand']
+    diff_cand_cand = precomputed_diffs['cand_cand']
+    diff_domain_cand = precomputed_diffs['domain_cand']
+    
+    # Compute kernels from differences
     K_s = degp_utils.rbf_kernel(
         diff_train_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
     )
-
-    # --- 3. Vectorized differences ---
-    # Candidate to training
-    diff_train_cand = degp_utils.differences_by_dim_func(X_train, candidate_points, gp.n_order, return_deriv=return_deriv)
+    
     K_train_cand = degp_utils.rbf_kernel(
         diff_train_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
-    )  # shape: (n_train, n_candidates)
-
-    # Candidate self-covariance
-    diff_cand_cand = degp_utils.differences_by_dim_func(candidate_points, candidate_points, gp.n_order, return_deriv=return_deriv)
+    )
+    
     K_cand_cand = np.diag(degp_utils.rbf_kernel(
         diff_cand_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
-    ))  # shape: (n_candidates,)
+    ))
+    
 
-    # Candidate to full domain
-    diff_domain_cand = degp_utils.differences_by_dim_func(integration_points, candidate_points, gp.n_order, return_deriv=return_deriv)
-    K_domain_cand = degp_utils.rbf_kernel(
-        diff_domain_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-        gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
-    )  # shape: (n_domain, n_candidates)
-
-    # Solve K^{-1} @ K_train_cand for all candidates
-    v = np.linalg.solve(K, K_train_cand)  # shape: (n_train, n_candidates)
-
-    # Numerator and denominator of variance reduction
-    numerator = (K_domain_cand[:num_integraion_points,:]  - K_s.T @ v) ** 2  # shape: (n_domain, n_candidates)
-    denominator = K_cand_cand- np.sum(K_train_cand * v, axis=0)  # shape: (n_candidates,)
-    denominator = np.maximum(denominator, 1e-16)
-
-    variance_reduction = (numerator / denominator)  # shape: (n_domain, n_candidates)
-
-    # IMSE reduction for each candidate = mean over domain points
-    imse_reductions = variance_reduction.mean(axis=0)  # shape: (n_candidates,)
-
+    K_domain_cand = degp_utils.rbf_kernel( diff_domain_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func, gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv ) 
+    # shape: (n_domain, n_candidates) # Solve K^{-1} @ K_train_cand for all candidates 
+    v = np.linalg.solve(K, K_train_cand) # shape: (n_train, n_candidates) # Numerator and denominator of variance reduction 
+    numerator = (K_domain_cand[:n_integration_points,:] - K_s.T @ v) ** 2 # shape: (n_domain, n_candidates) 
+    denominator = K_cand_cand- np.sum(K_train_cand * v, axis=0) # shape: (n_candidates,) denominator = np.maximum(denominator, 1e-16) 
+    variance_reduction = (numerator / denominator) # shape: (n_domain, n_candidates) # IMSE reduction for each candidate = mean over domain points
+    imse_reductions = variance_reduction.mean(axis=0) # shape: (n_candidates,)
     return imse_reductions

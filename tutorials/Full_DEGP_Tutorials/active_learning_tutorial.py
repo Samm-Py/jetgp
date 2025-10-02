@@ -31,7 +31,7 @@ class ActiveLearningConfig:
 
     # --- Active Learning Loop Settings ---
     num_initial_points: int = 5
-    num_points_to_add: int = 1
+    num_points_to_add: int = 2
     n_order: int = 2  # The derivative order to use for this experiment
 
     # --- GP Model Parameters ---
@@ -187,6 +187,12 @@ def main():
     uniform_samples_train = sampler.random(n=config.num_initial_points)
     X_train = utils.get_inverse(dist_params, uniform_samples_train)
     
+
+
+    # Sample Initial Training Data
+    uniform_samples_train = sampler.random(n=100)
+    candidate_points = utils.get_inverse(dist_params, uniform_samples_train)
+    
     # --- The rest of the main function remains the same ---
     history = []
     print("-" * 60)
@@ -213,7 +219,7 @@ def main():
             print("  Finding next point using two-stage optimization...")
             next_points= utils.find_next_point_batch(
                 [gp], [params],dist_params,acquisition_function_to_use, integration_points = integration_points,
-                n_candidate_points=100, n_local_starts=1, n_batch_points=5, seed = i
+                candidate_points=candidate_points, n_local_starts=1, n_batch_points=5, local_opt = True, seed = i
             )
             
 

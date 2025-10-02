@@ -41,7 +41,7 @@ class DirectionalDEGPConfig:
     n_order: int = 2
     n_bases: int = 2
     num_directions_per_point: int = 2
-    num_training_pts: int = 15
+    num_training_pts: int = 4
     domain_bounds: tuple = ((-5.0, 10.0), (0.0, 15.0))
     test_grid_resolution: int = 50
     normalize_data: bool = True
