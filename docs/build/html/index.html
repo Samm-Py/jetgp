@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Welcome to JetGP’s documentation! &#8212; JetGP 0.0.1 documentation</title>
+    <title>JetGP &#8212; JetGP 0.0.1 documentation</title>
   
   
   
@@ -162,7 +162,7 @@
         <ul class="nav bd-sidenav bd-sidenav__home-link">
             <li class="toctree-l1 current active">
                 <a class="reference internal" href="#">
-                    Welcome to JetGP’s documentation!
+                    JetGP
                 </a>
             </li>
         </ul>
@@ -350,7 +350,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Welcome to JetGP’s documentation!</h1>
+    <h1>JetGP</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -360,10 +360,16 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Welcome to JetGP’s documentation!</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#anaconda">Anaconda</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cloning-the-repository">Cloning the repository</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-environment">Conda environment</a></li>
 </ul>
-
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-documentation-build">Local documentation build</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-access">Quick Access</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
             </nav>
         </div>
     </div>
@@ -374,18 +380,72 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="welcome-to-jetgp-s-documentation">
-<h1>Welcome to JetGP’s documentation!<a class="headerlink" href="#welcome-to-jetgp-s-documentation" title="Link to this heading">#</a></h1>
+  <section id="jetgp">
+<h1>JetGP<a class="headerlink" href="#jetgp" title="Link to this heading">#</a></h1>
+<p>A Gaussian Process library with support for arbitrary-order derivative-enhanced training data.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h2>
+<section id="anaconda">
+<h3>Anaconda<a class="headerlink" href="#anaconda" title="Link to this heading">#</a></h3>
+<p>Ensure that Anaconda distribution is installed on your system. <a class="reference external" href="https://www.anaconda.com/docs/getting-started/anaconda/install">Click here</a> for installation steps</p>
+</section>
+<section id="cloning-the-repository">
+<h3>Cloning the repository<a class="headerlink" href="#cloning-the-repository" title="Link to this heading">#</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:Samm-Py/oti_gp.git
+</pre></div>
+</div>
+</section>
+<section id="conda-environment">
+<h3>Conda environment<a class="headerlink" href="#conda-environment" title="Link to this heading">#</a></h3>
+<p>Set up the dependencies of this repository using the <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file.</p>
+<ol class="arabic simple">
+<li><p>Go to root of the cloned repository. Create and activate the conda environment with the supplied <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file at root:</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;path-to-optisteplib&gt;
+$<span class="w"> </span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
+$<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>otigp
+</pre></div>
+</div>
+</section>
+</section>
+<section id="local-documentation-build">
+<h2>Local documentation build<a class="headerlink" href="#local-documentation-build" title="Link to this heading">#</a></h2>
+<p>The documentation of the library can be built locally.</p>
+<ol class="arabic simple">
+<li><p>Ensure that conda environment is activated</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>otigp
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li><p>Change directory to <code class="docutils literal notranslate"><span class="pre">docs</span></code> directory and make a <code class="docutils literal notranslate"><span class="pre">build</span></code> directory.</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>docs
+$<span class="w"> </span>mkdir<span class="w"> </span>build
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li><p>Build and open the html documentation (i.e. using Firefox browser)</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>sphinx-build<span class="w"> </span>-M<span class="w"> </span>html<span class="w"> </span><span class="nb">source</span><span class="w"> </span>build
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build/html
+$<span class="w"> </span>firefox<span class="w"> </span>index.html
+</pre></div>
+</div>
+</section>
+<section id="quick-access">
+<h2>Quick Access<a class="headerlink" href="#quick-access" title="Link to this heading">#</a></h2>
 <div class="toctree-wrapper compound">
 </div>
 </section>
 <section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h1>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
 <li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
+</section>
 </section>
 
 
@@ -415,10 +475,16 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Welcome to JetGP’s documentation!</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installation">Installation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#anaconda">Anaconda</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cloning-the-repository">Cloning the repository</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-environment">Conda environment</a></li>
 </ul>
-
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-documentation-build">Local documentation build</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-access">Quick Access</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
   </nav></div>
 
 </div></div>

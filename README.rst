@@ -28,7 +28,7 @@ Set up the dependencies of this repository using the ``environment.yml`` file.
 
 .. code-block:: bash
 
-   $ cd <path-to-optisteplib>
+   $ cd <path-to-oti_gp>
    $ conda env create -f environment.yml
    $ conda activate otigp
 
