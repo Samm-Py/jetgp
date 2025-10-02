@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../../.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'degp'
+project = 'JetGP'
 copyright = '2025, Samuel Roberts'
 author = 'Samuel Roberts'
 
@@ -34,8 +34,12 @@ extensions = [
     "sphinx.ext.autodoc",       # Auto-generate documentation from docstrings
     "sphinx.ext.napoleon",      # Supports Google and NumPy style docstrings
     "sphinx.ext.viewcode",      # Adds links to source code
-    "sphinx_rtd_theme",         # Read the Docs theme
-    # "autoapi.extension",      # If using AutoAPI (for auto-documentation)
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.extlinks",
+    "sphinxarg.ext",
+    "sphinx_design",
+    "jupyter_sphinx",
+    "sphinxcontrib.bibtex"
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -52,13 +56,23 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "sphinx_rtd_theme"
-extensions.append("numpydoc")
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
+html_theme = "sphinx_book_theme"
+html_logo = "_static/OptiStepLib-removebg.png"
 html_static_path = ['_static']
-
+html_theme_options = {
+    "logo": {"text": release},
+    "content_footer_items": ["last-updated"],
+    "navigation_depth": 4,
+    "repository_url": "https://github.com/Samm-Py/oti_gp",
+    "repository_branch": "dev",
+    "path_to_docs": "docs/source/",
+    "use_source_button": True,
+    "collapse_navigation" : True,
+    "launch_buttons": {},
+    "home_page_in_toc": True,
+    "use_repository_button": True,
+}
 extensions.append("autoapi.extension")
+extensions.append("numpydoc")
 autoapi_type = 'python'
 autoapi_dirs = ['../../oti_gp']
