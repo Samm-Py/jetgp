@@ -32,6 +32,12 @@ Set up the dependencies of this repository using the ``environment.yml`` file.
    $ conda env create -f environment.yml
    $ conda activate otigp
 
+In the event where dependencies are added, the ``optigp`` environment can be updated
+
+.. code-block:: bash
+
+    $ conda env update --file environment.yml --prune
+
 Local documentation build
 =========================
 
