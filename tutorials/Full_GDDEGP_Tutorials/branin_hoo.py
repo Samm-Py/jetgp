@@ -40,9 +40,9 @@ plt.rcParams.update({'font.size': 12})
 @dataclass
 class DirectionalDEGPConfig:
     """Configuration for the Directional DEGP tutorial."""
-    n_order: int = 2
+    n_order: int = 1
     n_bases: int = 2
-    num_training_pts: int = 15
+    num_training_pts: int = 4
     domain_bounds: tuple = ((-5.0, 10.0), (0.0, 15.0))
     test_grid_resolution: int = 100
     normalize_data: bool = True
@@ -109,7 +109,7 @@ class DirectionalDEGPTutorial:
 
         y_train_list = [f_hc.real.reshape(-1, 1)]
         # These indices refer to the e(1) basis used in the perturbation step.
-        der_indices_to_extract = [[[1, 1]], [[1, 2]]]
+        der_indices_to_extract = [[[1, 1]]]
         for idx in der_indices_to_extract:
             y_train_list.append(f_hc.get_deriv(idx).reshape(-1, 1))
 

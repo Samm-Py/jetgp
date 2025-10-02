@@ -15,6 +15,10 @@ from fractions import Fraction
 from scipy.special import comb
 from numpy.polynomial import Polynomial
 import math
+import utils
+from full_degp import degp_utils
+
+
 def scale_samples(samples, lower_bounds, upper_bounds):
     """
     Scale each column of samples from the unit interval [0, 1] to user-defined bounds [lb_j, ub_j].
@@ -1817,6 +1821,7 @@ def find_next_point_batch(
     n_candidate_points: int = 1024,
     n_local_starts: int = 1,
     n_batch_points: int = 10,
+    local_opt = True,
     **acq_kwargs
 ):
     """
@@ -1828,7 +1833,7 @@ def find_next_point_batch(
     """
 
     selected_points = []
-
+    n_integration_points = integration_points.shape[0]
     # helper to generate candidates
     def _generate_candidates(dimension, seed_offset=0):
         sampler = Sobol(d=dimension, scramble=True, seed=acq_kwargs.get('seed', 0) + seed_offset)
@@ -1839,21 +1844,52 @@ def find_next_point_batch(
         raise ValueError("gp and params must be provided as list")
 
 
+
     for n in range(n_batch_points):
         if candidate_points is None:
             candidate_points = _generate_candidates(gp[0].n_bases,seed_offset=n)
-        # Score candidates across all GPs
+        # Normalize once before the loop
         cand_scores_all = []
+        
+        if gp[0].normalize:
+            sigmas_x = gp[0].sigmas_x
+            mus_x = gp[0].mus_x
+            
+            candidate_points_norm = utils.normalize_x_data_test(candidate_points.copy(), sigmas_x, mus_x)
+            if integration_points is not None:
+                integration_points_norm = utils.normalize_x_data_test(integration_points.copy(), sigmas_x, mus_x)
+                n_integration_points = integration_points.shape[0]
+        else:
+            candidate_points_norm = candidate_points.copy()
+            integration_points_norm = integration_points.copy()
+            n_integration_points = None
+        
+        # Precompute all differences once
+        precomputed_diffs = {
+            'train_cand': degp_utils.differences_by_dim_func(
+                gp[0].x_train, candidate_points_norm, gp[0].n_order, return_deriv=False
+            ),
+            'cand_cand': degp_utils.differences_by_dim_func(
+                candidate_points_norm, candidate_points_norm, gp[0].n_order, return_deriv=False
+            ),
+            'domain_cand': degp_utils.differences_by_dim_func(
+                integration_points_norm, candidate_points_norm, gp[0].n_order, return_deriv=False
+            ),
+            'train_domain': degp_utils.differences_by_dim_func(
+                gp[0].x_train, integration_points_norm, gp[0].n_order, return_deriv=False
+            )
+        }
+        # Loop over time steps - much simpler now!
         for gp_t, params_t in zip(gp, params):
             scores_t = acquisition_func(
                 gp_t,
                 params_t,
-                gp_t.x_train_input.copy(),
-                gp_t.y_train_input.copy(),
-                candidate_points,
-                integration_points=integration_points,
-                normalize=gp_t.normalize,
+                precomputed_diffs,
+                n_integration_points = n_integration_points
             )
+            
+                    
+                
             cand_scores_all.append(scores_t.reshape(-1, 1))
             
             
@@ -1862,41 +1898,75 @@ def find_next_point_batch(
         top_indices = np.argsort(cand_scores.ravel())[-n_local_starts:]
         top_starting_points = candidate_points[top_indices]
         
-        # --- Get bounds for local optimization ---
-        bounds = get_optimization_bounds(dist_params)
-        all_unbounded = all(b[0] is None for b in bounds)
-        
-        # --- Define objective function for local refinement ---
-        def objective_function(x: np.ndarray) -> float:
-            x_cand = x.reshape(1, -1)
-            # Compute aggregated score across all GPs
-            score_list = [
-                acquisition_func(
-                    gp_t,
-                    params_t,
-                    gp_t.x_train_input.copy(),
-                    gp_t.y_train_input.copy(),
-                    x_cand,
-                    integration_points=integration_points,
-                    normalize=gp_t.normalize,
+        if local_opt:
+            # --- Get bounds for local optimization ---
+            bounds = get_optimization_bounds(dist_params)
+            all_unbounded = all(b[0] is None for b in bounds)
+            
+            # --- Define objective function for local refinement ---
+            def objective_function(x: np.ndarray) -> float:
+                """
+                Objective for local optimization. 
+                Note: Can't use precomputed diffs here since x is varying during optimization.
+                """
+                x_cand = x.reshape(1, -1)
+                
+                # Normalize the candidate point if needed
+                if gp[0].normalize:
+                    x_cand_norm = utils.normalize_x_data_test(x_cand.copy(), sigmas_x, mus_x)
+                else:
+                    x_cand_norm = x_cand.copy()
+                
+                # Compute differences for this single candidate
+                diff_train_cand = degp_utils.differences_by_dim_func(
+                    gp[0].x_train, x_cand_norm, gp[0].n_order, return_deriv=False
                 )
-                for gp_t, params_t in zip(gp, params)
-            ]
-            return -np.mean([s[0] for s in score_list])
-        
-        # --- Local optimization loop ---
-        best_x, best_score = None, -np.inf
-        for start_point in top_starting_points:
-            if all_unbounded:
-                res = minimize(fun=objective_function, x0=start_point, method="BFGS")
-            else:
-                res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
-        
-            if -res.fun > best_score:
-                best_score, best_x = -res.fun, res.x
-        
-        best_x = best_x.reshape(1, -1)
-        selected_points.append(best_x)
+                diff_cand_cand = degp_utils.differences_by_dim_func(
+                    x_cand_norm, x_cand_norm, gp[0].n_order, return_deriv=False
+                )
+                diff_domain_cand = degp_utils.differences_by_dim_func(
+                    integration_points_norm, x_cand_norm, gp[0].n_order, return_deriv=False
+                )
+                
+                # Precomputed diffs for this candidate
+                local_precomputed_diffs = {
+                    'train_cand': diff_train_cand,
+                    'cand_cand': diff_cand_cand,
+                    'domain_cand': diff_domain_cand,
+                    'train_domain': precomputed_diffs['train_domain']  # Reuse this one
+                }
+                
+                # Compute aggregated score across all GPs
+                score_list = [
+                    acquisition_func(
+                        gp_t,
+                        params_t,
+                        precomputed_diffs=local_precomputed_diffs,
+                        n_integration_points = n_integration_points
+                    )
+                    for gp_t, params_t in zip(gp, params)
+                ]
+                return -np.mean([s[0] if isinstance(s, np.ndarray) else s for s in score_list])
+            
+            # --- Local optimization loop ---
+            best_x, best_score = None, -np.inf
+            for start_point in top_starting_points:
+                if all_unbounded:
+                    res = minimize(fun=objective_function, x0=start_point, method="BFGS")
+                else:
+                    res = minimize(fun=objective_function, x0=start_point, method="L-BFGS-B", bounds=bounds)
+                
+                if -res.fun > best_score:
+                    best_score, best_x = -res.fun, res.x
+            
+            best_x = best_x.reshape(1, -1)
+            selected_points.append(best_x)
+        else:
+            top_index = np.argmax(cand_scores.ravel())
+            best_x = candidate_points[top_index].reshape(1, -1)
+            selected_points.append(best_x)
+            print(best_x)
+            candidate_points = np.delete(candidate_points, top_index, axis=0)
 
         # Augment each GP with predicted outputs at best_x
         for t, gp_t in enumerate(gp):
@@ -1904,7 +1974,7 @@ def find_next_point_batch(
             y_pred = gp_t.predict(best_x, params_t, calc_cov=False, return_deriv=True)
             y_to_add = _format_y_to_add(y_pred)
 
-            x_aug = np.vstack([gp_t.x_train, best_x])
+            x_aug = np.vstack([gp_t.x_train_input, best_x])
             y_aug = []
             for i_y, y_block in enumerate(gp_t.y_train_input):
                 if i_y < len(y_to_add):

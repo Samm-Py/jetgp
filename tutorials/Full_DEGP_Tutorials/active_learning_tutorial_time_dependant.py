@@ -34,7 +34,7 @@ class ActiveLearningConfig:
 
     # --- Active Learning Loop Settings ---
     num_initial_points: int = 5
-    num_points_to_add: int = 3
+    num_points_to_add: int = 5
     n_order: int = 1  # Derivative order for the GP models
 
     # --- GP Model Parameters ---
@@ -61,7 +61,7 @@ def true_function(X_spatial, t, alg=oti):
     r = 4 * (t - 0.5)
     
     # Now, r and x are both 1D arrays, so multiplication is element-wise
-    return r * x + 2 * alg.sin(4 * np.pi * x) - 10 * x**3
+    return (r * x + 2 * alg.sin(10 * np.pi * x) - 10 * x**3)**2
 
 
 def true_function_vect(X_spatial, t, alg=oti):
@@ -78,7 +78,7 @@ def true_function_vect(X_spatial, t, alg=oti):
     r = 4 * (t - 0.5)
     
     # Now, r and x are both 1D arrays, so multiplication is element-wise
-    return r * x + 2 * alg.sin(4 * np.pi * x) - 10 * x**3
+    return (r * x + 2 * alg.sin(10 * np.pi * x) - 10 * x**3)**2
 
 # ==============================================================================
 # 2. HELPER FUNCTION
@@ -212,7 +212,7 @@ def main():
     lower_bounds = np.array([config.lb_x])
     upper_bounds = np.array([config.ub_x])
     dist_params = {'dists': dist, 'lower_bounds': lower_bounds, 'upper_bounds': upper_bounds}
-    acquisition_function_to_use = acq.mse_reduction
+    acquisition_function_to_use = acq.imse_reduction
 
     # --- Time Steps ---
     time_steps = np.arange(config.t_start, config.t_end + config.t_step, config.t_step)
@@ -241,7 +241,6 @@ def main():
 
         gp_list = []
         params_list = []
-        y_train_list = []
 
         # --- Train a GP for each time slice ---
         for t in time_steps:
@@ -262,7 +261,6 @@ def main():
 
             gp_list.append(gp_t)
             params_list.append(params_t)
-            y_train_list.append(y_list)
 
         # --- Find the next point using aggregated acquisition function ---
         next_points = utils.find_next_point_batch(
@@ -271,10 +269,11 @@ def main():
             dist_params=dist_params,
             acquisition_func=acquisition_function_to_use,
             integration_points=integration_points,
-            n_candidate_points=250,
+            n_candidate_points=50,
             n_local_starts=1,
             n_batch_points=5,
-            seed=i
+            seed=i,
+            local_opt = True
         )
         
 

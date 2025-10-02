@@ -1,6 +1,68 @@
 Timer unit: 1e-09 s
 
-Total time: 0.75575 s
+Total time: 0.113893 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/acquisition_functions/acquisition_funcs.py
+Function: mse_reduction at line 75
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    75                                           @profile
+    76                                           def mse_reduction(    gp, params, x_train, y_train_list,
+    77                                               candidate_points, integration_points = None, noise_var=None,
+    78                                               return_deriv=False, normalize=True):
+    79                                               
+    80         5       3699.0    739.8      0.0      X_train = x_train
+    81         5       4196.0    839.2      0.0      flattened_der_indicies = gp.flattened_der_indicies
+    82         5       4495.0    899.0      0.0      n = len(candidate_points)
+    83         5       1299.0    259.8      0.0      if normalize: 
+    84         5       2497.0    499.4      0.0          (
+    85         5       1100.0    220.0      0.0          y_train,
+    86         5       1299.0    259.8      0.0          mu_y,
+    87         5        999.0    199.8      0.0          sigma_y,
+    88         5        997.0    199.4      0.0          sigmas_x,
+    89         5       1100.0    220.0      0.0          mus_x,
+    90         5        998.0    199.6      0.0          sigma_data,
+    91         5    2166443.0 433288.6      1.9          ) = utils.normalize_y_data(x_train, y_train_list, noise_var, flattened_der_indicies)
+    92         5      32176.0   6435.2      0.0          X_train = utils.normalize_x_data_test(x_train, sigmas_x, mus_x)
+    93         5      20384.0   4076.8      0.0          candidate_points = utils.normalize_x_data_test(candidate_points, sigmas_x, mus_x)
+    94                                               
+    95                                               #candidate_points = np.sort(candidate_points, axis = 0)
+    96         5       6994.0   1398.8      0.0      length_scales = params[:-1]
+    97         5       3097.0    619.4      0.0      sigma_n = params[-1]
+    98                                               
+    99                                               
+   100                                               # --- 1. Training kernel ---
+   101         5       2797.0    559.4      0.0      diff_train_train = gp.differences_by_dim
+   102        10   13258874.0    1e+06     11.6      K = degp_utils.rbf_kernel(
+   103         5       3396.0    679.2      0.0          diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
+   104         5       2600.0    520.0      0.0          gp.flattened_der_indicies, gp.powers, return_deriv=True
+   105                                               )
+   106         5     103627.0  20725.4      0.1      K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
+   107                                               
+   108                                           
+   109         5    2035138.0 407027.6      1.8      diff_train_domain = degp_utils.differences_by_dim_func(X_train, candidate_points, gp.n_order, return_deriv=return_deriv)
+   110        10   13457132.0    1e+06     11.8      K_s = degp_utils.rbf_kernel(
+   111         5       3999.0    799.8      0.0          diff_train_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
+   112         5       2698.0    539.6      0.0          gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
+   113                                               )
+   114                                               
+   115         5   22154382.0    4e+06     19.5      diff_domain_domain = degp_utils.differences_by_dim_func(candidate_points, candidate_points, gp.n_order, return_deriv=return_deriv)
+   116                                               
+   117        10   59884369.0    6e+06     52.6      K_ss = degp_utils.rbf_kernel(
+   118         5       5196.0   1039.2      0.0          diff_domain_domain, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
+   119         5       3297.0    659.4      0.0          gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
+   120                                               )
+   121                                               
+   122         5       1696.0    339.2      0.0      f_cov = (
+   123         5       1900.0    380.0      0.0          K_ss - K_s.T @ np.linalg.solve(K, K_s)
+   124         5       2099.0    419.8      0.0          if return_deriv
+   125         5     656629.0 131325.8      0.6          else K_ss[:n, :n] - K_s[:, :n].T @ np.linalg.solve(K, K_s[:, :n])
+   126                                               )
+   127                                           
+   128                                           
+   129         5      61455.0  12291.0      0.1      return np.diag(f_cov)
+
+Total time: 0.600972 s
 File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py
 Function: differences_by_dim_func at line 5
 
@@ -53,17 +115,17 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
     49                                               >>> diffs[0].shape
     50                                               (2, 2)
     51                                               """
-    52       456   16948375.0  37167.5      2.2      X1 = oti.array(X1)
-    53       456   13925326.0  30538.0      1.8      X2 = oti.array(X2)
-    54       456     411236.0    901.8      0.1      n1, d = X1.shape
+    52        26    1054734.0  40566.7      0.2      X1 = oti.array(X1)
+    53        26    2162112.0  83158.2      0.4      X2 = oti.array(X2)
+    54        26      32076.0   1233.7      0.0      n1, d = X1.shape
     55                                           
-    56       456     292727.0    641.9      0.0      n2, d = X2.shape
+    56        26      13291.0    511.2      0.0      n2, d = X2.shape
     57                                           
     58                                               # Prepare the output: a list of d arrays, each of shape (n, m)
-    59       456     154454.0    338.7      0.0      differences_by_dim = []
+    59        26       9992.0    384.3      0.0      differences_by_dim = []
     60                                           
     61                                               # Loop over each dimension k
-    62       456     228936.0    502.1      0.0      if n_order == 0:
+    62        26      11190.0    430.4      0.0      if n_order == 0:
     63                                                   for k in range(d):
     64                                                       diffs_k = oti.zeros((n1, n2))
     65                                                       for i in range(n1):
@@ -72,109 +134,39 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
     68                                                               - (X2[:, k].T)
     69                                                           )
     70                                                       differences_by_dim.append(diffs_k)
-    71       456     174038.0    381.7      0.0      elif not return_deriv:
+    71        26      12491.0    480.4      0.0      elif not return_deriv:
     72                                           
-    73       164     245889.0   1499.3      0.0          for k in range(d):
+    73        28      46266.0   1652.4      0.0          for k in range(d):
     74                                                       # Create an empty (n, m) array for this dimension
-    75        82   36391624.0 443800.3      4.8              diffs_k = oti.zeros((n1, n2))
+    75        14   46610295.0    3e+06      7.8              diffs_k = oti.zeros((n1, n2))
     76                                           
     77                                                       # Nested loops to fill diffs_k
-    78     13567    3898470.0    287.3      0.5              for i in range(n1):
-    79     13485  201288109.0  14926.8     26.6                  diffs_k[i, :] = (
-    80     40455  271251222.0   6705.0     35.9                      X1[i, k]
-    81     13485   15753357.0   1168.2      2.1                      + oti.e(k + 1, order=n_order)
-    82     13485  135385451.0  10039.7     17.9                      - (X2[:, k].T)
+    78      2564    1138690.0    444.1      0.2              for i in range(n1):
+    79      2550  207638231.0  81426.8     34.6                  diffs_k[i, :] = (
+    80      7650  214001189.0  27974.0     35.6                      X1[i, k]
+    81      2550    9107249.0   3571.5      1.5                      + oti.e(k + 1, order=n_order)
+    82      2550  118255385.0  46374.7     19.7                      - (X2[:, k].T)
     83                                                           )
     84                                           
     85                                                       # Append to our list
-    86        82     160786.0   1960.8      0.0              differences_by_dim.append(diffs_k)
+    86        14      14292.0   1020.9      0.0              differences_by_dim.append(diffs_k)
     87                                               else:
-    88       748     621710.0    831.2      0.1          for k in range(d):
+    88        24      19679.0    820.0      0.0          for k in range(d):
     89                                                       # Create an empty (n, m) array for this dimension
-    90       374    1345881.0   3598.6      0.2              diffs_k = oti.zeros((n1, n2))
+    90        12      25971.0   2164.2      0.0              diffs_k = oti.zeros((n1, n2))
     91                                           
     92                                                       # Nested loops to fill diffs_k
-    93      6919    2607160.0    376.8      0.3              for i in range(n1):
-    94      6545   10676131.0   1631.2      1.4                  diffs_k[i, :] = (
-    95     13090   15047171.0   1149.5      2.0                      X1[i, k]
-    96      6545   15545448.0   2375.2      2.1                      - (X2[:, k].T)
+    93       102      36862.0    361.4      0.0              for i in range(n1):
+    94        90     163462.0   1816.2      0.0                  diffs_k[i, :] = (
+    95       180     263674.0   1464.9      0.0                      X1[i, k]
+    96        90     190637.0   2118.2      0.0                      - (X2[:, k].T)
     97                                                           )
     98                                           
     99                                                       # Append to our list
-   100       374   13217309.0  35340.4      1.7              differences_by_dim.append(diffs_k+ oti.e(k + 1, order=2*n_order))
-   101       456     179574.0    393.8      0.0      return differences_by_dim
+   100        12     153659.0  12804.9      0.0              differences_by_dim.append(diffs_k+ oti.e(k + 1, order=2*n_order))
+   101        26      10186.0    391.8      0.0      return differences_by_dim
 
-Total time: 6.63153 s
-File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/acquisition_functions/acquisition_funcs.py
-Function: mse_reduction at line 75
-
-Line #      Hits         Time  Per Hit   % Time  Line Contents
-==============================================================
-    75                                           @profile
-    76                                           def mse_reduction(
-    77                                               gp, params, precomputed_diffs,
-    78                                               noise_var=None, return_deriv=False
-    79                                           ):
-    80                                               """
-    81                                               Compute MSE reduction (posterior variance) at candidate points.
-    82                                               
-    83                                               Args:
-    84                                                   gp: GP object
-    85                                                   params: Kernel hyperparameters
-    86                                                   x_train: Training inputs
-    87                                                   y_train_list: Training outputs
-    88                                                   candidate_points: Normalized candidate points to evaluate
-    89                                                   precomputed_diffs: Dict with precomputed difference matrices:
-    90                                                       - 'train_cand': differences between training and candidate points
-    91                                                       - 'cand_cand': differences between candidate points
-    92                                                   noise_var: Observation noise variance
-    93                                                   return_deriv: Whether to return derivatives
-    94                                                   normalize: Whether to normalize y data (x data assumed already normalized)
-    95                                               
-    96                                               Returns:
-    97                                                   1D array of posterior variances at candidate points
-    98                                               """
-    99                                           
-   100                                               
-   101                                               
-   102       165     359048.0   2176.0      0.0      length_scales = params[:-1]
-   103       165     254935.0   1545.1      0.0      sigma_n = params[-1]
-   104                                               
-   105                                               # Training kernel
-   106       165     164593.0    997.5      0.0      diff_train_train = gp.differences_by_dim
-   107       330  541134826.0    2e+06      8.2      K = degp_utils.rbf_kernel(
-   108       165     184427.0   1117.7      0.0          diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-   109       165     139246.0    843.9      0.0          gp.flattened_der_indicies, gp.powers, return_deriv=True
-   110                                               )
-   111       165    5390046.0  32666.9      0.1      K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
-   112                                               
-   113                                               # Use precomputed differences
-   114       165     168590.0   1021.8      0.0      diff_train_cand = precomputed_diffs['train_cand']
-   115       165      61807.0    374.6      0.0      diff_cand_cand = precomputed_diffs['cand_cand']
-   116                                               
-   117                                               # Compute kernels from differences
-   118       330  892993125.0    3e+06     13.5      K_s = degp_utils.rbf_kernel(
-   119       165     170796.0   1035.1      0.0          diff_train_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-   120       165     107290.0    650.2      0.0          gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
-   121                                               )
-   122                                               
-   123       165     199638.0   1209.9      0.0      n = K_s.shape[1]
-   124                                               
-   125       330 5136637252.0    2e+07     77.5      K_ss = degp_utils.rbf_kernel(
-   126       165     179714.0   1089.2      0.0          diff_cand_cand, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
-   127       165     108488.0    657.5      0.0          gp.flattened_der_indicies, gp.powers, return_deriv=return_deriv
-   128                                               )
-   129                                               
-   130                                               # Compute posterior covariance
-   131       165      86058.0    521.6      0.0      f_cov = (
-   132       165      58796.0    356.3      0.0          K_ss - K_s.T @ np.linalg.solve(K, K_s)
-   133       165     174145.0   1055.4      0.0          if return_deriv
-   134       165   50272247.0 304680.3      0.8          else K_ss[:n, :n] - K_s[:, :n].T @ np.linalg.solve(K, K_s[:, :n])
-   135                                               )
-   136                                               
-   137       165    2682929.0  16260.2      0.0      return np.diag(f_cov)
-
-Total time: 25.9081 s
+Total time: 2.92878 s
 File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py
 Function: negative_log_marginal_likelihood at line 20
 
@@ -200,99 +192,47 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
     37                                                   float
     38                                                       The computed NLL value. Returns a large value (1e6) if Cholesky fails.
     39                                                   """
-    40     24200   27351796.0   1130.2      0.1          ell = x0[:-1]
-    41     24200   14140915.0    584.3      0.1          sigma_n = x0[-1]
+    40      4988    4808154.0    963.9      0.2          ell = x0[:-1]
+    41      4988    2635071.0    528.3      0.1          sigma_n = x0[-1]
     42                                           
     43                                                   # Compute kernel matrix with current hyperparameters
-    44     48400        2e+10 477378.5     89.2          K = utils.rbf_kernel(
-    45     24200   14798153.0    611.5      0.1              self.model.differences_by_dim,
-    46     24200    6964239.0    287.8      0.0              ell,
-    47     24200   10984198.0    453.9      0.0              self.model.n_order,
-    48     24200   10075552.0    416.3      0.0              self.model.n_bases,
-    49     24200    8949107.0    369.8      0.0              self.model.kernel_func,
-    50     24200    9082182.0    375.3      0.0              self.model.flattened_der_indicies,
-    51     24200    9628963.0    397.9      0.0              self.model.powers
+    44      9976 2405395587.0 241118.2     82.1          K = utils.rbf_kernel(
+    45      4988    2223492.0    445.8      0.1              self.model.differences_by_dim,
+    46      4988    1250244.0    250.7      0.0              ell,
+    47      4988    1824618.0    365.8      0.1              self.model.n_order,
+    48      4988    1784857.0    357.8      0.1              self.model.n_bases,
+    49      4988    1618943.0    324.6      0.1              self.model.kernel_func,
+    50      4988    1807863.0    362.4      0.1              self.model.flattened_der_indicies,
+    51      4988    1800249.0    360.9      0.1              self.model.powers
     52                                                   )
     53                                           
     54                                                   # Add noise terms
-    55     24200  550225190.0  22736.6      2.1          K += (10**sigma_n)**2 * np.eye(K.shape[0])
-    56     24200  118776991.0   4908.1      0.5          K += self.model.sigma_data**2
+    55      4988   82975697.0  16635.1      2.8          K += (10**sigma_n)**2 * np.eye(K.shape[0])
+    56      4988   18778142.0   3764.7      0.6          K += self.model.sigma_data**2
     57                                           
-    58     24200    7449365.0    307.8      0.0          try:
+    58      4988    1523286.0    305.4      0.1          try:
     59                                                       # Cholesky decomposition for numerical stability
     60                                                       # TODO: This seems to be very common accross models. Maybe worth
     61                                                       # having as single and unified implementation.
-    62     24200 1100311393.0  45467.4      4.2              L, low = cho_factor(K)
-    63     27938  420060106.0  15035.4      1.6              alpha = cho_solve(
-    64     13969    4919991.0    352.2      0.0                  (L, low),
-    65     13969    7173214.0    513.5      0.0                  self.model.y_train
+    62      4988  174962935.0  35076.8      6.0              L, low = cho_factor(K)
+    63      8034  105508740.0  13132.8      3.6              alpha = cho_solve(
+    64      4017    1429897.0    356.0      0.0                  (L, low),
+    65      4017    2194158.0    546.2      0.1                  self.model.y_train
     66                                                       )
     67                                           
     68                                                       # Compute NLL components
-    69     13969   70773384.0   5066.5      0.3              data_fit = 0.5 * np.dot(self.model.y_train, alpha)
-    70     13969  322913268.0  23116.4      1.2              log_det_K = np.sum(np.log(np.diag(L)))
-    71     13969    8812261.0    630.8      0.0              complexity = .5 * log_det_K
-    72     13969    9651625.0    690.9      0.0              N = len(self.model.y_train)
-    73     13969   42678468.0   3055.2      0.2              const = 0.5 * N * np.log(2 * np.pi)
+    69      4017   17066730.0   4248.6      0.6              data_fit = 0.5 * np.dot(self.model.y_train, alpha)
+    70      4017   78353571.0  19505.5      2.7              log_det_K = np.sum(np.log(np.diag(L)))
+    71      4017    2240606.0    557.8      0.1              complexity = .5 * log_det_K
+    72      4017    2644024.0    658.2      0.1              N = len(self.model.y_train)
+    73      4017   11947748.0   2974.3      0.4              const = 0.5 * N * np.log(2 * np.pi)
     74                                           
-    75     13969    9109326.0    652.1      0.0              return data_fit + complexity + const
-    76     10231    7182447.0    702.0      0.0          except Exception:
+    75      4017    2497042.0    621.6      0.1              return data_fit + complexity + const
+    76       971     516223.0    531.6      0.0          except Exception:
     77                                                       # Return large penalty if matrix is not positive definite
-    78     10231   10941311.0   1069.4      0.0              return 1e6
+    78       971     993896.0   1023.6      0.0              return 1e6
 
-Total time: 26.0476 s
-File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/kernel_funcs/kernel_funcs.py
-Function: se_kernel_anisotropic at line 220
-
-Line #      Hits         Time  Per Hit   % Time  Line Contents
-==============================================================
-   220                                               @profile
-   221                                               def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
-   222                                                   """
-   223                                                   Anisotropic Squared Exponential (SE) kernel.
-   224                                           
-   225                                                   Parameters
-   226                                                   ----------
-   227                                                   differences_by_dim : list of ndarray
-   228                                                   length_scales : list
-   229                                                   index : int, optional
-   230                                           
-   231                                                   Returns
-   232                                                   -------
-   233                                                   ndarray
-   234                                                   """
-   235                                                   # print(differences_by_dim[0].shape)
-   236     25058  213828470.0   8533.3      0.8          ell = 10 ** (length_scales[:-1])
-   237     25058   14063594.0    561.2      0.1          sigma_f = length_scales[-1]
-   238                                                   # sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x'[i] )**2 )
-   239                                                   # sqdist = sum(
-   240                                                   #     (
-   241                                                   #          (-0.5 * ell[i] * ell[i] )
-   242                                                   #         *
-   243                                                   #         ( differences_by_dim[i] * differences_by_dim[i] )
-   244                                                   #     ) for i in range(self.dim)
-   245                                                   # )
-   246     25058  146943428.0   5864.1      0.6          tmp1 = oti.zeros(differences_by_dim[0].shape)
-   247     25058  106985114.0   4269.5      0.4          tmp2 = oti.zeros(differences_by_dim[0].shape)
-   248     25058  104863691.0   4184.8      0.4          sqdist = oti.zeros(differences_by_dim[0].shape)
-   249     50116   48387419.0    965.5      0.2          for i in range(self.dim):
-   250                                                       # subdivide by terms
-   251                                                       # tmp1 = differences_by_dim[i] * differences_by_dim[i]
-   252     25058 1396520677.0  55731.5      5.4              oti.mul(ell[i], differences_by_dim[i], out=tmp1)
-   253     25058 3982670034.0 158938.1     15.3              oti.mul(tmp1, tmp1, out=tmp2)
-   254                                                       # oti.pow(tmp1 , 2, out = tmp2)
-   255                                                       # t1 =  ell[i] * ell[i] #* (-0.5)
-   256                                                       # tmp2 = t1 * tmp1
-   257                                                       # oti.mul(t1, tmp1, out = tmp2)
-   258                                                       # sqdist += tmp2
-   259     25058 9152719863.0 365261.4     35.1              oti.sum(sqdist, tmp2, out=sqdist)
-   260                                                   # end for
-   261     25058        1e+10 406363.6     39.1          oti.exp((-0.5)*sqdist, out=tmp1)
-   262     25058  687779918.0  27447.5      2.6          oti.mul(((10 ** sigma_f) ** 2), tmp1, out=tmp2)
-   263                                                   # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
-   264     25058   10192829.0    406.8      0.0          return tmp2
-
-Total time: 26.6287 s
+Total time: 3.09349 s
 File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py
 Function: optimize_hyperparameters at line 97
 
@@ -317,38 +257,90 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
    113                                                   best_x : ndarray
    114                                                       The optimal set of hyperparameters found.
    115                                                   """
-   116        44      54224.0   1232.4      0.0          bounds = self.model.bounds
-   117        44     130187.0   2958.8      0.0          lb = [b[0] for b in bounds]
-   118        44      72592.0   1649.8      0.0          ub = [b[1] for b in bounds]
+   116         2       1498.0    749.0      0.0          bounds = self.model.bounds
+   117         2       5589.0   2794.5      0.0          lb = [b[0] for b in bounds]
+   118         2       3792.0   1896.0      0.0          ub = [b[1] for b in bounds]
    119                                           
    120                                                   # Run PSO to minimize the NLL
-   121        88        3e+10    3e+08    100.0          best_x, best_nll = gen_utils.pso(
-   122        44      31603.0    718.2      0.0              self.nll_wrapper,
-   123        44      12897.0    293.1      0.0              lb,
-   124        44      17301.0    393.2      0.0              ub,
-   125        44      13799.0    313.6      0.0              swarmsize=swarm_size,
-   126        44      12104.0    275.1      0.0              maxiter=n_restart_optimizer,
-   127        44      13197.0    299.9      0.0              debug=verbose,
+   121         4 3093000831.0    8e+08    100.0          best_x, best_nll = gen_utils.pso(
+   122         2       1099.0    549.5      0.0              self.nll_wrapper,
+   123         2        598.0    299.0      0.0              lb,
+   124         2        499.0    249.5      0.0              ub,
+   125         2        598.0    299.0      0.0              swarmsize=swarm_size,
+   126         2        399.0    199.5      0.0              maxiter=n_restart_optimizer,
+   127         2        499.0    249.5      0.0              debug=verbose,
    128                                                       # omega=0.4,       # High inertia encourages exploration
    129                                                       # phip=1.0,        # Moderate personal influence
    130                                                       # phig=1.2,        # Low social influence, avoids early convergence
-   131        44      21685.0    492.8      0.0              minfunc=1e-16,
-   132        44      12296.0    279.5      0.0              minstep=1e-16,
-   133        44      11099.0    252.2      0.0              initial_positions=x0,
-   134        44      10694.0    243.0      0.0              local_opt_every=local_opt_every
+   131         2        499.0    249.5      0.0              minfunc=1e-16,
+   132         2        699.0    349.5      0.0              minstep=1e-16,
+   133         2        498.0    249.0      0.0              initial_positions=x0,
+   134         2        400.0    200.0      0.0              local_opt_every=local_opt_every
    135                                                   )
    136                                           
    137                                                   # Store the optimal solution
-   138        44      52094.0   1184.0      0.0          self.model.opt_x0 = best_x
-   139        44      25100.0    570.5      0.0          self.model.opt_nll = best_nll
+   138         2       2299.0   1149.5      0.0          self.model.opt_x0 = best_x
+   139         2       1299.0    649.5      0.0          self.model.opt_nll = best_nll
    140                                           
-   141        44      15696.0    356.7      0.0          if verbose:
-   142                                                       print("Best solution:", best_x)
-   143                                                       print("Objective value:", best_nll)
+   141         2        500.0    250.0      0.0          if verbose:
+   142         2     424913.0 212456.5      0.0              print("Best solution:", best_x)
+   143         2      41559.0  20779.5      0.0              print("Objective value:", best_nll)
    144                                           
-   145        44      13596.0    309.0      0.0          return best_x
+   145         2        799.0    399.5      0.0          return best_x
 
-Total time: 30.4726 s
+Total time: 3.81918 s
+File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/kernel_funcs/kernel_funcs.py
+Function: se_kernel_anisotropic at line 220
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   220                                               @profile
+   221                                               def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+   222                                                   """
+   223                                                   Anisotropic Squared Exponential (SE) kernel.
+   224                                           
+   225                                                   Parameters
+   226                                                   ----------
+   227                                                   differences_by_dim : list of ndarray
+   228                                                   length_scales : list
+   229                                                   index : int, optional
+   230                                           
+   231                                                   Returns
+   232                                                   -------
+   233                                                   ndarray
+   234                                                   """
+   235                                                   # print(differences_by_dim[0].shape)
+   236      5019   37551840.0   7481.9      1.0          ell = 10 ** (length_scales[:-1])
+   237      5019    2680557.0    534.1      0.1          sigma_f = length_scales[-1]
+   238                                                   # sum( 0.5 * 10 ** (len_scale[i]) * ( x[i] - x'[i] )**2 )
+   239                                                   # sqdist = sum(
+   240                                                   #     (
+   241                                                   #          (-0.5 * ell[i] * ell[i] )
+   242                                                   #         *
+   243                                                   #         ( differences_by_dim[i] * differences_by_dim[i] )
+   244                                                   #     ) for i in range(self.dim)
+   245                                                   # )
+   246      5019   57536593.0  11463.8      1.5          tmp1 = oti.zeros(differences_by_dim[0].shape)
+   247      5019   50431540.0  10048.1      1.3          tmp2 = oti.zeros(differences_by_dim[0].shape)
+   248      5019   55001744.0  10958.7      1.4          sqdist = oti.zeros(differences_by_dim[0].shape)
+   249     10038    7748168.0    771.9      0.2          for i in range(self.dim):
+   250                                                       # subdivide by terms
+   251                                                       # tmp1 = differences_by_dim[i] * differences_by_dim[i]
+   252      5019  260430976.0  51889.0      6.8              oti.mul(ell[i], differences_by_dim[i], out=tmp1)
+   253      5019  660696765.0 131639.1     17.3              oti.mul(tmp1, tmp1, out=tmp2)
+   254                                                       # oti.pow(tmp1 , 2, out = tmp2)
+   255                                                       # t1 =  ell[i] * ell[i] #* (-0.5)
+   256                                                       # tmp2 = t1 * tmp1
+   257                                                       # oti.mul(t1, tmp1, out = tmp2)
+   258                                                       # sqdist += tmp2
+   259      5019  406694739.0  81031.0     10.6              oti.sum(sqdist, tmp2, out=sqdist)
+   260                                                   # end for
+   261      5019 2140979368.0 426574.9     56.1          oti.exp((-0.5)*sqdist, out=tmp1)
+   262      5019  137754305.0  27446.6      3.6          oti.mul(((10 ** sigma_f) ** 2), tmp1, out=tmp2)
+   263                                                   # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
+   264      5019    1672769.0    333.3      0.0          return tmp2
+
+Total time: 4.78432 s
 File: /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py
 Function: rbf_kernel at line 196
 
@@ -414,32 +406,32 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
    253                                               >>> K = rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers)
    254                                               >>> K.shape == (n_bases, n_bases)
    255                                               """
-   256     25058   46619741.0   1860.5      0.2      import pyoti.core as coti
-   257     25058   14365668.0    573.3      0.0      dh = coti.get_dHelp()
+   256      5019    7950191.0   1584.0      0.2      import pyoti.core as coti
+   257      5019    3006004.0    598.9      0.1      dh = coti.get_dHelp()
    258                                           
-   259     25058        3e+10    1e+06     89.7      phi = kernel_func(differences, length_scales, index)
-   260     25058   22540804.0    899.5      0.1      PHIrows = phi.shape[0]
-   261     25058   10097042.0    402.9      0.0      PHIcols = phi.shape[1]
-   262     25058   19494051.0    778.0      0.1      nderivs = len(der_indices)
+   259      5019 4024766712.0 801906.1     84.1      phi = kernel_func(differences, length_scales, index)
+   260      5019    3768644.0    750.9      0.1      PHIrows = phi.shape[0]
+   261      5019    1887050.0    376.0      0.0      PHIcols = phi.shape[1]
+   262      5019    2820408.0    561.9      0.1      nderivs = len(der_indices)
    263                                           
-   264     25058    9344867.0    372.9      0.0      if n_order == 0:
+   264      5019    1990682.0    396.6      0.0      if n_order == 0:
    265                                                   return phi.real
-   266     25058   10831315.0    432.2      0.0      elif not return_deriv:
-   267       352  208226358.0 591552.2      0.7          phi_exp = phi.get_all_derivs(n_bases, n_order)
+   266      5019    1554535.0    309.7      0.0      elif not return_deriv:
+   267        14  101312708.0    7e+06      2.1          phi_exp = phi.get_all_derivs(n_bases, n_order)
    268                                                   # print(phi_exp.shape)
-   269       352    8372453.0  23785.4      0.0          der_map = deriv_map(n_bases, n_order)
-   270       352    5564087.0  15807.1      0.0          K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
-   271       352     250998.0    713.1      0.0          outer_loop_index = 1
+   269        14     251775.0  17983.9      0.0          der_map = deriv_map(n_bases, n_order)
+   270        14    2361039.0 168645.6      0.0          K = np.zeros((PHIrows * (nderivs + 1), PHIcols))
+   271        14      13392.0    956.6      0.0          outer_loop_index = 1
    272                                               else:
-   273     24706 1009133579.0  40845.7      3.3          phi_exp = phi.get_all_derivs(n_bases, 2*n_order)
+   273      5005   75007924.0  14986.6      1.6          phi_exp = phi.get_all_derivs(n_bases, 2*n_order)
    274                                                   # print(phi_exp.shape)
-   275     24706  322983977.0  13073.1      1.1          der_map = deriv_map(n_bases, 2*n_order)
-   276     24706   65134388.0   2636.4      0.2          K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
-   277     24706   12185303.0    493.2      0.0          outer_loop_index = len(der_indices) + 1
+   275      5005   71347724.0  14255.3      1.5          der_map = deriv_map(n_bases, 2*n_order)
+   276      5005   11037317.0   2205.3      0.2          K = np.zeros((PHIrows * (nderivs + 1), PHIcols * (nderivs + 1)))
+   277      5005    2665059.0    532.5      0.1          outer_loop_index = len(der_indices) + 1
    278                                               # print(der_map)
    279                                               # for i in range(0, len(der_indices) ):
    280                                               #     print(der_indices[i])
-   281     25058  334589826.0  13352.6      1.1      der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+   281      5019   79588387.0  15857.4      1.7      der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
    282                                               # print("")
    283                                               # for i in range(0, len(der_indices_tr) ):
    284                                               #     print(der_indices[i] , der_indices_tr[i])
@@ -450,26 +442,26 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
    289                                               # print(f'len(der_indices): ({len(der_indices)})')
    290                                               # print(f'Shape before: ({phi.shape})')
    291                                           
-   292     74822   38793544.0    518.5      0.1      for j in range(0, outer_loop_index):
-   293     49764   60395780.0   1213.6      0.2          signj = (-1)**(powers[j])
-   294    149292   94523535.0    633.1      0.3          for i in range(0, len(der_indices) + 1):
+   292     20048    9096700.0    453.7      0.2      for j in range(0, outer_loop_index):
+   293     15029   15032568.0   1000.2      0.3          signj = (-1)**(powers[j])
+   294     60116   32507164.0    540.7      0.7          for i in range(0, len(der_indices) + 1):
    295                                                       # Get local view of the global array.
-   296     99528  119945724.0   1205.1      0.4              Klocal = K[i*PHIrows: (i+1)*PHIrows, j*PHIcols: (j+1)*PHIcols]
-   297     99528   43924877.0    441.3      0.1              if j == 0 and i == 0:
-   298     25058  226499951.0   9039.0      0.7                  Klocal[:, :] = phi_exp[0] * signj
-   299     74470   29733030.0    399.3      0.1              elif j > 0 and i == 0:
-   300     24706  142398547.0   5763.7      0.5                  Klocal[:, :] = signj * phi_exp[der_indices_tr[j-1]]
-   301     49764   21262984.0    427.3      0.1              elif j == 0 and i > 0:
-   302     25058   53283780.0   2126.4      0.2                  Klocal[:, :] = phi_exp[der_indices_tr[i-1]]
+   296     45087   48657064.0   1079.2      1.0              Klocal = K[i*PHIrows: (i+1)*PHIrows, j*PHIcols: (j+1)*PHIcols]
+   297     45087   18791130.0    416.8      0.4              if j == 0 and i == 0:
+   298      5019   41118235.0   8192.5      0.9                  Klocal[:, :] = phi_exp[0] * signj
+   299     40068   16620736.0    414.8      0.3              elif j > 0 and i == 0:
+   300     10010   44696102.0   4465.1      0.9                  Klocal[:, :] = signj * phi_exp[der_indices_tr[j-1]]
+   301     30058   10828408.0    360.3      0.2              elif j == 0 and i > 0:
+   302     10038   22653389.0   2256.8      0.5                  Klocal[:, :] = phi_exp[der_indices_tr[i-1]]
    303                                                       else:
    304                                           
-   305     24706   12490028.0    505.5      0.0                  imdir1 = der_ind_order[j-1]
-   306     24706    9026838.0    365.4      0.0                  imdir2 = der_ind_order[i-1]
-   307     49412   37402570.0    757.0      0.1                  idx, ord = dh.mult_dir(
-   308     24706   13166338.0    532.9      0.0                      imdir1[0], imdir1[1], imdir2[0], imdir2[1])
-   309     24706   14985656.0    606.6      0.0                  idx = der_map[ord][idx]
+   305     20020    8409330.0    420.0      0.2                  imdir1 = der_ind_order[j-1]
+   306     20020    8048389.0    402.0      0.2                  imdir2 = der_ind_order[i-1]
+   307     40040   22577359.0    563.9      0.5                  idx, ord = dh.mult_dir(
+   308     20020    9534977.0    476.3      0.2                      imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+   309     20020    9206998.0    459.9      0.2                  idx = der_map[ord][idx]
    310                                           
-   311     24706  110895681.0   4488.6      0.4                  Klocal[:, :] = signj * phi_exp[idx]
+   311     20020   73781048.0   3685.4      1.5                  Klocal[:, :] = signj * phi_exp[idx]
    312                                           
    313                                               # print(f'Shape final: ({K.shape})')
    314                                               # print(f'Shape final factors: ')
@@ -477,11 +469,11 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
    316                                               # print(f' -> ncols: {K.shape[1]/phi.shape[1]}x')
    317                                               # print(80*'-')
    318                                           
-   319     25058    7920371.0    316.1      0.0      return K
+   319      5019    1434613.0    285.8      0.0      return K
 
-  0.76 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py:5 - differences_by_dim_func
-  6.63 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/acquisition_functions/acquisition_funcs.py:75 - mse_reduction
- 25.91 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py:20 - negative_log_marginal_likelihood
- 26.05 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/kernel_funcs/kernel_funcs.py:220 - se_kernel_anisotropic
- 26.63 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py:97 - optimize_hyperparameters
- 30.47 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py:196 - rbf_kernel
+  0.11 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/acquisition_functions/acquisition_funcs.py:75 - mse_reduction
+  0.60 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py:5 - differences_by_dim_func
+  2.93 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py:20 - negative_log_marginal_likelihood
+  3.09 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/optimizer.py:97 - optimize_hyperparameters
+  3.82 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/kernel_funcs/kernel_funcs.py:220 - se_kernel_anisotropic
+  4.78 seconds - /home/sam/research_head/Research/github_oti_gp/oti_gp/oti_gp/full_degp/degp_utils.py:196 - rbf_kernel

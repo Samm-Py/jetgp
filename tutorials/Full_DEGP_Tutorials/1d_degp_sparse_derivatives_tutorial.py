@@ -39,10 +39,10 @@ class SelectiveDEGPConfig:
     num_test_pts: int = 100
 
     # Derivative configuration
-    max_order_for_ad: int = 4  # Max order needed for Automatic Differentiation
+    max_order_for_ad: int = 1  # Max order needed for Automatic Differentiation
     n_bases: int = 1          # Input dimensionality
     # Custom derivative indices to demonstrate selective inclusion
-    der_indices: List = field(default_factory=lambda: [[[[1, 1]], [[1, 4]]]])
+    der_indices: List = field(default_factory=lambda: [[[[1, 1]]]])
 
     # GP model parameters
     normalize_data: bool = True
