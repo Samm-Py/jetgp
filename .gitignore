@@ -16,4 +16,4 @@ modules/build/
 modules/*.so
 
 # Ignore build directory for docs
-docs/build
+docs/build/
