@@ -3,6 +3,14 @@ channels:
   - conda-forge
 dependencies:
   - mauriaristi::pyoti
+  - ipython
   - numpy
   - scipy
+  - sphinx >=7.1
+  - sphinx-argparse
+  - sphinx-book-theme
+  - sphinx-copybutton >=0.5.1
+  - sphinx-design
+  - sphinx_rtd_theme >=3
+  - sphinxcontrib-bibtex
   - sympy

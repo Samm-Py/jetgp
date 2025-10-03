@@ -1,20 +1,59 @@
-.. degp documentation master file, created by
-   sphinx-quickstart on Fri Apr 25 14:31:53 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. include:: ../../README.rst
 
-Welcome to degp's documentation!
-================================
+Quick Access
+============
 
+.. grid::
+   :gutter: 2
+   :margin: 2
+
+   .. grid-item-card:: :octicon:`book` Gaussian Process Theory
+      :link: theory/index
+      :link-type: doc
+
+      Theory of derivative-enhanced Gaussian Processes implemented in JetGP
+
+   .. grid-item-card:: :octicon:`gear` JetGP API
+      :link: api/index
+      :link-type: doc
+
+      Modules and minimal examples for using JetGP optimal step size selection algorithms.
+
+   .. grid-item-card:: :octicon:`beaker` Numerical Examples
+      :link: numerical_examples/index
+      :link-type: doc
+
+      Numerical examples showcasing JetGP capabilities
+
+   .. grid-item-card:: :octicon:`question` Help & References
+      :link: help_and_reference/index
+      :link-type: doc
+
+
+.. JetGP theory
 .. toctree::
+   :hidden:
+   :maxdepth: 3
+
+   theory/index
+
+.. JetGP API
+.. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: Contents:
 
+   api/index
 
+.. JetGP Numerical examples
+.. toctree::
+   :hidden:
+   :maxdepth: 2
 
-Indices and tables
-==================
+   numerical_examples/index
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. Help & Reference
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   help_and_reference/index
