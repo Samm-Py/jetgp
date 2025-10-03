@@ -39,7 +39,8 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinxarg.ext",
     "sphinx_design",
-    "sphinxcontrib.bibtex"
+    "sphinxcontrib.bibtex",
+    "jupyter_sphinx"
 ]
 bibtex_bibfiles = []
 bibtex_default_style = "unsrt"

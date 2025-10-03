@@ -1,16 +1,13 @@
 Numerical Examples
 ==================
-
-Example 1: Simple function
-------------------------------------
-
-Here is a description of the numerical example
-
-.. math::
-    y = mx+b
-
-Here is a code block 
+Here are examples
 
 .. code-block::
     
     print('Running a JetGP's Gaussian Process')
+
+.. toctree::
+   :maxdepth: 2
+
+   cantilever_beam
+   whatever_function

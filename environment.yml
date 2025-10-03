@@ -4,6 +4,7 @@ channels:
 dependencies:
   - mauriaristi::pyoti
   - ipython
+  - jupyter_sphinx
   - numpy
   - scipy
   - sphinx >=7.1
