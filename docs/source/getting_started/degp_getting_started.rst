@@ -34,7 +34,7 @@ DEGP requires three main inputs:
 .. jupyter-execute::
 
    import numpy as np
-   from full_degp import degp
+   from full_degp.degp import degp
 
    # Training inputs
    X_train = np.array([[0.0], [0.5], [1.0]])
@@ -52,7 +52,7 @@ DEGP requires three main inputs:
    print("y_train[1] (first derivatives):", y_deriv1)
 
    # Derivative indices
-   der_indices = [[[1, 1]]]
+   der_indices = [[[[1, 1]]]]
    print("\nder_indices:", der_indices)
 
 Initialization
@@ -66,7 +66,7 @@ To initialize a DEGP model:
 
 .. jupyter-execute::
 
-   model = degp(X_train, y_train, n_order=[1], der_indices=der_indices,
+   model = degp(X_train, y_train, n_order=1, n_bases = 1, der_indices=der_indices,
                 normalize=True, kernel="SE", kernel_type="anisotropic")
    print("DEGP model initialized:", model)
 
@@ -87,7 +87,7 @@ Once trained, DEGP can make predictions at new input locations. For first-order 
 .. jupyter-execute::
 
    X_test = np.linspace(0, 1, 50).reshape(-1, 1)
-   y_pred = model.predict(X_test, calc_cov=False, return_deriv=False)
+   y_pred = model.predict(X_test, params, calc_cov=False, return_deriv=False)
    print("Predicted function values:", y_pred)
 
 Example 2: 1D First- and Second-Order Derivatives
@@ -118,7 +118,7 @@ Data Requirements
 
    y_train = [y_func, y_deriv1, y_deriv2]
 
-   der_indices = [[[1,1]], [[1,2]]]
+   der_indices = [[[[1,1]], [[1,2]]]]
    print("X_train:", X_train)
    print("y_train shapes:", [v.shape for v in y_train])
    print("der_indices:", der_indices)
@@ -127,7 +127,7 @@ Initialization
 ~~~~~~~~~~~~~~
 .. jupyter-execute::
 
-   model = degp(X_train, y_train, n_order=[2], der_indices=der_indices,
+   model = degp(X_train, y_train, n_order=2, n_bases =1,  der_indices=der_indices,
                 normalize=True, kernel="SE", kernel_type="anisotropic")
    print("DEGP model initialized:", model)
 
@@ -143,7 +143,7 @@ Prediction
 .. jupyter-execute::
 
    X_test = np.linspace(0, 1, 50).reshape(-1, 1)
-   y_pred = model.predict(X_test, calc_cov=False, return_deriv=True)
+   y_pred = model.predict(X_test, params, calc_cov=False, return_deriv=True)
    print("Predicted function values + derivatives:", y_pred)
 
 Notes
