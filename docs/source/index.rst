@@ -44,6 +44,13 @@ Quick Access
 
    api/index
 
+.. Getting Started with JetGP
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   getting_started/index
+
 .. JetGP Numerical examples
 .. toctree::
    :hidden:

@@ -1,0 +1,454 @@
+
+
+
+@article{GP,
+	author = {William J. Welch and Robert J. Buck and Jerome Sacks and Henry P. Wynn and Toby J. Mitchell},
+	title = {Screening, Predicting, and Computer Experiments},
+	journal = {Technometrics},
+	volume = {34},
+	number = {1},
+	pages = {15--25},
+	year = {1992},
+	publisher = {ASA Website},
+	doi = {10.1080/00401706.1992.10485229},
+	
+	
+	URL = { 
+	
+	
+	https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229
+	
+	
+	},
+	eprint = { 
+	
+	
+	https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229
+	
+	
+	}
+	
+}
+
+
+
+
+@article{HanWeightedGEK,
+	author = {Han, Zhong-Hua and Zhang, Yu and Song, Chen-Xing and Zhang, Ke-Shi},
+	title = {Weighted Gradient-Enhanced Kriging for High-Dimensional Surrogate Modeling and Design Optimization},
+	journal = {AIAA Journal},
+	volume = {55},
+	number = {12},
+	pages = {4330-4346},
+	year = {2017},
+	doi = {10.2514/1.J055842},
+	
+	URL = { 
+	
+	https://doi.org/10.2514/1.J055842
+	
+	
+	
+	},
+	eprint = { 
+	
+	https://doi.org/10.2514/1.J055842
+	
+	
+	
+	}
+	,
+	abstract = { A novel formulation of gradient-enhanced surrogate model, called weighted gradient-enhanced kriging, is proposed and used in combination with the cheap gradients obtained by the adjoint method to ameliorate the “curse of dimensionality”. The core idea is to build a series of submodels with much smaller correlation matrices and then sum them up with appropriate weight coefficients, aiming to avoid the prohibitive cost associated with decomposing the large correlation matrix of a gradient-enhanced kriging. A self-contained derivation of the proposed method is presented, and then it is verified by surrogate modeling test cases. The present method is integrated into a surrogate-based optimizer and tested for design optimizations. It is further demonstrated for inverse design of a transonic wing, parameterized with a number of design variables in the range from 36 to 108, using Reynolds-averaged Navier–Stokes flow and adjoint solvers. It is observed that, for the wing design with 36 and 54 variables, the weighted and conventional gradient-enhanced kriging are comparable, and both are much more efficient than kriging without using any gradient. For the wing design with 72 and 108 variables, the cost of training a gradient-enhanced kriging increases rapidly and becomes prohibitive. In contrast, the cost of training a weighted gradient-enhanced kriging is kept in an acceptable level, which makes it more practical for higher-dimensional problems. }
+}
+
+
+
+@article{Krig,
+	ISSN = {14732858},
+	URL = {http://www.jstor.org/stable/3006914},
+	author = {D. G. Krige},
+	journal = {OR},
+	number = {1},
+	pages = {18--18},
+	publisher = {Operational Research Society},
+	title = {A Statistical Approach to Some Basic Mine Valuation Problems on the Witwatersrand},
+	urldate = {2025-02-20},
+	volume = {4},
+	year = {1953}
+}
+
+
+
+
+@INPROCEEDINGS{GEK,
+  title      = "Gradient-enhanced response surface approximations using kriging
+                models",
+  booktitle  = "9th {AIAA/ISSMO} Symposium on Multidisciplinary Analysis and
+                Optimization",
+  author     = "Liu, Weiyu and Batill, Stephen",
+  publisher  = "American Institute of Aeronautics and Astronautics",
+  month      =  sep,
+  year       =  2002,
+  address    = "Reston, Virigina",
+  conference = "9th AIAA/ISSMO Symposium on Multidisciplinary Analysis and
+                Optimization",
+  location   = "Atlanta, Georgia"
+}
+
+
+@article{FORRESTER200950,
+title = {Recent advances in surrogate-based optimization},
+journal = {Progress in Aerospace Sciences},
+volume = {45},
+number = {1},
+pages = {50-79},
+year = {2009},
+issn = {0376-0421},
+doi = {https://doi.org/10.1016/j.paerosci.2008.11.001},
+url = {https://www.sciencedirect.com/science/article/pii/S0376042108000766},
+author = {Alexander I.J. Forrester and Andy J. Keane},
+abstract = {The evaluation of aerospace designs is synonymous with the use of long running and computationally intensive simulations. This fuels the desire to harness the efficiency of surrogate-based methods in aerospace design optimization. Recent advances in surrogate-based design methodology bring the promise of efficient global optimization closer to reality. We review the present state of the art of constructing surrogate models and their use in optimization strategies. We make extensive use of pictorial examples and, since no method is truly universal, give guidance as to each method's strengths and weaknesses.}
+}
+@ARTICLE{Ulaganathan2016-xq,
+  title     = "Performance study of gradient-enhanced Kriging",
+  author    = "Ulaganathan, Selvakumar and Couckuyt, Ivo and Dhaene, Tom and
+               Degroote, Joris and Laermans, Eric",
+  journal   = "Eng. Comput.",
+  publisher = "Springer Science and Business Media LLC",
+  volume    =  32,
+  number    =  1,
+  pages     = "15--34",
+  month     =  jan,
+  year      =  2016,
+  language  = "en"
+}
+
+@article{HeYouwei2023Aegk,
+abstract = {Purpose
+The modeling cost of the gradient-enhanced kriging (GEK) method is prohibitive for high-dimensional problems. This study aims to develop an efficient modeling strategy for the GEK method.
+Design/methodology/approach
+A two-step tuning strategy is proposed for the construction of the GEK model. First, an auxiliary kriging is built efficiently. Then, the hyperparameter of the kriging model is served as a good initial guess to that of the GEK model, and a local optimal search is further used to explore the search space of hyperparameter to guarantee the accuracy of the GEK model. In the construction of the auxiliary kriging, the maximal information coefficient is adopted to estimate the relative magnitude of the hyperparameter, which is used to transform the high-dimension maximum likelihood estimation problem into a one-dimensional optimization. The tuning problem of the auxiliary kriging becomes independent of the dimension. Therefore, the modeling efficiency can be improved significantly.
+Findings
+The performance of the proposed method is studied with analytic problems ranging from 10D to 50D and an 18D aerodynamic airfoil example. It is further compared with two efficient GEK modeling methods. The empirical experiments show that the proposed model can significantly improve the modeling efficiency without sacrificing accuracy compared with other efficient modeling methods.
+Originality/value
+This paper developed an efficient modeling strategy for GEK and demonstrated the effectiveness of the proposed method in modeling high-dimension problems.},
+author = {He, Youwei and Tan, Kuan and Fu, Chunming and Luo, Jinliang},
+address = {Bradford},
+copyright = {Emerald Publishing Limited},
+issn = {0961-5539},
+journal = {International journal of numerical methods for heat & fluid flow},
+keywords = {Construction ; Efficiency ; Methodology ; Methods ; Modeling ; Optimal designs (Statistics) ; Tuning},
+language = {eng},
+number = {12},
+pages = {3967-3993},
+publisher = {Emerald Publishing Limited},
+title = {An efficient gradient-enhanced kriging modeling method assisted by fast kriging for high-dimension problems},
+volume = {33},
+year = {2023},
+}
+
+
+
+@INPROCEEDINGS{GHEK,
+  title      = "Design optimization utilizing gradient/hessian enhanced
+                surrogate model",
+  booktitle  = "28th {AIAA} Applied Aerodynamics Conference",
+  author     = "Yamazaki, Wataru and Rumpfkeil, Markus and Mavriplis, Dimitri",
+  abstract   = "In this paper, gradient/Hessian-enhanced surrogate models have
+                been developed based on Kriging approaches. The
+                gradient/Hessian-enhanced Kriging methods have been developed
+                based on direct and indirect formulations. The efficiencies of
+                these methods are compared by analytical function fitting,
+                aerodynamic data modeling and 2D airfoil drag minimization
+                problems. For the aerodynamic problems, efficient CFD
+                gradient/Hessian calculation methods are utilized that make use
+                of adjoint and automatic differentiation techniques. The
+                gradient/Hessian-enhanced surrogate models are shown to be
+                useful in the development of efficient design optimization,
+                aerodynamic database construction, and uncertainty analysis.",
+  publisher  = "American Institute of Aeronautics and Astronautics",
+  month      =  jun,
+  year       =  2010,
+  address    = "Reston, Virigina",
+  conference = "28th AIAA Applied Aerodynamics Conference",
+  location   = "Chicago, Illinois"
+}
+
+
+@BOOK{Allaire2008-by,
+	title     = "Numerical Linear Algebra",
+	author    = "Allaire, Gregoire and Kaber, Sidi Mahmoud",
+	publisher = "Springer",
+	series    = "Texts in applied mathematics",
+	month     =  jan,
+	year      =  2008,
+	address   = "New York, NY",
+	language  = "en"
+}
+
+@article{georges1963principles,
+  title={Principles of geostatistics},
+  author={Georges, Matheron},
+  journal={Economic geology},
+  volume={58},
+  number={8},
+  pages={1246--1266},
+  year={1963}
+}
+
+@proceedings{10.1115/DETC2019-97499,
+	author = {Xu, Yanwen and Wang, Pingfeng},
+	title = {A Comparison of Numerical Optimizers in Developing High Dimensional Surrogate Models},
+	volume = {Volume 2B: 45th Design Automation Conference},
+	series = {International Design Engineering Technical Conferences and Computers and Information in Engineering Conference},
+	pages = {V02BT03A037},
+	year = {2019},
+	month = {08},
+	abstract = {The Gaussian Process (GP) model has become one of the most popular methods to develop computationally efficient surrogate models in many engineering design applications, including simulation-based design optimization and uncertainty analysis. When more observations are used for high dimensional problems, estimating the best model parameters of Gaussian Process model is still an essential yet challenging task due to considerable computation cost. One of the most commonly used methods to estimate model parameters is Maximum Likelihood Estimation (MLE). A common bottleneck arising in MLE is computing a log determinant and inverse over a large positive definite matrix. In this paper, a comparison of five commonly used gradient based and non-gradient based optimizers including Sequential Quadratic Programming (SQP), Quasi-Newton method, Interior Point method, Trust Region method and Pattern Line Search for likelihood function optimization of high dimension GP surrogate modeling problem is conducted. The comparison has been focused on the accuracy of estimation, the efficiency of computation and robustness of the method for different types of Kernel functions.},
+	doi = {10.1115/DETC2019-97499},
+	url = {https://doi.org/10.1115/DETC2019-97499},
+	eprint = {https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings-pdf/IDETC-CIE2019/59193/V02BT03A037/6452976/v02bt03a037-detc2019-97499.pdf},
+}
+
+
+@book{rasmussen2006gaussian,
+	title     = {Gaussian Processes for Machine Learning},
+	author    = {Rasmussen, Carl Edward and Williams, Christopher K. I.},
+	year      = {2006},
+	publisher = {MIT Press},
+	address   = {Cambridge, MA},
+	isbn      = {9780262182539},
+	url       = {http://www.gaussianprocess.org/gpml/}
+}
+
+
+
+@book{bishop2006prml,
+  title     = {Pattern Recognition and Machine Learning},
+  author    = {Bishop, Christopher M.},
+  year      = {2006},
+  publisher = {Springer},
+  address   = {New York},
+  isbn      = {978-0-387-31073-2},
+  url       = {https://www.springer.com/gp/book/9780387310732},
+  note      = {Section 2.3.1: Conditional Gaussian Distributions}
+}
+
+@book{hyper_complex_numbers,
+	author = {I.L. Kantor and A.S. Solodovnikov},
+	title = {Hypercomplex Numbers: An Elementary Introduction to Algebras},
+	publisher = {Springer New York, NY},
+	year = {1989},
+	address = {},
+	edition   = {First},
+	URL = {https://link.springer.com/book/9781461281917}
+}
+
+@book{dual_numbers,
+author = {Fischer, I.},
+title = { Dual-Number Methods in Kinematics, Statics and Dynamics},
+publisher = {Routledge},
+year = {1999},
+edition = {1st},
+doi = {https://doi-org.libweb.lib.utsa.edu/10.1201/9781315141473},
+ISBN = {9781315141473}}
+
+@article{CTSE,
+	author = {Martins, Joaquim R. R. A. and Sturdza, Peter and Alonso, Juan J.},
+	title = {The Complex-Step Derivative Approximation},
+	year = {2003},
+	issue_date = {September 2003},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	volume = {29},
+	number = {3},
+	issn = {0098-3500},
+	url = {https://doi-org.libweb.lib.utsa.edu/10.1145/838250.838251},
+	doi = {10.1145/838250.838251},
+	abstract = {The complex-step derivative approximation and its application to numerical algorithms are presented. Improvements to the basic method are suggested that further increase its accuracy and robustness and unveil the connection to algorithmic differentiation theory. A general procedure for the implementation of the complex-step method is described in detail and a script is developed that automates its implementation. Automatic implementations of the complex-step method for Fortran and C/C++ are presented and compared to existing algorithmic differentiation tools. The complex-step method is tested in two large multidisciplinary solvers and the resulting sensitivities are compared to results given by finite differences. The resulting sensitivities are shown to be as accurate as the analyses. Accuracy, robustness, ease of implementation and maintainability make these complex-step derivative approximation tools very attractive options for sensitivity analysis.},
+	journal = {ACM Trans. Math. Softw.},
+	month = {sep},
+	pages = {245–262},
+	numpages = {18},
+	keywords = {Automatic differentiation, gradients, complex-step derivative approximation, overloading, forward mode, sensitivities}
+}
+
+
+@article{multi_complex,
+	author = {Lantoine, Gregory and Russell, Ryan P. and Dargent, Thierry},
+	title = {Using Multicomplex Variables for Automatic Computation of High-Order Derivatives},
+	year = {2012},
+	issue_date = {April 2012},
+	publisher = {Association for Computing Machinery},
+	address = {New York, NY, USA},
+	volume = {38},
+	number = {3},
+	issn = {0098-3500},
+	url = {https://doi.org/10.1145/2168773.2168774},
+	doi = {10.1145/2168773.2168774},
+	abstract = {The computations of the high-order partial derivatives in a given problem are often cumbersome or not accurate. To combat such shortcomings, a new method for calculating exact high-order sensitivities using multicomplex numbers is presented. Inspired by the recent complex step method that is only valid for firstorder sensitivities, the new multicomplex approach is valid to arbitrary order. The mathematical theory behind this approach is revealed, and an efficient procedure for the automatic implementation of the method is described. Several applications are presented to validate and demonstrate the accuracy and efficiency of the algorithm. The results are compared to conventional approaches such as finite differencing, the complex step method, and two separate automatic differentiation tools. The multicomplex method performs favorably in the preliminary comparisons and is therefore expected to be useful for a variety of algorithms that exploit higher order derivatives.},
+	journal = {ACM Trans. Math. Softw.},
+	month = {apr},
+	articleno = {16},
+	numpages = {21},
+	keywords = {Sensitivity analysis, multicomplex numbers, automatic differentiation, multicomplex step differentiation, high-order derivatives, overloading}
+}
+
+
+@inbook{multi-dual,
+	author = {Jeffrey Fike and Juan Alonso},
+	title = {The Development of Hyper-Dual Numbers for Exact Second-Derivative Calculations},
+	booktitle = {49th AIAA Aerospace Sciences Meeting including the New Horizons Forum and Aerospace Exposition},
+	chapter = {},
+	pages = {},
+	doi = {10.2514/6.2011-886},
+	URL = {https://arc.aiaa.org/doi/abs/10.2514/6.2011-886},
+	eprint = {https://arc.aiaa.org/doi/pdf/10.2514/6.2011-886}
+}
+
+@software{Aristizabal2024mauriaristi,
+	title = {mauriaristi/otilib},
+	url = {https://github.com/mauriaristi/otilib},
+	author = {Aristizabal, Mauricio},
+	date = {2024-10-10},
+	year = {2024},
+	month = {10},
+	day = {10},
+}
+
+@article{KLEIJNEN2009707,
+title = {Kriging metamodeling in simulation: A review},
+journal = {European Journal of Operational Research},
+volume = {192},
+number = {3},
+pages = {707-716},
+year = {2009},
+issn = {0377-2217},
+doi = {https://doi.org/10.1016/j.ejor.2007.10.013},
+url = {https://www.sciencedirect.com/science/article/pii/S0377221707010090},
+author = {Jack P.C. Kleijnen},
+keywords = {Kriging, Metamodel, Response surface, Interpolation, Optimization, Design},
+abstract = {This article reviews Kriging (also called spatial correlation modeling). It presents the basic Kriging assumptions and formulas—contrasting Kriging and classic linear regression metamodels. Furthermore, it extends Kriging to random simulation, and discusses bootstrapping to estimate the variance of the Kriging predictor. Besides classic one-shot statistical designs such as Latin Hypercube Sampling, it reviews sequentialized and customized designs for sensitivity analysis and optimization. It ends with topics for future research.}
+}
+
+@ARTICLE{Gramacy2012-xb,
+  title     = "Cases for the nugget in modeling computer experiments",
+  author    = "Gramacy, Robert B and Lee, Herbert K H",
+  journal   = "Stat. Comput.",
+  publisher = "Springer Science and Business Media LLC",
+  volume    =  22,
+  number    =  3,
+  pages     = "713--722",
+  month     =  may,
+  year      =  2012,
+  language  = "en"
+}
+
+
+@article{SOBOL196786,
+title = {On the distribution of points in a cube and the approximate evaluation of integrals},
+journal = {USSR Computational Mathematics and Mathematical Physics},
+volume = {7},
+number = {4},
+pages = {86-112},
+year = {1967},
+issn = {0041-5553},
+doi = {https://doi.org/10.1016/0041-5553(67)90144-9},
+url = {https://www.sciencedirect.com/science/article/pii/0041555367901449},
+author = {I.M Sobol'}
+}
+
+
+@phdthesis{
+	OTI,
+	author={Cano,Mauricio A.},
+	year={2020},
+	title={Order Truncated Imaginary Algebra for Computation of Multivariable High-Order Derivatives in Finite Element Analysis},
+	journal={ProQuest Dissertations and Theses},
+	pages={211},
+	note={Copyright - Database copyright ProQuest LLC; ProQuest does not claim copyright in the individual underlying works; Last updated - 2023-03-08},
+	abstract={Computation of sensitivities in engineering problems has become a necessity in many areas, including mechanical, chemical and biomedical engineering. Recently, the use of hypercomplex algebras, like multicomplex and multidual numbers, has increased in the context of derivative computation as they are machine error accurate and easy to implement. However, current hypercomplex implementations suffer from a doubling process where the amount data required for a computation doubles each time a new order of derivative is required. In this work, Cayley-Dickson algebras like quaternions and octonions were used as a first step to optimize computation of multiple first order derivatives, in finite element analyses. While significant performance improvements were achieved, steps toward a more efficient algebra were found. In this dissertation a new hypercomplex algebra named Order Truncated Imaginary (OTI) numbers is proposed to tackle the excessive growth of current algebras when computing high-order derivatives of multivariable functions. The algebra truncates imaginary directions whose order exceeds a specified value n. As a consequence, when a function is evaluated using a particular OTI number, the result is another OTI number that contains all derivatives up to order n within its imaginary directions. The OTI Finite Element Method (OTIFEM) is proposed in order to integrate OTI capabilities into Finite Element analysis. This allows computation of high order multivariable derivatives efficiently. The key ingredient to this integration is the developed OTI matrix form, that seamlessly integrate the OTI numbers with standard linear algebra procedures. Computation of up to 30th order derivatives were performed in heat transfer, linear elasticity and fluid dynamics analyses and were used to generate a reduced order model that approximated the finite element solution. Results show that derivatives with respect to shape, material and loading parameters are accurate, and can be computed effortlessly and efficiently; and higher truncation orders increase the region of validity of the reduced models obtained with OTIFEM solutions.},
+	keywords={Finite element method; High order derivatives; Hypercomplex algebras; Numerical differentiation; Order truncated imaginary numbers; Mechanical engineering; Engineering; Computational physics; 0216:Computational physics; 0548:Mechanical engineering; 0537:Engineering},
+	isbn={9798357564382},
+	language={English},
+	url={https://login.libweb.lib.utsa.edu/login?url=https://www.proquest.com/dissertations-theses/order-truncated-imaginary-algebra-computation/docview/2749270507/se-2},
+}
+
+
+@article{LIU2018102,
+title = {Remarks on multi-output Gaussian process regression},
+journal = {Knowledge-Based Systems},
+volume = {144},
+pages = {102-121},
+year = {2018},
+issn = {0950-7051},
+doi = {https://doi.org/10.1016/j.knosys.2017.12.034},
+url = {https://www.sciencedirect.com/science/article/pii/S0950705117306123},
+author = {Haitao Liu and Jianfei Cai and Yew-Soon Ong},
+keywords = {Multi-output Gaussian process, Symmetric/asymmetric MOGP, Multi-fidelity, Output correlation, Knowledge transfer},
+abstract = {Multi-output regression problems have extensively arisen in modern engineering community. This article investigates the state-of-the-art multi-output Gaussian processes (MOGPs) that can transfer the knowledge across related outputs in order to improve prediction quality. We classify existing MOGPs into two main categories as (1) symmetric MOGPs that improve the predictions for all the outputs, and (2) asymmetric MOGPs, particularly the multi-fidelity MOGPs, that focus on the improvement of high fidelity output via the useful information transferred from related low fidelity outputs. We review existing symmetric/asymmetric MOGPs and analyze their characteristics, e.g., the covariance functions (separable or non-separable), the modeling process (integrated or decomposed), the information transfer (bidirectional or unidirectional), and the hyperparameter inference (joint or separate). Besides, we assess the performance of ten representative MOGPs thoroughly on eight examples in symmetric/asymmetric scenarios by considering, e.g., different training data (heterotopic or isotopic), different training sizes (small, moderate and large), different output correlations (low or high), and different output sizes (up to four outputs). Based on the qualitative and quantitative analysis, we give some recommendations regarding the usage of MOGPs and highlight potential research directions.}
+}
+
+@article{MOGP_MS,
+author = {Rakitsch, B. and Lippert, Christoph and Borgwardt, K. and Stegle, Oliver},
+year = {2013},
+month = {01},
+pages = {},
+title = {It is all in the noise: Efficient multi-task Gaussian process inference with structured residuals},
+journal = {Advances in Neural Information Processing Systems}
+}
+
+@INPROCEEDINGS{Yao2024-hp,
+  title           = "{High-Throughput} {Multi-Objective} Bayesian Optimization
+                     using Gradients",
+  booktitle       = "2024 {IEEE} Congress on Evolutionary Computation ({CEC})",
+  author          = "Yao, Yiming and Liu, Fei and Zhang, Qingfu",
+  publisher       = "IEEE",
+  volume          =  2,
+  pages           = "1--8",
+  month           =  jun,
+  year            =  2024,
+  conference      = "2024 IEEE Congress on Evolutionary Computation (CEC)",
+  location        = "Yokohama, Japan"
+}
+
+@ARTICLE{Padidar2021-fr,
+  title        = "Scaling Gaussian processes with derivative information using
+                  variational inference",
+  author       = "Padidar, Misha and Zhu, Xinran and Huang, Leo and Gardner,
+                  Jacob R and Bindel, David",
+  journal={Advances in Neural Information Processing Systems},
+  abstract     = "Gaussian processes with derivative information are useful in
+                  many settings where derivative information is available,
+                  including numerous Bayesian optimization and regression tasks
+                  that arise in the natural sciences. Incorporating derivative
+                  observations, however, comes with a dominating $O(N^3D^3)$
+                  computational cost when training on $N$ points in $D$ input
+                  dimensions. This is intractable for even moderately sized
+                  problems. While recent work has addressed this intractability
+                  in the low-$D$ setting, the high-$N$, high-$D$ setting is
+                  still unexplored and of great value, particularly as machine
+                  learning problems increasingly become high dimensional. In
+                  this paper, we introduce methods to achieve fully scalable
+                  Gaussian process regression with derivatives using
+                  variational inference. Analogous to the use of inducing
+                  values to sparsify the labels of a training set, we introduce
+                  the concept of inducing directional derivatives to sparsify
+                  the partial derivative information of a training set. This
+                  enables us to construct a variational posterior that
+                  incorporates derivative information but whose size depends
+                  neither on the full dataset size $N$ nor the full
+                  dimensionality $D$. We demonstrate the full scalability of
+                  our approach on a variety of tasks, ranging from a high
+                  dimensional stellarator fusion regression task to training
+                  graph convolutional neural networks on Pubmed using Bayesian
+                  optimization. Surprisingly, we find that our approach can
+                  improve regression performance even in settings where only
+                  label data is available.",
+  year         =  2021,
+  primaryClass = "cs.LG",
+  eprint       = "2107.04061",
+  volume={34},
+  pages={6442--6453},
+  year={2021}
+}

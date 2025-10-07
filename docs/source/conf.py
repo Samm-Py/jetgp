@@ -42,7 +42,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     "jupyter_sphinx"
 ]
-bibtex_bibfiles = []
+bibtex_bibfiles = ["GP_bib.bib"]
 bibtex_default_style = "unsrt"
 bibtex_reference_style = "label"
 
