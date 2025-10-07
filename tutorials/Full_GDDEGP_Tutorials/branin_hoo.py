@@ -42,7 +42,7 @@ class DirectionalDEGPConfig:
     """Configuration for the Directional DEGP tutorial."""
     n_order: int = 1
     n_bases: int = 2
-    num_training_pts: int = 4
+    num_training_pts: int = 20
     domain_bounds: tuple = ((-5.0, 10.0), (0.0, 15.0))
     test_grid_resolution: int = 100
     normalize_data: bool = True

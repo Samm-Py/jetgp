@@ -29,7 +29,7 @@ import itertools
 from typing import List, Tuple, Callable, Optional, Dict, Any
 from wdegp.wdegp import wdegp
 import utils
-import sobol as sb
+from scipy.stats import qmc
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 from dataclasses import dataclass, field
@@ -40,12 +40,12 @@ class HighDimGPConfig:
     """Configuration for a high-dimensional grouped submodel GP."""
     n_bases: int = 4
     n_order: int = 2
-    num_points_train: int = 36
+    num_points_train: int = 40
     num_points_test: int = 5000
     lower_bounds: List[float] = field(default_factory=lambda: [-5] * 4)
     upper_bounds: List[float] = field(default_factory=lambda: [5] * 4)
     n_clusters: int = 3  # Number of submodels to create via KMeans
-    kernel: str = "RQ"
+    kernel: str = "SE"
     kernel_type: str = "isotropic"
     normalize: bool = True
     n_restart_optimizer: int = 15
@@ -68,8 +68,9 @@ class HighDimGP:
 
     def generate_data_points(self, num_points: int) -> np.ndarray:
         """Generates data points using a Sobol sequence for good space coverage."""
-        quasi_samples = sb.create_sobol_samples(
-            num_points, self.config.n_bases, 1).T
+        sampler = qmc.Sobol(d=self.config.n_bases, scramble=True)  # scramble=True improves uniformity
+        samples = sampler.random_base2(m=int(np.ceil(np.log2(num_points))))
+        quasi_samples = samples[:num_points]
         return utils.scale_samples(quasi_samples, self.config.lower_bounds, self.config.upper_bounds)
 
     def create_submodels_and_reorder_data(

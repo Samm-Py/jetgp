@@ -20,13 +20,12 @@ import numpy as np
 import pyoti.sparse as oti
 from full_degp.degp import degp
 import utils
-import sobol as sb
 import time
 import plotting_helper
 from dataclasses import dataclass, field
 from typing import List, Dict, Callable
 from matplotlib import pyplot as plt
-
+from scipy.stats import qmc
 
 @dataclass
 class HighDimConfig:
@@ -41,7 +40,7 @@ class HighDimConfig:
     kernel: str = "SE"
     kernel_type: str = "anisotropic"
     n_restarts: int = 15
-    swarm_size: int = 100
+    swarm_size: int = 200
     random_seed: int = 1354
 
 
@@ -91,10 +90,16 @@ class HighDimDEGPTutorial:
         start_time = time.time()
         cfg = self.config
 
-        sobol_train = sb.create_sobol_samples(
-            cfg.num_training_pts, cfg.n_bases, 1).T
+        # Example: generate Sobol points
+        num_training_pts = cfg.num_training_pts  # number of points
+        n_bases = cfg.n_bases  # dimensionality
+        scramble = True  # optional for randomization
+        
+        sampler = qmc.Sobol(d=n_bases, scramble=scramble, seed=42)
+        sobol_sample = sampler.random_base2(m=int(np.ceil(np.log2(num_training_pts))))
+        
         X_train = utils.scale_samples(
-            sobol_train, cfg.lower_bounds, cfg.upper_bounds)
+            sobol_sample, cfg.lower_bounds, cfg.upper_bounds)
         print(f"  Sampling method: Sobol sequences for efficient space coverage.")
 
         X_train_pert = oti.array(X_train)

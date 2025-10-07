@@ -171,7 +171,7 @@ def main():
     dist_params = {'dists': dist, 'lower_bounds': lower_bounds, 'upper_bounds': upper_bounds}
 
     
-    acquisition_function_to_use = acq.imse_reduction
+    acquisition_function_to_use = acq.mse_reduction
     print(f"Using Acquisition Function: IMSE Reduction ({acquisition_function_to_use.__name__})")
 
     # --- Generate candidate and training points from the distribution ---

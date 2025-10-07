@@ -1044,14 +1044,159 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
 
     return True
 
+def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
+         pop_size=100, maxiter=100, p=0.1, c=0.1,
+         minfunc=1e-8, minstep=1e-8, debug=False,
+         local_opt_every=15, initial_positions=None, seed=42):
+    """
+    JADE (Adaptive Differential Evolution) with optional local refinement
+    and minstep stopping criterion applied only when g_best improves.
+    
+    JADE: Adaptive Differential Evolution With Optional External Archive
+    https://ieeexplore.ieee.org/abstract/document/5208221
+    
+    """
+
+    lb = np.asarray(lb)
+    ub = np.asarray(ub)
+    D = len(lb)
+    np.random.seed(seed)
+
+    # Constraint setup
+    if f_ieqcons is not None:
+        def cons(x): return np.asarray(f_ieqcons(x, *args, **kwargs))
+    elif ieqcons:
+        def cons(x): return np.asarray([c(x, *args, **kwargs) for c in ieqcons])
+    else:
+        def cons(x): return np.array([0.0])
+
+    def is_feasible(x):
+        return np.all(cons(x) >= 0)
+
+    # Initialize population using Sobol
+    sampler = qmc.Sobol(d=D, scramble=True, seed=seed)
+    sobol_sample = sampler.random_base2(m=int(np.ceil(np.log2(pop_size))))
+    pop = qmc.scale(sobol_sample[:pop_size], lb, ub)
+    if initial_positions is not None:
+        n_init = min(len(initial_positions), pop_size)
+        pop[:n_init] = initial_positions[:n_init]
+
+    # Fitness and feasibility
+    fitness = np.array([func(ind, *args, **kwargs) for ind in pop])
+    feasible = np.array([is_feasible(ind) for ind in pop])
+
+    # Initialize global best
+    g_idx = np.argmin(fitness * feasible + (~feasible)*1e10)
+    g_best = pop[g_idx].copy()
+    f_best = fitness[g_idx]
+
+    mu_F = 0.5
+    mu_CR = 0.5
+    archive = []
+
+    # Store previous best for minstep comparison
+    prev_g_best = g_best.copy()
+    f_prev_best = f_best
+
+    for gen in range(1, maxiter+1):
+        new_pop = np.zeros_like(pop)
+        new_fitness = np.zeros(pop_size)
+        new_F_list = []
+        new_CR_list = []
+
+        for i in range(pop_size):
+            # Adaptive F and CR
+            F = np.random.standard_cauchy() * 0.1 + mu_F
+            F = np.clip(F, 0, 1)
+            CR = np.random.normal(mu_CR, 0.1)
+            CR = np.clip(CR, 0, 1)
+
+            # p-best selection
+            p_num = max(2, int(np.ceil(p*pop_size)))
+            pbest_idx = np.random.choice(np.argsort(fitness)[:p_num])
+            x_pbest = pop[pbest_idx]
+
+            # Mutation: current-to-pbest
+            idxs = [idx for idx in range(pop_size) if idx != i]
+            r1, r2 = np.random.choice(idxs, 2, replace=False)
+            x_mut = pop[i] + F*(x_pbest - pop[i]) + F*(pop[r1] - pop[r2])
+            x_mut = np.clip(x_mut, lb, ub)
+
+            # Crossover
+            jrand = np.random.randint(D)
+            trial = np.array([x_mut[j] if np.random.rand() < CR or j == jrand else pop[i][j] for j in range(D)])
+            trial = np.clip(trial, lb, ub)
+
+            f_trial = func(trial, *args, **kwargs)
+            if is_feasible(trial) and f_trial < fitness[i]:
+                new_pop[i] = trial
+                new_fitness[i] = f_trial
+                archive.append(pop[i].copy())
+                new_F_list.append(F)
+                new_CR_list.append(CR)
+            else:
+                new_pop[i] = pop[i]
+                new_fitness[i] = fitness[i]
+
+        # Update population
+        pop = new_pop
+        fitness = new_fitness
+
+        # Update global best
+        feasible_idx = [idx for idx in range(pop_size) if is_feasible(pop[idx])]
+        if feasible_idx:
+            idx_best = feasible_idx[np.argmin(fitness[feasible_idx])]
+            if fitness[idx_best] < f_best:
+                # Check minstep only when g_best improves
+                step_size = np.linalg.norm(pop[idx_best] - prev_g_best)
+                if step_size <= minstep:
+                    if debug:
+                        print(f"Stopping: Position change < {minstep} at generation {gen}")
+                    g_best = pop[idx_best].copy()
+                    f_best = fitness[idx_best]
+                    break
+
+                g_best = pop[idx_best].copy()
+                f_best = fitness[idx_best]
+                prev_g_best = g_best.copy()
+                f_prev_best = f_best
+
+        # Adapt F and CR
+        if new_F_list:
+            mu_F = (1-c)*mu_F + c*np.mean(new_F_list)
+            mu_CR = (1-c)*mu_CR + c*np.mean(new_CR_list)
+
+        # Periodic local refinement
+        if gen % local_opt_every == 0:
+            res = minimize(func, g_best, args=args, bounds=np.stack((lb, ub), axis=1))
+            if is_feasible(res.x) and res.fun < f_best:
+                g_best = res.x.copy()
+                f_best = res.fun
+                prev_g_best = g_best.copy()
+                f_prev_best = f_best
+                if debug:
+                    print(f"Local refinement improved at gen {gen}: f={f_best}")
+
+        # Debug print
+        if debug:
+            print(f"Gen {gen}: best f={f_best}")
+
+        # Check minfunc stopping criterion
+        if f_best <= minfunc:
+            if debug:
+                print(f"Stopping: Objective improvement < {minfunc} at generation {gen}")
+            break
+
+    return g_best, f_best
 
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
-        swarmsize=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100,
+        pop_size=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100,
         minstep=1e-8, minfunc=1e-8, debug=False, seed=42,
         local_opt_every=15, initial_positions=None):
     """
     Particle Swarm Optimization with periodic local refinement
-
+    R. C. Eberhart, Y. Shi and J. Kennedy, Swarm Intelligence, CA, San Mateo:Morgan Kaufmann, 2001.
+    https://theswissbay.ch/pdf/Gentoomen%20Library/Artificial%20Intelligence/Swarm%20Intelligence/Swarm%20intelligence%20-%20James%20Kennedy.pdf
     Parameters:
     -----------
     func : callable
@@ -1131,22 +1276,22 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 
     # Initialize swarm using Sobol sequence
     sampler = qmc.Sobol(d=D, scramble=True, seed=seed)
-    sobol_sample = sampler.random_base2(m=int(np.ceil(np.log2(swarmsize))))
-    x = qmc.scale(sobol_sample[:swarmsize], lb, ub)
+    sobol_sample = sampler.random_base2(m=int(np.ceil(np.log2(pop_size))))
+    x = qmc.scale(sobol_sample[:pop_size], lb, ub)
     if initial_positions is not None:
-        n_init = min(len(initial_positions), swarmsize)
+        n_init = min(len(initial_positions), pop_size)
         x[:n_init] = initial_positions[:n_init]
     # Initialize velocities and personal bests
-    v = vlow + np.random.rand(swarmsize, D) * (vhigh - vlow)
+    v = vlow + np.random.rand(pop_size, D) * (vhigh - vlow)
     p = np.copy(x)
-    fp = np.array([func(p[i], *args, **kwargs) for i in range(swarmsize)])
-    feasibles = np.array([is_feasible(p[i]) for i in range(swarmsize)])
+    fp = np.array([func(p[i], *args, **kwargs) for i in range(pop_size)])
+    feasibles = np.array([is_feasible(p[i]) for i in range(pop_size)])
 
     # Initialize global best
     fg = np.inf
     g = None
 
-    for i in range(swarmsize):
+    for i in range(pop_size):
         if feasibles[i] and fp[i] < fg:
             fg = fp[i]
             g = p[i].copy()
@@ -1155,13 +1300,13 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     it = 1
     while it <= maxiter:
         # Update velocities and positions
-        rp = np.random.rand(swarmsize, D)
-        rg = np.random.rand(swarmsize, D)
+        rp = np.random.rand(pop_size, D)
+        rg = np.random.rand(pop_size, D)
         v = omega * v + phip * rp * (p - x) + phig * rg * (g - x)
         x = np.clip(x + v, lb, ub)
 
         # Evaluate particles and update personal/global bests
-        for i in range(swarmsize):
+        for i in range(pop_size):
             fx = func(x[i], *args, **kwargs)
 
             if fx < fp[i] and is_feasible(x[i]):
@@ -1720,7 +1865,7 @@ def maximize_ier_direction(
 
     best_w, best_val = pso(
         negative_ier, lb, ub,
-        swarmsize=10*d, maxiter=11, debug=True, seed=seed + 77
+        pop_size=10*d, maxiter=11, debug=True, seed=seed + 77
     )
     v_opt = best_w.reshape(-1, 1)
     v_opt /= np.linalg.norm(v_opt)

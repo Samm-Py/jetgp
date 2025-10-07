@@ -171,7 +171,7 @@ class wdegp:
                 self.x_train, X_test, self.n_order)
             diffs_train_train = self.differences_by_dim
 
-            phi_train_train = self.model.kernel_func(diffs_train_train, ell)
+            phi_train_train = self.kernel_func(diffs_train_train, ell)
 
             # Extract ALL derivative components into a single flat array (highly efficient)
             phi_exp_train_train = phi_train_train.get_all_derivs(
@@ -201,7 +201,7 @@ class wdegp:
                 print(
                     'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
             # If Cholesky fails, fall back to standard solve
-            phi_train_test = self.model.kernel_func(diffs_train_test, ell)
+            phi_train_test = self.kernel_func(diffs_train_test, ell)
 
             # Extract ALL derivative components into a single flat array (highly efficient)
             phi_exp_train_test = phi_train_test.get_all_derivs(
@@ -222,7 +222,7 @@ class wdegp:
                 diffs_test_test = wdegp_utils.differences_by_dim_func(
                     X_test, X_test, self.n_order)
                 # If Cholesky fails, fall back to standard solve
-                phi_test_test = self.model.kernel_func(diffs_test_test, ell)
+                phi_test_test = self.kernel_func(diffs_test_test, ell)
 
                 # Extract ALL derivative components into a single flat array (highly efficient)
                 phi_exp_test_test = phi_test_test.get_all_derivs(

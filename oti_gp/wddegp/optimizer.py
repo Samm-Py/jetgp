@@ -139,7 +139,7 @@ class Optimizer:
             self.nll_wrapper,
             lb,
             ub,
-            swarmsize=swarm_size,
+            pop_size=swarm_size,
             maxiter=n_restart_optimizer,
             debug=verbose,
         )

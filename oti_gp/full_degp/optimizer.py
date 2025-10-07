@@ -122,14 +122,14 @@ class Optimizer:
             self.nll_wrapper,
             lb,
             ub,
-            swarmsize=swarm_size,
+            pop_size=swarm_size,
             maxiter=n_restart_optimizer,
             debug=verbose,
             # omega=0.4,       # High inertia encourages exploration
             # phip=1.0,        # Moderate personal influence
             # phig=1.2,        # Low social influence, avoids early convergence
-            minfunc=1e-16,
-            minstep=1e-16,
+            minfunc=1e-8,
+            minstep=1e-8,
             initial_positions=x0,
             local_opt_every=local_opt_every
         )

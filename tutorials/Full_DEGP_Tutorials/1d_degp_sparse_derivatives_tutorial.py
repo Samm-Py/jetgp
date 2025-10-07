@@ -45,8 +45,9 @@ class SelectiveDEGPConfig:
     der_indices: List = field(default_factory=lambda: [[[[1, 1]]]])
 
     # GP model parameters
-    normalize_data: bool = True
-    kernel: str = "SE"
+    normalize_data: bool = False
+    kernel: str = "Matern"
+    smoothness_parameter: int = 1
     kernel_type: str = "anisotropic"
 
     # Optimizer settings
@@ -104,7 +105,7 @@ class SelectiveDEGPTutorial:
             self.gp_model = degp(
                 data['X_train'], data['y_train_list'], cfg.max_order_for_ad,
                 cfg.n_bases, cfg.der_indices, normalize=cfg.normalize_data,
-                kernel=cfg.kernel, kernel_type=cfg.kernel_type
+                kernel=cfg.kernel, kernel_type=cfg.kernel_type, smoothness_parameter=cfg.smoothness_parameter
             )
             print("  Model initialization: SUCCESS")
         except Exception as e:

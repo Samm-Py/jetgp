@@ -15,8 +15,8 @@ plt.rcParams.update({'font.size': 12})
 class DEGPConfig:
     """Configuration for the DEGP comparison tutorial."""
     # Domain and data points
-    lb_x: float = 0
-    ub_x: float = 1
+    lb_x: float = 0.0
+    ub_x: float = 6.0
     num_training_pts: int = 4
     num_test_pts: int = 100
 
@@ -29,8 +29,8 @@ class DEGPConfig:
     kernel_type: str = "anisotropic"
 
     # Optimizer settings
-    n_restarts: int = 20
-    swarm_size: int = 100
+    n_restarts: int = 15
+    swarm_size: int = 200
 
 
 class DEGPComparisonTutorial:
@@ -290,9 +290,9 @@ class DEGPComparisonTutorial:
 
 
 def true_function(X, alg=oti):
-    """Test function combining exponential decay, oscillations, and linear trend."""
+    """Complex test function combining multiple mathematical components."""
     x = X[:, 0]
-    return 15*(x - 1/2)**2*alg.sin(2*np.pi*x)
+    return alg.exp(-x) + alg.sin(x) + alg.cos(3 * x) + 0.2 * x + 1.0
 
 
 def main():

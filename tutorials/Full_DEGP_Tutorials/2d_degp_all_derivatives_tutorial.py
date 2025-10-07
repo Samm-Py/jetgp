@@ -37,7 +37,7 @@ class TwoDimConfig:
     lb_y: float = -1.0
     ub_y: float = 1.0
     num_pts_per_axis: int = 5
-    sampling_strategy: str = 'uniform'  # 'uniform', 'chebyshev', or 'random'
+    sampling_strategy: str = 'random'  # 'uniform', 'chebyshev', or 'random'
     test_grid_resolution: int = 25
     normalize_data: bool = True
     kernel: str = "SE"

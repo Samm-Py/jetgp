@@ -53,7 +53,7 @@ class KernelFactory:
         for diffs in self.differences_by_dim:
             min_val = float(diffs.real.min())
             max_val = float(diffs.real.max())
-            self.bounds.append((-4, 10**(max_val)))
+            self.bounds.append((-3, np.log(max_val)))
 
     def create_kernel(self, kernel_name, kernel_type):
         """

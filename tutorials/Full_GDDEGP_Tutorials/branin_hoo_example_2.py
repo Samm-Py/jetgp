@@ -38,17 +38,17 @@ plt.rcParams.update({'font.size': 12})
 @dataclass
 class DirectionalDEGPConfig:
     """Configuration for the Directional DEGP tutorial."""
-    n_order: int = 2
+    n_order: int = 1
     n_bases: int = 2
     num_directions_per_point: int = 2
-    num_training_pts: int = 4
+    num_training_pts: int = 13
     domain_bounds: tuple = ((-5.0, 10.0), (0.0, 15.0))
     test_grid_resolution: int = 50
     normalize_data: bool = True
     kernel: str = "SE"
     kernel_type: str = "anisotropic"
     n_restarts: int = 15
-    swarm_size: int = 200
+    swarm_size: int = 300
     random_seed: int = 1
 
 
@@ -125,7 +125,7 @@ class DirectionalDEGPTutorial:
 
         y_train_list = [f_hc.real.reshape(-1, 1)]
         # These indices refer to the e(1) basis used in the perturbation step.
-        der_indices_to_extract = [[[1, 1]], [[1, 2]], [[2, 1]], [[2, 2]]]
+        der_indices_to_extract = [[[1, 1]], [[2, 1]]]
         for idx in der_indices_to_extract:
             y_train_list.append(f_hc.get_deriv(idx).reshape(-1, 1))
 
@@ -149,7 +149,7 @@ class DirectionalDEGPTutorial:
             rays_array[i] = np.hstack(data['rays_list'][i])
 
         self.gp_model = gddegp(
-            data['X_train'], data['y_train_list'], n_order=[2, 2], rays_array=rays_array, der_indices=data['der_indices'],
+            data['X_train'], data['y_train_list'], n_order=[1, 1], rays_array=rays_array, der_indices=data['der_indices'],
             normalize=cfg.normalize_data, kernel=cfg.kernel, kernel_type=cfg.kernel_type
         )
         print("  Model initialization: SUCCESS")
