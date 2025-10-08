@@ -14,7 +14,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../../.'))
 
-import oti_gp
+import jetgp
 
 # -- Project information -----------------------------------------------------
 
@@ -69,7 +69,7 @@ html_theme_options = {
     "logo": {"text": release},
     "content_footer_items": ["last-updated"],
     "navigation_depth": 4,
-    "repository_url": "https://github.com/Samm-Py/oti_gp",
+    "repository_url": "https://github.com/Samm-Py/jetgp",
     "repository_branch": "dev",
     "path_to_docs": "docs/source/",
     "use_source_button": True,

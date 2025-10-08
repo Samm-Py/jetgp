@@ -17,7 +17,7 @@ Cloning the repository
 
 .. code-block:: bash
 
-   $ git clone git@github.com:Samm-Py/oti_gp.git
+   $ git clone git@github.com:Samm-Py/jetgp.git
 
 Conda environment
 -----------------
@@ -30,9 +30,9 @@ Set up the dependencies of this repository using the ``environment.yml`` file.
 
    $ cd <path-to-oti_gp>
    $ conda env create -f environment.yml
-   $ conda activate otigp
+   $ conda activate jetgp
 
-In the event where dependencies are added, the ``otigp`` environment can be updated:
+In the event where dependencies are added, the ``jetgp`` environment can be updated:
 
 .. code-block:: bash
 
@@ -48,7 +48,7 @@ There are two recommended ways to do this:
 
 .. code-block:: bash
 
-   # From  ``.\oti_gp-main\oti_gp``
+   # From  ``.\jetgp-main\jetgp``
    $ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
    # Optional: verify that JetGP is accessible
@@ -64,10 +64,10 @@ If using Anaconda, you can register the repository path with your environment us
 .. code-block:: bash
 
    $ conda install conda-build
-   $ cd <path-to-oti_gp> (e.g., ``.\oti_gp-main\oti_gp``).
+   $ cd <path-to-oti_gp> (e.g., ``.\jetgp-main\jetgp``).
    $ conda develop .
 
-This method automatically makes ``jetgp`` importable whenever the ``otigp`` environment is active.
+This method automatically makes ``jetgp`` importable whenever the ``jetgp`` environment is active.
 
 Local documentation build
 =========================
@@ -78,7 +78,7 @@ The documentation of the library can be built locally.
 
 .. code-block:: bash
 
-   $ conda activate otigp
+   $ conda activate jetgp
 
 2. Change directory to the ``docs`` directory and make a ``build`` directory:
 

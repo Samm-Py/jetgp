@@ -1,4 +1,4 @@
-name: otigp
+name: jetgp
 channels:
   - conda-forge
 dependencies:
