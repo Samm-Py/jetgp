@@ -119,7 +119,11 @@ Training
         )
 
         params = gp_model.optimize_hyperparameters(
-            n_restart_optimizer=n_restarts, swarm_size=swarm_size
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
         )
         return gp_model, params
 

@@ -7,15 +7,15 @@ from scipy.optimize import minimize
 from scipy.stats import norm
 import sys
 from scipy.linalg import null_space
-from full_gddegp import gddegp
-from line_profiler import profile
+#from full_gddegp import gddegp
+#from line_profiler import profile
 from scipy.stats.qmc import Sobol
 import scipy.stats as stats
 from fractions import Fraction
 from scipy.special import comb
 from numpy.polynomial import Polynomial
 import math
-import utils
+#import utils
 from full_degp import degp_utils
 
 
@@ -1045,7 +1045,7 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
     return True
 
 def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
-         pop_size=100, maxiter=100, p=0.1, c=0.1,
+         pop_size=100, n_generations=100, p=0.1, c=0.1,
          minfunc=1e-8, minstep=1e-8, debug=False,
          local_opt_every=15, initial_positions=None, seed=42):
     """
@@ -1098,7 +1098,7 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     prev_g_best = g_best.copy()
     f_prev_best = f_best
 
-    for gen in range(1, maxiter+1):
+    for gen in range(1, n_generations+1):
         new_pop = np.zeros_like(pop)
         new_fitness = np.zeros(pop_size)
         new_F_list = []
@@ -1167,7 +1167,9 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
             mu_CR = (1-c)*mu_CR + c*np.mean(new_CR_list)
 
         # Periodic local refinement
-        if gen % local_opt_every == 0:
+        if local_opt_every is None:
+            pass
+        elif gen % local_opt_every == 0:
             res = minimize(func, g_best, args=args, bounds=np.stack((lb, ub), axis=1))
             if is_feasible(res.x) and res.fun < f_best:
                 g_best = res.x.copy()
@@ -1190,7 +1192,7 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     return g_best, f_best
 
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
-        pop_size=100, omega=0.5, phip=0.5, phig=0.5, maxiter=100,
+        pop_size=100, omega=0.5, phip=0.5, phig=0.5, n_generations=100,
         minstep=1e-8, minfunc=1e-8, debug=False, seed=42,
         local_opt_every=15, initial_positions=None):
     """
@@ -1298,7 +1300,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 
     # Main PSO loop
     it = 1
-    while it <= maxiter:
+    while it <= n_generations:
         # Update velocities and positions
         rp = np.random.rand(pop_size, D)
         rg = np.random.rand(pop_size, D)
@@ -1332,7 +1334,9 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                     fg = fx
 
         # Periodic local refinement - CLEANED UP VERSION
-        if it % local_opt_every == 0:
+        if local_opt_every is None:
+            pass
+        elif it % local_opt_every == 0:
             local_res = robust_local_optimization(
                 func, g, args=args, lb=lb, ub=ub, debug=False
             )
@@ -1349,7 +1353,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         it += 1
 
     # Final checks
-    print(f'Stopping: maximum iterations reached --> {maxiter}')
+    print(f'Stopping: maximum iterations reached --> {n_generations}')
     if g is not None and not is_feasible(g):
         print("Warning: Optimization finished without a feasible solution.")
 
@@ -1782,95 +1786,95 @@ def local_box_around_point(x_next, delta):
     return [(float(x_next[j] - delta), float(x_next[j] + delta)) for j in range(d)]
 
 
-@profile
-def maximize_ier_direction(
-    gp, x_next, x_train, y_blocks, rays_array, params, box, threshold=0.0, n_integration=500, seed=123, delta=.5
-):
-    """
-    Maximizes Integrated Entropy Reduction (IER) at x_next over directions v (unit norm).
-    """
-    d = x_next.shape[1]
-    # 1. Integration points for Monte Carlo estimate
-    local_box = local_box_around_point(x_next, delta)
-    integration_points = sobol_points(n_integration, local_box, seed)
-    # Use a default ray for integration points (e.g., all along first axis)
-    ray0 = np.zeros((d, 1))
-    ray0[0, 0] = 1.0
-    integration_rays = np.tile(ray0, n_integration)
+# @profile
+# def maximize_ier_direction(
+#     gp, x_next, x_train, y_blocks, rays_array, params, box, threshold=0.0, n_integration=500, seed=123, delta=.5
+# ):
+#     """
+#     Maximizes Integrated Entropy Reduction (IER) at x_next over directions v (unit norm).
+#     """
+#     d = x_next.shape[1]
+#     # 1. Integration points for Monte Carlo estimate
+#     local_box = local_box_around_point(x_next, delta)
+#     integration_points = sobol_points(n_integration, local_box, seed)
+#     # Use a default ray for integration points (e.g., all along first axis)
+#     ray0 = np.zeros((d, 1))
+#     ray0[0, 0] = 1.0
+#     integration_rays = np.tile(ray0, n_integration)
 
-    # 2. Get current mean/variance at integration points
-    mu_before, var_before = gp.predict(
-        integration_points, integration_rays, params, calc_cov=True, return_deriv=False
-    )
-    from utils import ecl_acquisition
-    ecl_before = ecl_acquisition(mu_before, var_before, threshold=threshold)
+#     # 2. Get current mean/variance at integration points
+#     mu_before, var_before = gp.predict(
+#         integration_points, integration_rays, params, calc_cov=True, return_deriv=False
+#     )
+#     from utils import ecl_acquisition
+#     ecl_before = ecl_acquisition(mu_before, var_before, threshold=threshold)
 
-    @profile
-    def negative_ier(w):
-        v = w.reshape(-1, 1)
-        norm_v = np.linalg.norm(v)
-        if norm_v < 1e-12:
-            return 1e6
-        v = v / norm_v
+#     @profile
+#     def negative_ier(w):
+#         v = w.reshape(-1, 1)
+#         norm_v = np.linalg.norm(v)
+#         if norm_v < 1e-12:
+#             return 1e6
+#         v = v / norm_v
 
-        Y_blocks = [y.copy() for y in y_blocks]
-        # --- Normalize if needed ---
-        v_ = v
-        integration_rays_ = integration_rays
-        # utils.check_gp_gradient(gp, x_next, previous_params)
-        # Hypercomplex construction for new point
+#         Y_blocks = [y.copy() for y in y_blocks]
+#         # --- Normalize if needed ---
+#         v_ = v
+#         integration_rays_ = integration_rays
+#         # utils.check_gp_gradient(gp, x_next, previous_params)
+#         # Hypercomplex construction for new point
 
-        # Compute GP predictions (function value and derivatives)
-        y_pred = gp.predict(x_next, v_, params,
-                            calc_cov=False, return_deriv=True).ravel()
+#         # Compute GP predictions (function value and derivatives)
+#         y_pred = gp.predict(x_next, v_, params,
+#                             calc_cov=False, return_deriv=True).ravel()
 
-        # How many derivatives do you want to include?
-        n_order = gp.n_order
+#         # How many derivatives do you want to include?
+#         n_order = gp.n_order
 
-        # Rebuild y_blocks_next to include the GP predictions
-        Y_blocks_next = []
+#         # Rebuild y_blocks_next to include the GP predictions
+#         Y_blocks_next = []
 
-        # Append the function prediction
-        Y_blocks_next.append(y_pred[0].reshape(-1, 1))
+#         # Append the function prediction
+#         Y_blocks_next.append(y_pred[0].reshape(-1, 1))
 
-        # Append derivatives in order (1st, 2nd, ..., n_order)
-        for i in range(1, n_order + 1):
-            Y_blocks_next.append(y_pred[i].reshape(-1, 1))
+#         # Append derivatives in order (1st, 2nd, ..., n_order)
+#         for i in range(1, n_order + 1):
+#             Y_blocks_next.append(y_pred[i].reshape(-1, 1))
 
-        # Augment training set
-        X_train = np.vstack([x_train, x_next])
-        for k in range(len(y_blocks)):
-            Y_blocks[k] = np.vstack([Y_blocks[k], Y_blocks_next[k]])
-        rays_array_tmp = np.concatenate([rays_array, v_], axis=1)
+#         # Augment training set
+#         X_train = np.vstack([x_train, x_next])
+#         for k in range(len(y_blocks)):
+#             Y_blocks[k] = np.vstack([Y_blocks[k], Y_blocks_next[k]])
+#         rays_array_tmp = np.concatenate([rays_array, v_], axis=1)
 
-        gp_temp = gddegp.gddegp(X_train, Y_blocks,
-                                n_order=gp.n_order,
-                                rays_array=rays_array_tmp,
-                                normalize=True,
-                                kernel="SE",
-                                kernel_type="anisotropic",)
+#         gp_temp = gddegp.gddegp(X_train, Y_blocks,
+#                                 n_order=gp.n_order,
+#                                 rays_array=rays_array_tmp,
+#                                 normalize=True,
+#                                 kernel="SE",
+#                                 kernel_type="anisotropic",)
 
-        mu, var_after = gp_temp.predict(
-            integration_points, integration_rays_, params, calc_cov=True, return_deriv=False)
-        ecl_after = ecl_acquisition(
-            mu, var_after, threshold=threshold)
-        ier = np.mean(ecl_before - ecl_after)
-        return -ier
-    # 4. Optimize using L-BFGS-B, with a couple random restarts for robustness
+#         mu, var_after = gp_temp.predict(
+#             integration_points, integration_rays_, params, calc_cov=True, return_deriv=False)
+#         ecl_after = ecl_acquisition(
+#             mu, var_after, threshold=threshold)
+#         ier = np.mean(ecl_before - ecl_after)
+#         return -ier
+#     # 4. Optimize using L-BFGS-B, with a couple random restarts for robustness
 
-    D = d  # dimension of direction
-    lb = np.full(D, -2.0)
-    ub = np.full(D, 2.0)
-    # Optionally, can try [-1, 1] or any sufficiently wide box (PSO will normalize inside objective)
+#     D = d  # dimension of direction
+#     lb = np.full(D, -2.0)
+#     ub = np.full(D, 2.0)
+#     # Optionally, can try [-1, 1] or any sufficiently wide box (PSO will normalize inside objective)
 
-    best_w, best_val = pso(
-        negative_ier, lb, ub,
-        pop_size=10*d, maxiter=11, debug=True, seed=seed + 77
-    )
-    v_opt = best_w.reshape(-1, 1)
-    v_opt /= np.linalg.norm(v_opt)
+#     best_w, best_val = pso(
+#         negative_ier, lb, ub,
+#         pop_size=10*d, maxiter=11, debug=True, seed=seed + 77
+#     )
+#     v_opt = best_w.reshape(-1, 1)
+#     v_opt /= np.linalg.norm(v_opt)
 
-    return v_opt
+#     return v_opt
 
 
 # utils.py
@@ -2000,9 +2004,9 @@ def find_next_point_batch(
             sigmas_x = gp[0].sigmas_x
             mus_x = gp[0].mus_x
             
-            candidate_points_norm = utils.normalize_x_data_test(candidate_points.copy(), sigmas_x, mus_x)
+            candidate_points_norm = normalize_x_data_test(candidate_points.copy(), sigmas_x, mus_x)
             if integration_points is not None:
-                integration_points_norm = utils.normalize_x_data_test(integration_points.copy(), sigmas_x, mus_x)
+                integration_points_norm = normalize_x_data_test(integration_points.copy(), sigmas_x, mus_x)
                 n_integration_points = integration_points.shape[0]
         else:
             candidate_points_norm = candidate_points.copy()
@@ -2058,7 +2062,7 @@ def find_next_point_batch(
                 
                 # Normalize the candidate point if needed
                 if gp[0].normalize:
-                    x_cand_norm = utils.normalize_x_data_test(x_cand.copy(), sigmas_x, mus_x)
+                    x_cand_norm = normalize_x_data_test(x_cand.copy(), sigmas_x, mus_x)
                 else:
                     x_cand_norm = x_cand.copy()
                 

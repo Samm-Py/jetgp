@@ -51,6 +51,13 @@ Quick Access
 
    getting_started/index
 
+.. JetGP Module Examples
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   JetGP_module_examples/index
+
 .. JetGP Numerical examples
 .. toctree::
    :hidden:

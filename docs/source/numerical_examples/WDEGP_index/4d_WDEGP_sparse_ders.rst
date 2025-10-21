@@ -144,8 +144,13 @@ Build and Optimize GP
         kernel=kernel, kernel_type=kernel_type
     )
 
-    params = gp_model.optimize_hyperparameters(n_restart_optimizer=n_restart_optimizer,
-                                               swarm_size=swarm_size, verbose = False)
+    params = gp_model.optimize_hyperparameters(
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
+        )
     print("GP model built and optimized.")
 
 Evaluate Model and 2D Slice Visualization

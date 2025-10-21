@@ -156,7 +156,11 @@ class DirectionalDEGPTutorial:
 
         print("  Optimizing hyperparameters...")
         self.params = self.gp_model.optimize_hyperparameters(
-            n_restart_optimizer=cfg.n_restarts, swarm_size=cfg.swarm_size
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
         )
         print("  Hyperparameter optimization: SUCCESS")
 

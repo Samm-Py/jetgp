@@ -3,7 +3,7 @@ from scipy.linalg import cho_solve, cho_factor
 from full_degp import degp_utils as utils
 from line_profiler import profile
 import utils as gen_utils
-
+from hyperparameter_optimizers import OPTIMIZERS
 
 class Optimizer:
     def __init__(self, model):
@@ -95,7 +95,9 @@ class Optimizer:
         return self.negative_log_marginal_likelihood(x0)
 
     @profile
-    def optimize_hyperparameters(self, n_restart_optimizer=20, swarm_size=20, verbose=True, x0= None, local_opt_every=15):
+    def optimize_hyperparameters(    self,
+    optimizer="pso",
+    **kwargs):
         """
         Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
 
@@ -113,33 +115,24 @@ class Optimizer:
         best_x : ndarray
             The optimal set of hyperparameters found.
         """
+
+        if isinstance(optimizer, str):
+            if optimizer not in OPTIMIZERS:
+                raise ValueError(
+                    f"Unknown optimizer '{optimizer}'. Available: {list(OPTIMIZERS.keys())}"
+                )
+            optimizer_fn = OPTIMIZERS[optimizer]
+        else:
+            optimizer_fn = optimizer  # allow passing a callable directly
+
         bounds = self.model.bounds
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
 
-        # Run PSO to minimize the NLL
-        best_x, best_nll = gen_utils.pso(
-            self.nll_wrapper,
-            lb,
-            ub,
-            pop_size=swarm_size,
-            maxiter=n_restart_optimizer,
-            debug=verbose,
-            # omega=0.4,       # High inertia encourages exploration
-            # phip=1.0,        # Moderate personal influence
-            # phig=1.2,        # Low social influence, avoids early convergence
-            minfunc=1e-8,
-            minstep=1e-8,
-            initial_positions=x0,
-            local_opt_every=local_opt_every
-        )
+        best_x, best_val = optimizer_fn(self.nll_wrapper, lb, ub, **kwargs)
 
-        # Store the optimal solution
         self.model.opt_x0 = best_x
-        self.model.opt_nll = best_nll
+        self.model.opt_nll = best_val
 
-        if verbose:
-            print("Best solution:", best_x)
-            print("Objective value:", best_nll)
 
         return best_x

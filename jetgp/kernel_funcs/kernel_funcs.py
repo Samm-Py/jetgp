@@ -42,7 +42,7 @@ class KernelFactory:
         self.bounds = []
         if smoothness_parameter is not None:
             self.alpha = smoothness_parameter
-            self.nu = 2 * smoothness_parameter + 0.5
+            self.nu = smoothness_parameter + 0.5
         self.n_order = n_order
 
     def get_bounds_from_data(self):

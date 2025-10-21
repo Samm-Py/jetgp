@@ -205,9 +205,12 @@ Build and optimize the GP model
    )
 
    params = gp_model.optimize_hyperparameters(
-       n_restart_optimizer=n_restarts,
-       swarm_size=swarm_size, verbose = False
-   )
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
+        )
 
    params
 

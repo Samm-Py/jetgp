@@ -12,6 +12,7 @@ and visualize predictions and derivative approximations.
 Setup
 -----
 
+
 Import necessary packages and set plotting parameters.
 
 .. jupyter-execute::
@@ -152,7 +153,13 @@ Below is the function that implements this procedure:
             normalize=normalize_data, kernel=kernel, kernel_type=kernel_type
         )
 
-        params = gp.optimize_hyperparameters(n_restart_optimizer=n_restarts, swarm_size=swarm_size, verbose=False)
+        params =gp.optimize_hyperparameters(
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
+        )
 
         # Predict function and derivatives
         y_pred_full, y_var_full = gp.predict(X_test, params, calc_cov=True, return_deriv=False)

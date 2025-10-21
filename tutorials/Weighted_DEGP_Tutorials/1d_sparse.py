@@ -33,7 +33,7 @@ class GPConfig:
     lb_x: float = 0.5
     ub_x: float = 2.5
     num_points: int = 10
-    kernel: str = "RQ"
+    kernel: str = "SE"
     kernel_type: str = "isotropic"
     normalize: bool = True
     n_restart_optimizer: int = 15
@@ -188,8 +188,9 @@ class DerivativeGPExperiment:
 
         print("Optimizing hyperparameters...")
         params = self.gp_model.optimize_hyperparameters(
-            n_restart_optimizer=self.config.n_restart_optimizer,
-            swarm_size=self.config.swarm_size
+            optimizer = 'pso',
+            max_iter=self.config.n_restart_optimizer,
+            pop_size=self.config.swarm_size
         )
         print("Hyperparameter optimization complete.")
         return params

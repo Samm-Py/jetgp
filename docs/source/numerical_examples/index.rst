@@ -10,4 +10,4 @@ Here are examples from JetGP’s Gaussian Process framework.
    DEGP Examples <DEGP_index/index>
    WDEGP Examples <WDEGP_index/index>
    DDEGP Examples <DDEGP_index/index>
-   WDDEGP Examples <WDDEGP_index/index>
+

@@ -73,12 +73,16 @@ class DEGPComparisonTutorial:
             kernel_type=self.config.kernel_type
         )
         params = gp.optimize_hyperparameters(
-            n_restart_optimizer=self.config.n_restarts, swarm_size=self.config.swarm_size
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
         )
 
         # 3. Make Predictions (including derivatives)
         y_pred_full, y_var_full = gp.predict(
-            self.X_test, params, calc_cov=True, return_deriv=False
+            self.X_test, params, calc_cov=True, return_deriv=True
         )
 
         # 4. Calculate and store metrics

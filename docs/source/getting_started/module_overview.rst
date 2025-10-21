@@ -10,7 +10,7 @@ The core model families include:
 - **DEGP** – Derivative-Enhanced Gaussian Process  
 - **WDEGP** – Weighted Derivative-Enhanced Gaussian Process  
 - **DDEGP** – Directional Derivative-Enhanced Gaussian Process  
-- **GDDEGP** – Gradient- and Directional-Derivative-Enhanced Gaussian Process  
+- **GDDEGP** – Generalized Directional Derivative-Enhanced Gaussian Process  
 - **WDDEGP** – Weighted Directional Derivative-Enhanced Gaussian Process  
 
 All these models share a common structure and initialization interface.  
@@ -27,8 +27,7 @@ Available Modules
 - **Class:** `degp`  
 - **Description:**  
   Implements a standard Derivative-Enhanced Gaussian Process (DEGP) where function values and their derivatives  
-  (up to arbitrary order) are jointly modeled. The model supports anisotropic kernels and hyperparameter optimization  
-  using PSO or JADE.
+  (up to arbitrary order) are jointly modeled.
 
 **2. wdegp**
 
@@ -40,127 +39,275 @@ Available Modules
   and extended in :cite:`improved_gek`.  
 
   In this formulation, the training data are divided into smaller subsets to build multiple **submodels**,  
-  each trained on a reduced set of function values and derivatives. Predictions from all submodels are then  
-  **combined through weighted summation**, where the weights depend on local variance, model likelihood,  
-  or spatial proximity.  
-
-  This approach preserves the accuracy advantages of derivative-enhanced models while **reducing the computational  
-  cost** associated with large matrix inversions. As shown in high-dimensional aerodynamic optimization problems  
-  involving up to 108 design variables :cite:`HanWeightedGEK`, the weighted formulation achieves accuracy comparable  
-  to full gradient-enhanced kriging at a fraction of the training cost.
+  each trained on a reduced set of derivatives. Predictions from all submodels are then  
+  **combined through weighted summation**. This approach preserves the accuracy advantages of 
+  derivative-enhanced models while **reducing the computational cost** associated with large matrix inversions. 
 
 **3. full_ddegp**
 
 - **File:** `full_ddegp/ddegp.py`  
 - **Class:** `ddegp`  
 - **Description:**  
-  Directional DEGP model that extends DEGP by modeling **directional derivatives** along arbitrary directions.  
-  This is particularly useful in problems with structured input domains (e.g., anisotropic surfaces).
+  Constructs a **Directional Derivative-Enhanced Gaussian Process (DDEGP)** using directional derivative information  
+  evaluated along **global directions**.  
+  This means that all training points share the same derivative direction, allowing the model to capture variation  
+  along specific, predefined axes of sensitivity.  
+  Such an approach is well suited for problems where global sensitivity along known direction(s) is of interest.
 
 **4. full_gddegp**
 
 - **File:** `full_gddegp/gddegp.py`  
 - **Class:** `gddegp`  
 - **Description:**  
-  Combines both gradient-based and directional derivative information into a single model.  
-  This allows fine-grained control of spatial derivative information and improved learning in high-dimensional systems.
+  Implements the **Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)**, an extension of DDEGP  
+  that allows **distinct directional derivative information at each training point**.  
+  In contrast to DDEGP, the directional vectors need not be the same globally, enabling the model to represent  
+  spatially varying directional sensitivities.  
 
 **5. wddegp**
 
 - **File:** `wddegp/wddegp.py`  
 - **Class:** `wddegp`  
 - **Description:**  
-  Weighted Directional DEGP model that introduces weights across derivative directions.  
-  This model generalizes both **WDEGP** and **DDEGP**, allowing selective emphasis of certain derivative components.
+  Implements a **Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)**,  
+  extending DDEGP with a **weighted submodel framework**.  
+  Here, the training data are partitioned into submodels, and **each submodel can use a different directional derivative configuration**,  
+  allowing localized variation in derivative directions.
 
 ------------------------------------------------------------
+
+.. _common_arguments:
 
 Common Arguments
 ----------------
-All JetGP model classes share a set of key arguments during initialization.  
-The following table summarizes these parameters and their purpose.
 
-.. list-table::
+**der_indices**  
+Specifies which derivatives are included in the model.  
+This argument is a **nested list**, where each sublist contains all derivative components of a particular order.  
+Each derivative component is itself a list specifying the variable indices and derivative order.  
+Examples:
+
+**1D function**  
+::
+  
+  der_indices = [[[[1, 1]]]]        # first-order derivative
+  der_indices = [[[[1, 1]], [[1, 2]]]]  # first- and second-order derivatives
+
+**2D function** – all derivatives up to second order  
+::
+  
+  der_indices = [
+      [ [[1, 1]], [[2, 1]] ],                      # first-order derivatives
+      [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ]    # second-order derivatives
+  ]
+
+**2D function** – all derivatives up to third order  
+::
+  
+  der_indices = [
+      [ [[1, 1]], [[2, 1]] ],                                        # first-order
+      [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ],                     # second-order
+      [ [[1, 3]], [[1, 2], [2, 1]], [[1, 1], [2, 2]], [[2, 3]] ]    # third-order
+  ]
+
+.. _normalize_argument:
+
+**normalize**  
+Controls whether training inputs and outputs are **normalized** before model fitting.  
+Normalization significantly improves **numerical stability** in covariance matrix computation and  
+**conditioning** during hyperparameter optimization, especially when derivative observations are included.  
+
+**If ``True``**, the following scaling is applied:
+
+- **Inputs:**  
+  Each input dimension :math:`x_j` is standardized to zero mean and unit variance:
+
+  .. math::
+     x'_j = \frac{x_j - \mu_{x,j}}{\sigma_{x,j}}
+
+- **Outputs:**  
+  Function values are standardized as
+
+  .. math::
+     y' = \frac{y - \mu_y}{\sigma_y}
+
+- **Derivatives:**  
+  Derivative observations are rescaled according to the chain rule,  
+  ensuring consistent scaling between function and derivative values.  
+
+  For the first derivative :math:`\frac{\partial y}{\partial x_j}`:
+
+  .. math::
+     \left(\frac{\partial y'}{\partial x'_j}\right)
+     = \frac{\sigma_{x,j}}{\sigma_y}
+     \left(\frac{\partial y}{\partial x_j}\right)
+
+  For higher-order derivatives of total order :math:`m`:
+
+  .. math::
+     \left(\frac{\partial^m y'}{\partial x'_{j_1}\cdots \partial x'_{j_m}}\right)
+     = \frac{\sigma_{x,j_1}\sigma_{x,j_2}\cdots\sigma_{x,j_m}}{\sigma_y}
+     \left(\frac{\partial^m y}{\partial x_{j_1}\cdots \partial x_{j_m}}\right)
+
+These transformations preserve the covariance structure between function values and derivatives,  
+while keeping all data components on comparable scales.  
+
+**If ``False``**, raw input and output values are used directly,  
+which may lead to ill-conditioned covariance matrices if feature magnitudes vary widely.
+
+**Directional Derivatives:**
+
+When **directional derivatives** are used (e.g., derivatives evaluated along
+specific direction vectors or rays), normalization involves a preliminary
+step to ensure consistency between the original and normalized input spaces.
+
+
+As above, inputs and outputs are normalized according to the following:
+
+.. math::
+
+   x'_j = \frac{x_j - \mu_{x,j}}{\sigma_{x,j}}, \qquad
+   y' = \frac{y - \mu_y}{\sigma_y},
+
+where :math:`\mu_{x,j}, \sigma_{x,j}` are the mean and standard deviation of
+the inputs, and :math:`\mu_y, \sigma_y` are those of the output.
+
+Directional vectors are scaled accordingly:
+
+.. math::
+
+   v'_j = \frac{v_j}{\sigma_{x,j}},
+
+so that directional information is preserved in normalized coordinates.
+Using the **chain rule**, the derivative with respect to normalized inputs is
+
+.. math::
+
+   \frac{\partial y'}{\partial x'_j} = 
+   \frac{\partial y'}{\partial y} \frac{\partial y}{\partial x_j} \frac{\partial x_j}{\partial x'_j} 
+   = \frac{1}{\sigma_y} \frac{\partial y}{\partial x_j} \sigma_{x,j}.
+
+Multiplying by the normalized direction vector :math:`\mathbf{v}'` gives
+
+.. math::
+
+   \frac{\partial y'}{\partial \mathbf{v}'} 
+   = \sum_{j=1}^{d} v'_j \frac{\partial y'}{\partial x'_j} 
+   = \sum_{j=1}^{d} \frac{v_j}{\sigma_{x,j}} \frac{\sigma_{x,j}}{\sigma_y} \frac{\partial y}{\partial x_j} 
+   = \frac{1}{\sigma_y} \sum_{j=1}^{d} v_j \frac{\partial y}{\partial x_j}.
+
+The input scaling factors :math:`\sigma_{x,j}` cancel, leaving only a global
+scaling by :math:`1/\sigma_y`. Therefore, the normalized directional derivative becomes:
+
+.. math::
+
+   \frac{\partial y'}{\partial \mathbf{v}'} = \frac{1}{\sigma_y} 
+   \frac{\partial y}{\partial \mathbf{v}}.
+
+Higher-Order Directional Derivatives
+------------------------------------
+
+The same logic extends to second-order or higher derivatives:
+
+.. math::
+
+   \frac{\partial^n y'}{\partial \mathbf{v}'^n} 
+   = \frac{1}{\sigma_y} 
+     \sum_{j_1,\ldots,j_n} v_{j_1}\sigma_{x,j_1} \cdots v_{j_n}\sigma_{x,j_n} 
+     \frac{\partial^n y}{\partial x_{j_1}\cdots\partial x_{j_n}}.
+
+and the normalized higher order directional derivative becomes:
+
+.. math::
+
+   \frac{\partial^n y'}{\partial \mathbf{v}'^n} = \frac{1}{\sigma_y} 
+   \frac{\partial^n y}{\partial \mathbf{v}^n}.
+
+Notes
+-----
+
+- Normalization statistics (means and standard deviations) are stored internally  
+  and automatically applied when evaluating predictions on new test points.  
+- When predictions are returned, JetGP automatically rescales them to the original physical units.
+
+.. _kernel_argument:
+
+**kernel**  
+Specifies the kernel function used in the GP covariance structure.  
+Available kernels are include:
+
+- ``"SE"`` – Squared Exponential (RBF)  
+- ``"RQ"`` – Rational Quadratic  
+- ``"Matern"`` – Matern family of kernels  
+- ``"SineExp"`` – Sine-Exponential kernel  
+
+The choice of kernel affects smoothness, differentiability, and correlation structure of the function being modeled.
+
+**kernel_type**  
+Determines whether the kernel is **isotropic** or **anisotropic**:
+
+- ``"isotropic"`` → a single length scale :math:`\ell` shared across all input dimensions.  
+- ``"anisotropic"`` → each input dimension :math:`j` has its own length scale :math:`\ell_j`.  
+  Covariance is computed dimension-wise, allowing directional dependencies and varying smoothness.
+
+**Kernel Formulas (Isotropic vs Anisotropic)**
+
+.. list-table:: Kernel formulas for isotropic and anisotropic types
    :header-rows: 1
-   :widths: 20 80
+   :widths: 20 40 40
 
-   * - **Argument**
-     - **Description**
+   * - Kernel
+     - Isotropic
+     - Anisotropic
+   * - SE (RBF)
+     - .. math:: k(x, x') = \sigma_f^2 \exp\Big(-\frac{\|x-x'\|^2}{2 \ell^2}\Big)
+     - .. math:: k(x, x') = \sigma_f^2 \exp\Big(-\frac{1}{2} \sum_{j=1}^d \frac{(x_j - x'_j)^2}{\ell_j^2}\Big)
+   * - RQ
+     - .. math:: k(x, x') = \sigma_f^2 \Big(1 + \frac{\|x-x'\|^2}{2 \alpha \ell^2} \Big)^{-\alpha}
+     - .. math:: k(x, x') = \sigma_f^2 \Big(1 + \frac{1}{2 \alpha} \sum_{j=1}^d \frac{(x_j - x'_j)^2}{\ell_j^2} \Big)^{-\alpha}
+   * - Matern
+     - .. math:: r = \frac{\|x-x'\|}{\ell}, \quad k(x,x') = \frac{2^{1-\nu}}{\Gamma(\nu)} (\sqrt{2\nu} r)^\nu K_\nu(\sqrt{2\nu} r)
+     - .. math:: r = \sqrt{\sum_{j=1}^d \frac{(x_j - x'_j)^2}{\ell_j^2}}, \quad k(x,x') = \frac{2^{1-\nu}}{\Gamma(\nu)} (\sqrt{2\nu} r)^\nu K_\nu(\sqrt{2\nu} r)
+   * - SineExp
+     - .. math:: k(x, x') = \sigma_f^2 \exp\Big(-2 \frac{\sum_{j=1}^d \sin^2(\pi (x_j - x'_j) / p_j)}{\ell^2}\Big)
+     - .. math:: k(x, x') = \sigma_f^2 \exp\Big(-2 \sum_{j=1}^d \frac{\sin^2(\pi (x_j - x'_j) / p_j)}{\ell_j^2}\Big)
 
-   * - ``der_indices``
-     - Specifies which derivatives are included in the model and how they map to hypercomplex tags.  
-       This argument is a **nested list**, where each sublist contains all derivative components of a particular order.  
-       Each derivative component is itself a list specifying the variable indices and derivative order.  
-       Examples:
 
-       **1D function**  
-       ::
-         
-         der_indices = [[[[1, 1]]]]        # first-order derivative
-         der_indices = [[[[1, 1]], [[1, 2]]]]  # first- and second-order derivatives
+**smoothness_parameter**  
+Specifies the smoothness of the covariance function, primarily used for the **Matern** kernel.  
+This parameter controls the differentiability of functions sampled from the Gaussian Process.
 
-       **2D function** – all derivatives up to second order  
-       ::
-         
-         der_indices = [
-             [ [[1, 1]], [[2, 1]] ],                      # first-order derivatives
-             [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ]    # second-order derivatives
-         ]
+- Denoted as :math:`\nu = \text{smoothness\_parameter} + 0.5`.  
+- Only **integer values** of ``smoothness_parameter`` are supported.  
+- This parameter **must be provided** when ``kernel="Matern"``.  
 
-       **2D function** – all derivatives up to third order  
-       ::
-         
-         der_indices = [
-             [ [[1, 1]], [[2, 1]] ],                                        # first-order
-             [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ],                     # second-order
-             [ [[1, 3]], [[1, 2], [2, 1]], [[1, 1], [2, 2]], [[2, 3]] ]    # third-order
-         ]
+**Interpretation of integer smoothness values:**
 
-       **Explanation:**  
-       - Each top-level list corresponds to a derivative order (first, second, third, etc.).  
-       - Each sublist contains all derivative components of that order.  
-       - Each component is a list of pairs: ``[variable_index, derivative_order]``  
-         - e.g., ``[[1, 2]]`` → second derivative of the first variable  
-         - e.g., ``[[1, 1], [2, 1]]`` → mixed derivative ∂²/∂x₁∂x₂  
-       - This structure allows the model to automatically construct the correct kernel derivatives for each input.
-       - **Convenience function:** JetGP provides ``gen_OTI_indices`` in ``utils`` to automatically generate these indices for any dimension ``d`` and maximum order ``p``:
-         ::
-           
-           from utils import gen_OTI_indices
-           der_indices = gen_OTI_indices(d, p)
+.. list-table:: Matern kernel smoothness interpretation
+   :header-rows: 1
+   :widths: 20 20 20
 
-   * - ``normalize``
-     - If ``True``, the training inputs and outputs are normalized before model fitting.  
-       Normalization improves numerical stability during kernel evaluation and hyperparameter optimization.  
-       When set to ``False``, raw data values are used directly.
+   * - smoothness_parameter
+     - ν
+     - Differentiability
+   * - 0
+     - 0.5
+     - Continuous, non-differentiable
+   * - 1
+     - 1.5
+     - Once differentiable
+   * - 2
+     - 2.5
+     - Twice differentiable
+   * - 3
+     - 3.5
+     - Three times differentiable
 
-   * - ``kernel``
-     - Specifies the kernel function used in the GP covariance structure.  
-       Available kernels typically include:
-       - ``"SE"`` – Squared Exponential (RBF)  
-       - ``"RQ"`` – Rational Quadratic  
-       - ``"Matern"`` – Matern family of kernels  
-       - ``"SineExp"`` – Sine-Exponential kernel  
-       
-       The choice of kernel affects smoothness and correlation structure.
-
-   * - ``kernel_type``
-     - Determines whether the kernel is **isotropic** or **anisotropic**:
-       - ``"isotropic"`` → single length scale shared across all input dimensions  
-       - ``"anisotropic"`` → distinct length scale per dimension  
-       
-       Anisotropic kernels provide flexibility in modeling directional dependencies in multivariate inputs.
-
-------------------------------------------------------------
-
-Additional Modules
-------------------
-JetGP also includes several helper modules supporting core functionality:
-
-- **kernel_funcs** (`kernel_funcs/kernel_funcs.py`): Defines base covariance functions used across models.  
-- **utils** (`utils.py`): Utility functions for normalization, matrix operations, and general helpers.  
-- **plotting_helper** (`plotting_helper.py`): Tools for visualizing function predictions, residuals, and kernel surfaces.  
-- **acquisition_functions** (`acquisition_functions/acquisition_funcs.py`): Acquisition strategies for active learning or Bayesian optimization.
+.. note::  
+  - For kernels other than Matern, this parameter is ignored.  
+  - When using **derivative-enhanced GPs**, it is recommended that  
+    ``smoothness_parameter = 2 × (max derivative order used for training)``  
+    to ensure that the kernel is sufficiently smooth to support the highest-order derivatives.
 
 ------------------------------------------------------------
 

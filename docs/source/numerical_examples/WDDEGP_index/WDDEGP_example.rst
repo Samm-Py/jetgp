@@ -145,7 +145,13 @@ Train WDD-GP Model
             submodel_indices, submodel_der_indices, rays_data_all,
             normalize=normalize_data, kernel=kernel, kernel_type=kernel_type
         )
-        params = gp_model.optimize_hyperparameters(n_restart_optimizer=n_restarts, swarm_size=swarm_size)
+        params = gp_model.optimize_hyperparameters(
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
+        )
         return gp_model, params
 
 Evaluate Model

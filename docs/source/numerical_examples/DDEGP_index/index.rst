@@ -5,9 +5,7 @@ Examples related to arbitrary order derivative-enhanced Gaussian Processes (DDEG
 
 .. toctree::
    :maxdepth: 2
-   :caption: DEGP Examples
-
-   DDEGP_2d
+   :caption: DDEGP Examples
+   
    DDEGP_3d
-   GDDEGP_1
-   GDDEGP_2
+   GDDEGP_3d
