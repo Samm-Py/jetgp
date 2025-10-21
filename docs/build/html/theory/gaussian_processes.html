@@ -1,0 +1,585 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Gaussian Processes &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'theory/gaussian_processes';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Derivative-Enhanced Gaussian Processes" href="derivative_enhanced_gaussian_processes.html" />
+    <link rel="prev" title="Theory Manual" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Theory Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-Output Gaussian Processes</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">JetGP API</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/theory/gaussian_processes.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/theory/gaussian_processes.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Gaussian Processes</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="gaussian-processes">
+<h1>Gaussian Processes<a class="headerlink" href="#gaussian-processes" title="Link to this heading">#</a></h1>
+<p>Gaussian Processes (GPs), or Kriging models, have become one of the most commonly used surrogate modeling techniques in many engineering design applications due to their ability to deliver both predictions and uncertainty estimates <span id="id1">[<a class="reference internal" href="directional_degp.html#id13" title="Matheron Georges. Principles of geostatistics. Economic geology, 58(8):1246–1266, 1963.">1</a>, <a class="reference internal" href="directional_degp.html#id3" title="William J. Welch, Robert J. Buck, Jerome Sacks, Henry P. Wynn, and Toby J. Mitchell. Screening, predicting, and computer experiments. Technometrics, 34(1):15–25, 1992. URL: https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229, arXiv:https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229, doi:10.1080/00401706.1992.10485229.">2</a>]</span>. They are a non-parametric supervised learning method used to solve regression, optimization, and probabilistic classification problems <span id="id2">[<a class="reference internal" href="directional_degp.html#id15" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">3</a>]</span>. In particular, a Gaussian process can be viewed as a collection of random variables, any finite number of which have a joint Gaussian distribution. A Gaussian Process model can be completely determined by its mean function <span class="math notranslate nohighlight">\(m(\mathbf{x})\)</span> and covariance function <span class="math notranslate nohighlight">\(k(\mathbf{x}, \mathbf{x}')\)</span> of a real process <span class="math notranslate nohighlight">\(f(\mathbf{x})\)</span> as given in <a class="reference internal" href="#equation-eqn2">(1)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-eqn2">
+<span class="eqno">(1)<a class="headerlink" href="#equation-eqn2" title="Link to this equation">#</a></span>\[\begin{split}\begin{split}
+    m(\mathbf{x}) &amp;= \mathbb{E}[f(\mathbf{x})], \\
+    k(\mathbf{x}, \mathbf{x}') &amp;= \mathbb{E}[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]
+\end{split}\end{split}\]</div>
+<p>The Gaussian Process can then be written as in equation <a class="reference internal" href="#equation-eqn3">(2)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-eqn3">
+<span class="eqno">(2)<a class="headerlink" href="#equation-eqn3" title="Link to this equation">#</a></span>\[f(\mathbf{x}) \sim \mathcal{GP}(m(\mathbf{x}), k(\mathbf{x}, \mathbf{x}'))\]</div>
+<p>The covariance function in Equation <a class="reference internal" href="#equation-eqn2">(1)</a> is often approximated by a kernel function which assigns a specific covariance between pairs of random variables so that <span class="math notranslate nohighlight">\(\text{cov}\left(f(\mathbf{x}), f(\mathbf{x}')\right) = k(\mathbf{x}, \mathbf{x}')\)</span>. The kernel function can take on various forms, one of the most commonly used functions, the squared exponential, is given in Equation <a class="reference internal" href="#equation-eqn4">(3)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-eqn4">
+<span class="eqno">(3)<a class="headerlink" href="#equation-eqn4" title="Link to this equation">#</a></span>\[K_{SE}(\mathbf{x}, \mathbf{x}', \sigma_f^2, \boldsymbol{\theta}) =
+\sigma_f^2 \exp\left(-\sum\limits_{i = 1}^{d} \frac{(x_i - x'_i)^2}{2 \theta_i^2} \right)\]</div>
+<p>In this function, the parameters <span class="math notranslate nohighlight">\(\sigma_f^2\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\theta}\)</span>, collectively denoted as <span class="math notranslate nohighlight">\(\boldsymbol{\psi} = \{\sigma_f^2, \boldsymbol{\theta}\}\)</span>, are the hyperparameters of the model, which are learned from the data:</p>
+<ul class="simple">
+<li><p><span class="math notranslate nohighlight">\(\sigma_f^2\)</span> is the <strong>variance</strong>, which is a scaling factor that controls the overall vertical variation of the function.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\theta_i\)</span> is the <strong>length scale</strong> for each input dimension <span class="math notranslate nohighlight">\(i\)</span>. It determines how quickly the correlation between points decreases with distance. A small length scale means the function varies rapidly, while a large length scale indicates a smoother function.</p></li>
+</ul>
+<p>To make predictions using a Gaussian process model, we assume an observed training dataset <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> containing <span class="math notranslate nohighlight">\(n\)</span> input-output pairs:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{D} = \left\{\mathbf{X}, \mathbf{Y} \right\} = \left\{(\mathbf{x}_i, y_i) \mid i = 1, \ldots, n \right\}\]</div>
+<p>where each input <span class="math notranslate nohighlight">\(\mathbf{x}_i \in \mathbb{R}^d\)</span> has a corresponding observed output <span class="math notranslate nohighlight">\(y_i = f(\mathbf{x}_i)\)</span>. For now, we will assume the output of <span class="math notranslate nohighlight">\(f\)</span> is scalar, though this framework can be generalized to vector outputs, as discussed in Section <span class="xref std std-ref">MOGPs</span>.</p>
+<p>To predict outputs at a new set of test locations, <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span>, we model the joint distribution over the training and test outputs. It is common to assume a zero-mean function for the GP, such that <span class="math notranslate nohighlight">\(m(\mathbf{x}) = 0\)</span>. This assumption simplifies the model but is not overly restrictive, as it only constrains the prior distribution; the posterior predictive mean will be non-zero and adapt to the data. With these assumptions, the joint distribution of the training outputs <span class="math notranslate nohighlight">\(\mathbf{y} = f(\mathbf{X})\)</span> and the test outputs <span class="math notranslate nohighlight">\(\mathbf{y}_* = f(\mathbf{X}_*)\)</span> is given by:</p>
+<div class="math notranslate nohighlight" id="equation-eqn-joint-dist">
+<span class="eqno">(4)<a class="headerlink" href="#equation-eqn-joint-dist" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
+    \mathbf{y} \\
+    \mathbf{y}_*
+\end{pmatrix}
+\sim \mathcal{N}\left(
+\begin{pmatrix}
+    \mathbf{0} \\
+    \mathbf{0}
+\end{pmatrix},
+\begin{pmatrix}
+    K(\mathbf{X}, \mathbf{X}) &amp; K(\mathbf{X}, \mathbf{X}_*) \\
+    K(\mathbf{X}_*, \mathbf{X}) &amp; K(\mathbf{X}_*, \mathbf{X}_*)
+\end{pmatrix}
+\right)\end{split}\]</div>
+<p>For notational simplicity, we can partition this covariance matrix into blocks:</p>
+<div class="math notranslate nohighlight" id="equation-eqn-cov-blocks">
+<span class="eqno">(5)<a class="headerlink" href="#equation-eqn-cov-blocks" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
+    \boldsymbol{\Sigma}_{11} &amp; \boldsymbol{\Sigma}_{12} \\
+    \boldsymbol{\Sigma}_{21} &amp; \boldsymbol{\Sigma}_{22}
+\end{pmatrix}
+=
+\begin{pmatrix}
+    K(\mathbf{X}, \mathbf{X}) &amp; K(\mathbf{X}, \mathbf{X}_*) \\
+    K(\mathbf{X}_*, \mathbf{X}) &amp; K(\mathbf{X}_*, \mathbf{X}_*)
+\end{pmatrix}\end{split}\]</div>
+<p>From the multivariate Gaussian theorem, the conditional distribution of a Gaussian is itself Gaussian. This fact allows for making predictions at the test points <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span> conditioned on the training data <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. Using the block matrix notation defined in Equation <a class="reference internal" href="#equation-eqn-cov-blocks">(5)</a>, the posterior predictive distribution is given by:</p>
+<div class="math notranslate nohighlight" id="equation-eqn-gp-posterior-block">
+<span class="eqno">(6)<a class="headerlink" href="#equation-eqn-gp-posterior-block" title="Link to this equation">#</a></span>\[\begin{split}\begin{split}
+    p(\mathbf{y}_* \mid \mathbf{y}) &amp;= \mathcal{N}(\boldsymbol{\mu}_{*}, \boldsymbol{\Sigma}_{*}) \\
+    \boldsymbol{\mu}_{*} &amp;= \boldsymbol{\Sigma}_{21} \boldsymbol{\Sigma}_{11}^{-1} \mathbf{y} \\
+    \boldsymbol{\Sigma}_{*} &amp;=  \boldsymbol{\Sigma}_{22} - \boldsymbol{\Sigma}_{21} \boldsymbol{\Sigma}_{11}^{-1} \boldsymbol{\Sigma}_{12}
+\end{split}\end{split}\]</div>
+<p>The kernel hyperparameters, <span class="math notranslate nohighlight">\(\psi\)</span>, are not set manually but are instead learned from the training data <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. A standard approach is to find the values that maximize the log marginal likelihood of the observations, <span class="math notranslate nohighlight">\(p(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\psi})\)</span> <span id="id3">[<a class="reference internal" href="directional_degp.html#id15" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">3</a>]</span>. For a noise-free model, the log marginal likelihood is given by:</p>
+<div class="math notranslate nohighlight" id="equation-mll">
+<span class="eqno">(7)<a class="headerlink" href="#equation-mll" title="Link to this equation">#</a></span>\[\log p(\mathbf{y}|\mathbf{X}, \boldsymbol{\psi}) =
+-\frac{1}{2} \mathbf{y}^\top \mathbf{K}_{\boldsymbol{\psi}}^{-1} \mathbf{y}
+- \frac{1}{2}\log|\mathbf{K}_{\boldsymbol{\psi}}|
+- \frac{n}{2}\log 2\pi\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{K}_{\boldsymbol{\psi}} = K(\mathbf{X},\mathbf{X})\)</span>. Optimized hyperparameters, <span class="math notranslate nohighlight">\(\boldsymbol{\psi}^*\)</span>, are then selected according to Equation <a class="reference internal" href="#equation-maxmll">(8)</a>.</p>
+<div class="math notranslate nohighlight" id="equation-maxmll">
+<span class="eqno">(8)<a class="headerlink" href="#equation-maxmll" title="Link to this equation">#</a></span>\[\boldsymbol{\psi}^* = \arg\max_{\boldsymbol{\psi}} \left( \log p(\mathbf{y}|\mathbf{X}, \boldsymbol{\psi}) \right)\]</div>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Theory Manual</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="derivative_enhanced_gaussian_processes.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Derivative-Enhanced Gaussian Processes</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,864 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Hyperparameter Optimization &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started/hyperparameter_optimization';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Making Predictions" href="making_predictions.html" />
+    <link rel="prev" title="Initializing JetGP Modules" href="Initializing_JetGP_Modules.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">JetGP API</a></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Getting Started with JetGP</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/getting_started/hyperparameter_optimization.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/getting_started/hyperparameter_optimization.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Hyperparameter Optimization</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-arguments">Common Arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-optimizers">Available Optimizers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="hyperparameter-optimization">
+<h1>Hyperparameter Optimization<a class="headerlink" href="#hyperparameter-optimization" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>JetGP uses <strong>maximum likelihood estimation (MLE)</strong> to optimize the hyperparameters of Gaussian Process models.
+The optimization is performed after model initialization and before making predictions.
+All GP modules share a common optimization interface through the <code class="docutils literal notranslate"><span class="pre">optimize_hyperparameters()</span></code> method.</p>
+<p>JetGP supports multiple optimization algorithms, ranging from gradient-based methods to
+population-based metaheuristics, allowing users to choose the most appropriate approach for their problem.</p>
+</section>
+<hr class="docutils" />
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">#</a></h2>
+<p>After initializing a GP model (e.g., <code class="docutils literal notranslate"><span class="pre">degp</span></code>, <code class="docutils literal notranslate"><span class="pre">wdegp</span></code>, <code class="docutils literal notranslate"><span class="pre">ddegp</span></code>, etc.),
+hyperparameters are optimized by calling the <code class="docutils literal notranslate"><span class="pre">optimize_hyperparameters()</span></code> method:</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize the model</span>
+<span class="n">gp</span> <span class="o">=</span> <span class="n">degp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">n_bases</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Optimize hyperparameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;cobyla&#39;</span><span class="p">,</span>
+    <span class="n">n_restart_optimizer</span><span class="o">=</span><span class="mi">10</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The method returns the optimized hyperparameters, which are automatically stored within the model
+and used for subsequent predictions.</p>
+</section>
+<hr class="docutils" />
+<section id="common-arguments">
+<h2>Common Arguments<a class="headerlink" href="#common-arguments" title="Link to this heading">#</a></h2>
+<p><strong>optimizer</strong>
+Specifies which optimization algorithm to use for hyperparameter tuning.
+Available options:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;pso&quot;</span></code> – Particle Swarm Optimization</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;jade&quot;</span></code> – JADE (Adaptive Differential Evolution)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;lbfgs&quot;</span></code> – Limited-memory BFGS (gradient-based)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;powell&quot;</span></code> – Powell’s derivative-free method</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;cobyla&quot;</span></code> – Constrained Optimization BY Linear Approximation</p></li>
+</ul>
+<p><strong>n_restart_optimizer</strong>
+Number of random restarts for the optimization procedure.
+Multiple restarts help avoid local optima by initializing the search from different starting points.</p>
+<ul class="simple">
+<li><p><strong>For gradient-based methods</strong> (<code class="docutils literal notranslate"><span class="pre">lbfgs</span></code>, <code class="docutils literal notranslate"><span class="pre">powell</span></code>, <code class="docutils literal notranslate"><span class="pre">cobyla</span></code>): Each restart begins from a
+randomly sampled initial hyperparameter configuration (unless <code class="docutils literal notranslate"><span class="pre">x0</span></code> is provided for the first restart).
+The best result across all restarts is returned.</p></li>
+<li><p><strong>For population-based methods</strong> (<code class="docutils literal notranslate"><span class="pre">pso</span></code>, <code class="docutils literal notranslate"><span class="pre">jade</span></code>): This parameter is <strong>ignored</strong>. These methods
+perform a single optimization run using their population-based search strategy, which inherently
+explores multiple regions of the search space.</p></li>
+</ul>
+<p><strong>Default:</strong> <code class="docutils literal notranslate"><span class="pre">10</span></code></p>
+<p><strong>x0</strong> (optional)
+Initial guess for hyperparameters, used only for gradient-based methods (<code class="docutils literal notranslate"><span class="pre">lbfgs</span></code>, <code class="docutils literal notranslate"><span class="pre">powell</span></code>, <code class="docutils literal notranslate"><span class="pre">cobyla</span></code>).
+If provided, the first optimization run starts from this point, while subsequent restarts use random initialization.
+Population-based methods (<code class="docutils literal notranslate"><span class="pre">pso</span></code>, <code class="docutils literal notranslate"><span class="pre">jade</span></code>) use <code class="docutils literal notranslate"><span class="pre">initial_positions</span></code> instead.</p>
+<p><strong>debug</strong>
+If <code class="docutils literal notranslate"><span class="pre">True</span></code>, prints intermediate optimization results during execution.
+Useful for monitoring convergence and diagnosing optimization issues.</p>
+<p><strong>Default:</strong> <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+</section>
+<hr class="docutils" />
+<section id="available-optimizers">
+<h2>Available Optimizers<a class="headerlink" href="#available-optimizers" title="Link to this heading">#</a></h2>
+<p><strong>1. pso (Particle Swarm Optimization)</strong></p>
+<p>A population-based metaheuristic that simulates social behavior of particles searching for optima.
+Each particle represents a candidate solution that moves through the search space, influenced by
+its own best position and the global best position found by the swarm.</p>
+<p>Unlike gradient-based methods, PSO performs a <strong>single optimization run</strong> without restarts,
+as the population naturally explores multiple regions simultaneously.</p>
+<p><strong>Recommended for:</strong>
+- High-dimensional hyperparameter spaces
+- Non-smooth likelihood surfaces
+- Initial exploration when gradient information is unreliable
+- Multi-modal optimization landscapes</p>
+<p><strong>Additional keyword arguments:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pop_size</span></code> – Number of particles in the swarm (default: <code class="docutils literal notranslate"><span class="pre">20</span></code>)
+Larger populations improve exploration but increase computational cost</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_generations</span></code> – Maximum number of generations/iterations (default: <code class="docutils literal notranslate"><span class="pre">50</span></code>)
+More generations allow better convergence to global optimum</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">local_opt_every</span></code> – Frequency of local gradient-based refinement (default: <code class="docutils literal notranslate"><span class="pre">15</span></code>)
+Every N generations, applies a gradient-based optimization (L-BFGS-B) to the current global best position.
+This <strong>hybrid approach</strong> combines global exploration from PSO with local exploitation from gradients,
+significantly improving convergence speed and final solution quality. Set to <code class="docutils literal notranslate"><span class="pre">None</span></code> or a large number
+to disable local optimization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial_positions</span></code> – Optional array of initial particle positions (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+Shape: <code class="docutils literal notranslate"><span class="pre">(pop_size,</span> <span class="pre">n_dims)</span></code>. If provided, initializes swarm at specified locations instead of random sampling</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">omega</span></code> – Inertia weight controlling particle momentum (default: <code class="docutils literal notranslate"><span class="pre">0.5</span></code>)
+Higher values (0.7-0.9) encourage exploration; lower values (0.4-0.6) encourage exploitation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">phip</span></code> – Cognitive acceleration coefficient (default: <code class="docutils literal notranslate"><span class="pre">0.5</span></code>)
+Controls attraction to particle’s personal best position (typical range: 0.5-2.5)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">phig</span></code> – Social acceleration coefficient (default: <code class="docutils literal notranslate"><span class="pre">0.5</span></code>)
+Controls attraction to global best position (typical range: 0.5-2.5)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code> – Random seed for reproducibility (default: <code class="docutils literal notranslate"><span class="pre">42</span></code>)</p></li>
+</ul>
+<p><strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code> parameter is ignored for PSO.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>  <span class="c1"># Apply gradient refinement every 20 generations</span>
+    <span class="n">omega</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">phip</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="n">phig</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">123</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p><strong>2. jade (Adaptive Differential Evolution)</strong></p>
+<p>An evolutionary algorithm based on the JADE (Adaptive Differential Evolution with Optional External Archive)
+variant. It adaptively adjusts mutation and crossover parameters during optimization and maintains
+an archive of recently explored solutions to improve diversity.</p>
+<p>Like PSO, JADE performs a <strong>single optimization run</strong> without restarts, as the population-based
+search inherently explores multiple regions of the hyperparameter space.</p>
+<p><strong>Recommended for:</strong>
+- Rugged likelihood surfaces with many local optima
+- Problems where gradient-based methods fail to converge
+- Robust global search requirements
+- Complex, non-linear optimization landscapes</p>
+<p><strong>Additional keyword arguments:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pop_size</span></code> – Number of individuals in the population (default: <code class="docutils literal notranslate"><span class="pre">20</span></code>)
+Larger populations improve exploration but increase computational cost</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_generations</span></code> – Maximum number of generations (default: <code class="docutils literal notranslate"><span class="pre">50</span></code>)
+More generations allow better convergence to global optimum</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code> – Proportion of best individuals for mutation (default: <code class="docutils literal notranslate"><span class="pre">0.1</span></code>)
+Controls the greediness of the mutation strategy (typical range: 0.05-0.2).
+Lower values make the search more exploitative; higher values increase exploration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">c</span></code> – Learning rate for parameter adaptation (default: <code class="docutils literal notranslate"><span class="pre">0.1</span></code>)
+Controls how quickly F and CR parameters adapt (typical range: 0.05-0.2).
+Higher values lead to faster adaptation but may be less stable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">local_opt_every</span></code> – Frequency of local gradient-based refinement (default: <code class="docutils literal notranslate"><span class="pre">15</span></code>)
+Every N generations, applies a gradient-based optimization (L-BFGS-B) to the current best individual.
+This <strong>hybrid strategy</strong> combines JADE’s robust global search with gradient-based local refinement,
+improving both convergence speed and solution quality. Set to <code class="docutils literal notranslate"><span class="pre">None</span></code> or a large number to disable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">initial_positions</span></code> – Optional array of initial population positions (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+Shape: <code class="docutils literal notranslate"><span class="pre">(pop_size,</span> <span class="pre">n_dims)</span></code>. If provided, initializes population at specified locations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code> – Random seed for reproducibility (default: <code class="docutils literal notranslate"><span class="pre">42</span></code>)</p></li>
+</ul>
+<p><strong>Note:</strong> The <code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code> parameter is ignored for JADE.</p>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+    <span class="n">p</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+    <span class="n">c</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>  <span class="c1"># Apply gradient refinement every 25 generations</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">456</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p><strong>3. lbfgs (Limited-memory BFGS)</strong></p>
+<p>A gradient-based quasi-Newton method that approximates the inverse Hessian matrix using
+limited memory. Extremely efficient for smooth objective functions with reliable gradients.</p>
+<p>This optimizer uses a <strong>multi-restart strategy</strong> to explore different regions of the hyperparameter space
+and avoid local optima.</p>
+<p><strong>Recommended for:</strong>
+- Low to moderate dimensional problems (typically &lt; 20 hyperparameters)
+- Smooth likelihood surfaces
+- Fast convergence when good initial guesses are available
+- Production use when gradients are reliable</p>
+<p><strong>Additional keyword arguments:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code> – Initial guess for first restart (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+If not provided, uses random initialization within bounds</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code> – Number of random restarts (default: <code class="docutils literal notranslate"><span class="pre">10</span></code>)
+More restarts improve robustness against local optima</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxiter</span></code> – Maximum number of iterations per restart (default: <code class="docutils literal notranslate"><span class="pre">100</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ftol</span></code> – Function tolerance for convergence (default: <code class="docutils literal notranslate"><span class="pre">1e-8</span></code>)
+Optimization stops when <code class="docutils literal notranslate"><span class="pre">(f^k</span> <span class="pre">-</span> <span class="pre">f^{k+1})/max{|f^k|,|f^{k+1}|,1}</span> <span class="pre">&lt;=</span> <span class="pre">ftol</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gtol</span></code> – Gradient tolerance for convergence (default: <code class="docutils literal notranslate"><span class="pre">1e-8</span></code>)
+Optimization stops when <code class="docutils literal notranslate"><span class="pre">max{|proj</span> <span class="pre">g_i|}</span> <span class="pre">&lt;=</span> <span class="pre">gtol</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disp</span></code> – Display convergence messages (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">debug</span></code> – Print intermediate results (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span>
+    <span class="n">n_restart_optimizer</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
+    <span class="n">gtol</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p><strong>4. powell (Powell’s Method)</strong></p>
+<p>A derivative-free optimization algorithm that performs sequential line searches along
+conjugate directions. Does not require gradient information but can still achieve
+fast convergence on smooth problems.</p>
+<p>This optimizer uses a <strong>multi-restart strategy</strong> to explore different initial conditions
+and improve robustness.</p>
+<p><strong>Recommended for:</strong>
+- Problems where gradient computation is expensive or unavailable
+- Moderate-dimensional spaces (typically &lt; 15 hyperparameters)
+- Situations where analytical derivatives are unreliable
+- Smooth but noisy objective functions</p>
+<p><strong>Additional keyword arguments:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code> – Initial guess for first restart (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code> – Number of random restarts (default: <code class="docutils literal notranslate"><span class="pre">10</span></code>)
+More restarts improve robustness against local optima</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxiter</span></code> – Maximum number of iterations per restart (default: SciPy default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">xtol</span></code> – Relative tolerance for parameter convergence (default: SciPy default)
+Absolute error in solution acceptable for convergence</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ftol</span></code> – Relative tolerance for function convergence (default: SciPy default)
+Relative error in objective function acceptable for convergence</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disp</span></code> – Display convergence messages (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">debug</span></code> – Print intermediate results (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;powell&#39;</span><span class="p">,</span>
+    <span class="n">n_restart_optimizer</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">xtol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">ftol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p><strong>5. cobyla (Constrained Optimization BY Linear Approximation)</strong></p>
+<p>A derivative-free method designed for constrained optimization problems.
+Constructs linear approximations of the objective function and handles bounds
+through inequality constraints.</p>
+<p>This optimizer uses a <strong>multi-restart strategy</strong> to explore different starting points
+and avoid local optima.</p>
+<p><strong>Recommended for:</strong>
+- Problems with bound constraints on hyperparameters
+- When gradients are unavailable or unreliable
+- Moderate-dimensional optimization (typically &lt; 15 hyperparameters)
+- Noisy or discontinuous objective functions</p>
+<p><strong>Additional keyword arguments:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code> – Initial guess for first restart (default: <code class="docutils literal notranslate"><span class="pre">None</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code> – Number of random restarts (default: <code class="docutils literal notranslate"><span class="pre">10</span></code>)
+More restarts improve robustness against local optima</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">maxiter</span></code> – Maximum number of function evaluations per restart (default: SciPy default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rhobeg</span></code> – Initial trust region radius (default: SciPy default, typically 1.0)
+Controls the initial step size</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">catol</span></code> – Absolute tolerance for constraint violations (default: SciPy default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">f_target</span></code> – Target function value; stops if reached (default: SciPy default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">disp</span></code> – Display convergence messages (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">debug</span></code> – Print intermediate results (default: <code class="docutils literal notranslate"><span class="pre">False</span></code>)</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">gp</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;cobyla&#39;</span><span class="p">,</span>
+    <span class="n">n_restart_optimizer</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">rhobeg</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+    <span class="n">catol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="notes">
+<h2>Notes<a class="headerlink" href="#notes" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>All optimizers maximize the <strong>log marginal likelihood</strong> (or equivalently minimize its negative).</p></li>
+<li><p>Hyperparameter bounds are typically set automatically based on the data scale and problem characteristics.</p></li>
+<li><p>The optimization is performed in the normalized space when <code class="docutils literal notranslate"><span class="pre">normalize=True</span></code>,
+with hyperparameters automatically transformed back to the original scale.</p></li>
+<li><p><strong>Gradient-based methods</strong> (<code class="docutils literal notranslate"><span class="pre">lbfgs</span></code>, <code class="docutils literal notranslate"><span class="pre">powell</span></code>, <code class="docutils literal notranslate"><span class="pre">cobyla</span></code>):
+- Use multiple restarts controlled by <code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code>
+- First restart uses <code class="docutils literal notranslate"><span class="pre">x0</span></code> if provided; subsequent restarts use random initialization</p></li>
+<li><p><strong>Population-based methods</strong> (<code class="docutils literal notranslate"><span class="pre">pso</span></code>, <code class="docutils literal notranslate"><span class="pre">jade</span></code>):
+- Perform a single run; <code class="docutils literal notranslate"><span class="pre">n_restart_optimizer</span></code> is ignored
+- Use <code class="docutils literal notranslate"><span class="pre">initial_positions</span></code> instead of <code class="docutils literal notranslate"><span class="pre">x0</span></code> to specify starting population
+- The <code class="docutils literal notranslate"><span class="pre">local_opt_every</span></code> parameter enables hybrid optimization by periodically applying gradient-based refinement</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>JetGP provides a flexible hyperparameter optimization framework supporting both
+gradient-based and gradient-free methods. The unified interface allows easy experimentation
+with different optimizers while maintaining consistent model behavior.</p>
+<p><strong>Quick reference:</strong></p>
+<ul class="simple">
+<li><p><strong>Fastest, smooth problems:</strong> <code class="docutils literal notranslate"><span class="pre">lbfgs</span></code> with 10-20 restarts</p></li>
+<li><p><strong>No gradients, moderate complexity:</strong> <code class="docutils literal notranslate"><span class="pre">powell</span></code> or <code class="docutils literal notranslate"><span class="pre">cobyla</span></code> with 15-25 restarts</p></li>
+<li><p><strong>Multi-modal, global search:</strong> <code class="docutils literal notranslate"><span class="pre">pso</span></code> or <code class="docutils literal notranslate"><span class="pre">jade</span></code> with hybrid refinement (<code class="docutils literal notranslate"><span class="pre">local_opt_every=15-25</span></code>)</p></li>
+<li><p><strong>Highly non-smooth problems:</strong> <code class="docutils literal notranslate"><span class="pre">pso</span></code> or <code class="docutils literal notranslate"><span class="pre">jade</span></code> without gradient refinement (<code class="docutils literal notranslate"><span class="pre">local_opt_every=None</span></code>)</p></li>
+<li><p><strong>Default recommendation:</strong> Start with <code class="docutils literal notranslate"><span class="pre">lbfgs</span></code> (n_restart_optimizer=10-20); fall back to <code class="docutils literal notranslate"><span class="pre">pso</span></code> with <code class="docutils literal notranslate"><span class="pre">local_opt_every=15</span></code> if needed</p></li>
+</ul>
+<p><strong>Key distinctions:</strong></p>
+<ul class="simple">
+<li><p>Gradient-based methods use <strong>multiple restarts</strong> to explore different starting points</p></li>
+<li><p>Population-based methods use <strong>single runs</strong> with inherent parallel exploration</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">local_opt_every</span></code> parameter in PSO and JADE enables <strong>hybrid optimization</strong>,
+combining global exploration with gradient-based local refinement for improved performance</p></li>
+</ul>
+<p>For most applications, starting with <code class="docutils literal notranslate"><span class="pre">lbfgs</span></code> and falling back to hybrid <code class="docutils literal notranslate"><span class="pre">pso</span></code> or <code class="docutils literal notranslate"><span class="pre">jade</span></code>
+for difficult cases provides a robust and efficient optimization strategy.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="Initializing_JetGP_Modules.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Initializing JetGP Modules</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="making_predictions.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Making Predictions</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basic-usage">Basic Usage</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-arguments">Common Arguments</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-optimizers">Available Optimizers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

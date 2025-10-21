@@ -1,0 +1,1575 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP) &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/gddegp_getting_started';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)" href="wddegp_getting_started.html" />
+    <link rel="prev" title="Directional Derivative-Enhanced Gaussian Process (DDEGP)" href="ddegp_getting_started.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">JetGP API</a></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">JetGP Module Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/JetGP_module_examples/gddegp_getting_started.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/JetGP_module_examples/gddegp_getting_started.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-1-generalized-directional-gp-with-gradient-aligned-rays-on-the-branin-function">Example 1: Generalized Directional GP with Gradient-Aligned Rays on the Branin Function</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-import-required-packages">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-set-configuration-parameters">Step 2: Set configuration parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-define-the-branin-function-and-its-gradient">Step 3: Define the Branin function and its gradient</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-define-arrow-clipping-utility">Step 4: Define arrow clipping utility</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-generate-training-data-with-gradient-aligned-derivatives">Step 5: Generate training data with gradient-aligned derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-initialize-and-train-the-gddegp-model">Step 6: Initialize and train the GDDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-evaluate-model-on-a-test-grid">Step 7: Evaluate model on a test grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-visualize-results-with-gradient-aligned-rays">Step 8: Visualize results with gradient-aligned rays</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-run-the-complete-tutorial">Step 9: Run the complete tutorial</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-example-1">Summary of Example 1</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-2-gddegp-with-multiple-directional-derivatives-per-point-using-global-perturbations">Example 2: GDDEGP with Multiple Directional Derivatives Per Point Using Global Perturbations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Overview</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Step 2: Set configuration parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Step 3: Define the Branin function and its gradient</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Step 4: Define arrow clipping utility</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-generate-training-data-with-multiple-rays-per-point">Step 5: Generate training data with multiple rays per point</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Step 6: Initialize and train the GDDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Step 7: Evaluate model on a test grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-visualize-results-with-multiple-ray-directions">Step 8: Visualize results with multiple ray directions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Step 9: Run the complete tutorial</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-example-2">Summary of Example 2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="generalized-directional-derivative-enhanced-gaussian-process-gddegp">
+<h1>Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)<a class="headerlink" href="#generalized-directional-derivative-enhanced-gaussian-process-gddegp" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The <strong>Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</strong> is an advanced variant of DEGP that utilizes <strong>pointwise directional derivatives</strong> where different directions can be specified at each training point. The “generalized” aspect refers to the flexibility in choosing different derivative directions across the training set, rather than using the same global directions everywhere.</p>
+<p>This approach enables the model to:</p>
+<ul class="simple">
+<li><p>Use different derivative directions at different training points</p></li>
+<li><p>Adapt derivative directions based on local function behavior</p></li>
+<li><p>Capture directional information where it is most informative</p></li>
+<li><p>Provide more efficient learning with strategically placed derivative observations</p></li>
+</ul>
+<p>GDDEGP is particularly powerful for:</p>
+<ul class="simple">
+<li><p>Problems where optimal derivative directions vary across the domain</p></li>
+<li><p>Scenarios where gradient directions are available (e.g., from optimization algorithms)</p></li>
+<li><p>Functions with spatially varying anisotropic behavior</p></li>
+<li><p>Active learning strategies that adapt derivative directions based on local information</p></li>
+</ul>
+<p><strong>Key Difference from DDEGP:</strong></p>
+<ul class="simple">
+<li><p><strong>DDEGP</strong>: Uses the same set of directional rays at <strong>all</strong> training points (global directions)</p></li>
+<li><p><strong>GDDEGP</strong>: Allows <strong>different</strong> directional rays at <strong>each</strong> training point (generalized/pointwise directions)</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="example-1-generalized-directional-gp-with-gradient-aligned-rays-on-the-branin-function">
+<h2>Example 1: Generalized Directional GP with Gradient-Aligned Rays on the Branin Function<a class="headerlink" href="#example-1-generalized-directional-gp-with-gradient-aligned-rays-on-the-branin-function" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3>Overview<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>This example demonstrates <strong>Generalized Directional DEGP (GDDEGP)</strong> applied to the 2D Branin function. In this particular application, we use <strong>a single gradient-aligned direction at each training point</strong>, but the GDDEGP framework is general and can accommodate any number of derivatives with different directions at each location. The gradient alignment with one derivative per point is just one strategy for applying this generalized framework.</p>
+<p>Key concepts covered:</p>
+<ul class="simple">
+<li><p>Using <strong>different derivative directions at each training point</strong> (generalized approach)</p></li>
+<li><p>Using <strong>one directional derivative per training point</strong> in this example</p></li>
+<li><p>Computing analytical gradients using SymPy as one strategy for choosing optimal ray directions</p></li>
+<li><p><strong>Pointwise directional derivatives</strong> with location-specific directions</p></li>
+<li><p>Training and visualizing the GDDEGP model with gradient-aligned rays</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="step-1-import-required-packages">
+<h3>Step 1: Import required packages<a class="headerlink" href="#step-1-import-required-packages" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+We import necessary modules including symbolic differentiation (<code class="docutils literal notranslate"><span class="pre">sympy</span></code>), the GDDEGP model, Latin Hypercube Sampling, and visualization tools.</p>
+<p>—</p>
+</section>
+<section id="step-2-set-configuration-parameters">
+<h3>Step 2: Set configuration parameters<a class="headerlink" href="#step-2-set-configuration-parameters" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_order</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">n_bases</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_training_pts</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">domain_bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">))</span>
+<span class="n">test_grid_resolution</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">normalize_data</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="s2">&quot;SE&quot;</span>
+<span class="n">kernel_type</span> <span class="o">=</span> <span class="s2">&quot;anisotropic&quot;</span>
+<span class="n">n_restarts</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">swarm_size</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">random_seed</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Configuration parameters for the GDDEGP model:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_order=1</span></code>: First-order directional derivatives</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_training_pts=20</span></code>: Twenty training locations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kernel=&quot;SE&quot;</span></code>: Squared Exponential kernel</p></li>
+<li><p><strong>Important</strong>: In this example, each training point will have <strong>one single directional derivative</strong> aligned with its local gradient. However, GDDEGP can accommodate multiple derivatives per point with different directions if needed.</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="step-3-define-the-branin-function-and-its-gradient">
+<h3>Step 3: Define the Branin function and its gradient<a class="headerlink" href="#step-3-define-the-branin-function-and-its-gradient" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define symbolic Branin function</span>
+<span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x y&#39;</span><span class="p">)</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.1</span><span class="o">/</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">sp</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mf">5.0</span><span class="o">/</span><span class="n">sp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">sp</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+<span class="n">f_sym</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_sym</span> <span class="o">-</span> <span class="n">b</span><span class="o">*</span><span class="n">x_sym</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">*</span><span class="n">x_sym</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="n">sp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x_sym</span><span class="p">)</span> <span class="o">+</span> <span class="n">s</span>
+
+<span class="c1"># Compute symbolic gradients</span>
+<span class="n">grad_x_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x_sym</span><span class="p">)</span>
+<span class="n">grad_y_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">y_sym</span><span class="p">)</span>
+
+<span class="c1"># Convert to NumPy functions</span>
+<span class="n">true_function_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span><span class="p">],</span> <span class="n">f_sym</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span>
+<span class="n">grad_x_func</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span><span class="p">],</span> <span class="n">grad_x_sym</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span>
+<span class="n">grad_y_func</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">y_sym</span><span class="p">],</span> <span class="n">grad_y_sym</span><span class="p">,</span> <span class="s1">&#39;numpy&#39;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">true_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">np</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;2D Branin function.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">true_function_np</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">true_gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Analytical gradient of the Branin function.&quot;&quot;&quot;</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">grad_x_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="n">grad_y_func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+We define the Branin function symbolically using SymPy and compute its analytical gradient. The symbolic gradients are converted to fast NumPy-compatible functions. The gradient function returns the partial derivatives <span class="math notranslate nohighlight">\(\frac{\partial f}{\partial x}\)</span> and <span class="math notranslate nohighlight">\(\frac{\partial f}{\partial y}\)</span> at any point. In this example, we use these gradients to determine the direction for derivative observations at each training location. However, the GDDEGP framework is <strong>generalized</strong> and can work with any choice of pointwise directions—gradient alignment is just one effective strategy.</p>
+<p>—</p>
+</section>
+<section id="step-4-define-arrow-clipping-utility">
+<h3>Step 4: Define arrow clipping utility<a class="headerlink" href="#step-4-define-arrow-clipping-utility" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">clipped_arrow</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Draw an arrow clipped to plot bounds.&quot;&quot;&quot;</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">origin</span>
+    <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">length</span>
+    <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="n">bounds</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">dx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span>
+        <span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="n">dx</span> <span class="k">if</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="n">dx</span>
+    <span class="n">ty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">dy</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span>
+        <span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="n">dy</span> <span class="k">if</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="n">dy</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">ty</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">dx</span><span class="o">*</span><span class="n">t</span><span class="p">,</span> <span class="n">dy</span><span class="o">*</span><span class="n">t</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+             <span class="n">head_length</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+This utility function draws arrows representing gradient directions while ensuring they don’t extend beyond plot boundaries. This will be used for visualization to show the gradient-aligned directions at each training point.</p>
+<p>—</p>
+</section>
+<section id="step-5-generate-training-data-with-gradient-aligned-derivatives">
+<h3>Step 5: Generate training data with gradient-aligned derivatives<a class="headerlink" href="#step-5-generate-training-data-with-gradient-aligned-derivatives" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_training_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate GDDEGP training data using pointwise directional derivatives.&quot;&quot;&quot;</span>
+    <span class="c1"># 1. Generate points using Latin Hypercube</span>
+    <span class="n">sampler</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">LatinHypercube</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">random_seed</span><span class="p">)</span>
+    <span class="n">unit_samples</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">num_training_pts</span><span class="p">)</span>
+    <span class="n">X_train</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">unit_samples</span><span class="p">,</span>
+                        <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">domain_bounds</span><span class="p">],</span>
+                        <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">domain_bounds</span><span class="p">])</span>
+
+    <span class="c1"># 2. Compute gradient-aligned rays at each training point</span>
+    <span class="n">rays_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">X_train</span><span class="p">):</span>
+        <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span> <span class="o">=</span> <span class="n">true_gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="c1"># Normalize to unit vector</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">gx</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">gy</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">ray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">gx</span><span class="o">/</span><span class="n">magnitude</span><span class="p">],</span> <span class="p">[</span><span class="n">gy</span><span class="o">/</span><span class="n">magnitude</span><span class="p">]])</span>
+        <span class="n">rays_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ray</span><span class="p">)</span>
+
+    <span class="c1"># 3. Compute function values at training points</span>
+    <span class="n">y_func</span> <span class="o">=</span> <span class="n">true_function</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># 4. Compute directional derivatives using the chain rule</span>
+    <span class="c1"># For each point: d_ray = grad_x * ray[0] + grad_y * ray[1]</span>
+    <span class="n">directional_derivs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">X_train</span><span class="p">):</span>
+        <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span> <span class="o">=</span> <span class="n">true_gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">ray_direction</span> <span class="o">=</span> <span class="n">rays_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="c1"># Directional derivative = gradient · direction</span>
+        <span class="n">dir_deriv</span> <span class="o">=</span> <span class="n">gx</span> <span class="o">*</span> <span class="n">ray_direction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">gy</span> <span class="o">*</span> <span class="n">ray_direction</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">directional_derivs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dir_deriv</span><span class="p">)</span>
+
+    <span class="c1"># Stack all directional derivatives into a single array</span>
+    <span class="n">directional_derivs_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">directional_derivs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># 5. Package training data</span>
+    <span class="c1"># y_train_list should be a list of two arrays, each of shape [num_training_pts, 1]</span>
+    <span class="n">y_train_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">y_func</span><span class="p">,</span> <span class="n">directional_derivs_array</span><span class="p">]</span>
+    <span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;X_train&#39;</span><span class="p">:</span> <span class="n">X_train</span><span class="p">,</span>
+            <span class="s1">&#39;y_train_list&#39;</span><span class="p">:</span> <span class="n">y_train_list</span><span class="p">,</span>
+            <span class="s1">&#39;rays_list&#39;</span><span class="p">:</span> <span class="n">rays_list</span><span class="p">,</span>
+            <span class="s1">&#39;der_indices&#39;</span><span class="p">:</span> <span class="n">der_indices</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+This function performs several critical steps:</p>
+<ol class="arabic">
+<li><p><strong>Latin Hypercube Sampling</strong>: Generates well-distributed training points</p></li>
+<li><p><strong>Gradient computation and normalization</strong>: At each training point, computes the gradient and normalizes it to a unit directional vector:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{d}_i = \frac{\nabla f(\mathbf{x}_i)}{\|\nabla f(\mathbf{x}_i)\|}\]</div>
+<p>However, the GDDEGP framework is <strong>generalized</strong> and could use multiple derivatives per point or any other directional strategy.</p>
+</li>
+<li><p><strong>Function evaluation</strong>: Computes function values at all training points using the symbolic function</p></li>
+<li><p><strong>Directional derivative computation</strong>: Uses the chain rule to compute the directional derivative from the gradient:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial f}{\partial \mathbf{d}_i} = \nabla f(\mathbf{x}_i) \cdot \mathbf{d}_i = \frac{\partial f}{\partial x} d_{i,x} + \frac{\partial f}{\partial y} d_{i,y}\]</div>
+</li>
+<li><p><strong>Data packaging</strong>: Organizes the training data into the correct structure:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y_train_list[0]</span></code>: Function values at all training points (shape: [20, 1])</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_train_list[1]</span></code>: Directional derivatives at all training points (shape: [20, 1])</p></li>
+</ul>
+</li>
+</ol>
+<p>The key feature of GDDEGP is that each training point can have <strong>different directional rays</strong>. In this example, we use one gradient-aligned direction per point, but other strategies (multiple directions per point, user-specified, adaptive, etc.) are equally valid.</p>
+<p>—</p>
+</section>
+<section id="step-6-initialize-and-train-the-gddegp-model">
+<h3>Step 6: Initialize and train the GDDEGP model<a class="headerlink" href="#step-6-initialize-and-train-the-gddegp-model" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">train_model</span><span class="p">(</span><span class="n">training_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize and train GDDEGP model.&quot;&quot;&quot;</span>
+    <span class="n">rays_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;rays_list&#39;</span><span class="p">])</span>
+
+    <span class="n">gp_model</span> <span class="o">=</span> <span class="n">gddegp</span><span class="p">(</span>
+        <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;X_train&#39;</span><span class="p">],</span>
+        <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;y_train_list&#39;</span><span class="p">],</span>
+        <span class="n">n_order</span><span class="o">=</span><span class="p">[</span><span class="n">n_order</span><span class="p">],</span>
+        <span class="n">rays_array</span><span class="o">=</span><span class="p">[</span><span class="n">rays_array</span><span class="p">],</span>
+        <span class="n">der_indices</span><span class="o">=</span><span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;der_indices&#39;</span><span class="p">],</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="n">normalize_data</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+        <span class="n">kernel_type</span><span class="o">=</span><span class="n">kernel_type</span>
+    <span class="p">)</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_generations</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">local_opt_every</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The GDDEGP model is initialized with:</p>
+<ul class="simple">
+<li><p>Training locations and derivative data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_array</span></code>: A collection of directional rays, potentially different at each training point</p></li>
+<li><p>Squared Exponential kernel for smooth interpolation</p></li>
+</ul>
+<p>Note that unlike DDEGP (which passes a single global ray matrix used at all points), GDDEGP receives an array where each column can correspond to a different direction. This <strong>generalized</strong> structure allows complete flexibility in specifying derivative directions across the training set.</p>
+<p>—</p>
+</section>
+<section id="step-7-evaluate-model-on-a-test-grid">
+<h3>Step 7: Evaluate model on a test grid<a class="headerlink" href="#step-7-evaluate-model-on-a-test-grid" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate GDDEGP on a test grid.&quot;&quot;&quot;</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">domain_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">test_grid_resolution</span><span class="p">)</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">domain_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">test_grid_resolution</span><span class="p">)</span>
+    <span class="n">X1_grid</span><span class="p">,</span> <span class="n">X2_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">gx</span><span class="p">,</span> <span class="n">gy</span><span class="p">)</span>
+    <span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+    <span class="n">N_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># For prediction, we need dummy rays (not used in function value prediction)</span>
+    <span class="n">dummy_ray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]])</span>
+    <span class="n">rays_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dummy_ray</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_test</span><span class="p">)])</span>
+
+    <span class="n">y_pred_full</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+        <span class="n">X_test</span><span class="p">,</span> <span class="p">[</span><span class="n">rays_pred</span><span class="p">],</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred_full</span><span class="p">[:</span><span class="n">N_test</span><span class="p">]</span>  <span class="c1"># Function values only</span>
+
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">true_function</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
+    <span class="n">nrmse_val</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">nrmse</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;X_test&#39;</span><span class="p">:</span> <span class="n">X_test</span><span class="p">,</span> <span class="s1">&#39;X1_grid&#39;</span><span class="p">:</span> <span class="n">X1_grid</span><span class="p">,</span> <span class="s1">&#39;X2_grid&#39;</span><span class="p">:</span> <span class="n">X2_grid</span><span class="p">,</span>
+            <span class="s1">&#39;y_pred&#39;</span><span class="p">:</span> <span class="n">y_pred</span><span class="p">,</span> <span class="s1">&#39;y_true&#39;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">,</span> <span class="s1">&#39;nrmse&#39;</span><span class="p">:</span> <span class="n">nrmse_val</span><span class="p">,</span>
+            <span class="s1">&#39;training_data&#39;</span><span class="p">:</span> <span class="n">training_data</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The model is evaluated on a 100×100 grid. For function value predictions (without derivatives), dummy rays are provided since the ray directions don’t affect function value predictions. The NRMSE quantifies prediction accuracy across the test domain.</p>
+<p>—</p>
+</section>
+<section id="step-8-visualize-results-with-gradient-aligned-rays">
+<h3>Step 8: Visualize results with gradient-aligned rays<a class="headerlink" href="#step-8-visualize-results-with-gradient-aligned-rays" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">visualize_results</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create 3-panel contour plot: prediction, truth, error.&quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">results</span>
+    <span class="n">training_data</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;training_data&#39;</span><span class="p">]</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">rays_list</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;X_train&#39;</span><span class="p">],</span> <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;rays_list&#39;</span><span class="p">]</span>
+    <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;X1_grid&#39;</span><span class="p">],</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;X2_grid&#39;</span><span class="p">]</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+    <span class="c1"># GDDEGP Prediction</span>
+    <span class="n">cf1</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                           <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                   <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="p">(</span><span class="n">domain_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">pt</span><span class="p">,</span> <span class="n">ray</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">rays_list</span><span class="p">):</span>
+        <span class="n">clipped_arrow</span><span class="p">(</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                      <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;GDDEGP Prediction&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># True function</span>
+    <span class="n">cf2</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;y_true&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                           <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;True Function&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Absolute Error (log scale)</span>
+    <span class="n">abs_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;y_true&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">abs_error_clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">abs_error</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">log_levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">abs_error_clipped</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+                             <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">abs_error_clipped</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">cf3</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">abs_error_clipped</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">log_levels</span><span class="p">,</span>
+                           <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;magma_r&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf3</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Absolute Error (log scale)&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$x_1$&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;$x_2$&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+
+    <span class="n">custom_lines</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">markerfacecolor</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
+               <span class="n">markeredgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Train Points&#39;</span><span class="p">),</span>
+        <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Gradient Ray Direction&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">custom_lines</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower center&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+               <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">rect</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The three-panel visualization shows:</p>
+<ol class="arabic simple">
+<li><p><strong>Left panel</strong>: GDDEGP prediction with training points and directional arrows</p></li>
+<li><p><strong>Center panel</strong>: True Branin function for comparison</p></li>
+<li><p><strong>Right panel</strong>: Absolute error on a logarithmic scale</p></li>
+</ol>
+<p>The black arrows at each training point show the direction where derivative information was incorporated. In this example, these arrows represent gradient directions, but notice how they point in <strong>different directions</strong> at each location. This is the key distinguishing feature of <strong>generalized</strong> GDDEGP compared to DDEGP—each training point can have its own unique derivative direction.</p>
+<p>—</p>
+</section>
+<section id="step-9-run-the-complete-tutorial">
+<h3>Step 9: Run the complete tutorial<a class="headerlink" href="#step-9-run-the-complete-tutorial" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">training_data</span> <span class="o">=</span> <span class="n">generate_training_data</span><span class="p">()</span>
+<span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">train_model</span><span class="p">(</span><span class="n">training_data</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evaluate_model</span><span class="p">(</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">training_data</span><span class="p">)</span>
+<span class="n">visualize_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final NRMSE: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;nrmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/gddegp_getting_started_8_0.png" src="../_images/gddegp_getting_started_8_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Final NRMSE: 0.000538
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+This executes the complete GDDEGP workflow:</p>
+<ol class="arabic simple">
+<li><p>Generate training data with gradient-aligned directional derivatives</p></li>
+<li><p>Train the GDDEGP model</p></li>
+<li><p>Evaluate on a test grid</p></li>
+<li><p>Visualize results with gradient rays overlaid</p></li>
+</ol>
+<p>The final NRMSE provides a quantitative measure of model accuracy.</p>
+<p>—</p>
+</section>
+<section id="summary-of-example-1">
+<h3>Summary of Example 1<a class="headerlink" href="#summary-of-example-1" title="Link to this heading">#</a></h3>
+<p>This tutorial demonstrates the <strong>Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</strong> framework with the following key features:</p>
+<p><strong>The “Generalized” Aspect:</strong></p>
+<ul class="simple">
+<li><p><strong>Flexibility</strong>: Different derivative directions can be specified at each training point</p></li>
+<li><p><strong>No global constraint</strong>: Unlike DDEGP, there is no requirement that all points use the same directions</p></li>
+<li><p><strong>Strategy independence</strong>: The framework works with any choice of pointwise directions (gradient-aligned, adaptive, user-specified, etc.)</p></li>
+<li><p><strong>Local adaptation</strong>: Directions can be tailored to local function characteristics</p></li>
+</ul>
+<p><strong>Advantages of Pointwise Directional Control:</strong></p>
+<ul class="simple">
+<li><p><strong>Adaptive to local behavior</strong>: Each location can have derivative information along its most informative direction</p></li>
+<li><p><strong>Efficient</strong>: Can use different numbers and types of derivatives at different locations</p></li>
+<li><p><strong>Strategic</strong>: Derivative directions can be chosen based on prior knowledge, gradients, or adaptive strategies</p></li>
+<li><p><strong>Natural for many applications</strong>: Optimization, adaptive sampling, and multi-fidelity scenarios often provide location-specific directional information</p></li>
+</ul>
+<p><strong>Key Concepts:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Generalized rays</strong>: Each training point can have different derivative directions</p></li>
+<li><p><strong>Pointwise specification</strong>: Directions are specified individually for each location</p></li>
+<li><p><strong>Example strategy</strong>: This tutorial uses gradient alignment computed via SymPy symbolic differentiation</p></li>
+<li><p><strong>Chain rule</strong>: Directional derivatives computed from coordinate gradients using <span class="math notranslate nohighlight">\(\nabla f \cdot \mathbf{d}\)</span></p></li>
+</ol>
+<p><strong>Comparison with Other Approaches:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Derivative Directions</p></th>
+<th class="head"><p>Number of Derivatives per Point</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>DEGP</strong></p></td>
+<td><p>Coordinate-aligned (fixed)</p></td>
+<td><p><span class="math notranslate nohighlight">\(d\)</span> (one per dimension)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DDEGP</strong></p></td>
+<td><p>User-specified (global/same
+at all points)</p></td>
+<td><p><span class="math notranslate nohighlight">\(k\)</span> (number of global
+rays)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>GDDEGP</strong></p></td>
+<td><p>Pointwise (can differ at each
+training point)</p></td>
+<td><p>Flexible (can vary by point)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>—</p>
+</section>
+</section>
+</section>
+<section id="example-2-gddegp-with-multiple-directional-derivatives-per-point-using-global-perturbations">
+<h1>Example 2: GDDEGP with Multiple Directional Derivatives Per Point Using Global Perturbations<a class="headerlink" href="#example-2-gddegp-with-multiple-directional-derivatives-per-point-using-global-perturbations" title="Link to this heading">#</a></h1>
+<section id="id2">
+<h2>Overview<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<p>This example demonstrates <strong>Generalized Directional DEGP (GDDEGP)</strong> with <strong>multiple directional derivatives at each training point</strong>. Unlike Example 1 where we used a single gradient-aligned direction per point, this example uses <strong>two orthogonal directions</strong> at each location: one aligned with the gradient and one perpendicular to it.</p>
+<p>The key innovation here is the use of <strong>global pointwise directional automatic differentiation</strong> with the <code class="docutils literal notranslate"><span class="pre">pyoti</span></code> library, which allows us to compute multiple directional derivatives simultaneously through hypercomplex perturbations.</p>
+<p>Key concepts covered:</p>
+<ul class="simple">
+<li><p>Using <strong>multiple directional derivatives per training point</strong> (2 rays per point)</p></li>
+<li><p><strong>Global perturbation methodology</strong> with hypercomplex automatic differentiation</p></li>
+<li><p>Computing <strong>gradient and perpendicular directions</strong> at each training point</p></li>
+<li><p>Training GDDEGP with richer directional information</p></li>
+<li><p>Visualizing multiple ray directions simultaneously</p></li>
+</ul>
+<p><strong>Why Multiple Directions Per Point?</strong></p>
+<p>Using multiple directions at each training point provides:</p>
+<ul class="simple">
+<li><p>More complete local function information</p></li>
+<li><p>Better capture of anisotropic behavior</p></li>
+<li><p>Improved accuracy with the same number of training locations</p></li>
+<li><p>Natural orthogonal basis for local Taylor expansions</p></li>
+</ul>
+<p>—</p>
+<section id="id3">
+<h3>Step 1: Import required packages<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oti</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">})</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+In addition to the packages from Example 1, we now import:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pyoti.sparse</span></code> (as <code class="docutils literal notranslate"><span class="pre">oti</span></code>): Hypercomplex automatic differentiation library for computing directional derivatives</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">itertools</span></code>: For handling combinations of derivative indices</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">pyoti</span></code> library enables efficient computation of multiple directional derivatives through hypercomplex number perturbations.</p>
+<p>—</p>
+</section>
+<section id="id4">
+<h3>Step 2: Set configuration parameters<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_order</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">n_bases</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_directions_per_point</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_training_pts</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">domain_bounds</span> <span class="o">=</span> <span class="p">((</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">))</span>
+<span class="n">test_grid_resolution</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">normalize_data</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="s2">&quot;SE&quot;</span>
+<span class="n">kernel_type</span> <span class="o">=</span> <span class="s2">&quot;anisotropic&quot;</span>
+<span class="n">n_restarts</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">swarm_size</span> <span class="o">=</span> <span class="mi">250</span>
+<span class="n">random_seed</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">random_seed</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Key configuration differences from Example 1:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">num_directions_per_point=2</span></code>: Each training point has <strong>two</strong> directional derivatives (gradient + perpendicular)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_training_pts=10</span></code>: Fewer training points (10 vs 20 in Example 1), but more information per point</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test_grid_resolution=50</span></code>: Coarser test grid for faster evaluation</p></li>
+</ul>
+<p><strong>Total derivative observations</strong>: 10 points × 2 directions = 20 directional derivatives (same as Example 1), but distributed differently across space.</p>
+<p>—</p>
+</section>
+<section id="id5">
+<h3>Step 3: Define the Branin function and its gradient<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">true_function</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">np</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Branin function compatible with both NumPy and pyoti arrays.&quot;&quot;&quot;</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.1</span><span class="o">/</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mf">5.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">b</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="n">alg</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="n">s</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">true_gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Analytical gradient of the Branin function.&quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.1</span><span class="o">/</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="mf">5.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mi">8</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">b</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span> <span class="o">-</span> <span class="n">s</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">t</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">a</span><span class="o">*</span><span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">b</span><span class="o">*</span><span class="n">x</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The function definition now includes an <code class="docutils literal notranslate"><span class="pre">alg</span></code> parameter that defaults to <code class="docutils literal notranslate"><span class="pre">np</span></code> but can accept <code class="docutils literal notranslate"><span class="pre">oti</span></code> for hypercomplex evaluations. This polymorphic design allows the same function to work with both regular NumPy arrays and hypercomplex <code class="docutils literal notranslate"><span class="pre">pyoti</span></code> arrays for automatic differentiation.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">alg.cos</span></code> call will use either <code class="docutils literal notranslate"><span class="pre">np.cos</span></code> or <code class="docutils literal notranslate"><span class="pre">oti.cos</span></code> depending on the array type, enabling automatic differentiation through trigonometric operations.</p>
+<p>—</p>
+</section>
+<section id="id6">
+<h3>Step 4: Define arrow clipping utility<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">clipped_arrow</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">bounds</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Draw an arrow clipped to plot bounds.&quot;&quot;&quot;</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">origin</span>
+    <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">length</span>
+    <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="n">bounds</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">dx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="n">dx</span> <span class="k">if</span> <span class="n">dx</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">xlim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="n">dx</span>
+    <span class="n">ty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">dy</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="n">dy</span> <span class="k">if</span> <span class="n">dy</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">ylim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="n">dy</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">ty</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">dx</span><span class="o">*</span><span class="n">t</span><span class="p">,</span> <span class="n">dy</span><span class="o">*</span><span class="n">t</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">fc</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="n">ec</span><span class="o">=</span><span class="n">color</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Same utility as Example 1, but now we’ll use it to draw <strong>two arrows per training point</strong> (gradient and perpendicular directions).</p>
+<p>—</p>
+</section>
+<section id="step-5-generate-training-data-with-multiple-rays-per-point">
+<h3>Step 5: Generate training data with multiple rays per point<a class="headerlink" href="#step-5-generate-training-data-with-multiple-rays-per-point" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_training_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate GDDEGP training data with multiple directional derivatives per point.&quot;&quot;&quot;</span>
+    <span class="c1"># 1. Generate training points using Latin Hypercube Sampling</span>
+    <span class="n">sampler</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">LatinHypercube</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">random_seed</span><span class="p">)</span>
+    <span class="n">unit_samples</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">num_training_pts</span><span class="p">)</span>
+    <span class="n">X_train</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">unit_samples</span><span class="p">,</span>
+                        <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">domain_bounds</span><span class="p">],</span>
+                        <span class="p">[</span><span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">domain_bounds</span><span class="p">])</span>
+
+    <span class="c1"># 2. Create multiple rays per point: gradient + perpendicular</span>
+    <span class="n">rays_list</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_directions_per_point</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">X_train</span><span class="p">:</span>
+        <span class="c1"># Compute gradient and its angle</span>
+        <span class="n">gx</span><span class="p">,</span> <span class="n">gy</span> <span class="o">=</span> <span class="n">true_gradient</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">theta_grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">gy</span><span class="p">,</span> <span class="n">gx</span><span class="p">)</span>
+        <span class="n">theta_perp</span> <span class="o">=</span> <span class="n">theta_grad</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span>
+
+        <span class="c1"># Create unit vectors for both directions</span>
+        <span class="n">ray_grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_grad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_grad</span><span class="p">)])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ray_perp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta_perp</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta_perp</span><span class="p">)])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">rays_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ray_grad</span><span class="p">)</span>
+        <span class="n">rays_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ray_perp</span><span class="p">)</span>
+
+    <span class="c1"># 3. Apply global perturbations using hypercomplex tags</span>
+    <span class="n">X_pert</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_directions_per_point</span><span class="p">):</span>
+        <span class="n">e_tag</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">n_order</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rays_list</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+            <span class="n">perturbation</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rays_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">e_tag</span>
+            <span class="n">X_pert</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span> <span class="o">+=</span> <span class="n">perturbation</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="c1"># 4. Evaluate function with hypercomplex AD and truncate cross-derivatives</span>
+    <span class="n">f_hc</span> <span class="o">=</span> <span class="n">true_function</span><span class="p">(</span><span class="n">X_pert</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">oti</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">combo</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">combinations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_directions_per_point</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">f_hc</span> <span class="o">=</span> <span class="n">f_hc</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">combo</span><span class="p">)</span>
+
+    <span class="c1"># 5. Extract function values and directional derivatives</span>
+    <span class="n">y_train_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_hc</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+    <span class="n">der_indices_to_extract</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">der_indices_to_extract</span><span class="p">:</span>
+        <span class="n">y_train_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_hc</span><span class="o">.</span><span class="n">get_deriv</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;X_train&#39;</span><span class="p">:</span> <span class="n">X_train</span><span class="p">,</span>
+            <span class="s1">&#39;y_train_list&#39;</span><span class="p">:</span> <span class="n">y_train_list</span><span class="p">,</span>
+            <span class="s1">&#39;rays_list&#39;</span><span class="p">:</span> <span class="n">rays_list</span><span class="p">,</span>
+            <span class="s1">&#39;der_indices&#39;</span><span class="p">:</span> <span class="n">der_indices_to_extract</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+This function implements the core GDDEGP training data generation with multiple rays:</p>
+<p><strong>1. Ray Direction Computation:</strong>
+For each training point, we compute two orthogonal directions:</p>
+<ul class="simple">
+<li><p><strong>Gradient direction</strong>: <span class="math notranslate nohighlight">\(\theta_{grad} = \arctan2(\partial f/\partial y, \partial f/\partial x)\)</span></p></li>
+<li><p><strong>Perpendicular direction</strong>: <span class="math notranslate nohighlight">\(\theta_{perp} = \theta_{grad} + \pi/2\)</span></p></li>
+</ul>
+<p>Both directions are normalized to unit vectors.</p>
+<p><strong>2. Global Perturbation with Hypercomplex Numbers:</strong>
+The key innovation is using hypercomplex automatic differentiation:</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{X}_{pert} = \mathbf{X}_{train} + \mathbf{ray}_1 \cdot \epsilon_1 + \mathbf{ray}_2 \cdot \epsilon_2 + \ldots\]</div>
+<p>Where <span class="math notranslate nohighlight">\(\epsilon_i\)</span> are hypercomplex imaginary units. Each direction gets its own hypercomplex tag:</p>
+<ul class="simple">
+<li><p>Direction 1 (gradient): <code class="docutils literal notranslate"><span class="pre">e_tag</span></code> = <span class="math notranslate nohighlight">\(\epsilon_1\)</span></p></li>
+<li><p>Direction 2 (perpendicular): <code class="docutils literal notranslate"><span class="pre">e_tag</span></code> = <span class="math notranslate nohighlight">\(\epsilon_2\)</span></p></li>
+</ul>
+<p><strong>3. Function Evaluation:</strong>
+Evaluating <span class="math notranslate nohighlight">\(f(\mathbf{X}_{pert})\)</span> with hypercomplex arithmetic automatically computes:</p>
+<div class="math notranslate nohighlight">
+\[f(\mathbf{X}_{pert}) = f(\mathbf{X}) + \frac{\partial f}{\partial \mathbf{d}_1} \cdot \epsilon_1 + \frac{\partial f}{\partial \mathbf{d}_2} \cdot \epsilon_2 + \text{higher order terms}\]</div>
+<p><strong>4. Truncation:</strong>
+We truncate cross-derivative terms (like <span class="math notranslate nohighlight">\(\epsilon_1\epsilon_2\)</span>) since we only want first-order directional derivatives.</p>
+<p><strong>5. Derivative Extraction:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">f_hc.real</span></code>: Function values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">f_hc.get_deriv([[1,1]])</span></code>: First directional derivative (gradient direction)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">f_hc.get_deriv([[2,1]])</span></code>: Second directional derivative (perpendicular direction)</p></li>
+</ul>
+<p><strong>Data Structure:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y_train_list[0]</span></code>: Function values (shape: [10, 1])</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_train_list[1]</span></code>: Directional derivatives along gradient (shape: [10, 1])</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_train_list[2]</span></code>: Directional derivatives perpendicular to gradient (shape: [10, 1])</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="id7">
+<h3>Step 6: Initialize and train the GDDEGP model<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">train_model</span><span class="p">(</span><span class="n">training_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initialize and train GDDEGP model with multiple rays.&quot;&quot;&quot;</span>
+    <span class="c1"># Organize rays into arrays for each direction</span>
+    <span class="n">rays_array</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;rays_list&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                  <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_directions_per_point</span><span class="p">)]</span>
+
+    <span class="n">gp_model</span> <span class="o">=</span> <span class="n">gddegp</span><span class="p">(</span>
+        <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;X_train&#39;</span><span class="p">],</span>
+        <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;y_train_list&#39;</span><span class="p">],</span>
+        <span class="n">n_order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># First-order derivatives for both directions</span>
+        <span class="n">rays_array</span><span class="o">=</span><span class="n">rays_array</span><span class="p">,</span>
+        <span class="n">der_indices</span><span class="o">=</span><span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;der_indices&#39;</span><span class="p">],</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="n">normalize_data</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="n">kernel</span><span class="p">,</span>
+        <span class="n">kernel_type</span><span class="o">=</span><span class="n">kernel_type</span>
+    <span class="p">)</span>
+
+    <span class="n">params</span> <span class="o">=</span>  <span class="n">gp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_generations</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
+    <span class="n">local_opt_every</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The GDDEGP model is initialized with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_array</span></code>: A <strong>list</strong> of ray arrays, one for each direction type</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_array[0]</span></code>: Gradient directions at all points (shape: [2, 10])</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_array[1]</span></code>: Perpendicular directions at all points (shape: [2, 10])</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_order=[1,</span> <span class="pre">1]</span></code>: First-order derivatives for both direction types</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">der_indices</span></code>: Specifies which derivatives to use from the hypercomplex evaluation</p></li>
+</ul>
+<p><strong>Key Difference from Example 1:</strong>
+In Example 1, we had a single <code class="docutils literal notranslate"><span class="pre">rays_array</span></code> with different directions at each point. Here, we have <strong>multiple</strong> <code class="docutils literal notranslate"><span class="pre">rays_array</span></code> <strong>entries</strong>, each representing a different directional “mode” applied at all points.</p>
+<p>—</p>
+</section>
+<section id="id8">
+<h3>Step 7: Evaluate model on a test grid<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">evaluate_model</span><span class="p">(</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">training_data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluate GDDEGP on a test grid.&quot;&quot;&quot;</span>
+    <span class="c1"># Create test grid</span>
+    <span class="n">gx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">domain_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">test_grid_resolution</span><span class="p">)</span>
+    <span class="n">gy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">domain_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">test_grid_resolution</span><span class="p">)</span>
+    <span class="n">X1_grid</span><span class="p">,</span> <span class="n">X2_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">gx</span><span class="p">,</span> <span class="n">gy</span><span class="p">)</span>
+    <span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2_grid</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+    <span class="n">N_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Dummy rays for prediction (not used for function values)</span>
+    <span class="n">dummy_ray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]])</span>
+    <span class="n">rays_pred</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">dummy_ray</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N_test</span><span class="p">)])</span>
+                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_directions_per_point</span><span class="p">)]</span>
+
+    <span class="c1"># Predict function values only</span>
+    <span class="n">y_pred_full</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+        <span class="n">X_test</span><span class="p">,</span> <span class="n">rays_pred</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+        <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">y_pred_full</span><span class="p">[:</span><span class="n">N_test</span><span class="p">]</span>
+
+    <span class="c1"># Compute error metrics</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">true_function</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">alg</span><span class="o">=</span><span class="n">np</span><span class="p">)</span>
+    <span class="n">nrmse_val</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">nrmse</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;X_test&#39;</span><span class="p">:</span> <span class="n">X_test</span><span class="p">,</span> <span class="s1">&#39;X1_grid&#39;</span><span class="p">:</span> <span class="n">X1_grid</span><span class="p">,</span> <span class="s1">&#39;X2_grid&#39;</span><span class="p">:</span> <span class="n">X2_grid</span><span class="p">,</span>
+            <span class="s1">&#39;y_pred&#39;</span><span class="p">:</span> <span class="n">y_pred</span><span class="p">,</span> <span class="s1">&#39;y_true&#39;</span><span class="p">:</span> <span class="n">y_true</span><span class="p">,</span> <span class="s1">&#39;nrmse&#39;</span><span class="p">:</span> <span class="n">nrmse_val</span><span class="p">,</span>
+            <span class="s1">&#39;training_data&#39;</span><span class="p">:</span> <span class="n">training_data</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Evaluation is similar to Example 1, but now we provide dummy rays for <strong>both direction types</strong>. The <code class="docutils literal notranslate"><span class="pre">rays_pred</span></code> is a list of two arrays, matching the structure used during training.</p>
+<p>—</p>
+</section>
+<section id="step-8-visualize-results-with-multiple-ray-directions">
+<h3>Step 8: Visualize results with multiple ray directions<a class="headerlink" href="#step-8-visualize-results-with-multiple-ray-directions" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">visualize_results</span><span class="p">(</span><span class="n">results</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create 3-panel contour plot showing both ray directions.&quot;&quot;&quot;</span>
+    <span class="n">training_data</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;training_data&#39;</span><span class="p">]</span>
+    <span class="n">X_train</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;X_train&#39;</span><span class="p">]</span>
+    <span class="n">rays_list</span> <span class="o">=</span> <span class="n">training_data</span><span class="p">[</span><span class="s1">&#39;rays_list&#39;</span><span class="p">]</span>
+    <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;X1_grid&#39;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;X2_grid&#39;</span><span class="p">]</span>
+
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+    <span class="c1"># GDDEGP Prediction with multiple rays</span>
+    <span class="n">cf1</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                          <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+                   <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span> <span class="o">=</span> <span class="p">(</span><span class="n">domain_bounds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">domain_bounds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Draw arrows for all directions</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_directions_per_point</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">pt</span><span class="p">,</span> <span class="n">ray</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">rays_list</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="n">clipped_arrow</span><span class="p">(</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt</span><span class="p">,</span> <span class="n">ray</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">length</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+                         <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="n">xlim</span><span class="p">,</span> <span class="n">ylim</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
+
+    <span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;GDDEGP Prediction (Multiple Rays)&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># True function</span>
+    <span class="n">cf2</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;y_true&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span>
+                          <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">)</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;True Function&quot;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Absolute Error (log scale)</span>
+    <span class="n">abs_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;y_true&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X1</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">abs_error_clipped</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">abs_error</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">log_levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">abs_error_clipped</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">abs_error_clipped</span><span class="o">.</span><span class="n">max</span><span class="p">()),</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">cf3</span> <span class="o">=</span> <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">abs_error_clipped</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">log_levels</span><span class="p">,</span>
+                          <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;magma_r&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cf3</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Absolute Error (log scale)&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Labels and formatting</span>
+    <span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axs</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$x_1$&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;$x_2$&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s2">&quot;equal&quot;</span><span class="p">)</span>
+
+    <span class="n">custom_lines</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">markerfacecolor</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
+               <span class="n">markeredgecolor</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Train Points&#39;</span><span class="p">),</span>
+        <span class="n">Line2D</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Ray Directions&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">handles</span><span class="o">=</span><span class="n">custom_lines</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower center&#39;</span><span class="p">,</span> <span class="n">ncol</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+               <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.02</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">rect</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The visualization now shows <strong>two perpendicular arrows at each training point</strong>:</p>
+<ul class="simple">
+<li><p>One arrow points in the gradient direction</p></li>
+<li><p>One arrow points perpendicular to the gradient</p></li>
+</ul>
+<p>This creates a cross-like pattern at each training location, illustrating how GDDEGP captures information in multiple directions simultaneously.</p>
+<p>—</p>
+</section>
+<section id="id9">
+<h3>Step 9: Run the complete tutorial<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">training_data</span> <span class="o">=</span> <span class="n">generate_training_data</span><span class="p">()</span>
+<span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">train_model</span><span class="p">(</span><span class="n">training_data</span><span class="p">)</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evaluate_model</span><span class="p">(</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">training_data</span><span class="p">)</span>
+<span class="n">visualize_results</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Final NRMSE: </span><span class="si">{</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;nrmse&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/gddegp_getting_started_17_0.png" src="../_images/gddegp_getting_started_17_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Final NRMSE: 0.001255
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+This executes the complete workflow:</p>
+<ol class="arabic simple">
+<li><p>Generate training data with 2 directional derivatives per point</p></li>
+<li><p>Train the GDDEGP model</p></li>
+<li><p>Evaluate on test grid</p></li>
+<li><p>Visualize with orthogonal ray directions displayed</p></li>
+</ol>
+<p>—</p>
+</section>
+<section id="summary-of-example-2">
+<h3>Summary of Example 2<a class="headerlink" href="#summary-of-example-2" title="Link to this heading">#</a></h3>
+<p>This tutorial demonstrates advanced GDDEGP capabilities with multiple directional derivatives per training point:</p>
+<p><strong>Key Innovations:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Multiple Rays Per Point</strong>: Each training point has 2 directional derivatives (gradient + perpendicular)</p></li>
+<li><p><strong>Global Perturbation Methodology</strong>: Uses hypercomplex automatic differentiation for efficient derivative computation</p></li>
+<li><p><strong>Orthogonal Directions</strong>: Captures complementary information along gradient and perpendicular directions</p></li>
+<li><p><strong>Richer Local Information</strong>: More complete characterization of local function behavior</p></li>
+</ol>
+<p><strong>Comparison with Example 1:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Aspect</p></th>
+<th class="head"><p>Example 1</p></th>
+<th class="head"><p>Example 2</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Training points</p></td>
+<td><p>20</p></td>
+<td><p>10</p></td>
+</tr>
+<tr class="row-odd"><td><p>Directions per
+point</p></td>
+<td><p>1 (gradient only)</p></td>
+<td><p>2 (gradient +
+perpendicular)</p></td>
+</tr>
+<tr class="row-even"><td><p>Total derivatives</p></td>
+<td><p>20</p></td>
+<td><p>20</p></td>
+</tr>
+<tr class="row-odd"><td><p>Derivative
+computation</p></td>
+<td><p>Chain rule (symbolic)</p></td>
+<td><p>Hypercomplex AD (automatic)</p></td>
+</tr>
+<tr class="row-even"><td><p>Information
+distribution</p></td>
+<td><p>Spread across space</p></td>
+<td><p>Concentrated per location</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Advantages of Multiple Rays Per Point:</strong></p>
+<ul class="simple">
+<li><p><strong>More complete local information</strong>: Captures function behavior in multiple directions at each location</p></li>
+<li><p><strong>Better for sparse data</strong>: Fewer training points needed when each provides richer information</p></li>
+<li><p><strong>Natural for anisotropic functions</strong>: Orthogonal directions capture different rates of change</p></li>
+<li><p><strong>Efficient computation</strong>: Hypercomplex AD computes all derivatives in one function evaluation</p></li>
+<li><p><strong>Flexible framework</strong>: Can easily extend to 3+ directions per point</p></li>
+</ul>
+<p><strong>When to Use Multiple Rays Per Point:</strong></p>
+<ul class="simple">
+<li><p><strong>Sparse training data</strong>: When you have few training locations but can afford multiple derivatives per point</p></li>
+<li><p><strong>Anisotropic functions</strong>: Functions with direction-dependent behavior</p></li>
+<li><p><strong>Complete local characterization</strong>: When you need thorough understanding at specific locations</p></li>
+<li><p><strong>Automatic differentiation available</strong>: When you have AD tools like pyoti</p></li>
+<li><p><strong>Active learning</strong>: When strategically placing intensive observations at key locations</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="ddegp_getting_started.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Directional Derivative-Enhanced Gaussian Process (DDEGP)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="wddegp_getting_started.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-1-generalized-directional-gp-with-gradient-aligned-rays-on-the-branin-function">Example 1: Generalized Directional GP with Gradient-Aligned Rays on the Branin Function</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-import-required-packages">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-set-configuration-parameters">Step 2: Set configuration parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-define-the-branin-function-and-its-gradient">Step 3: Define the Branin function and its gradient</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-define-arrow-clipping-utility">Step 4: Define arrow clipping utility</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-generate-training-data-with-gradient-aligned-derivatives">Step 5: Generate training data with gradient-aligned derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-initialize-and-train-the-gddegp-model">Step 6: Initialize and train the GDDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-evaluate-model-on-a-test-grid">Step 7: Evaluate model on a test grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-visualize-results-with-gradient-aligned-rays">Step 8: Visualize results with gradient-aligned rays</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-run-the-complete-tutorial">Step 9: Run the complete tutorial</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-example-1">Summary of Example 1</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#example-2-gddegp-with-multiple-directional-derivatives-per-point-using-global-perturbations">Example 2: GDDEGP with Multiple Directional Derivatives Per Point Using Global Perturbations</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Overview</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Step 2: Set configuration parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Step 3: Define the Branin function and its gradient</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Step 4: Define arrow clipping utility</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-generate-training-data-with-multiple-rays-per-point">Step 5: Generate training data with multiple rays per point</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Step 6: Initialize and train the GDDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Step 7: Evaluate model on a test grid</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-visualize-results-with-multiple-ray-directions">Step 8: Visualize results with multiple ray directions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Step 9: Run the complete tutorial</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary-of-example-2">Summary of Example 2</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
