@@ -20,6 +20,6 @@ docs/build/*
 
 # Ignore tutorials, experimental, testing folders
 # The tutorials are now part of documentation
-tutorials/
-testing/
-experimental/
+tutorials/*
+testing/*
+experimental/*
