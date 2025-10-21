@@ -16,3 +16,4 @@ dependencies:
   - sphinxcontrib-bibtex
   - sympy
   - line_profiler
+  - scikit-learn

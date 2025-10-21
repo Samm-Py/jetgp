@@ -188,9 +188,11 @@ class DerivativeGPExperiment:
 
         print("Optimizing hyperparameters...")
         params = self.gp_model.optimize_hyperparameters(
-            optimizer = 'pso',
-            max_iter=self.config.n_restart_optimizer,
-            pop_size=self.config.swarm_size
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
         )
         print("Hyperparameter optimization complete.")
         return params

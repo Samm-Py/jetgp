@@ -17,3 +17,9 @@ modules/*.so
 
 # Ignore build directory for docs
 docs/build/*
+
+# Ignore tutorials, experimental, testing folders
+# The tutorials are now part of documentation
+tutorials/
+testing/
+experimental/

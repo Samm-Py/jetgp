@@ -230,8 +230,11 @@ class IndividualSubmodelGP:
         print(f"  Swarm size: {self.config.swarm_size}")
 
         params = self.gp_model.optimize_hyperparameters(
-            n_restart_optimizer=self.config.n_restart_optimizer,
-            swarm_size=self.config.swarm_size
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
         )
 
         print("Hyperparameter optimization completed.")
@@ -489,7 +492,7 @@ def main():
 
     # Configure experiment
     config = IndividualSubmodelConfig(
-        n_order=2,
+        n_order=1,
         n_bases=1,
         lb_x=0.5,
         ub_x=2.5,

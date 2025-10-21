@@ -147,17 +147,7 @@ class wdegp:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
 
-        weights_matrix = np.zeros((n_test, n_train))
-        diffs_train_train = wdegp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, 0, index=[-1])
 
-        for k in range(n_test):
-            x_k = X_test[k].reshape(1, -1)
-            diffs_train_test = wdegp_utils.differences_by_dim_func(
-                x_k, self.x_train, 0, index=[-1])
-            weights = wdegp_utils.determine_weights(
-                diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
-            weights_matrix[k] = weights[:, 0]
 
         y_val = 0
         y_var = 0
@@ -255,18 +245,30 @@ class wdegp:
             else:
                 return (y_val, y_var**2) if calc_cov else y_val
         else:
+            weights_matrix = np.zeros((n_test, n_train))
+            diffs_train_train = self.differences_by_dim
+            for k in range(n_test):
+                x_k = X_test[k].reshape(1, -1)
+                diffs_train_test = wdegp_utils.differences_by_dim_func(
+                    x_k, self.x_train, 0, index=[-1])
+                weights = wdegp_utils.determine_weights(
+                    diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
+                weights_matrix[k] = weights[:, 0]
+                
+            diffs_train_test = wdegp_utils.differences_by_dim_func(
+                self.x_train, X_test, self.n_order)
+            
+
+            phi_train_train = self.kernel_func(
+                diffs_train_train, ell)
+
+            # Extract ALL derivative components into a single flat array (highly efficient)
+            phi_exp_train_train = phi_train_train.get_all_derivs(
+                self.n_bases, 2 * self.n_order)
+            
             for i in range(len(self.index)):
                 index_i = self.index[i]
-                diffs_train_test = wdegp_utils.differences_by_dim_func(
-                    self.x_train, X_test, self.n_order)
-                diffs_train_train = self.differences_by_dim
-
-                phi_train_train = self.kernel_func(
-                    diffs_train_train, ell)
-
-                # Extract ALL derivative components into a single flat array (highly efficient)
-                phi_exp_train_train = phi_train_train.get_all_derivs(
-                    self.n_bases, 2 * self.n_order)
+                
 
                 K = wdegp_utils.rbf_kernel(
                     phi_train_train, phi_exp_train_train, self.n_order, self.n_bases,
@@ -310,6 +312,13 @@ class wdegp:
                     weight = weight + weights_matrix[:, self.index[i][j]]
                 # for j in range(len(self.index[i])):
                 #     y_val += weights_matrix[:, self.index[i][j]] * f_mean
+                
+                # if i == 0:
+                #     weight = np.array([1,1,1,1,1,0,0,0,0,0])
+                # else:
+                #     weight = np.array([0,0,0,0,0, 1,1,1,1,1])
+                    
+                    
                 y_val += weight * f_mean
                 if return_submodels:
                     submodel_vals.append(f_mean)

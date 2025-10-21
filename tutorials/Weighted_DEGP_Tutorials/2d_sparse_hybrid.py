@@ -196,8 +196,11 @@ class SparseDerivative2DGP:
 
         print("Optimizing hyperparameters using particle swarm optimization...")
         params = self.gp_model.optimize_hyperparameters(
-            n_restart_optimizer=self.config.n_restart_optimizer,
-            swarm_size=self.config.swarm_size
+        optimizer='jade',
+        pop_size = 100,
+        n_generations = 15,
+        local_opt_every = None,
+        debug = True
         )
 
         return params
