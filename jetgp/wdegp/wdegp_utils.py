@@ -248,9 +248,10 @@ def rbf_kernel(
     n_rows_func, n_cols_func = phi.shape
     n_pts_deriv = len(index)
     n_deriv_types = len(der_indices)
-
-    total_rows = n_rows_func + n_pts_deriv * n_deriv_types
-    total_cols = n_cols_func + n_pts_deriv * n_deriv_types
+    n_pts_with_derivs_cols = len([i for i in range(n_cols_func) if i in index])
+    n_pts_with_derivs_rows = len([i for i in range(n_rows_func) if i in index])
+    total_rows = n_rows_func + n_pts_with_derivs_rows * n_deriv_types
+    total_cols = n_cols_func + n_pts_with_derivs_cols * n_deriv_types
 
     K = np.zeros((total_rows, total_cols))
 
@@ -273,8 +274,8 @@ def rbf_kernel(
         content_sliced = content_full[:, index[0]:index[-1]+1]
 
         K[:n_rows_func, col_offset: col_offset +
-            n_pts_deriv] = content_sliced * ((-1) ** powers[j + 1])
-        col_offset += n_pts_deriv
+            n_pts_with_derivs_cols ] = content_sliced * ((-1) ** powers[j + 1])
+        col_offset += n_pts_with_derivs_cols
 
     # First Block-Column: Derivative-Function (K_df)
     row_offset = n_rows_func
@@ -284,9 +285,9 @@ def rbf_kernel(
         # Slice the content to match the number of derivative points
         content_sliced = content_full[index[0]:index[-1]+1, :]
 
-        K[row_offset: row_offset + n_pts_deriv,
+        K[row_offset: row_offset +  n_pts_with_derivs_rows,
             :n_cols_func] = content_sliced * ((-1) ** powers[0])
-        row_offset += n_pts_deriv
+        row_offset += n_pts_with_derivs_rows
 
     # Inner Blocks: Derivative-Derivative (K_dd)
     row_offset = n_rows_func
@@ -305,10 +306,10 @@ def rbf_kernel(
             content_sliced = content_full[index[0]
                 :index[-1]+1, index[0]:index[-1]+1]
 
-            K[row_offset: row_offset + n_pts_deriv, col_offset: col_offset +
-                n_pts_deriv] = content_sliced * ((-1) ** powers[j + 1])
-            col_offset += n_pts_deriv
-        row_offset += n_pts_deriv
+            K[row_offset: row_offset +  n_pts_with_derivs_rows, col_offset: col_offset +
+                n_pts_with_derivs_cols] = content_sliced * ((-1) ** powers[j + 1])
+            col_offset += n_pts_with_derivs_cols
+        row_offset += n_pts_with_derivs_rows
 
     return K
 
