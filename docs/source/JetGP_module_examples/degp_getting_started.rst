@@ -96,16 +96,16 @@ Step 5: Optimize hyperparameters
 .. jupyter-execute::
 
    params =  model.optimize_hyperparameters(
-        optimizer='jade',
+        optimizer='pso',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 15,
         debug = False
         )
    print("Optimized hyperparameters:", params)
 
 **Explanation:**  
-Hyperparameters of the kernel (length scale, variance, noise, etc.) are optimized by maximizing the marginal log likelihood. Particle Swarm Optimization (PSO) is used here for robustness, with multiple restarts to avoid local minima.
+Hyperparameters of the kernel (length scale, variance, noise, etc.) are optimized by maximizing the marginal log likelihood. Particle Swarm Optimization (PSO) is used here for robustness.
 
 ---
 
@@ -164,7 +164,7 @@ Step 7: Visualize predictions
    plt.show()
 
 **Explanation:**  
-The plots compare DEGP predictions with the true function and derivatives. Notice how including derivative information allows the GP to more accurately capture the slope, even between training points.
+The plots compare DEGP predictions with the true function and derivatives.
 
 ---
 
@@ -242,16 +242,17 @@ Step 4: Optimize hyperparameters
 .. jupyter-execute::
 
    params = model.optimize_hyperparameters(
-        optimizer='jade',
+        optimizer='pso',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 15,
         debug = True
         )
    print("Optimized hyperparameters:", params)
 
 **Explanation:**  
-Hyperparameters are optimized using PSO with multiple restarts for robustness.
+Hyperparameters of the kernel are optimized by maximizing the marginal log likelihood. Particle Swarm Optimization (PSO) is used here for robustness.
+
 
 ---
 
@@ -414,7 +415,7 @@ Step 4: Initialize DEGP model
    print("2D DEGP model initialized.")
 
 **Explanation:**  
-The model uses two bases (``n_bases=2``) to capture multi-dimensional derivative information effectively.
+Here, (``n_bases=2``) which specifices the dimensionality of the problem.
 
 ---
 
@@ -424,10 +425,10 @@ Step 5: Optimize hyperparameters
 .. jupyter-execute::
 
    params = model.optimize_hyperparameters(
-        optimizer='jade',
+        optimizer='pso',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 15,
         debug = False
         )
    print("Optimized hyperparameters:", params)
@@ -646,16 +647,17 @@ Step 5: Optimize hyperparameters
 .. jupyter-execute::
 
    params =   model.optimize_hyperparameters(
-        optimizer='jade',
+        optimizer='pso',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 15,
         debug = False
         )
    print("Optimized hyperparameters:", params)
 
 **Explanation:**  
-Hyperparameters are optimized to balance function values and multiple orders of derivatives.
+Hyperparameters of the kernel are optimized by maximizing the marginal log likelihood.
+
 
 ---
 

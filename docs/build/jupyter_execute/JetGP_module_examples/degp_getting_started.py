@@ -44,10 +44,10 @@ print("DEGP model initialized.")
 
 
 params =  model.optimize_hyperparameters(
-     optimizer='jade',
+     optimizer='pso',
      pop_size = 100,
      n_generations = 15,
-     local_opt_every = None,
+     local_opt_every = 15,
      debug = False
      )
 print("Optimized hyperparameters:", params)
@@ -134,10 +134,10 @@ print("DEGP model (2nd order) initialized.")
 
 
 params = model.optimize_hyperparameters(
-     optimizer='jade',
+     optimizer='pso',
      pop_size = 100,
      n_generations = 15,
-     local_opt_every = None,
+     local_opt_every = 15,
      debug = True
      )
 print("Optimized hyperparameters:", params)
@@ -255,10 +255,10 @@ print("2D DEGP model initialized.")
 
 
 params = model.optimize_hyperparameters(
-     optimizer='jade',
+     optimizer='pso',
      pop_size = 100,
      n_generations = 15,
-     local_opt_every = None,
+     local_opt_every = 15,
      debug = False
      )
 print("Optimized hyperparameters:", params)
@@ -404,10 +404,10 @@ print("2D DEGP model with second-order derivatives initialized.")
 
 
 params =   model.optimize_hyperparameters(
-     optimizer='jade',
+     optimizer='pso',
      pop_size = 100,
      n_generations = 15,
-     local_opt_every = None,
+     local_opt_every = 15,
      debug = False
      )
 print("Optimized hyperparameters:", params)

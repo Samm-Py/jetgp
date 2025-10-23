@@ -246,7 +246,6 @@ def rbf_kernel(
 
     # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
     n_rows_func, n_cols_func = phi.shape
-    n_pts_deriv = len(index)
     n_deriv_types = len(der_indices)
     n_pts_with_derivs_cols = len([i for i in range(n_cols_func) if i in index])
     n_pts_with_derivs_rows = len([i for i in range(n_rows_func) if i in index])

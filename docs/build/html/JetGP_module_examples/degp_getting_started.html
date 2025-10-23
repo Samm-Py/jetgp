@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -182,7 +182,16 @@
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../api/index.html">JetGP API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -612,10 +621,10 @@ Here, we define three training points and compute their function values and firs
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
-     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
      <span class="n">pop_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
      <span class="n">n_generations</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
-     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
      <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
      <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimized hyperparameters:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -623,13 +632,14 @@ Here, we define three training points and compute their function values and firs
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [ -0.77526449   0.78795948 -16.        ]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
+Optimized hyperparameters: [-0.79639884  0.90022765 -8.7242228 ]
 </pre></div>
 </div>
 </div>
 </div>
 <p><strong>Explanation:</strong>
-Hyperparameters of the kernel (length scale, variance, noise, etc.) are optimized by maximizing the marginal log likelihood. Particle Swarm Optimization (PSO) is used here for robustness, with multiple restarts to avoid local minima.</p>
+Hyperparameters of the kernel (length scale, variance, noise, etc.) are optimized by maximizing the marginal log likelihood. Particle Swarm Optimization (PSO) is used here for robustness.</p>
 <p>—</p>
 </section>
 <section id="step-6-validate-predictions-at-training-points">
@@ -649,8 +659,8 @@ Hyperparameters of the kernel (length scale, variance, noise, etc.) are optimize
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [2.37304620e-12 2.03725925e-13 2.88657986e-13]
-Absolute error (derivative) at training points: [7.55173701e-13 1.33892897e-13 4.36872760e-13]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [5.50759438e-12 2.55462318e-12 5.35349542e-12]
+Absolute error (derivative) at training points: [1.52300395e-12 7.09765580e-13 1.20470300e-12]
 </pre></div>
 </div>
 </div>
@@ -699,7 +709,7 @@ We first check predictions at training points to ensure that the DEGP model exac
 </div>
 </div>
 <p><strong>Explanation:</strong>
-The plots compare DEGP predictions with the true function and derivatives. Notice how including derivative information allows the GP to more accurately capture the slope, even between training points.</p>
+The plots compare DEGP predictions with the true function and derivatives.</p>
 <p>—</p>
 </section>
 <section id="summary">
@@ -800,10 +810,10 @@ Setting <code class="docutils literal notranslate"><span class="pre">n_order=2</
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
-     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
      <span class="n">pop_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
      <span class="n">n_generations</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
-     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
      <span class="n">debug</span> <span class="o">=</span> <span class="kc">True</span>
      <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimized hyperparameters:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -811,15 +821,49 @@ Setting <code class="docutils literal notranslate"><span class="pre">n_order=2</
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=-15.111187298441267
-Stopping: Objective improvement &lt; 1e-08 at generation 1
-Optimized hyperparameters: [ -0.86992927   1.16196008 -15.95618943]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 1: [ -0.51141699   0.2685204  -10.35707546] -8.353595171623999
+Best after iteration 1: [ -0.51141699   0.2685204  -10.35707546] -8.353595171623999
+Best after iteration 2: [ -0.51141699   0.2685204  -10.35707546] -8.353595171623999
+New best for swarm at iteration 3: [ -0.72640129   1.3537834  -11.65929076] -9.867242730600475
+New best for swarm at iteration 3: [ -0.88519363   1.48760265 -10.23083328] -13.443598040410825
+Best after iteration 3: [ -0.88519363   1.48760265 -10.23083328] -13.443598040410825
+New best for swarm at iteration 4: [ -0.6821772    0.54906855 -10.0091504 ] -13.610231356194577
+Best after iteration 4: [ -0.6821772    0.54906855 -10.0091504 ] -13.610231356194577
+New best for swarm at iteration 5: [-0.7744359   1.03237621 -9.33765885] -14.173107118957327
+New best for swarm at iteration 5: [ -0.79375016   0.73936445 -11.53884723] -15.008839023240794
+Best after iteration 5: [ -0.79375016   0.73936445 -11.53884723] -15.008839023240794
+Best after iteration 6: [ -0.79375016   0.73936445 -11.53884723] -15.008839023240794
+New best for swarm at iteration 7: [ -0.7681312    0.911582   -10.71481157] -15.080208689348995
+New best for swarm at iteration 7: [ -0.7640489    0.72843451 -10.73921423] -15.198347181364861
+Best after iteration 7: [ -0.7640489    0.72843451 -10.73921423] -15.198347181364861
+New best for swarm at iteration 8: [ -0.82825692   1.05832576 -10.59701508] -15.382458952823425
+Best after iteration 8: [ -0.82825692   1.05832576 -10.59701508] -15.382458952823425
+Best after iteration 9: [ -0.82825692   1.05832576 -10.59701508] -15.382458952823425
+New best for swarm at iteration 10: [ -0.77884893   0.84395305 -10.3465898 ] -15.440291385405244
+New best for swarm at iteration 10: [ -0.83076122   0.85635287 -10.38891756] -15.611191153534845
+New best for swarm at iteration 10: [ -0.80665518   0.86136357 -11.14629211] -15.907269602447608
+Best after iteration 10: [ -0.80665518   0.86136357 -11.14629211] -15.907269602447608
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 11: [ -0.80665518   0.86136357 -11.14629211] -15.907269602447608
+Best after iteration 12: [ -0.80665518   0.86136357 -11.14629211] -15.907269602447608
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 13: [ -0.80665518   0.86136357 -11.14629211] -15.907269602447608
+New best for swarm at iteration 14: [ -0.80809463   0.89580271 -11.0832369 ] -16.07938599124593
+Best after iteration 14: [ -0.80809463   0.89580271 -11.0832369 ] -16.07938599124593
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local optimization did not improve:
+Best after iteration 15: [ -0.80809463   0.89580271 -11.0832369 ] -16.07938599124593
+Stopping: maximum iterations reached --&gt; 15
+Optimized hyperparameters: [ -0.80809463   0.89580271 -11.0832369 ]
 </pre></div>
 </div>
 </div>
 </div>
 <p><strong>Explanation:</strong>
-Hyperparameters are optimized using PSO with multiple restarts for robustness.</p>
+Hyperparameters of the kernel are optimized by maximizing the marginal log likelihood. Particle Swarm Optimization (PSO) is used here for robustness.</p>
 <p>—</p>
 </section>
 <section id="step-5-validate-predictions-at-training-points">
@@ -844,9 +888,9 @@ Hyperparameters are optimized using PSO with multiple restarts for robustness.</
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [1.21055548e-08 3.90703853e-09 1.13703564e-08]
-Absolute error (1st derivative) at training points: [1.81979098e-10 4.66951033e-10 1.70847481e-09]
-Absolute error (2nd derivative) at training points: [3.83662207e-10 5.00196162e-10 7.81897214e-10]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [2.14762158e-09 2.01088834e-09 6.80470036e-09]
+Absolute error (1st derivative) at training points: [1.43564383e-10 3.84029586e-10 9.22256382e-10]
+Absolute error (2nd derivative) at training points: [4.66412879e-10 9.77893266e-10 2.96184188e-11]
 </pre></div>
 </div>
 </div>
@@ -1018,7 +1062,7 @@ The derivative indices specify first derivatives with respect to <span class="ma
 </div>
 </div>
 <p><strong>Explanation:</strong>
-The model uses two bases (<code class="docutils literal notranslate"><span class="pre">n_bases=2</span></code>) to capture multi-dimensional derivative information effectively.</p>
+Here, (<code class="docutils literal notranslate"><span class="pre">n_bases=2</span></code>) which specifices the dimensionality of the problem.</p>
 <p>—</p>
 </section>
 <section id="id9">
@@ -1026,10 +1070,10 @@ The model uses two bases (<code class="docutils literal notranslate"><span class
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
-     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
      <span class="n">pop_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
      <span class="n">n_generations</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
-     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
      <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
      <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimized hyperparameters:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -1037,7 +1081,8 @@ The model uses two bases (<code class="docutils literal notranslate"><span class
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-0.2963649  -0.76496067  0.94163577 -9.77032629]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
+Optimized hyperparameters: [ -0.66633162  -0.7337925    0.81890305 -12.85289224]
 </pre></div>
 </div>
 </div>
@@ -1064,13 +1109,13 @@ Hyperparameter optimization for 2D problems may take longer due to increased dim
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions at training points (function): [[-3.28170824e-12]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions at training points (function): [[ 4.99233987e-12]
  [ 4.79425539e-01]
  [ 8.41470985e-01]
- [-1.60316205e-12]
+ [-1.00942421e-10]
  [ 4.20735492e-01]
  [ 7.38460263e-01]
- [-3.14609450e-12]
+ [ 8.79024631e-12]
  [ 2.59034724e-01]
  [ 4.54648713e-01]]
 Predictions at training points (deriv x): [[1.        ]
@@ -1082,13 +1127,13 @@ Predictions at training points (deriv x): [[1.        ]
  [0.54030231]
  [0.47415988]
  [0.29192658]]
-Predictions at training points (deriv y): [[-2.07655253e-13]
- [-1.66124203e-13]
- [ 1.66124203e-13]
- [ 2.49186304e-13]
+Predictions at training points (deriv y): [[-1.36221846e-11]
+ [-8.30621014e-12]
+ [ 4.65147768e-12]
+ [-1.32899362e-11]
  [-2.29848847e-01]
  [-4.03422680e-01]
- [ 2.49186304e-13]
+ [-1.62801719e-11]
  [-4.03422680e-01]
  [-7.08073418e-01]]
 </pre></div>
@@ -1114,15 +1159,15 @@ Predictions are split into function values and derivatives for each dimension.</
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [3.28170824e-12 1.20659038e-12 2.56306087e-12 1.60316205e-12
- 4.41435777e-12 9.50794998e-13 3.14609450e-12 2.85643731e-12
- 2.64660516e-12]
-Absolute error (deriv x) at training points: [2.02216022e-12 1.06858966e-12 1.69364522e-12 2.66919820e-12
- 2.53530530e-12 2.15699680e-12 6.13842310e-13 5.63005198e-12
- 1.57096558e-13]
-Absolute error (deriv y) at training points: [2.07655253e-13 1.66124203e-13 1.66124203e-13 2.49186304e-13
- 1.55070401e-13 5.27800026e-13 2.49186304e-13 1.95565786e-13
- 2.22311058e-12]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [4.99233987e-12 5.50839374e-11 3.57552876e-11 1.00942421e-10
+ 6.48080478e-11 5.95133942e-11 8.79024631e-12 5.18064480e-11
+ 1.14142529e-10]
+Absolute error (deriv x) at training points: [4.53805882e-11 5.16109377e-12 2.02164951e-11 5.99165162e-12
+ 4.17577084e-12 2.44020915e-11 3.17803561e-11 6.46316334e-13
+ 1.49421586e-11]
+Absolute error (deriv y) at training points: [1.36221846e-11 8.30621014e-12 4.65147768e-12 1.32899362e-11
+ 3.05558079e-11 1.19315113e-11 1.62801719e-11 3.02051717e-11
+ 6.34789998e-11]
 </pre></div>
 </div>
 </div>
@@ -1331,10 +1376,10 @@ Setting <code class="docutils literal notranslate"><span class="pre">n_order=2</
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span>   <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
-     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
      <span class="n">pop_size</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span>
      <span class="n">n_generations</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
-     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+     <span class="n">local_opt_every</span> <span class="o">=</span> <span class="mi">15</span><span class="p">,</span>
      <span class="n">debug</span> <span class="o">=</span> <span class="kc">False</span>
      <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimized hyperparameters:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
@@ -1342,13 +1387,14 @@ Setting <code class="docutils literal notranslate"><span class="pre">n_order=2</
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [ -0.33435965  -0.13690858   0.24984627 -11.84996009]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
+Optimized hyperparameters: [ -0.66593039  -0.71414289   0.66556456 -14.80852798]
 </pre></div>
 </div>
 </div>
 </div>
 <p><strong>Explanation:</strong>
-Hyperparameters are optimized to balance function values and multiple orders of derivatives.</p>
+Hyperparameters of the kernel are optimized by maximizing the marginal log likelihood.</p>
 <p>—</p>
 </section>
 <section id="id18">
@@ -1371,6 +1417,9 @@ Hyperparameters are optimized to balance function values and multiple orders of 
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
+</pre></div>
+</div>
 </div>
 </div>
 <p><strong>Explanation:</strong>
@@ -1400,21 +1449,21 @@ Predictions are organized by derivative order and type.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function)       : [8.12583334e-12 2.47690757e-12 9.10604925e-13 1.62120317e-12
- 1.47321044e-12 8.93507490e-13 4.12975210e-12 3.84081655e-13
- 1.21386234e-12]
-Absolute error (derivative x)  : [1.38866696e-12 5.47895063e-13 1.30173650e-12 1.02362563e-13
- 3.41948692e-14 6.20392626e-13 2.45681253e-12 5.41178213e-13
- 3.73756581e-13]
-Absolute error (derivative y)  : [2.27609625e-13 1.63398728e-12 1.48895306e-12 3.40554616e-12
- 5.25690602e-14 6.86950496e-13 8.30621014e-13 3.82471832e-13
- 9.77218306e-13]
-Absolute error (second x-x)    : [1.84564234e-12 3.32023298e-12 4.83502127e-13 8.22978856e-13
- 3.74239528e-12 2.27751151e-12 7.39131179e-13 1.31861189e-12
- 2.47080134e-12]
-Absolute error (second y-y)    : [9.89958921e-12 9.97563143e-12 7.21667170e-12 4.10098590e-12
- 3.19511084e-12 2.86548563e-13 8.88864850e-12 6.64490685e-12
- 3.40866224e-12]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function)       : [3.97381417e-09 3.07888270e-10 1.05624922e-08 1.90774807e-09
+ 3.70462322e-09 4.34959535e-09 3.50916474e-09 1.27780730e-10
+ 7.92007665e-09]
+Absolute error (derivative x)  : [6.44848619e-11 1.97423122e-09 5.79491899e-10 3.37496808e-09
+ 7.33976324e-10 1.63534480e-09 1.12172127e-09 2.41276976e-09
+ 1.42433987e-09]
+Absolute error (derivative y)  : [7.44236428e-10 1.04193100e-09 6.80444735e-10 2.06259810e-09
+ 1.43031834e-09 1.02196668e-09 1.10572269e-09 2.15958518e-09
+ 2.05763395e-09]
+Absolute error (second x-x)    : [1.40143086e-09 1.33704248e-09 1.82533266e-09 1.17843896e-09
+ 2.16364532e-09 5.76528159e-10 9.92883655e-10 9.42037115e-10
+ 2.42709630e-09]
+Absolute error (second y-y)    : [1.41933532e-09 1.11567827e-09 6.40382969e-10 1.69278525e-10
+ 2.29963715e-10 1.92019733e-11 3.38557050e-10 6.46576737e-10
+ 5.99958971e-11]
 </pre></div>
 </div>
 </div>
@@ -1444,6 +1493,9 @@ Verification that all derivatives are correctly interpolated at training points.
 </div>
 </div>
 <div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
+</pre></div>
+</div>
 </div>
 </div>
 <p><strong>Explanation:</strong>

@@ -180,7 +180,16 @@
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -395,7 +404,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="differences_by_dim_func">
-<a class="viewcode-back" href="../../api/index.html#wdegp.wdegp_utils.differences_by_dim_func">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_degp.html#wdegp.wdegp_utils.differences_by_dim_func">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">differences_by_dim_func</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute pairwise differences between two input arrays X1 and X2 for each dimension,</span>
@@ -535,7 +544,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="deriv_map">
-<a class="viewcode-back" href="../../api/index.html#wdegp.wdegp_utils.deriv_map">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_degp.html#wdegp.wdegp_utils.deriv_map">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">deriv_map</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a mapping from (order, index_within_order) to a single</span>
@@ -555,7 +564,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="transform_der_indices">
-<a class="viewcode-back" href="../../api/index.html#wdegp.wdegp_utils.transform_der_indices">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_degp.html#wdegp.wdegp_utils.transform_der_indices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Transforms a list of user-facing derivative specifications into the</span>
@@ -573,7 +582,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="rbf_kernel">
-<a class="viewcode-back" href="../../api/index.html#wdegp.wdegp_utils.rbf_kernel">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_degp.html#wdegp.wdegp_utils.rbf_kernel">[docs]</a>
 <span class="nd">@profile</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">rbf_kernel</span><span class="p">(</span>
         <span class="n">phi</span><span class="p">,</span>
@@ -606,11 +615,11 @@ document.write(`
 
     <span class="c1"># --- 2. Determine Block Sizes and Pre-allocate Matrix ---</span>
     <span class="n">n_rows_func</span><span class="p">,</span> <span class="n">n_cols_func</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">n_pts_deriv</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
     <span class="n">n_deriv_types</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
-
-    <span class="n">total_rows</span> <span class="o">=</span> <span class="n">n_rows_func</span> <span class="o">+</span> <span class="n">n_pts_deriv</span> <span class="o">*</span> <span class="n">n_deriv_types</span>
-    <span class="n">total_cols</span> <span class="o">=</span> <span class="n">n_cols_func</span> <span class="o">+</span> <span class="n">n_pts_deriv</span> <span class="o">*</span> <span class="n">n_deriv_types</span>
+    <span class="n">n_pts_with_derivs_cols</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols_func</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span><span class="p">])</span>
+    <span class="n">n_pts_with_derivs_rows</span> <span class="o">=</span> <span class="nb">len</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_rows_func</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">index</span><span class="p">])</span>
+    <span class="n">total_rows</span> <span class="o">=</span> <span class="n">n_rows_func</span> <span class="o">+</span> <span class="n">n_pts_with_derivs_rows</span> <span class="o">*</span> <span class="n">n_deriv_types</span>
+    <span class="n">total_cols</span> <span class="o">=</span> <span class="n">n_cols_func</span> <span class="o">+</span> <span class="n">n_pts_with_derivs_cols</span> <span class="o">*</span> <span class="n">n_deriv_types</span>
 
     <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">total_rows</span><span class="p">,</span> <span class="n">total_cols</span><span class="p">))</span>
 
@@ -633,8 +642,8 @@ document.write(`
         <span class="n">content_sliced</span> <span class="o">=</span> <span class="n">content_full</span><span class="p">[:,</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
 
         <span class="n">K</span><span class="p">[:</span><span class="n">n_rows_func</span><span class="p">,</span> <span class="n">col_offset</span><span class="p">:</span> <span class="n">col_offset</span> <span class="o">+</span>
-            <span class="n">n_pts_deriv</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-        <span class="n">col_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+            <span class="n">n_pts_with_derivs_cols</span> <span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">col_offset</span> <span class="o">+=</span> <span class="n">n_pts_with_derivs_cols</span>
 
     <span class="c1"># First Block-Column: Derivative-Function (K_df)</span>
     <span class="n">row_offset</span> <span class="o">=</span> <span class="n">n_rows_func</span>
@@ -644,9 +653,9 @@ document.write(`
         <span class="c1"># Slice the content to match the number of derivative points</span>
         <span class="n">content_sliced</span> <span class="o">=</span> <span class="n">content_full</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
 
-        <span class="n">K</span><span class="p">[</span><span class="n">row_offset</span><span class="p">:</span> <span class="n">row_offset</span> <span class="o">+</span> <span class="n">n_pts_deriv</span><span class="p">,</span>
+        <span class="n">K</span><span class="p">[</span><span class="n">row_offset</span><span class="p">:</span> <span class="n">row_offset</span> <span class="o">+</span>  <span class="n">n_pts_with_derivs_rows</span><span class="p">,</span>
             <span class="p">:</span><span class="n">n_cols_func</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">row_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+        <span class="n">row_offset</span> <span class="o">+=</span> <span class="n">n_pts_with_derivs_rows</span>
 
     <span class="c1"># Inner Blocks: Derivative-Derivative (K_dd)</span>
     <span class="n">row_offset</span> <span class="o">=</span> <span class="n">n_rows_func</span>
@@ -665,17 +674,17 @@ document.write(`
             <span class="n">content_sliced</span> <span class="o">=</span> <span class="n">content_full</span><span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="p">:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">index</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span><span class="n">index</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
 
-            <span class="n">K</span><span class="p">[</span><span class="n">row_offset</span><span class="p">:</span> <span class="n">row_offset</span> <span class="o">+</span> <span class="n">n_pts_deriv</span><span class="p">,</span> <span class="n">col_offset</span><span class="p">:</span> <span class="n">col_offset</span> <span class="o">+</span>
-                <span class="n">n_pts_deriv</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
-            <span class="n">col_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
-        <span class="n">row_offset</span> <span class="o">+=</span> <span class="n">n_pts_deriv</span>
+            <span class="n">K</span><span class="p">[</span><span class="n">row_offset</span><span class="p">:</span> <span class="n">row_offset</span> <span class="o">+</span>  <span class="n">n_pts_with_derivs_rows</span><span class="p">,</span> <span class="n">col_offset</span><span class="p">:</span> <span class="n">col_offset</span> <span class="o">+</span>
+                <span class="n">n_pts_with_derivs_cols</span><span class="p">]</span> <span class="o">=</span> <span class="n">content_sliced</span> <span class="o">*</span> <span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="n">powers</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">col_offset</span> <span class="o">+=</span> <span class="n">n_pts_with_derivs_cols</span>
+        <span class="n">row_offset</span> <span class="o">+=</span> <span class="n">n_pts_with_derivs_rows</span>
 
     <span class="k">return</span> <span class="n">K</span></div>
 
 
 
 <div class="viewcode-block" id="determine_weights">
-<a class="viewcode-back" href="../../api/index.html#wdegp.wdegp_utils.determine_weights">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_degp.html#wdegp.wdegp_utils.determine_weights">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">determine_weights</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute interpolation weights for Weighted Coefficient Kriging (WCK)</span>

@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
     <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -181,7 +181,16 @@
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">JetGP API</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -603,10 +612,7 @@ for a high-dimensional (4D) function. Key features include:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Number of submodels:
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span> 3
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Number of submodels: 3
 </pre></div>
 </div>
 </div>
@@ -636,49 +642,49 @@ for a high-dimensional (4D) function. Key features include:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=744.1932396746349
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=571.4019621875942
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=744.1932396746349
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=571.4019621875942
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=744.1932396746349
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=571.4019621875942
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=706.1088935727721
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=571.4019621875942
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=706.1088935727721
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=571.4019621875942
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=706.1088935727721
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=571.4019621875942
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=698.1808198949366
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=558.5655991364986
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=696.5752167671657
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=558.5655991364986
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=696.5752167671657
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=558.5655991364986
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=685.2502716169623
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=502.3793582794559
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=685.2502716169623
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=502.3793582794559
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=685.2502716169623
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=502.3793582794559
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=685.2502716169623
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=502.3793582794559
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=685.2502716169623
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=502.3793582794559
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=685.2502716169623
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=502.3793582794559
 GP model built and optimized.
 </pre></div>
 </div>

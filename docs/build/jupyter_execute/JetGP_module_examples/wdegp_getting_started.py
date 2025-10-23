@@ -22,20 +22,11 @@ def oscillatory_function_with_trend(X, alg=oti):
 # In[3]:
 
 
-n_order = 2
 n_bases = 1
+n_order = 2
 lb_x = 0.5
 ub_x = 2.5
 num_points = 10
-test_points = 250
-kernel = "SE"
-kernel_type = "anisotropic"
-normalize = True
-n_restart_optimizer = 15
-swarm_size = 50
-random_seed = 42
-
-np.random.seed(random_seed)
 
 
 # In[4]:
@@ -122,6 +113,10 @@ for i, data in enumerate(submodel_data[0]):
 # In[7]:
 
 
+normalize = True
+kernel = "SE"
+kernel_type = "anisotropic"
+
 gp_model = wdegp(
     X_train,
     submodel_data,
@@ -139,7 +134,7 @@ gp_model = wdegp(
 
 
 params = gp_model.optimize_hyperparameters(
-     optimizer='jade',
+     optimizer='pso',
      pop_size = 100,
      n_generations = 15,
      local_opt_every = None,
@@ -151,7 +146,7 @@ print("Optimized hyperparameters:", params)
 # In[9]:
 
 
-X_test = np.linspace(lb_x, ub_x, test_points).reshape(-1, 1)
+X_test = np.linspace(lb_x, ub_x, 250).reshape(-1, 1)
 y_pred, y_cov, submodel_vals, submodel_cov = gp_model.predict(
     X_test, params, calc_cov=True, return_submodels=True
 )
@@ -161,6 +156,83 @@ print(f"NRMSE: {nrmse:.6f}")
 
 
 # In[10]:
+
+
+# ------------------------------------------------------------
+# Verify function value interpolation
+# ------------------------------------------------------------
+y_pred_train = gp_model.predict(X_train, params, calc_cov=False)
+
+print("Function value interpolation errors:")
+print("=" * 80)
+for i in range(num_points):
+    error_abs = abs(y_pred_train[0, i] - y_function_values[i, 0])
+    error_rel = error_abs / abs(y_function_values[i, 0]) if y_function_values[i, 0] != 0 else error_abs
+    print(f"Point {i} (x={X_train[i, 0]:.3f}): Abs Error = {error_abs:.2e}, Rel Error = {error_rel:.2e}")
+
+max_func_error = np.max(np.abs(y_pred_train.flatten() - y_function_values.flatten()))
+print(f"\nMaximum absolute function value error: {max_func_error:.2e}")
+
+# ------------------------------------------------------------
+# Verify derivative interpolation using finite differences
+# on individual submodels (before weighted combination)
+# ------------------------------------------------------------
+print("\n" + "=" * 80)
+print("Derivative interpolation verification:")
+print("=" * 80)
+print("Note: Verifying derivatives on individual submodels before weighted combination")
+print("      to avoid numerical instabilities from the weighting function")
+print("=" * 80)
+
+# Use small perturbation for finite differences
+h = 1e-6
+
+for i, idx in enumerate(submodel_indices):
+    x_point = X_train[idx].flatten()[0]
+
+    # Get predictions at perturbed points from individual submodels
+    X_plus = np.array([[x_point + h]])
+    X_minus = np.array([[x_point - h]])
+    X_center = X_train[idx].reshape(1, -1)
+
+    # Get predictions from individual submodels (not weighted combination)
+    _, submodel_vals_plus = gp_model.predict(X_plus, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_center = gp_model.predict(X_center, params, calc_cov=False, return_submodels=True)
+
+    # First derivative via central difference on the i-th submodel
+    fd_first_deriv = (submodel_vals_plus[i][0, 0] - submodel_vals_minus[i][0, 0]) / (2 * h)
+    analytic_first_deriv = submodel_data[i][1][0, 0]
+    error_first_abs = abs(fd_first_deriv - analytic_first_deriv)
+    error_first_rel = error_first_abs / abs(analytic_first_deriv) if analytic_first_deriv != 0 else error_first_abs
+
+    # Second derivative via central difference on the i-th submodel
+    fd_second_deriv = (submodel_vals_plus[i][0, 0] - 2 * submodel_vals_center[i][0, 0] + submodel_vals_minus[i][0, 0]) / (h ** 2)
+    analytic_second_deriv = submodel_data[i][2][0, 0]
+    error_second_abs = abs(fd_second_deriv - analytic_second_deriv)
+    error_second_rel = error_second_abs / abs(analytic_second_deriv) if analytic_second_deriv != 0 else error_second_abs
+
+    print(f"\nSubmodel {i} at Point {i} (x = {x_point:.3f}):")
+    print(f"  1st derivative - Analytic: {analytic_first_deriv:+.6f}, FD: {fd_first_deriv:+.6f}")
+    print(f"                   Abs Error: {error_first_abs:.2e}, Rel Error: {error_first_rel:.2e}")
+    print(f"  2nd derivative - Analytic: {analytic_second_deriv:+.6f}, FD: {fd_second_deriv:+.6f}")
+    print(f"                   Abs Error: {error_second_abs:.2e}, Rel Error: {error_second_rel:.2e}")
+
+print("\n" + "=" * 80)
+print("Interpolation verification complete!")
+print("Relative errors should be close to machine precision (< 1e-6)")
+print("\n" + "=" * 80)
+print("SUMMARY:")
+print(f"  - Function values: enforced at all {num_points} training points")
+print(f"  - First derivatives: verified on individual submodels at all {num_points} points")
+print(f"  - Second derivatives: verified on individual submodels at all {num_points} points")
+print(f"  - Each submodel: 1 training point with full derivative information")
+print(f"  - Total submodels: {num_points}")
+print(f"  - Verification method: Finite differences on submodels before weighting")
+print("=" * 80)
+
+
+# In[11]:
 
 
 plt.figure(figsize=(10, 6))
@@ -179,7 +251,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[11]:
+# In[12]:
 
 
 colors = plt.cm.tab10(np.linspace(0, 1, len(submodel_vals)))
@@ -194,7 +266,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[12]:
+# In[13]:
 
 
 import numpy as np
@@ -204,7 +276,7 @@ from wdegp.wdegp import wdegp
 import utils
 
 
-# In[13]:
+# In[14]:
 
 
 n_order = 2
@@ -212,18 +284,9 @@ n_bases = 1
 lb_x = 0.5
 ub_x = 2.5
 num_points = 10
-test_points = 250
-kernel = "SE"
-kernel_type = "anisotropic"
-normalize = True
-n_restart_optimizer = 15
-swarm_size = 50
-random_seed = 42
-
-np.random.seed(random_seed)
 
 
-# In[14]:
+# In[15]:
 
 
 x = sp.symbols('x')
@@ -239,14 +302,14 @@ f1_fun = sp.lambdify(x, f1_sym, "numpy")
 f2_fun = sp.lambdify(x, f2_sym, "numpy")
 
 
-# In[15]:
+# In[16]:
 
 
 X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
 print("Training points:", X_train.ravel())
 
 
-# In[16]:
+# In[17]:
 
 
 # Sparse derivative selection: only include derivatives at these points
@@ -264,7 +327,7 @@ print(f"Derivative observation points: {derivative_indices}")
 print(f"Derivative types per submodel: {len(base_derivative_indices)}")
 
 
-# In[17]:
+# In[18]:
 
 
 # Compute function values at all training points
@@ -288,8 +351,12 @@ print("\nSecond-order derivatives at selected points:")
 print(d2_all.flatten())
 
 
-# In[18]:
+# In[19]:
 
+
+kernel = "SE"
+kernel_type = "anisotropic"
+normalize = True
 
 gp_model = wdegp(
     X_train,
@@ -304,23 +371,23 @@ gp_model = wdegp(
 )
 
 
-# In[19]:
+# In[20]:
 
 
 params = gp_model.optimize_hyperparameters(
-    optimizer='jade',
+    optimizer='pso',
     pop_size = 100,
     n_generations = 15,
-    local_opt_every = None,
+    local_opt_every = 15,
     debug = False
     )
 print("\nOptimized hyperparameters:", params)
 
 
-# In[20]:
+# In[21]:
 
 
-X_test = np.linspace(lb_x, ub_x, test_points).reshape(-1, 1)
+X_test = np.linspace(lb_x, ub_x, 250).reshape(-1, 1)
 y_pred, y_cov, submodel_vals, submodel_cov = gp_model.predict(
     X_test, params, calc_cov=True, return_submodels=True
 )
@@ -329,7 +396,83 @@ nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_tru
 print(f"\nNRMSE: {nrmse:.6f}")
 
 
-# In[21]:
+# In[22]:
+
+
+# ------------------------------------------------------------
+# Verify function value interpolation at all training points
+# ------------------------------------------------------------
+y_pred_train = gp_model.predict(X_train, params, calc_cov=False)
+
+print("Function value interpolation errors:")
+print("=" * 80)
+for i in range(num_points):
+    error_abs = abs(y_pred_train[0, i] - y_function_values[i, 0])
+    error_rel = error_abs / abs(y_function_values[i, 0]) if y_function_values[i, 0] != 0 else error_abs
+    print(f"Point {i} (x={X_train[i, 0]:.3f}): Abs Error = {error_abs:.2e}, Rel Error = {error_rel:.2e}")
+
+max_func_error = np.max(np.abs(y_pred_train.flatten() - y_function_values.flatten()))
+print(f"\nMaximum absolute function value error: {max_func_error:.2e}")
+
+# ------------------------------------------------------------
+# Verify derivative interpolation at sparse derivative points only
+# ------------------------------------------------------------
+print("\n" + "=" * 80)
+print("Derivative interpolation verification:")
+print("=" * 80)
+print(f"Checking derivatives only at sparse points: {derivative_indices}")
+print("Note: Sparse formulation uses one global model with all training points")
+print("      and derivatives enforced only at the sparse subset")
+print("=" * 80)
+
+# Use small perturbation for finite differences
+h = 1e-6
+
+for idx, train_idx in enumerate(derivative_indices):
+    x_point = X_train[train_idx, 0]
+
+    # Get predictions at perturbed points
+    X_plus = np.array([[x_point + h]])
+    X_minus = np.array([[x_point - h]])
+    X_center = X_train[train_idx].reshape(1, -1)
+
+    # Get predictions from the global model
+    y_plus = gp_model.predict(X_plus, params, calc_cov=False)
+    y_minus = gp_model.predict(X_minus, params, calc_cov=False)
+    y_center = gp_model.predict(X_center, params, calc_cov=False)
+
+    # First derivative via central difference
+    fd_first_deriv = (y_plus[0, 0] - y_minus[0, 0]) / (2 * h)
+    analytic_first_deriv = d1_all[idx, 0]
+    error_first_abs = abs(fd_first_deriv - analytic_first_deriv)
+    error_first_rel = error_first_abs / abs(analytic_first_deriv) if analytic_first_deriv != 0 else error_first_abs
+
+    # Second derivative via central difference
+    fd_second_deriv = (y_plus[0, 0] - 2 * y_center[0, 0] + y_minus[0, 0]) / (h ** 2)
+    analytic_second_deriv = d2_all[idx, 0]
+    error_second_abs = abs(fd_second_deriv - analytic_second_deriv)
+    error_second_rel = error_second_abs / abs(analytic_second_deriv) if analytic_second_deriv != 0 else error_second_abs
+
+    print(f"\nTraining Point {train_idx} (x = {x_point:.3f}):")
+    print(f"  1st derivative - Analytic: {analytic_first_deriv:+.6f}, FD: {fd_first_deriv:+.6f}")
+    print(f"                   Abs Error: {error_first_abs:.2e}, Rel Error: {error_first_rel:.2e}")
+    print(f"  2nd derivative - Analytic: {analytic_second_deriv:+.6f}, FD: {fd_second_deriv:+.6f}")
+    print(f"                   Abs Error: {error_second_abs:.2e}, Rel Error: {error_second_rel:.2e}")
+
+print("\n" + "=" * 80)
+print("Interpolation verification complete!")
+print("Relative errors should be close to machine precision (< 1e-6)")
+print("\n" + "=" * 80)
+print("SUMMARY:")
+print(f"  - Function values: enforced at all {num_points} training points")
+print(f"  - First derivatives: verified at {len(derivative_indices)} sparse points {derivative_indices}")
+print(f"  - Second derivatives: verified at {len(derivative_indices)} sparse points {derivative_indices}")
+print(f"  - Sparse formulation: ONE global model with derivatives only at selected subset")
+print(f"  - Verification method: Finite differences on the global model")
+print("=" * 80)
+
+
+# In[23]:
 
 
 plt.figure(figsize=(10, 6))
@@ -350,7 +493,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[22]:
+# In[24]:
 
 
 colors = plt.cm.tab10(np.linspace(0, 1, len(submodel_vals)))
@@ -366,7 +509,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[23]:
+# In[25]:
 
 
 import numpy as np
@@ -376,7 +519,7 @@ from wdegp.wdegp import wdegp
 import utils
 
 
-# In[24]:
+# In[26]:
 
 
 n_order = 2
@@ -395,7 +538,7 @@ random_seed = 42
 np.random.seed(random_seed)
 
 
-# In[25]:
+# In[27]:
 
 
 x = sp.symbols('x')
@@ -411,7 +554,7 @@ f1_fun = sp.lambdify(x, f1_sym, "numpy")
 f2_fun = sp.lambdify(x, f2_sym, "numpy")
 
 
-# In[26]:
+# In[28]:
 
 
 # Generate all potential training points
@@ -422,7 +565,7 @@ for i, x in enumerate(X_all.ravel()):
     print(f"  Index {i}: x = {x:.4f}")
 
 
-# In[27]:
+# In[29]:
 
 
 # Select non-contiguous training points for derivative observations
@@ -434,7 +577,7 @@ for i, orig_idx in enumerate(original_indices):
     print(f"  Original index {orig_idx}: x = {X_all[orig_idx, 0]:.4f}")
 
 
-# In[28]:
+# In[30]:
 
 
 # Reorder X_all so that selected points come first with sequential indices
@@ -459,7 +602,7 @@ for i in range(len(original_indices), len(X_train)):
 print(f"\n*** CRITICAL: X_train has ALL {len(X_train)} points, reordered so selected points have indices 0-4 ***")
 
 
-# In[29]:
+# In[31]:
 
 
 # CORRECT: Use sequential indices for the reordered training data
@@ -478,7 +621,7 @@ print(f"Derivative types per submodel: {len(base_derivative_indices)}")
 print("\n*** These indices reference positions in X_train (0-4 are selected points) ***")
 
 
-# In[30]:
+# In[32]:
 
 
 # Compute function values at ALL reordered training points
@@ -518,7 +661,7 @@ print(f"    - Element 1: First derivatives at {len(d1_all)} points (indices 0-4)
 print(f"    - Element 2: Second derivatives at {len(d2_all)} points (indices 0-4)")
 
 
-# In[31]:
+# In[33]:
 
 
 gp_model = wdegp(
@@ -534,7 +677,7 @@ gp_model = wdegp(
 )
 
 
-# In[32]:
+# In[34]:
 
 
 params = gp_model.optimize_hyperparameters(
@@ -547,7 +690,7 @@ params = gp_model.optimize_hyperparameters(
 print("Optimized hyperparameters:", params)
 
 
-# In[33]:
+# In[35]:
 
 
 X_test = np.linspace(lb_x, ub_x, test_points).reshape(-1, 1)
@@ -559,7 +702,99 @@ nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_tru
 print(f"NRMSE: {nrmse:.6f}")
 
 
-# In[34]:
+# In[36]:
+
+
+# ------------------------------------------------------------
+# Verify function value interpolation at all reordered training points
+# ------------------------------------------------------------
+y_pred_train = gp_model.predict(X_train, params, calc_cov=False)
+
+print("Function value interpolation errors (reordered X_train):")
+print("=" * 80)
+for i in range(num_points):
+    error_abs = abs(y_pred_train[0, i] - y_function_values[i, 0])
+    error_rel = error_abs / abs(y_function_values[i, 0]) if y_function_values[i, 0] != 0 else error_abs
+    print(f"X_train[{i}] (x={X_train[i, 0]:.4f}): Abs Error = {error_abs:.2e}, Rel Error = {error_rel:.2e}")
+
+max_func_error = np.max(np.abs(y_pred_train.flatten() - y_function_values.flatten()))
+print(f"\nMaximum absolute function value error: {max_func_error:.2e}")
+
+# ------------------------------------------------------------
+# Verify derivative interpolation at reordered derivative points (indices 0-4)
+# ------------------------------------------------------------
+print("\n" + "=" * 80)
+print("Derivative interpolation verification:")
+print("=" * 80)
+print(f"Checking derivatives at reordered indices 0-4 (contiguous derivative points)")
+print(f"These correspond to original indices: {original_indices}")
+print("Note: Sparse formulation uses one global model with all training points")
+print("      and derivatives enforced only at indices 0-4")
+print("=" * 80)
+
+# Use small perturbation for finite differences
+h = 1e-6
+
+for i in range(len(original_indices)):
+    x_point = X_train[i, 0]
+
+    # Get predictions at perturbed points
+    X_plus = np.array([[x_point + h]])
+    X_minus = np.array([[x_point - h]])
+    X_center = X_train[i].reshape(1, -1)
+
+    # Get predictions from the global model
+    y_plus = gp_model.predict(X_plus, params, calc_cov=False)
+    y_minus = gp_model.predict(X_minus, params, calc_cov=False)
+    y_center = gp_model.predict(X_center, params, calc_cov=False)
+
+    # First derivative via central difference
+    fd_first_deriv = (y_plus[0, 0] - y_minus[0, 0]) / (2 * h)
+    analytic_first_deriv = d1_all[i, 0]
+    error_first_abs = abs(fd_first_deriv - analytic_first_deriv)
+    error_first_rel = error_first_abs / abs(analytic_first_deriv) if analytic_first_deriv != 0 else error_first_abs
+
+    # Second derivative via central difference
+    fd_second_deriv = (y_plus[0, 0] - 2 * y_center[0, 0] + y_minus[0, 0]) / (h ** 2)
+    analytic_second_deriv = d2_all[i, 0]
+    error_second_abs = abs(fd_second_deriv - analytic_second_deriv)
+    error_second_rel = error_second_abs / abs(analytic_second_deriv) if analytic_second_deriv != 0 else error_second_abs
+
+    orig_idx = original_indices[i]
+    print(f"\nX_train[{i}] (was X_all[{orig_idx}], x = {x_point:.3f}):")
+    print(f"  1st derivative - Analytic: {analytic_first_deriv:+.6f}, FD: {fd_first_deriv:+.6f}")
+    print(f"                   Abs Error: {error_first_abs:.2e}, Rel Error: {error_first_rel:.2e}")
+    print(f"  2nd derivative - Analytic: {analytic_second_deriv:+.6f}, FD: {fd_second_deriv:+.6f}")
+    print(f"                   Abs Error: {error_second_abs:.2e}, Rel Error: {error_second_rel:.2e}")
+
+# ------------------------------------------------------------
+# Show that points without derivatives (indices 5-9) are NOT checked
+# ------------------------------------------------------------
+print("\n" + "=" * 80)
+print("Points without derivative constraints (indices 5-9):")
+print("=" * 80)
+unused_original_indices = [i for i in range(len(X_all)) if i not in original_indices]
+for j, orig_idx in enumerate(unused_original_indices):
+    new_idx = len(original_indices) + j
+    x_point = X_train[new_idx, 0]
+    print(f"X_train[{new_idx}] (was X_all[{orig_idx}], x = {x_point:.3f}): "
+          f"Only function value enforced, no derivative constraints")
+
+print("\n" + "=" * 80)
+print("Interpolation verification complete!")
+print("Relative errors should be close to machine precision (< 1e-6)")
+print("\n" + "=" * 80)
+print("SUMMARY:")
+print(f"  - Function values: enforced at all {num_points} training points")
+print(f"  - First derivatives: verified at reordered indices 0-4")
+print(f"  - Second derivatives: verified at reordered indices 0-4")
+print(f"  - Reordered indices 0-4 correspond to original indices: {original_indices}")
+print(f"  - Sparse formulation: ONE global model with derivatives at contiguous indices")
+print(f"  - Verification method: Finite differences on the global model")
+print("=" * 80)
+
+
+# In[37]:
 
 
 plt.figure(figsize=(10, 6))
@@ -589,7 +824,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[35]:
+# In[38]:
 
 
 print("=" * 70)
@@ -619,7 +854,7 @@ print(f"  Which correspond to original indices: {original_indices}")
 print("=" * 70)
 
 
-# In[36]:
+# In[39]:
 
 
 plt.figure(figsize=(10, 6))
@@ -640,7 +875,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[37]:
+# In[40]:
 
 
 import numpy as np
@@ -650,7 +885,7 @@ from wdegp.wdegp import wdegp
 import utils
 
 
-# In[38]:
+# In[41]:
 
 
 n_order = 2
@@ -669,7 +904,7 @@ random_seed = 42
 np.random.seed(random_seed)
 
 
-# In[39]:
+# In[42]:
 
 
 x = sp.symbols('x')
@@ -685,7 +920,7 @@ f1_fun = sp.lambdify(x, f1_sym, "numpy")
 f2_fun = sp.lambdify(x, f2_sym, "numpy")
 
 
-# In[40]:
+# In[43]:
 
 
 # Generate all training points
@@ -696,7 +931,7 @@ for i, x in enumerate(X_all.ravel()):
     print(f"  Index {i}: x = {x:.4f}")
 
 
-# In[41]:
+# In[44]:
 
 
 # Submodel 1: uses points [0,2,4,6,8]
@@ -708,7 +943,7 @@ print(f"Submodel 1 will use derivatives at original indices: {submodel1_original
 print(f"Submodel 2 will use derivatives at original indices: {submodel2_original_indices}")
 
 
-# In[42]:
+# In[45]:
 
 
 # Reorder so submodel 1 points come first (indices 0-4),
@@ -730,7 +965,7 @@ for i in range(len(submodel1_original_indices), len(X_train)):
 print(f"\n*** X_train has ALL {len(X_train)} points, reordered for contiguous submodel indices ***")
 
 
-# In[43]:
+# In[46]:
 
 
 # Submodel 1: references indices 0-4 in X_train
@@ -748,7 +983,7 @@ print(f"Submodel 2 indices: {submodel_indices[1]}")
 print(f"Derivative types per submodel: {len(base_derivative_indices)}")
 
 
-# In[44]:
+# In[47]:
 
 
 # Function values at ALL reordered training points
@@ -792,7 +1027,7 @@ print(f"    - Element 1: First derivatives at submodel's 5 points")
 print(f"    - Element 2: Second derivatives at submodel's 5 points")
 
 
-# In[45]:
+# In[48]:
 
 
 gp_model = wdegp(
@@ -808,7 +1043,7 @@ gp_model = wdegp(
 )
 
 
-# In[46]:
+# In[49]:
 
 
 params = gp_model.optimize_hyperparameters(
@@ -821,7 +1056,7 @@ params = gp_model.optimize_hyperparameters(
 print("Optimized hyperparameters:", params)
 
 
-# In[47]:
+# In[50]:
 
 
 X_test = np.linspace(lb_x, ub_x, test_points).reshape(-1, 1)
@@ -833,7 +1068,137 @@ nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_tru
 print(f"NRMSE: {nrmse:.6f}")
 
 
-# In[48]:
+# In[51]:
+
+
+# ------------------------------------------------------------
+# Verify function value interpolation at all reordered training points
+# ------------------------------------------------------------
+y_pred_train = gp_model.predict(X_train, params, calc_cov=False)
+
+print("Function value interpolation errors (reordered X_train):")
+print("=" * 80)
+for i in range(num_points):
+    error_abs = abs(y_pred_train[0, i] - y_function_values[i, 0])
+    error_rel = error_abs / abs(y_function_values[i, 0]) if y_function_values[i, 0] != 0 else error_abs
+    submodel_id = 1 if i < 5 else 2
+    print(f"X_train[{i}] (SM{submodel_id}, x={X_train[i, 0]:.4f}): Abs Error = {error_abs:.2e}, Rel Error = {error_rel:.2e}")
+
+max_func_error = np.max(np.abs(y_pred_train.flatten() - y_function_values.flatten()))
+print(f"\nMaximum absolute function value error: {max_func_error:.2e}")
+
+# ------------------------------------------------------------
+# Verify derivative interpolation for Submodel 1 (indices 0-4)
+# on the individual submodel (before weighted combination)
+# ------------------------------------------------------------
+print("\n" + "=" * 80)
+print("Derivative interpolation verification - SUBMODEL 1:")
+print("=" * 80)
+print(f"Checking derivatives at reordered indices 0-4")
+print(f"These correspond to original indices: {submodel1_original_indices}")
+print("Note: Verifying derivatives on individual submodel 1 before weighted combination")
+print("      to avoid numerical instabilities from the weighting function")
+print("=" * 80)
+
+# Use small perturbation for finite differences
+h = 1e-6
+
+for i in range(len(submodel1_original_indices)):
+    x_point = X_train[i, 0]
+
+    # Get predictions at perturbed points from individual submodels
+    X_plus = np.array([[x_point + h]])
+    X_minus = np.array([[x_point - h]])
+    X_center = X_train[i].reshape(1, -1)
+
+    # Get predictions from individual submodels (not weighted combination)
+    _, submodel_vals_plus = gp_model.predict(X_plus, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_center = gp_model.predict(X_center, params, calc_cov=False, return_submodels=True)
+
+    # First derivative via central difference on submodel 1 (index 0)
+    fd_first_deriv = (submodel_vals_plus[0][0, 0] - submodel_vals_minus[0][0, 0]) / (2 * h)
+    analytic_first_deriv = d1_submodel1[i, 0]
+    error_first_abs = abs(fd_first_deriv - analytic_first_deriv)
+    error_first_rel = error_first_abs / abs(analytic_first_deriv) if analytic_first_deriv != 0 else error_first_abs
+
+    # Second derivative via central difference on submodel 1 (index 0)
+    fd_second_deriv = (submodel_vals_plus[0][0, 0] - 2 * submodel_vals_center[0][0, 0] + submodel_vals_minus[0][0, 0]) / (h ** 2)
+    analytic_second_deriv = d2_submodel1[i, 0]
+    error_second_abs = abs(fd_second_deriv - analytic_second_deriv)
+    error_second_rel = error_second_abs / abs(analytic_second_deriv) if analytic_second_deriv != 0 else error_second_abs
+
+    orig_idx = submodel1_original_indices[i]
+    print(f"\nSubmodel 1 at X_train[{i}] (was X_all[{orig_idx}], x = {x_point:.3f}):")
+    print(f"  1st derivative - Analytic: {analytic_first_deriv:+.6f}, FD: {fd_first_deriv:+.6f}")
+    print(f"                   Abs Error: {error_first_abs:.2e}, Rel Error: {error_first_rel:.2e}")
+    print(f"  2nd derivative - Analytic: {analytic_second_deriv:+.6f}, FD: {fd_second_deriv:+.6f}")
+    print(f"                   Abs Error: {error_second_abs:.2e}, Rel Error: {error_second_rel:.2e}")
+
+# ------------------------------------------------------------
+# Verify derivative interpolation for Submodel 2 (indices 5-9)
+# on the individual submodel (before weighted combination)
+# ------------------------------------------------------------
+print("\n" + "=" * 80)
+print("Derivative interpolation verification - SUBMODEL 2:")
+print("=" * 80)
+print(f"Checking derivatives at reordered indices 5-9")
+print(f"These correspond to original indices: {submodel2_original_indices}")
+print("Note: Verifying derivatives on individual submodel 2 before weighted combination")
+print("      to avoid numerical instabilities from the weighting function")
+print("=" * 80)
+
+for i in range(len(submodel2_original_indices)):
+    train_idx = len(submodel1_original_indices) + i  # Offset by submodel 1 size
+    x_point = X_train[train_idx, 0]
+
+    # Get predictions at perturbed points from individual submodels
+    X_plus = np.array([[x_point + h]])
+    X_minus = np.array([[x_point - h]])
+    X_center = X_train[train_idx].reshape(1, -1)
+
+    # Get predictions from individual submodels (not weighted combination)
+    _, submodel_vals_plus = gp_model.predict(X_plus, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_center = gp_model.predict(X_center, params, calc_cov=False, return_submodels=True)
+
+    # First derivative via central difference on submodel 2 (index 1)
+    fd_first_deriv = (submodel_vals_plus[1][0, 0] - submodel_vals_minus[1][0, 0]) / (2 * h)
+    analytic_first_deriv = d1_submodel2[i, 0]
+    error_first_abs = abs(fd_first_deriv - analytic_first_deriv)
+    error_first_rel = error_first_abs / abs(analytic_first_deriv) if analytic_first_deriv != 0 else error_first_abs
+
+    # Second derivative via central difference on submodel 2 (index 1)
+    fd_second_deriv = (submodel_vals_plus[1][0, 0] - 2 * submodel_vals_center[1][0, 0] + submodel_vals_minus[1][0, 0]) / (h ** 2)
+    analytic_second_deriv = d2_submodel2[i, 0]
+    error_second_abs = abs(fd_second_deriv - analytic_second_deriv)
+    error_second_rel = error_second_abs / abs(analytic_second_deriv) if analytic_second_deriv != 0 else error_second_abs
+
+    orig_idx = submodel2_original_indices[i]
+    print(f"\nSubmodel 2 at X_train[{train_idx}] (was X_all[{orig_idx}], x = {x_point:.3f}):")
+    print(f"  1st derivative - Analytic: {analytic_first_deriv:+.6f}, FD: {fd_first_deriv:+.6f}")
+    print(f"                   Abs Error: {error_first_abs:.2e}, Rel Error: {error_first_rel:.2e}")
+    print(f"  2nd derivative - Analytic: {analytic_second_deriv:+.6f}, FD: {fd_second_deriv:+.6f}")
+    print(f"                   Abs Error: {error_second_abs:.2e}, Rel Error: {error_second_rel:.2e}")
+
+print("\n" + "=" * 80)
+print("Interpolation verification complete!")
+print("Relative errors should be close to machine precision (< 1e-6)")
+print("\n" + "=" * 80)
+print("SUMMARY:")
+print(f"  - Function values: enforced at ALL {num_points} training points")
+print(f"  - Submodel 1 first derivatives: verified at X_train[0-4]")
+print(f"    (original indices: {submodel1_original_indices})")
+print(f"  - Submodel 1 second derivatives: verified at X_train[0-4]")
+print(f"  - Submodel 2 first derivatives: verified at X_train[5-9]")
+print(f"    (original indices: {submodel2_original_indices})")
+print(f"  - Submodel 2 second derivatives: verified at X_train[5-9]")
+print(f"  - Total submodels: 2 (each with its own derivative observations)")
+print(f"  - Verification method: Finite differences on individual submodels before weighting")
+print("=" * 80)
+
+
+# In[52]:
 
 
 plt.figure(figsize=(10, 6))
@@ -863,7 +1228,7 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[49]:
+# In[53]:
 
 
 print("=" * 70)
@@ -889,7 +1254,7 @@ print(f"  Submodel 2: {submodel_indices[1]} (original indices: {submodel2_origin
 print("=" * 70)
 
 
-# In[50]:
+# In[54]:
 
 
 fig, axes = plt.subplots(1, 2, figsize=(14, 5))
@@ -926,7 +1291,7 @@ plt.tight_layout()
 plt.show()
 
 
-# In[51]:
+# In[55]:
 
 
 plt.figure(figsize=(10, 6))
@@ -949,11 +1314,11 @@ plt.grid(alpha=0.3)
 plt.show()
 
 
-# In[52]:
+# In[56]:
 
 
 import numpy as np
-import pyoti.sparse as oti
+import sympy as sp
 import itertools
 from wdegp.wdegp import wdegp
 from matplotlib import pyplot as plt
@@ -962,7 +1327,7 @@ import utils
 plt.rcParams.update({'font.size': 12})
 
 
-# In[53]:
+# In[57]:
 
 
 # Random seed for reproducibility
@@ -970,7 +1335,7 @@ random_seed = 0
 np.random.seed(random_seed)
 
 # GP configuration
-n_order = 3  # Maximum derivative order (for center submodel)
+n_order = 2  # Maximum derivative order (for center submodel - 2nd order)
 n_bases = 2
 lb_x, ub_x = -1.0, 1.0
 lb_y, ub_y = -1.0, 1.0
@@ -986,11 +1351,11 @@ test_points_per_axis = 35
 submodel_point_groups = [
     [0, 3, 12, 15],                 # Submodel 1: Corners (no derivatives)
     [1, 2, 4, 8, 7, 11, 13, 14],    # Submodel 2: Edges (1st order)
-    [5, 6, 9, 10]                   # Submodel 3: Center (3rd order)
+    [5, 6, 9, 10]                   # Submodel 3: Center (2nd order)
 ]
 
 
-# In[54]:
+# In[58]:
 
 
 def six_hump_camel_function(X, alg=np):
@@ -1007,7 +1372,7 @@ def six_hump_camel_function(X, alg=np):
     X : array_like
         Input array of shape (n, 2) with columns [x1, x2]
     alg : module
-        Algorithm module (np or oti) for polymorphic evaluation
+        Algorithm module (np for standard evaluation)
 
     Returns
     -------
@@ -1020,7 +1385,7 @@ def six_hump_camel_function(X, alg=np):
             x1*x2 + (-4 + 4*x2**2) * x2**2)
 
 
-# In[55]:
+# In[59]:
 
 
 def generate_training_points():
@@ -1038,7 +1403,7 @@ grid_indices = np.arange(16).reshape(4, 4)
 print(grid_indices)
 
 
-# In[56]:
+# In[60]:
 
 
 def visualize_submodel_groups(X_train, submodel_groups):
@@ -1046,7 +1411,7 @@ def visualize_submodel_groups(X_train, submodel_groups):
     fig, ax = plt.subplots(figsize=(8, 8))
 
     colors = ['red', 'blue', 'green']
-    labels = ['Corners (no deriv)', 'Edges (1st order)', 'Center (3rd order)']
+    labels = ['Corners (no deriv)', 'Edges (1st order)', 'Center (2nd order)']
     markers = ['s', 'o', '^']
 
     for i, (group, color, label, marker) in enumerate(zip(submodel_groups, colors, labels, markers)):
@@ -1071,7 +1436,7 @@ def visualize_submodel_groups(X_train, submodel_groups):
 visualize_submodel_groups(X_train_initial, submodel_point_groups)
 
 
-# In[57]:
+# In[61]:
 
 
 def reorder_training_data(X_train_initial, submodel_point_groups):
@@ -1089,6 +1454,8 @@ def reorder_training_data(X_train_initial, submodel_point_groups):
         Reordered training points
     sequential_indices : list of lists
         Contiguous index ranges for each submodel
+    reorder_map : list
+        Mapping from new to original indices
     """
     # Flatten all submodel indices into a single reordering
     arbitrary_flat = list(itertools.chain.from_iterable(submodel_point_groups))
@@ -1125,16 +1492,62 @@ print("\nReordering map:")
 print(f"  Original → Reordered: {reorder_map}")
 
 
-# In[58]:
+# In[62]:
 
+
+def six_hump_camel_symbolic():
+    """
+    Create symbolic expression for the six-hump camel function.
+
+    Returns
+    -------
+    expr : sympy expression
+        Symbolic function
+    x1, x2 : sympy symbols
+        Input variables
+    """
+    x1, x2 = sp.symbols('x1 x2', real=True)
+    expr = ((4 - 2.1 * x1**2 + (x1**4)/3.0) * x1**2 +
+            x1*x2 + (-4 + 4*x2**2) * x2**2)
+    return expr, x1, x2
+
+def compute_derivatives_sympy(expr, x1, x2):
+    """
+    Compute all partial derivatives up to 2nd order using SymPy.
+
+    Parameters
+    ----------
+    expr : sympy expression
+        Function to differentiate
+    x1, x2 : sympy symbols
+        Variables
+
+    Returns
+    -------
+    derivatives : dict
+        Dictionary mapping derivative indices to lambdified functions
+        Key format: (i, j) where i = order w.r.t. x1, j = order w.r.t. x2
+    """
+    derivatives = {}
+
+    # First order derivatives
+    derivatives[(1, 0)] = sp.lambdify((x1, x2), sp.diff(expr, x1), 'numpy')      # ∂f/∂x1
+    derivatives[(0, 1)] = sp.lambdify((x1, x2), sp.diff(expr, x2), 'numpy')      # ∂f/∂x2
+
+    # Second order derivatives
+    derivatives[(2, 0)] = sp.lambdify((x1, x2), sp.diff(expr, x1, 2), 'numpy')   # ∂²f/∂x1²
+    derivatives[(1, 1)] = sp.lambdify((x1, x2), sp.diff(expr, x1, x2), 'numpy')  # ∂²f/∂x1∂x2
+    derivatives[(0, 2)] = sp.lambdify((x1, x2), sp.diff(expr, x2, 2), 'numpy')   # ∂²f/∂x2²
+
+    return derivatives
 
 def prepare_submodel_data(X_train, submodel_indices):
     """
-    Prepare submodel data with heterogeneous derivative orders.
+    Prepare submodel data with heterogeneous derivative orders using SymPy.
 
     Submodel 1: Function values only (no derivatives)
     Submodel 2: Function values + 1st order derivatives
-    Submodel 3: Function values + up to 3rd order derivatives
+    Submodel 3: Function values + up to 2nd order derivatives
 
     Parameters
     ----------
@@ -1148,13 +1561,25 @@ def prepare_submodel_data(X_train, submodel_indices):
     submodel_data : list of lists
         Data for each submodel
     derivative_specs : list of lists
-        Derivative specifications for each submodel
+        Derivative specifications for each submodel (OTI format)
     """
-    # Define derivative structures for each submodel
+    # Create symbolic function and compute derivatives
+    print("Computing symbolic derivatives with SymPy...")
+    expr, x1, x2 = six_hump_camel_symbolic()
+    all_derivatives = compute_derivatives_sympy(expr, x1, x2)
+
+    # Define derivative structures for each submodel using OTI format
     derivative_specs = [
         [],                              # Submodel 1: no derivatives
-        utils.gen_OTI_indices(n_bases, 1),  # Submodel 2: 1st order only
-        utils.gen_OTI_indices(n_bases, 3)   # Submodel 3: up to 3rd order
+        utils.gen_OTI_indices(n_bases, 1),  # Submodel 2: ∂/∂x₁, ∂/∂x₂
+        utils.gen_OTI_indices(n_bases, 2)   # Submodel 3: all up to 2nd order
+    ]
+
+    # Create tuple version for easier iteration with SymPy
+    derivative_specs_tuples = [
+        [],  # Submodel 1: no derivatives
+        [(1, 0), (0, 1)],  # Submodel 2: 1st order only
+        [(1, 0), (0, 1), (2, 0), (1, 1), (0, 2)]  # Submodel 3: up to 2nd order
     ]
 
     print("Derivative specifications:")
@@ -1163,7 +1588,7 @@ def prepare_submodel_data(X_train, submodel_indices):
             print(f"  Submodel {i+1}: No derivatives")
         else:
             print(f"  Submodel {i+1}: {len(spec)} derivative types")
-            print(f"    Examples: {spec[:3]}")  # Show first few
+            print(f"    Examples: {spec[:3]}")
 
     # Compute function values at ALL training points (shared by all submodels)
     y_function_values = six_hump_camel_function(X_train, alg=np).reshape(-1, 1)
@@ -1173,31 +1598,25 @@ def prepare_submodel_data(X_train, submodel_indices):
     for k, point_indices in enumerate(submodel_indices):
         print(f"\nProcessing Submodel {k+1} (indices {point_indices[0]}-{point_indices[-1]})...")
 
-        # Extract submodel points and apply hypercomplex perturbations
-        X_sub_oti = oti.array(X_train[point_indices])
-
-        # Add hypercomplex perturbations for each dimension
-        for i in range(n_bases):
-            for j in range(X_sub_oti.shape[0]):
-                X_sub_oti[j, i] += oti.e(i + 1, order=n_order)
-
-        # Evaluate function with hypercomplex AD
-        y_with_derivatives = oti.array([
-            six_hump_camel_function(x, alg=oti)
-            for x in X_sub_oti
-        ])
+        # Extract submodel points
+        X_sub = X_train[point_indices]
 
         # Build data list: function values (all points) + derivatives (submodel points)
         current_submodel_data = [y_function_values]
-        current_derivative_spec = derivative_specs[k]
+        current_derivative_spec = derivative_specs_tuples[k]
 
-        # Extract derivatives according to this submodel's specification
-        for i in range(len(current_derivative_spec)):
-            for j in range(len(current_derivative_spec[i])):
-                deriv = y_with_derivatives.get_deriv(
-                    current_derivative_spec[i][j]
-                ).reshape(-1, 1)
-                current_submodel_data.append(deriv)
+        # Compute derivatives for this submodel
+        for deriv_idx in current_derivative_spec:
+            i, j = deriv_idx
+            deriv_func = all_derivatives[(i, j)]
+
+            # Evaluate derivative at submodel points
+            deriv_values = np.array([
+                deriv_func(X_sub[pt, 0], X_sub[pt, 1])
+                for pt in range(len(X_sub))
+            ]).reshape(-1, 1)
+
+            current_submodel_data.append(deriv_values)
 
         print(f"  Function values: shape {current_submodel_data[0].shape}")
         print(f"  Derivative arrays: {len(current_submodel_data) - 1}")
@@ -1215,10 +1634,14 @@ print("Summary of submodel data:")
 for i, data in enumerate(submodel_data):
     print(f"  Submodel {i+1}: {len(data)} arrays")
     print(f"    - Array 0: Function values at ALL {len(data[0])} points")
-    print(f"    - Arrays 1-{len(data)-1}: Derivatives at {len(sequential_indices[i])} points")
+    if len(sequential_indices[i]) > 0 and len(data) > 1:
+        print(f"    - Arrays 1-{len(data)-1}: Derivatives at {len(sequential_indices[i])} points")
+
+# Store for later verification
+y_function_values = submodel_data[0][0]
 
 
-# In[59]:
+# In[63]:
 
 
 def build_and_optimize_gp(X_train, submodel_data, submodel_indices, derivative_specs):
@@ -1258,11 +1681,11 @@ def build_and_optimize_gp(X_train, submodel_data, submodel_indices, derivative_s
 
     print("Optimizing hyperparameters...")
     params = gp_model.optimize_hyperparameters(
-    optimizer='jade',
-    pop_size = 100,
-    n_generations = 15,
-    local_opt_every = None,
-    debug = False
+        optimizer='jade',
+        pop_size=100,
+        n_generations=15,
+        local_opt_every=None,
+        debug=False
     )
 
     print("Optimization complete.")
@@ -1273,7 +1696,7 @@ gp_model, params = build_and_optimize_gp(
 )
 
 
-# In[60]:
+# In[64]:
 
 
 # Create dense test grid
@@ -1300,7 +1723,223 @@ print(f"  Max absolute error: {abs_error.max():.6f}")
 print(f"  Mean absolute error: {abs_error.mean():.6f}")
 
 
-# In[61]:
+# In[65]:
+
+
+# Verify function value interpolation at all reordered training points
+y_pred_train = gp_model.predict(X_train_reordered, params, calc_cov=False)
+
+print("Function value interpolation errors (reordered X_train):")
+print("=" * 80)
+for i in range(len(X_train_reordered)):
+    error_abs = abs(y_pred_train[0, i] - y_function_values[i, 0])
+    error_rel = error_abs / abs(y_function_values[i, 0]) if y_function_values[i, 0] != 0 else error_abs
+
+    # Determine which submodel this point belongs to
+    if i in sequential_indices[0]:
+        submodel_id = 1
+        deriv_order = "0th (no deriv)"
+    elif i in sequential_indices[1]:
+        submodel_id = 2
+        deriv_order = "1st order"
+    else:
+        submodel_id = 3
+        deriv_order = "2nd order"
+
+    print(f"X_train[{i}] (SM{submodel_id}, {deriv_order}): "
+          f"x=({X_train_reordered[i, 0]:.2f}, {X_train_reordered[i, 1]:.2f}), "
+          f"Abs Error = {error_abs:.2e}, Rel Error = {error_rel:.2e}")
+
+max_func_error = np.max(np.abs(y_pred_train.flatten() - y_function_values.flatten()))
+print(f"\nMaximum absolute function value error: {max_func_error:.2e}")
+
+# Verify derivative interpolation for Submodel 2 (1st order derivatives)
+print("\n" + "=" * 80)
+print("Derivative interpolation verification - SUBMODEL 2 (Edges, 1st order):")
+print("=" * 80)
+
+# Use small perturbation for finite differences
+h = 1e-6
+
+for local_i, global_i in enumerate(sequential_indices[1]):
+    x_point = X_train_reordered[global_i]
+
+    print(f"\nSubmodel 2 at X_train[{global_i}] (original index {submodel_point_groups[1][local_i]})")
+    print(f"  Location: x₁={x_point[0]:.3f}, x₂={x_point[1]:.3f}")
+
+    # Verify ∂f/∂x₁
+    X_plus_x1 = x_point.copy().reshape(1, -1)
+    X_minus_x1 = x_point.copy().reshape(1, -1)
+    X_plus_x1[0, 0] += h
+    X_minus_x1[0, 0] -= h
+
+    _, submodel_vals_plus = gp_model.predict(X_plus_x1, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus_x1, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv_x1 = (submodel_vals_plus[1][0, 0] - submodel_vals_minus[1][0, 0]) / (2 * h)
+    analytic_deriv_x1 = submodel_data[1][1][local_i, 0]
+
+    error_x1_abs = abs(fd_deriv_x1 - analytic_deriv_x1)
+    error_x1_rel = error_x1_abs / abs(analytic_deriv_x1) if analytic_deriv_x1 != 0 else error_x1_abs
+
+    print(f"  ∂f/∂x₁ - Analytic: {analytic_deriv_x1:+.6f}, FD: {fd_deriv_x1:+.6f}")
+    print(f"           Abs Error: {error_x1_abs:.2e}, Rel Error: {error_x1_rel:.2e}")
+
+    # Verify ∂f/∂x₂
+    X_plus_x2 = x_point.copy().reshape(1, -1)
+    X_minus_x2 = x_point.copy().reshape(1, -1)
+    X_plus_x2[0, 1] += h
+    X_minus_x2[0, 1] -= h
+
+    _, submodel_vals_plus = gp_model.predict(X_plus_x2, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus_x2, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv_x2 = (submodel_vals_plus[1][0, 0] - submodel_vals_minus[1][0, 0]) / (2 * h)
+    analytic_deriv_x2 = submodel_data[1][2][local_i, 0]
+
+    error_x2_abs = abs(fd_deriv_x2 - analytic_deriv_x2)
+    error_x2_rel = error_x2_abs / abs(analytic_deriv_x2) if analytic_deriv_x2 != 0 else error_x2_abs
+
+    print(f"  ∂f/∂x₂ - Analytic: {analytic_deriv_x2:+.6f}, FD: {fd_deriv_x2:+.6f}")
+    print(f"           Abs Error: {error_x2_abs:.2e}, Rel Error: {error_x2_rel:.2e}")
+
+# Verify derivative interpolation for Submodel 3 (up to 2nd order derivatives)
+print("\n" + "=" * 80)
+print("Derivative interpolation verification - SUBMODEL 3 (Center, up to 2nd order):")
+print("=" * 80)
+print("Note: Using larger h (1e-5) for 2nd order derivatives to improve numerical stability")
+print("=" * 80)
+
+# Use larger perturbation for second-order derivatives
+h = 1e-3
+
+for local_i, global_i in enumerate(sequential_indices[2]):
+    x_point = X_train_reordered[global_i]
+
+    print(f"\nSubmodel 3 at X_train[{global_i}] (original index {submodel_point_groups[2][local_i]})")
+    print(f"  Location: x₁={x_point[0]:.3f}, x₂={x_point[1]:.3f}")
+
+    # --- First order derivatives (using h=1e-6 for better accuracy) ---
+    h_first = 1e-6
+
+    # ∂f/∂x₁
+    X_plus_x1 = x_point.copy().reshape(1, -1)
+    X_minus_x1 = x_point.copy().reshape(1, -1)
+    X_plus_x1[0, 0] += h_first
+    X_minus_x1[0, 0] -= h_first
+
+    _, submodel_vals_plus = gp_model.predict(X_plus_x1, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus_x1, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv_x1 = (submodel_vals_plus[2][0, 0] - submodel_vals_minus[2][0, 0]) / (2 * h_first)
+    analytic_deriv_x1 = submodel_data[2][1][local_i, 0]
+
+    error_x1_abs = abs(fd_deriv_x1 - analytic_deriv_x1)
+    error_x1_rel = error_x1_abs / abs(analytic_deriv_x1) if analytic_deriv_x1 != 0 else error_x1_abs
+
+    print(f"  ∂f/∂x₁ - Analytic: {analytic_deriv_x1:+.6f}, FD: {fd_deriv_x1:+.6f}")
+    print(f"           Abs Error: {error_x1_abs:.2e}, Rel Error: {error_x1_rel:.2e}")
+
+    # ∂f/∂x₂
+    X_plus_x2 = x_point.copy().reshape(1, -1)
+    X_minus_x2 = x_point.copy().reshape(1, -1)
+    X_plus_x2[0, 1] += h_first
+    X_minus_x2[0, 1] -= h_first
+
+    _, submodel_vals_plus = gp_model.predict(X_plus_x2, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus_x2, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv_x2 = (submodel_vals_plus[2][0, 0] - submodel_vals_minus[2][0, 0]) / (2 * h_first)
+    analytic_deriv_x2 = submodel_data[2][2][local_i, 0]
+
+    error_x2_abs = abs(fd_deriv_x2 - analytic_deriv_x2)
+    error_x2_rel = error_x2_abs / abs(analytic_deriv_x2) if analytic_deriv_x2 != 0 else error_x2_abs
+
+    print(f"  ∂f/∂x₂ - Analytic: {analytic_deriv_x2:+.6f}, FD: {fd_deriv_x2:+.6f}")
+    print(f"           Abs Error: {error_x2_abs:.2e}, Rel Error: {error_x2_rel:.2e}")
+
+    # --- Second order derivatives (using h=1e-5 for stability) ---
+    X_center = x_point.reshape(1, -1)
+    _, submodel_vals_center = gp_model.predict(X_center, params, calc_cov=False, return_submodels=True)
+
+    # ∂²f/∂x₁²
+    X_plus_x1 = x_point.copy().reshape(1, -1)
+    X_minus_x1 = x_point.copy().reshape(1, -1)
+    X_plus_x1[0, 0] += h
+    X_minus_x1[0, 0] -= h
+
+    _, submodel_vals_plus = gp_model.predict(X_plus_x1, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus_x1, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv2_x1x1 = (submodel_vals_plus[2][0, 0] - 2*submodel_vals_center[2][0, 0] +
+                      submodel_vals_minus[2][0, 0]) / (h**2)
+    analytic_deriv2_x1x1 = submodel_data[2][3][local_i, 0]
+
+    error_x1x1_abs = abs(fd_deriv2_x1x1 - analytic_deriv2_x1x1)
+    error_x1x1_rel = error_x1x1_abs / abs(analytic_deriv2_x1x1) if analytic_deriv2_x1x1 != 0 else error_x1x1_abs
+
+    print(f"  ∂²f/∂x₁² - Analytic: {analytic_deriv2_x1x1:+.6f}, FD: {fd_deriv2_x1x1:+.6f}")
+    print(f"             Abs Error: {error_x1x1_abs:.2e}, Rel Error: {error_x1x1_rel:.2e}")
+
+    # ∂²f/∂x₁∂x₂ (mixed partial)
+    X_pp = x_point.copy().reshape(1, -1); X_pp[0, 0] += h; X_pp[0, 1] += h
+    X_pm = x_point.copy().reshape(1, -1); X_pm[0, 0] += h; X_pm[0, 1] -= h
+    X_mp = x_point.copy().reshape(1, -1); X_mp[0, 0] -= h; X_mp[0, 1] += h
+    X_mm = x_point.copy().reshape(1, -1); X_mm[0, 0] -= h; X_mm[0, 1] -= h
+
+    _, sm_pp = gp_model.predict(X_pp, params, calc_cov=False, return_submodels=True)
+    _, sm_pm = gp_model.predict(X_pm, params, calc_cov=False, return_submodels=True)
+    _, sm_mp = gp_model.predict(X_mp, params, calc_cov=False, return_submodels=True)
+    _, sm_mm = gp_model.predict(X_mm, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv2_x1x2 = (sm_pp[2][0, 0] - sm_pm[2][0, 0] - sm_mp[2][0, 0] + sm_mm[2][0, 0]) / (4 * h**2)
+    analytic_deriv2_x1x2 = submodel_data[2][4][local_i, 0]
+
+    error_x1x2_abs = abs(fd_deriv2_x1x2 - analytic_deriv2_x1x2)
+    error_x1x2_rel = error_x1x2_abs / abs(analytic_deriv2_x1x2) if analytic_deriv2_x1x2 != 0 else error_x1x2_abs
+
+    print(f"  ∂²f/∂x₁∂x₂ - Analytic: {analytic_deriv2_x1x2:+.6f}, FD: {fd_deriv2_x1x2:+.6f}")
+    print(f"               Abs Error: {error_x1x2_abs:.2e}, Rel Error: {error_x1x2_rel:.2e}")
+
+    # ∂²f/∂x₂²
+    X_plus_x2 = x_point.copy().reshape(1, -1)
+    X_minus_x2 = x_point.copy().reshape(1, -1)
+    X_plus_x2[0, 1] += h
+    X_minus_x2[0, 1] -= h
+
+    _, submodel_vals_plus = gp_model.predict(X_plus_x2, params, calc_cov=False, return_submodels=True)
+    _, submodel_vals_minus = gp_model.predict(X_minus_x2, params, calc_cov=False, return_submodels=True)
+
+    fd_deriv2_x2x2 = (submodel_vals_plus[2][0, 0] - 2*submodel_vals_center[2][0, 0] +
+                      submodel_vals_minus[2][0, 0]) / (h**2)
+    analytic_deriv2_x2x2 = submodel_data[2][5][local_i, 0]
+
+    error_x2x2_abs = abs(fd_deriv2_x2x2 - analytic_deriv2_x2x2)
+    error_x2x2_rel = error_x2x2_abs / abs(analytic_deriv2_x2x2) if analytic_deriv2_x2x2 != 0 else error_x2x2_abs
+
+    print(f"  ∂²f/∂x₂² - Analytic: {analytic_deriv2_x2x2:+.6f}, FD: {fd_deriv2_x2x2:+.6f}")
+    print(f"             Abs Error: {error_x2x2_abs:.2e}, Rel Error: {error_x2x2_rel:.2e}")
+
+print("\n" + "=" * 80)
+print("Interpolation verification complete!")
+print("\n" + "=" * 80)
+print("SUMMARY:")
+print(f"  - Function values: enforced at ALL {len(X_train_reordered)} training points")
+print(f"  - Submodel 1 (Corners): {len(sequential_indices[0])} points with NO derivatives")
+print(f"    Indices: {sequential_indices[0]} (original: {submodel_point_groups[0]})")
+print(f"  - Submodel 2 (Edges): {len(sequential_indices[1])} points with 1st order derivatives")
+print(f"    Indices: {sequential_indices[1]} (original: {submodel_point_groups[1]})")
+print(f"    Verified: ∂f/∂x₁, ∂f/∂x₂")
+print(f"  - Submodel 3 (Center): {len(sequential_indices[2])} points with up to 2nd order derivatives")
+print(f"    Indices: {sequential_indices[2]} (original: {submodel_point_groups[2]})")
+print(f"    Verified: ∂f/∂x₁, ∂f/∂x₂, ∂²f/∂x₁², ∂²f/∂x₁∂x₂, ∂²f/∂x₂²")
+print(f"  - Total submodels: 3 (with heterogeneous derivative orders)")
+print(f"  - Verification method: Finite differences on individual submodels")
+print(f"  - Note: Used h=1e-3 for 2nd order derivatives (improved numerical stability)")
+print("=" * 80)
+
+
+# In[66]:
 
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True, sharey=True)
@@ -1342,7 +1981,7 @@ plt.tight_layout()
 plt.show()
 
 
-# In[62]:
+# In[67]:
 
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True, sharey=True)
@@ -1350,7 +1989,7 @@ fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True, sharey=True)
 submodel_titles = [
     "Submodel 1: Corners (No Derivatives)",
     "Submodel 2: Edges (1st Order)",
-    "Submodel 3: Center (3rd Order)"
+    "Submodel 3: Center (2nd Order)"
 ]
 
 for i, (ax, title) in enumerate(zip(axes, submodel_titles)):
