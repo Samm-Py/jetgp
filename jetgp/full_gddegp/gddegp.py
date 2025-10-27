@@ -38,12 +38,12 @@ class gddegp:
     """
 
     def __init__(self, x_train, y_train, n_order, rays_array, der_indices,
-                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic"):
+                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
         self.x_train = x_train
         self.y_train = y_train
         self.sigma_data = sigma_data
         self.n_order = n_order
-        self.max_order = max(n_order)
+        self.max_order = n_order
         self.rays_array = rays_array
         self.num_directions_per_point = len(rays_array)
         self.dim = x_train.shape[1]
@@ -79,7 +79,8 @@ class gddegp:
             dim=self.dim,
             normalize=self.normalize,
             n_order=self.max_order,
-            differences_by_dim=self.differences_by_dim)
+            differences_by_dim=self.differences_by_dim, 
+            smoothness_parameter = smoothness_parameter)
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
             kernel_type=self.kernel_type)
@@ -186,7 +187,7 @@ class gddegp:
             return f_mean
 
         diff_x_test_x_test = gddegp_utils.differences_by_dim_func(
-            X_test, X_test, rays_test, rays_test, self.n_order, return_deriv=return_deriv)
+            X_test, X_test, rays_test, rays_test, self.n_order,self.num_directions_per_point, return_deriv=return_deriv)
         K_ss = gddegp_utils.rbf_kernel(
             diff_x_test_x_test, length_scales, self.n_order,
             self.kernel_func,
@@ -215,7 +216,7 @@ class gddegp:
             if return_deriv:
                 f_var = utils.transform_cov_directrional(
                     f_cov, self.sigma_y, self.sigmas_x,
-                    self.flattened_der_indicies, X_test)
+                    self.flattened_der_indices, X_test)
             else:
                 f_var = self.sigma_y**2 * np.diag(np.abs(f_cov))
         else:

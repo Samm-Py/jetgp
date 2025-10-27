@@ -39,7 +39,7 @@ class ddegp:
     """
 
     def __init__(self, x_train, y_train, n_order, der_indices, rays,
-                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic"):
+                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
         self.x_train = x_train
         self.y_train = y_train
         self.sigma_data = sigma_data
@@ -77,7 +77,8 @@ class ddegp:
             dim=self.dim,
             normalize=self.normalize,
             n_order=self.n_order,
-            differences_by_dim=self.differences_by_dim)
+            differences_by_dim=self.differences_by_dim, 
+            smoothness_parameter = smoothness_parameter)
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
             kernel_type=self.kernel_type)

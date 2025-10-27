@@ -12,9 +12,99 @@
 #
 import os
 import sys
+from pathlib import Path
+import shutil
+
 sys.path.insert(0, os.path.abspath('../../.'))
 
 import jetgp
+import subprocess
+
+# -- Coverage Generation -----------------------------------------------------
+
+import glob
+
+def generate_coverage():
+    """Generate coverage report before building docs."""
+    # Get paths
+    conf_dir = Path(__file__).parent  # docs/source
+    project_root = conf_dir.parent.parent  # project root
+    test_dir = project_root / "unit_tests"
+    coverage_output = conf_dir / "coverage"
+    
+    print("=" * 70)
+    print("GENERATING COVERAGE REPORT")
+    print("=" * 70)
+    print(f"Project root: {project_root}")
+    print(f"Test directory: {test_dir}")
+    print(f"Coverage output: {coverage_output}")
+    
+    if not test_dir.exists():
+        print(f"⚠ WARNING: Test directory not found at {test_dir}")
+        print("Skipping coverage generation.")
+        return
+    
+    # Ensure output directory parent exists
+    coverage_output.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Get all test files using glob
+    test_files = sorted(glob.glob(str(test_dir / "*.py")))
+    print(f"\nFound {len(test_files)} test files:")
+    for tf in test_files:
+        print(f"  - {Path(tf).name}")
+    
+    print("\nRunning tests with coverage...")
+    result = subprocess.run(
+        [
+            sys.executable, "-m", "pytest",
+        ] + test_files + [  # Add test files as separate arguments
+            "--cov=jetgp",
+            f"--cov-report=html:{coverage_output}",
+            "--cov-report=term-missing",
+            "-v"
+        ],
+        cwd=str(project_root),
+        text=True
+    )
+    
+    # Print output
+    if result.stdout:
+        print(result.stdout)
+    if result.stderr:
+        print("Stderr:", result.stderr)
+    
+    if result.returncode == 0:
+        print(f"\n✓ Coverage report generated successfully at: {coverage_output}")
+    else:
+        print(f"\n⚠ Tests completed with return code {result.returncode}")
+        print("Coverage report may still be available")
+    
+    print("=" * 70)
+
+
+def copy_coverage_to_build(app, exception):
+    """Copy coverage HTML to build directory after build completes."""
+    if exception is None:  # Only if build succeeded
+        source_coverage = Path(app.srcdir) / "coverage"
+        build_coverage = Path(app.outdir) / "_static" / "coverage"
+        
+        if source_coverage.exists():
+            print("=" * 70)
+            print(f"Copying coverage from {source_coverage} to {build_coverage}")
+            if build_coverage.exists():
+                shutil.rmtree(build_coverage)
+            shutil.copytree(source_coverage, build_coverage)
+            print("✓ Coverage files copied to build directory")
+            print("=" * 70)
+        else:
+            print(f"⚠ WARNING: Coverage source not found at {source_coverage}")
+
+def setup(app):
+    """Sphinx setup hook."""
+    app.connect('build-finished', copy_coverage_to_build)
+
+# Generate coverage when building docs
+generate_coverage()
 
 # -- Project information -----------------------------------------------------
 
@@ -64,7 +154,7 @@ exclude_patterns = []
 #
 html_theme = "sphinx_book_theme"
 html_logo = "_static/JetGP_logo.png"
-html_static_path = ['_static']
+html_static_path = ['_static']  # Remove 'coverage' from here
 html_theme_options = {
     "logo": {"text": release},
     "content_footer_items": ["last-updated"],

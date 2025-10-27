@@ -240,6 +240,9 @@
 </ul>
 </details></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -434,8 +437,6 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting_helper.make_plots"><code class="docutils literal notranslate"><span class="pre">make_plots()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting_helper.make_submodel_plots"><code class="docutils literal notranslate"><span class="pre">make_submodel_plots()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utils.build_companion_array"><code class="docutils literal notranslate"><span class="pre">build_companion_array()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utils.check_gp_gradient"><code class="docutils literal notranslate"><span class="pre">check_gp_gradient()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utils.compare_OTI_indices"><code class="docutils literal notranslate"><span class="pre">compare_OTI_indices()</span></code></a></li>
@@ -510,19 +511,9 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-plotting_helper">
-<span id="utilities-and-helpers"></span><h1>Utilities and Helpers<a class="headerlink" href="#module-plotting_helper" title="Link to this heading">#</a></h1>
+  <section id="module-utils">
+<span id="utilities-and-helpers"></span><h1>Utilities and Helpers<a class="headerlink" href="#module-utils" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="plotting_helper.make_plots">
-<span class="sig-prename descclassname"><span class="pre">plotting_helper.</span></span><span class="sig-name descname"><span class="pre">make_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X1_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_derivative_surrogates</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotting_helper.html#make_plots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plotting_helper.make_plots" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="plotting_helper.make_submodel_plots">
-<span class="sig-prename descclassname"><span class="pre">plotting_helper.</span></span><span class="sig-name descname"><span class="pre">make_submodel_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_function</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X1_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2_grid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_submodels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">submodel_vals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">submodel_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotting_helper.html#make_submodel_plots"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#plotting_helper.make_submodel_plots" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py function" id="module-utils">
 <dt class="sig sig-object py" id="utils.build_companion_array">
 <span class="sig-prename descclassname"><span class="pre">utils.</span></span><span class="sig-name descname"><span class="pre">build_companion_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils.html#build_companion_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.build_companion_array" title="Link to this definition">#</a></dt>
 <dd><p>Build a companion array that maps each derivative index to its corresponding order in the OTI basis.</p>
@@ -1912,8 +1903,6 @@ in isotropic and anisotropic forms.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting_helper.make_plots"><code class="docutils literal notranslate"><span class="pre">make_plots()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#plotting_helper.make_submodel_plots"><code class="docutils literal notranslate"><span class="pre">make_submodel_plots()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utils.build_companion_array"><code class="docutils literal notranslate"><span class="pre">build_companion_array()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utils.check_gp_gradient"><code class="docutils literal notranslate"><span class="pre">check_gp_gradient()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#utils.compare_OTI_indices"><code class="docutils literal notranslate"><span class="pre">compare_OTI_indices()</span></code></a></li>

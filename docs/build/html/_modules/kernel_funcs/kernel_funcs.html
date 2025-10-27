@@ -180,7 +180,16 @@
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -229,6 +238,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -361,7 +373,7 @@ document.write(`
 <span class="c1"># -------------------------------------------------------------------</span>
 
 <div class="viewcode-block" id="KernelFactory">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">KernelFactory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Factory for generating different kernel functions (SE, RQ, SineExp, Matérn)</span>
@@ -397,7 +409,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">=</span> <span class="n">n_order</span>
 
 <div class="viewcode-block" id="KernelFactory.get_bounds_from_data">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_bounds_from_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Computes bounds for hyperparameters based on the observed data range.</span>
@@ -410,7 +422,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="KernelFactory.create_kernel">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.create_kernel">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.create_kernel">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_name</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a kernel function based on specified name and type.</span>
@@ -575,7 +587,7 @@ document.write(`
     <span class="c1"># Anisotropic Kernel Implementations (MAC Mod 2)</span>
     <span class="c1"># -------------------------------------------------------------------</span>
 <div class="viewcode-block" id="KernelFactory.se_kernel_anisotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic">[docs]</a>
     <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">se_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -662,7 +674,7 @@ document.write(`
     <span class="c1">#     return (10 ** sigma_f) ** 2 * (1 + sqdist / (2 * alpha)) ** (-alpha)</span>
 
 <div class="viewcode-block" id="KernelFactory.rq_kernel_anisotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rq_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Anisotropic Rational Quadratic (RQ) kernel using in-place operations.</span>
@@ -727,7 +739,7 @@ document.write(`
 
     <span class="c1"># @profile</span>
 <div class="viewcode-block" id="KernelFactory.sine_exp_kernel_anisotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sine_exp_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Anisotropic Sine-Exponential kernel using in-place operations.</span>
@@ -795,7 +807,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="KernelFactory.matern_kernel_anisotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">matern_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Anisotropic Matérn kernel (half-integer ν).</span>
@@ -803,11 +815,11 @@ document.write(`
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)))</span>
+            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-16</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)))</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span><span class="p">(</span><span class="n">sqdist</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="KernelFactory.SI_kernel_anisotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">SI_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Anisotropic Matérn kernel (half-integer ν).</span>
@@ -825,7 +837,7 @@ document.write(`
     <span class="c1"># -------------------------------------------------------------------</span>
 
 <div class="viewcode-block" id="KernelFactory.se_kernel_isotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">se_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Squared Exponential (SE) kernel.</span>
@@ -863,7 +875,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="KernelFactory.rq_kernel_isotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rq_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Rational Quadratic (RQ) kernel.</span>
@@ -906,7 +918,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="KernelFactory.sine_exp_kernel_isotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">sine_exp_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Sine-Exponential kernel.</span>
@@ -958,7 +970,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="KernelFactory.matern_kernel_isotropic">
-<a class="viewcode-back" href="../../api/index.html#kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic">[docs]</a>
+<a class="viewcode-back" href="../../api/utilities_and_helpers.html#kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">matern_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Isotropic Matérn kernel (half-integer ν).</span>
@@ -966,7 +978,7 @@ document.write(`
         <span class="n">ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">sigma_f</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">sqdist</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
-            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)))</span>
+            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-16</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)))</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span><span class="p">(</span><span class="n">sqdist</span><span class="p">)</span></div>
 </div>
 

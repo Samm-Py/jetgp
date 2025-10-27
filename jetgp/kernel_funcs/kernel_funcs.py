@@ -435,7 +435,7 @@ class KernelFactory:
         ell = 10 ** (length_scales[:-1])
         sigma_f = length_scales[-1]
         sqdist = oti.sqrt(
-            sum((ell[i] * (differences_by_dim[i] + 1e-6)) ** 2 for i in range(self.dim)))
+            sum((ell[i] * (differences_by_dim[i] + 1e-16)) ** 2 for i in range(self.dim)))
         return (10 ** sigma_f) ** 2 * self.matern_kernel_prebuild(sqdist)
     def SI_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
         """
@@ -583,5 +583,5 @@ class KernelFactory:
         ell = 10 ** length_scales[0]
         sigma_f = length_scales[-1]
         sqdist = oti.sqrt(
-            sum((ell * (differences_by_dim[i] + 1e-6)) ** 2 for i in range(self.dim)))
+            sum((ell * (differences_by_dim[i] + 1e-16)) ** 2 for i in range(self.dim)))
         return (10 ** sigma_f) ** 2 * self.matern_kernel_prebuild(sqdist)

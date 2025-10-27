@@ -71,3 +71,11 @@ Quick Access
    :maxdepth: 2
 
    help_and_reference/index
+
+
+.. Coverage
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+
+   coverage/coverage

@@ -17,3 +17,5 @@ dependencies:
   - sympy
   - line_profiler
   - scikit-learn
+  - pytest
+  - pytest-cov

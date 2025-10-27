@@ -39,7 +39,7 @@ class wdegp:
     """
 
     def __init__(self, x_train, y_train, n_order, n_bases, index, der_indices,
-                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic"):
+                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
         self.x_train = x_train
         self.y_train = y_train
         self.n_order = n_order
@@ -88,7 +88,8 @@ class wdegp:
             dim=self.dim,
             normalize=self.normalize,
             n_order=self.n_order,
-            differences_by_dim=self.differences_by_dim
+            differences_by_dim=self.differences_by_dim,
+            smoothness_parameter=smoothness_parameter
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
