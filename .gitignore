@@ -10,6 +10,10 @@ __pycache__/*
 # Zone.Identifier files to be discarded.
 *Zone.Identifier
 
+#Ignore .coverage files
+*.coverage
+
+
 # Cython generated files.
 modules/*.c
 modules/build/
@@ -26,3 +30,4 @@ testing/*
 tutorials/
 experimental/*
 experimental/
+.vscode/
