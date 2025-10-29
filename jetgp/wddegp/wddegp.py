@@ -160,18 +160,12 @@ class wddegp:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
 
-        weights_matrix = np.zeros((n_test, n_train))
-        diffs_train_train = wddegp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, self.rays, 0, index=-1)
-
-        for k in range(n_test):
-            x_k = X_test[k].reshape(1, -1)
-            diffs_train_test = wddegp_utils.differences_by_dim_func(
-                self.x_train, x_k, self.rays, 0, index=-1)
-            weights = wddegp_utils.determine_weights(
-                diffs_train_train, diffs_train_test, ell, self.kernel_func)
-            weights_matrix[k] = weights[:, 0]
-
+        diffs_train_train =  wddegp_utils.differences_by_dim_func(
+                    self.x_train, self.x_train, self.rays, 0, index=-1)
+        diffs_train_test =  wddegp_utils.differences_by_dim_func(
+                        X_test, self.x_train, self.rays, 0, index=-1)
+        weights_matrix = wddegp_utils.determine_weights(
+            diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
         y_val = 0
         y_var = 0
         submodel_vals = []
