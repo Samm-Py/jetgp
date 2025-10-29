@@ -312,65 +312,56 @@ def rbf_kernel(
 
     return K
 
-
 def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigma_n):
     """
-    Compute interpolation weights for Weighted Coefficient Kriging (WCK)
-    using a radial basis function (RBF) kernel.
-
-    This method constructs a modified system to solve for interpolation weights
-    that minimize the kriging variance, including a Lagrange multiplier to enforce unbiasedness.
-
+    Vectorized version: compute interpolation weights for multiple test points at once.
+    
     Parameters
     ----------
     diffs_by_dim : list of ndarray
         Pairwise differences between training points (by dimension).
     diffs_test : list of ndarray
-        Pairwise differences between training and test point (by dimension).
+        Pairwise differences between test points and training points (by dimension).
+        Shape: each array is (n_test, n_train) or similar batch dimension.
     length_scales : array-like
-        Kernel hyperparameters (log-scaled or raw depending on kernel_func).
+        Kernel hyperparameters.
     kernel_func : callable
-        Kernel function (e.g., squared exponential, Matérn) accepting differences and returning
-        a scalar covariance matrix.
-
+        Kernel function.
+    sigma_n : float
+        Noise parameter (if needed).
+    
     Returns
     -------
-    w : ndarray of shape (n_train,)
-        Interpolation weights for combining weighted Taylor basis coefficients
-        in the kriging predictor.
-
-    Notes
-    -----
-    This method solves the augmented kriging system:
-
-        [ K   F ] [w ] = [r]
-        [ F^T 0 ] [μ ]   [1]
-
-    where:
-      - K is the covariance matrix of the training basis coefficients,
-      - r is the covariance vector between the test point and training coefficients,
-      - F is a column vector of ones enforcing unbiasedness,
-      - μ is the Lagrange multiplier,
-      - w contains the interpolation weights used in Weighted Coefficient Kriging.
+    weights_matrix : ndarray of shape (n_test, n_train)
+        Interpolation weights for each test point.
     """
-    n1 = diffs_test[0].shape[1]
     index = [-1]
-
-    phi = kernel_func(diffs_by_dim, length_scales, index)
-    r = kernel_func(diffs_test, length_scales, index)
-
-    K = phi.real
-    F = np.ones((n1, 1))
-    r = r.real.reshape(-1, 1)
-    r = np.vstack((r, [1]))
-
-    M = np.zeros((n1 + 1, n1 + 1))
-    M[:n1, :n1] = K
-    M[:n1, n1] = F.flatten()
-    M[n1, :n1] = F.flatten()
-    M[n1, n1] = 0
-
-    solution = np.linalg.solve(M, r)
-    w = solution[:n1]
-
-    return w
+    
+    # Compute K matrix (training covariance) - same for all test points
+    K = kernel_func(diffs_by_dim, length_scales, index).real
+    n_train = K.shape[0]
+    
+    # Compute r vectors (test-train covariances) for all test points at once
+    r_all = kernel_func(diffs_test, length_scales, index).real  # shape: (n_test, n_train)
+    n_test = r_all.shape[0]
+    
+    # Build augmented system matrix M (same for all test points)
+    M = np.zeros((n_train + 1, n_train + 1))
+    M[:n_train, :n_train] = K
+    M[:n_train, n_train] = 1
+    M[n_train, :n_train] = 1
+    M[n_train, n_train] = 0
+    
+    # Build augmented RHS for all test points
+    r_augmented = np.zeros((n_test, n_train + 1))
+    r_augmented[:, :n_train] = r_all
+    r_augmented[:, n_train] = 1
+    
+    # Solve for all test points at once: M @ solution.T = r_augmented.T
+    # solution.T has shape (n_train+1, n_test)
+    solution = np.linalg.solve(M, r_augmented.T)  # shape: (n_train+1, n_test)
+    
+    # Extract weights (exclude Lagrange multiplier)
+    weights_matrix = solution[:n_train, :].T  # shape: (n_test, n_train)
+    
+    return weights_matrix

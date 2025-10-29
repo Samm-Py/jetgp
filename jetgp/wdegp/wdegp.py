@@ -246,15 +246,11 @@ class wdegp:
             else:
                 return (y_val, y_var**2) if calc_cov else y_val
         else:
-            weights_matrix = np.zeros((n_test, n_train))
             diffs_train_train = self.differences_by_dim
-            for k in range(n_test):
-                x_k = X_test[k].reshape(1, -1)
-                diffs_train_test = wdegp_utils.differences_by_dim_func(
-                    x_k, self.x_train, 0, index=[-1])
-                weights = wdegp_utils.determine_weights(
-                    diffs_train_train, diffs_train_test, ell, self.kernel_func, sigma_n)
-                weights_matrix[k] = weights[:, 0]
+            diffs_train_test = wdegp_utils.differences_by_dim_func(
+                X_test, self.x_train, 0, index=[-1])
+            weights_matrix = wdegp_utils.determine_weights(
+                self.differences_by_dim, diffs_train_test, ell, self.kernel_func, sigma_n)
                 
             diffs_train_test = wdegp_utils.differences_by_dim_func(
                 self.x_train, X_test, self.n_order)
