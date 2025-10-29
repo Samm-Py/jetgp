@@ -31,3 +31,5 @@ tutorials/
 experimental/*
 experimental/
 .vscode/
+backup/
+backup/*
