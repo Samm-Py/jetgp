@@ -28,7 +28,7 @@ Set up the dependencies of this repository using the ``environment.yml`` file.
 
 .. code-block:: bash
 
-   $ cd <path-to-oti_gp>
+   $ cd <path-to-JetGP>
    $ conda env create -f environment.yml
    $ conda activate jetgp
 
@@ -64,7 +64,7 @@ If using Anaconda, you can register the repository path with your environment us
 .. code-block:: bash
 
    $ conda install conda-build
-   $ cd <path-to-oti_gp> (e.g., ``.\jetgp-main\jetgp``).
+   $ cd <path-to-JetGP> (e.g., ``.\jetgp-main\jetgp``).
    $ conda develop .
 
 This method automatically makes ``jetgp`` importable whenever the ``jetgp`` environment is active.
