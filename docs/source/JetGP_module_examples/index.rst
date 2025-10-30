@@ -12,4 +12,3 @@ This section provides **examples** for using JetGP classes, including DEGP, WDEG
    ddegp_getting_started
    gddegp_getting_started
    wddegp_getting_started
-   # future tutorials can be added here like wdegp_getting_started

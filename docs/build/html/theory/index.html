@@ -176,8 +176,11 @@
 <li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">Theory Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -240,6 +243,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -451,16 +457,59 @@ document.write(`
 <h1>Theory Manual<a class="headerlink" href="#theory-manual" title="Link to this heading">#</a></h1>
 <section id="gaussian-processes">
 <h2>Gaussian Processes<a class="headerlink" href="#gaussian-processes" title="Link to this heading">#</a></h2>
-<p>Here is a description of Gaussian Process and a supporting equation</p>
-<div class="math notranslate nohighlight">
-\[y = mx+b\]</div>
 <div class="toctree-wrapper compound">
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gaussian_processes.html">Gaussian Processes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gaussian_processes.html">Gaussian Processes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html#making-predictions">Making Predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html#posterior-predictive-distribution">Posterior Predictive Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html#learning-hyperparameters">Learning Hyperparameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html#computational-considerations">Computational Considerations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html#hessian-enhanced-gaussian-processes">Hessian-Enhanced Gaussian Processes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html#note-on-simplified-test-predictions">Note on Simplified Test Predictions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l1"><a class="reference internal" href="weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html#problem-formulation">Problem Formulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html#submodel-covariance-structure">Submodel Covariance Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html#weighted-combination-of-submodels">Weighted Combination of Submodels</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="weighted_gp.html#computing-weight-functions">Computing Weight Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html#hyperparameter-optimization">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html#computational-trade-offs">Computational Trade-offs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="directional_degp.html#covariance-structure">Covariance Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="directional_degp.html#hyperparameter-optimization">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="directional_degp.html#computational-advantages">Computational Advantages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="directional_degp.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mogp.html">Multi-output Gaussian Processes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html#joint-distribution">Joint Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html#connection-to-gradient-enhanced-gps">Connection to Gradient-Enhanced GPs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="observation_noise.html">Note on Observation Noise</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html#noisy-joint-distribution">Noisy Joint Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html#noisy-posterior">Noisy Posterior</a></li>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html#noisy-marginal-log-likelihood">Noisy Marginal Log-Likelihood</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="observation_noise.html#generalization">Generalization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="observation_noise.html#heteroscedastic-noise">Heteroscedastic Noise</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </div>
 </section>

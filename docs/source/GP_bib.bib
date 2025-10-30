@@ -29,17 +29,15 @@
 	}
 	
 }
-
 @inproceedings{improved_gek,
-title = "IMPROVED WEIGHTED GRADIENT-ENHANCED KRIGING MODEL FOR HIGH-DIMENSIONAL AERODYNAMIC MODELING PROBLEMS",
-abstract = "Weighted gradient-enhanced kriging has been demonstrated to be superior to conventional gradient-enhanced kriging when applied to high-dimensional aerodynamic modeling and optimization problems, through the core idea of summing up a series of submodels with much smaller coloration matrices by appropriate weight coefficients. It avoids the prohibit computational cost associated with directly decomposing the large correlation matrix of a gradient-enhanced kriging, and provides a probable way to ameliorate the “curse of dimensionality”. However, with the increase of model training data, the number of required submodels grows rapidly, resulting in another dilemma that the total computation cost of decomposing all the small matrices could become prohibitive. In the paper, an improved formulation of weighted gradient-enhanced kriging is proposed and provides a method to adaptively determine the best suitable number of gradients to be interpolated for each submodel, saving the computation budget for matrix decomposition as much as possible and reaching a win-win situation for both model accuracy and modeling efficiency. Numerical examples are employed to compare the proposed method with other gradient-enhanced modeling approaches. Results demonstrate the advantage of the proposed method in both prediction accuracy and efficiency. It is also applied to the aerodynamic modeling of an RAE2822 airfoil in transonic regime, to further illustrate its capability to support engineering design problems driven by expensive numerical simulations.",
-keywords = "Aerodynamic modeling, High-dimensional problem, Surrogate model, Weighted gradient-enhanced kriging",
-author = "Xu, \{Chen Zhou\} and Han, \{Zhong Hua\} and Zhang, \{Ke Shi\} and Song, \{Wen Ping\}",
-note = "Publisher Copyright: {\textcopyright} 2021 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. All rights reserved.; 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021 ; Conference date: 06-09-2021 Through 10-09-2021",
-year = "2021",
-series = "32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021",
-publisher = "International Council of the Aeronautical Sciences",
-booktitle = "32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021",
+	title = {IMPROVED WEIGHTED GRADIENT-ENHANCED KRIGING MODEL FOR HIGH-DIMENSIONAL AERODYNAMIC MODELING PROBLEMS},
+	abstract = {Weighted gradient-enhanced kriging has been demonstrated to be superior to conventional gradient-enhanced kriging when applied to high-dimensional aerodynamic modeling and optimization problems, through the core idea of summing up a series of submodels with much smaller coloration matrices by appropriate weight coefficients. It avoids the prohibit computational cost associated with directly decomposing the large correlation matrix of a gradient-enhanced kriging, and provides a probable way to ameliorate the "curse of dimensionality". However, with the increase of model training data, the number of required submodels grows rapidly, resulting in another dilemma that the total computation cost of decomposing all the small matrices could become prohibitive. In the paper, an improved formulation of weighted gradient-enhanced kriging is proposed and provides a method to adaptively determine the best suitable number of gradients to be interpolated for each submodel, saving the computation budget for matrix decomposition as much as possible and reaching a win-win situation for both model accuracy and modeling efficiency. Numerical examples are employed to compare the proposed method with other gradient-enhanced modeling approaches. Results demonstrate the advantage of the proposed method in both prediction accuracy and efficiency. It is also applied to the aerodynamic modeling of an RAE2822 airfoil in transonic regime, to further illustrate its capability to support engineering design problems driven by expensive numerical simulations.},
+	keywords = {Aerodynamic modeling, High-dimensional problem, Surrogate model, Weighted gradient-enhanced kriging},
+	author = {Chen Zhou Xu and Zhong Hua Han and Ke Shi Zhang and Wen Ping Song},
+	year = {2021},
+	series = {32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021},
+	publisher = {International Council of the Aeronautical Sciences},
+	booktitle = {32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021}
 }
 
 
@@ -87,6 +85,7 @@ booktitle = "32nd Congress of the International Council of the Aeronautical Scie
 	volume = {4},
 	year = {1953}
 }
+
 
 
 
@@ -184,6 +183,7 @@ year = {2023},
   conference = "28th AIAA Applied Aerodynamics Conference",
   location   = "Chicago, Illinois"
 }
+
 
 
 @BOOK{Allaire2008-by,
@@ -423,6 +423,7 @@ journal = {Advances in Neural Information Processing Systems}
   location        = "Yokohama, Japan"
 }
 
+
 @ARTICLE{Padidar2021-fr,
   title        = "Scaling Gaussian processes with derivative information using
                   variational inference",
@@ -456,10 +457,37 @@ journal = {Advances in Neural Information Processing Systems}
                   optimization. Surprisingly, we find that our approach can
                   improve regression performance even in settings where only
                   label data is available.",
-  year         =  2021,
   primaryClass = "cs.LG",
   eprint       = "2107.04061",
   volume={34},
   pages={6442--6453},
   year={2021}
+}
+
+@INPROCEEDINGS{Ulaganathan2014-yh,
+title           = "On the use of gradients in Kriging surrogate models",
+booktitle       = "Proceedings of the Winter Simulation Conference 2014",
+author          = "Ulaganathan, Selvakumar and Couckuyt, Ivo and Dhaene, Tom
+and Laermans, Eric and Degroote, Joris",
+publisher       = "IEEE",
+month           =  dec,
+year            =  2014,
+conference      = "2014 Winter Simulation Conference - (WSC 2014)",
+location        = "Savanah, GA, USA"
+}
+
+
+
+@article{CHEN201915,
+title = {A screening-based gradient-enhanced Kriging modeling method for high-dimensional problems},
+journal = {Applied Mathematical Modelling},
+volume = {69},
+pages = {15-31},
+year = {2019},
+issn = {0307-904X},
+doi = {https://doi.org/10.1016/j.apm.2018.11.048},
+url = {https://www.sciencedirect.com/science/article/pii/S0307904X18305900},
+author = {Liming Chen and Haobo Qiu and Liang Gao and Chen Jiang and Zan Yang},
+keywords = {Surrogate, Gradient-enhanced Kriging, Feature selection, High-dimensional problems},
+abstract = {By exploring the auxiliary information from gradients, the accuracy of Kriging model can be improved. However, the dramatically increased time for model training tends to be unaffordable. Therefore, a novel gradient-enhanced Kriging modeling method which utilizes only a partial set of gradients, is developed in this article. Within the framework of this method, a balance between model accuracy and modeling efficiency can be achieved. More specifically, the influence of each input variable on output is estimated and ranked by feature selection technique. Then an empirical evaluation rule is proposed to facilitate the selection of gradients. Five representative numerical benchmarks from 10-D to 30-D and an airfoil optimal shape design with 18 variables are used for validation. Results show that when compared with the conventional Gradient-enhanced Kriging, the modeling time of the proposed method is significantly reduced, while the loss of accuracy is negligible. As a consequence, the proposed surrogate modeling method can provide an alternative way for approximating high-dimensional problems.}
 }

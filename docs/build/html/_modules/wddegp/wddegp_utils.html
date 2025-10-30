@@ -239,6 +239,9 @@
 </ul>
 </details></li>
 </ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
+</ul>
 
     </div>
 </nav></div>
@@ -635,55 +638,62 @@ document.write(`
 <span class="c1">#     return K</span>
 
 
+
 <div class="viewcode-block" id="determine_weights">
 <a class="viewcode-back" href="../../api/weighted_ddegp.html#wddegp.wddegp_utils.determine_weights">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">determine_weights</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">determine_weights</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Solve for Kriging weights using a Weighted Coefficient Kriging model.</span>
-
-<span class="sd">    This method solves an augmented linear system that enforces unbiasedness</span>
-<span class="sd">    and ensures the interpolation is consistent with the weighted directional</span>
-<span class="sd">    derivative-enhanced GP structure.</span>
-
+<span class="sd">    Vectorized version: compute interpolation weights for multiple test points at once.</span>
+<span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    diffs_by_dim : list of ndarray</span>
-<span class="sd">        Differences between training points.</span>
+<span class="sd">        Pairwise differences between training points (by dimension).</span>
 <span class="sd">    diffs_test : list of ndarray</span>
-<span class="sd">        Differences between training points and test point.</span>
-<span class="sd">    length_scales : ndarray</span>
-<span class="sd">        Kernel length scales.</span>
+<span class="sd">        Pairwise differences between test points and training points (by dimension).</span>
+<span class="sd">        Shape: each array is (n_test, n_train) or similar batch dimension.</span>
+<span class="sd">    length_scales : array-like</span>
+<span class="sd">        Kernel hyperparameters.</span>
 <span class="sd">    kernel_func : callable</span>
-<span class="sd">        Kernel function evaluated over pairwise differences.</span>
-
+<span class="sd">        Kernel function.</span>
+<span class="sd">    sigma_n : float</span>
+<span class="sd">        Noise parameter (if needed).</span>
+<span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    w : ndarray</span>
-<span class="sd">        Optimal weights vector for Weighted Coefficient Kriging interpolation.</span>
+<span class="sd">    weights_matrix : ndarray of shape (n_test, n_train)</span>
+<span class="sd">        Interpolation weights for each test point.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">n1</span> <span class="o">=</span> <span class="n">diffs_test</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-
     <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-
-    <span class="n">phi</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
-
-    <span class="n">K</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">real</span>
-    <span class="n">F</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">real</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">r</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-
-    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">M</span><span class="p">[:</span><span class="n">n1</span><span class="p">,</span> <span class="p">:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span>
-    <span class="n">M</span><span class="p">[:</span><span class="n">n1</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-    <span class="n">M</span><span class="p">[</span><span class="n">n1</span><span class="p">,</span> <span class="p">:</span><span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-    <span class="n">M</span><span class="p">[</span><span class="n">n1</span><span class="p">,</span> <span class="n">n1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-    <span class="n">w</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[:</span><span class="n">n1</span><span class="p">]</span>
-
-    <span class="k">return</span> <span class="n">w</span></div>
+    
+    <span class="c1"># Compute K matrix (training covariance) - same for all test points</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>
+    <span class="n">n_train</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="c1"># Compute r vectors (test-train covariances) for all test points at once</span>
+    <span class="n">r_all</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span><span class="o">.</span><span class="n">real</span>  <span class="c1"># shape: (n_test, n_train)</span>
+    <span class="n">n_test</span> <span class="o">=</span> <span class="n">r_all</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    
+    <span class="c1"># Build augmented system matrix M (same for all test points)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_train</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_train</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">M</span><span class="p">[:</span><span class="n">n_train</span><span class="p">,</span> <span class="p">:</span><span class="n">n_train</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span>
+    <span class="n">M</span><span class="p">[:</span><span class="n">n_train</span><span class="p">,</span> <span class="n">n_train</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">M</span><span class="p">[</span><span class="n">n_train</span><span class="p">,</span> <span class="p">:</span><span class="n">n_train</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">M</span><span class="p">[</span><span class="n">n_train</span><span class="p">,</span> <span class="n">n_train</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="c1"># Build augmented RHS for all test points</span>
+    <span class="n">r_augmented</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_train</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">r_augmented</span><span class="p">[:,</span> <span class="p">:</span><span class="n">n_train</span><span class="p">]</span> <span class="o">=</span> <span class="n">r_all</span>
+    <span class="n">r_augmented</span><span class="p">[:,</span> <span class="n">n_train</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    
+    <span class="c1"># Solve for all test points at once: M @ solution.T = r_augmented.T</span>
+    <span class="c1"># solution.T has shape (n_train+1, n_test)</span>
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">r_augmented</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>  <span class="c1"># shape: (n_train+1, n_test)</span>
+    
+    <span class="c1"># Extract weights (exclude Lagrange multiplier)</span>
+    <span class="n">weights_matrix</span> <span class="o">=</span> <span class="n">solution</span><span class="p">[:</span><span class="n">n_train</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># shape: (n_test, n_train)</span>
+    
+    <span class="k">return</span> <span class="n">weights_matrix</span></div>
 
 </pre></div>
 

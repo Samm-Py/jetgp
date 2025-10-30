@@ -176,6 +176,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Theory Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivative_screening.html">Derivative Screening</a></li>
 <li class="toctree-l2"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-Output Gaussian Processes</a></li>
 </ul>
@@ -240,6 +241,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -412,7 +416,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -428,6 +434,17 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#making-predictions">Making Predictions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#posterior-predictive-distribution">Posterior Predictive Distribution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-hyperparameters">Learning Hyperparameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computational-considerations">Computational Considerations</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -439,31 +456,33 @@ document.write(`
                   
   <section id="gaussian-processes">
 <h1>Gaussian Processes<a class="headerlink" href="#gaussian-processes" title="Link to this heading">#</a></h1>
-<p>Gaussian Processes (GPs), or Kriging models, have become one of the most commonly used surrogate modeling techniques in many engineering design applications due to their ability to deliver both predictions and uncertainty estimates <span id="id1">[<a class="reference internal" href="directional_degp.html#id13" title="Matheron Georges. Principles of geostatistics. Economic geology, 58(8):1246–1266, 1963.">1</a>, <a class="reference internal" href="directional_degp.html#id3" title="William J. Welch, Robert J. Buck, Jerome Sacks, Henry P. Wynn, and Toby J. Mitchell. Screening, predicting, and computer experiments. Technometrics, 34(1):15–25, 1992. URL: https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229, arXiv:https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229, doi:10.1080/00401706.1992.10485229.">2</a>]</span>. They are a non-parametric supervised learning method used to solve regression, optimization, and probabilistic classification problems <span id="id2">[<a class="reference internal" href="directional_degp.html#id15" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">3</a>]</span>. In particular, a Gaussian process can be viewed as a collection of random variables, any finite number of which have a joint Gaussian distribution. A Gaussian Process model can be completely determined by its mean function <span class="math notranslate nohighlight">\(m(\mathbf{x})\)</span> and covariance function <span class="math notranslate nohighlight">\(k(\mathbf{x}, \mathbf{x}')\)</span> of a real process <span class="math notranslate nohighlight">\(f(\mathbf{x})\)</span> as given in <a class="reference internal" href="#equation-eqn2">(1)</a>.</p>
+<div class="math notranslate nohighlight">
+\[\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}\]</div>
+<span class="target" id="id1"></span><p>Gaussian Processes (GPs), or Kriging models, have become one of the most commonly used surrogate modeling techniques in many engineering design applications due to their ability to deliver both predictions and uncertainty estimates <span id="id2">[<a class="reference internal" href="#id19" title="A Comparison of Numerical Optimizers in Developing High Dimensional Surrogate Models, volume Volume 2B: 45th Design Automation Conference of International Design Engineering Technical Conferences and Computers and Information in Engineering Conference, 08 2019. URL: https://doi.org/10.1115/DETC2019-97499, arXiv:https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings-pdf/IDETC-CIE2019/59193/V02BT03A037/6452976/v02bt03a037-detc2019-97499.pdf, doi:10.1115/DETC2019-97499.">1</a>, <a class="reference internal" href="#id18" title="Matheron Georges. Principles of geostatistics. Economic geology, 58(8):1246–1266, 1963.">2</a>, <a class="reference internal" href="#id11" title="D. G. Krige. A statistical approach to some basic mine valuation problems on the witwatersrand. OR, 4(1):18–18, 1953. URL: http://www.jstor.org/stable/3006914 (visited on 2025-02-20).">3</a>, <a class="reference internal" href="#id8" title="William J. Welch, Robert J. Buck, Jerome Sacks, Henry P. Wynn, and Toby J. Mitchell. Screening, predicting, and computer experiments. Technometrics, 34(1):15–25, 1992. URL: https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229, arXiv:https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229, doi:10.1080/00401706.1992.10485229.">4</a>]</span>. They are a non-parametric supervised learning method used to solve regression, optimization, and probabilistic classification problems <span id="id3">[<a class="reference internal" href="#id20" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">5</a>]</span>. In particular, a Gaussian process can be viewed as a collection of random variables, any finite number of which have a joint Gaussian distribution. A Gaussian Process model can be completely determined by its mean function <span class="math notranslate nohighlight">\(m(\mathbf{x})\)</span> and covariance function <span class="math notranslate nohighlight">\(k(\mathbf{x}, \mathbf{x}')\)</span> of a real process <span class="math notranslate nohighlight">\(f(\mathbf{x})\)</span> as given below:</p>
 <div class="math notranslate nohighlight" id="equation-eqn2">
-<span class="eqno">(1)<a class="headerlink" href="#equation-eqn2" title="Link to this equation">#</a></span>\[\begin{split}\begin{split}
-    m(\mathbf{x}) &amp;= \mathbb{E}[f(\mathbf{x})], \\
-    k(\mathbf{x}, \mathbf{x}') &amp;= \mathbb{E}[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]
-\end{split}\end{split}\]</div>
-<p>The Gaussian Process can then be written as in equation <a class="reference internal" href="#equation-eqn3">(2)</a>.</p>
+<span class="eqno">(1)<a class="headerlink" href="#equation-eqn2" title="Link to this equation">#</a></span>\[\begin{split}m(\mathbf{x}) &amp;= \mathbb{E}[f(\mathbf{x})], \\
+k(\mathbf{x}, \mathbf{x}') &amp;= \mathbb{E}[(f(\mathbf{x}) - m(\mathbf{x}))(f(\mathbf{x}') - m(\mathbf{x}'))]\end{split}\]</div>
+<p>The Gaussian Process can then be written as:</p>
 <div class="math notranslate nohighlight" id="equation-eqn3">
 <span class="eqno">(2)<a class="headerlink" href="#equation-eqn3" title="Link to this equation">#</a></span>\[f(\mathbf{x}) \sim \mathcal{GP}(m(\mathbf{x}), k(\mathbf{x}, \mathbf{x}'))\]</div>
-<p>The covariance function in Equation <a class="reference internal" href="#equation-eqn2">(1)</a> is often approximated by a kernel function which assigns a specific covariance between pairs of random variables so that <span class="math notranslate nohighlight">\(\text{cov}\left(f(\mathbf{x}), f(\mathbf{x}')\right) = k(\mathbf{x}, \mathbf{x}')\)</span>. The kernel function can take on various forms, one of the most commonly used functions, the squared exponential, is given in Equation <a class="reference internal" href="#equation-eqn4">(3)</a>.</p>
+<p>The covariance function in Equation <a class="reference internal" href="#equation-eqn2">(1)</a> is often approximated by a kernel function which assigns a specific covariance between pairs of random variables so that <span class="math notranslate nohighlight">\(\text{cov}\left(f(\mathbf{x}), f(\mathbf{x}')\right) = k(\mathbf{x}, \mathbf{x}')\)</span>. The kernel function can take on various forms, one of the most commonly used functions, the squared exponential, is given below:</p>
 <div class="math notranslate nohighlight" id="equation-eqn4">
-<span class="eqno">(3)<a class="headerlink" href="#equation-eqn4" title="Link to this equation">#</a></span>\[K_{SE}(\mathbf{x}, \mathbf{x}', \sigma_f^2, \boldsymbol{\theta}) =
-\sigma_f^2 \exp\left(-\sum\limits_{i = 1}^{d} \frac{(x_i - x'_i)^2}{2 \theta_i^2} \right)\]</div>
-<p>In this function, the parameters <span class="math notranslate nohighlight">\(\sigma_f^2\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\theta}\)</span>, collectively denoted as <span class="math notranslate nohighlight">\(\boldsymbol{\psi} = \{\sigma_f^2, \boldsymbol{\theta}\}\)</span>, are the hyperparameters of the model, which are learned from the data:</p>
+<span class="eqno">(3)<a class="headerlink" href="#equation-eqn4" title="Link to this equation">#</a></span>\[K_{SE}(\mathbf{x}, \mathbf{x}', \sigma_f^2, \boldsymbol{\theta}) = \sigma_f^2 \exp\left(-\sum\limits_{i = 1}^{d} \frac{(x_i - x'_i)^2}{2 \theta_i^2} \right)\]</div>
+<p>In this function, the parameters <span class="math notranslate nohighlight">\(\sigma_f^2\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\theta}\)</span> collectively denoted as <span class="math notranslate nohighlight">\(\boldsymbol{\psi} = \{\sigma_f^2, \boldsymbol{\theta}\}\)</span> are the hyperparameters of the model, which are learned from the data:</p>
 <ul class="simple">
 <li><p><span class="math notranslate nohighlight">\(\sigma_f^2\)</span> is the <strong>variance</strong>, which is a scaling factor that controls the overall vertical variation of the function.</p></li>
-<li><p><span class="math notranslate nohighlight">\(\theta_i\)</span> is the <strong>length scale</strong> for each input dimension <span class="math notranslate nohighlight">\(i\)</span>. It determines how quickly the correlation between points decreases with distance. A small length scale means the function varies rapidly, while a large length scale indicates a smoother function.</p></li>
+<li><p><span class="math notranslate nohighlight">\(\theta_i\)</span> is the <strong>length scale</strong> for each input dimension <em>i</em>. It determines how quickly the correlation between points decreases with distance. A small length scale means the function varies rapidly, while a large length scale indicates a smoother function.</p></li>
 </ul>
-<p>To make predictions using a Gaussian process model, we assume an observed training dataset <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> containing <span class="math notranslate nohighlight">\(n\)</span> input-output pairs:</p>
-<div class="math notranslate nohighlight">
-\[\mathcal{D} = \left\{\mathbf{X}, \mathbf{Y} \right\} = \left\{(\mathbf{x}_i, y_i) \mid i = 1, \ldots, n \right\}\]</div>
-<p>where each input <span class="math notranslate nohighlight">\(\mathbf{x}_i \in \mathbb{R}^d\)</span> has a corresponding observed output <span class="math notranslate nohighlight">\(y_i = f(\mathbf{x}_i)\)</span>. For now, we will assume the output of <span class="math notranslate nohighlight">\(f\)</span> is scalar, though this framework can be generalized to vector outputs, as discussed in Section <span class="xref std std-ref">MOGPs</span>.</p>
+<section id="making-predictions">
+<h2>Making Predictions<a class="headerlink" href="#making-predictions" title="Link to this heading">#</a></h2>
+<p>To make predictions using a Gaussian process model, we assume an observed training dataset <span class="math notranslate nohighlight">\(\mathcal{D}\)</span> containing <em>n</em> input-output pairs:</p>
+<div class="math notranslate nohighlight" id="equation-data-set">
+<span class="eqno">(4)<a class="headerlink" href="#equation-data-set" title="Link to this equation">#</a></span>\[\mathcal{D} = \left\{\mathbf{X}, \mathbf{Y} \right\}  = \left\{(\mathbf{x}_i, y_i) \mid i = 1, \ldots, n \right\}\]</div>
+<p>where each input <span class="math notranslate nohighlight">\(\mathbf{x}_i \in \mathbb{R}^d\)</span> has a corresponding observed output <span class="math notranslate nohighlight">\(y_i = f(\mathbf{x}_i)\)</span>. For now, we will assume the output of <em>f</em> is scalar, though this framework can be generalized to vector outputs, as discussed in Section Multi-Output GPs.</p>
 <p>To predict outputs at a new set of test locations, <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span>, we model the joint distribution over the training and test outputs. It is common to assume a zero-mean function for the GP, such that <span class="math notranslate nohighlight">\(m(\mathbf{x}) = 0\)</span>. This assumption simplifies the model but is not overly restrictive, as it only constrains the prior distribution; the posterior predictive mean will be non-zero and adapt to the data. With these assumptions, the joint distribution of the training outputs <span class="math notranslate nohighlight">\(\mathbf{y} = f(\mathbf{X})\)</span> and the test outputs <span class="math notranslate nohighlight">\(\mathbf{y}_* = f(\mathbf{X}_*)\)</span> is given by:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-joint-dist">
-<span class="eqno">(4)<a class="headerlink" href="#equation-eqn-joint-dist" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
+<span class="eqno">(5)<a class="headerlink" href="#equation-eqn-joint-dist" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
     \mathbf{y} \\
     \mathbf{y}_*
 \end{pmatrix}
@@ -473,37 +492,126 @@ document.write(`
     \mathbf{0}
 \end{pmatrix},
 \begin{pmatrix}
-    K(\mathbf{X}, \mathbf{X}) &amp; K(\mathbf{X}, \mathbf{X}_*) \\
-    K(\mathbf{X}_*, \mathbf{X}) &amp; K(\mathbf{X}_*, \mathbf{X}_*)
+    K(\mathbf{X}, \mathbf{X}') &amp; K(\mathbf{X}, \mathbf{X}_*) \\
+    K(\mathbf{X}_*, \mathbf{X}) &amp; K(\mathbf{X}_*, \mathbf{X}_*')
 \end{pmatrix}
 \right)\end{split}\]</div>
-<p>For notational simplicity, we can partition this covariance matrix into blocks:</p>
+<p>Here, the prime notation is a notational convenience: <span class="math notranslate nohighlight">\(\mathbf{X}'\)</span> represents the same set of training points as <span class="math notranslate nohighlight">\(\mathbf{X}\)</span>, but as the second argument of the covariance function. Thus <span class="math notranslate nohighlight">\(K(\mathbf{X}, \mathbf{X}')\)</span> evaluates the kernel between all pairs of training points, producing an <em>n</em> × <em>n</em> covariance matrix with entries <span class="math notranslate nohighlight">\([K(\mathbf{X}, \mathbf{X}')]_{ij} = k(\mathbf{x}_i, \mathbf{x}_j)\)</span>. For notational simplicity, we partition this covariance matrix into blocks:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-cov-blocks">
-<span class="eqno">(5)<a class="headerlink" href="#equation-eqn-cov-blocks" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
+<span class="eqno">(6)<a class="headerlink" href="#equation-eqn-cov-blocks" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
     \boldsymbol{\Sigma}_{11} &amp; \boldsymbol{\Sigma}_{12} \\
     \boldsymbol{\Sigma}_{21} &amp; \boldsymbol{\Sigma}_{22}
 \end{pmatrix}
 =
 \begin{pmatrix}
-    K(\mathbf{X}, \mathbf{X}) &amp; K(\mathbf{X}, \mathbf{X}_*) \\
-    K(\mathbf{X}_*, \mathbf{X}) &amp; K(\mathbf{X}_*, \mathbf{X}_*)
+    K(\mathbf{X}, \mathbf{X}') &amp; K(\mathbf{X}, \mathbf{X}_*) \\
+    K(\mathbf{X}_*, \mathbf{X}) &amp; K(\mathbf{X}_*, \mathbf{X}_*')
 \end{pmatrix}\end{split}\]</div>
-<p>From the multivariate Gaussian theorem, the conditional distribution of a Gaussian is itself Gaussian. This fact allows for making predictions at the test points <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span> conditioned on the training data <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. Using the block matrix notation defined in Equation <a class="reference internal" href="#equation-eqn-cov-blocks">(5)</a>, the posterior predictive distribution is given by:</p>
+<p>where <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{11}\)</span> is the covariance of training points with themselves, <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{12}\)</span> is the covariance of training points with test points, <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{22}\)</span> is the covariance of the test points with themselves, and <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{21} = \boldsymbol{\Sigma}_{12}^T\)</span>.</p>
+</section>
+<section id="posterior-predictive-distribution">
+<h2>Posterior Predictive Distribution<a class="headerlink" href="#posterior-predictive-distribution" title="Link to this heading">#</a></h2>
+<p>From the multivariate Gaussian theorem, the conditional distribution of a Gaussian is itself Gaussian. This fact allows for making predictions at the test points <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span> conditioned on the training data <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. Using the block matrix notation defined in Equation <a class="reference internal" href="#equation-eqn-cov-blocks">(6)</a>, the posterior predictive distribution is given by:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-gp-posterior-block">
-<span class="eqno">(6)<a class="headerlink" href="#equation-eqn-gp-posterior-block" title="Link to this equation">#</a></span>\[\begin{split}\begin{split}
-    p(\mathbf{y}_* \mid \mathbf{y}) &amp;= \mathcal{N}(\boldsymbol{\mu}_{*}, \boldsymbol{\Sigma}_{*}) \\
-    \boldsymbol{\mu}_{*} &amp;= \boldsymbol{\Sigma}_{21} \boldsymbol{\Sigma}_{11}^{-1} \mathbf{y} \\
-    \boldsymbol{\Sigma}_{*} &amp;=  \boldsymbol{\Sigma}_{22} - \boldsymbol{\Sigma}_{21} \boldsymbol{\Sigma}_{11}^{-1} \boldsymbol{\Sigma}_{12}
-\end{split}\end{split}\]</div>
-<p>The kernel hyperparameters, <span class="math notranslate nohighlight">\(\psi\)</span>, are not set manually but are instead learned from the training data <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. A standard approach is to find the values that maximize the log marginal likelihood of the observations, <span class="math notranslate nohighlight">\(p(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\psi})\)</span> <span id="id3">[<a class="reference internal" href="directional_degp.html#id15" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">3</a>]</span>. For a noise-free model, the log marginal likelihood is given by:</p>
+<span class="eqno">(7)<a class="headerlink" href="#equation-eqn-gp-posterior-block" title="Link to this equation">#</a></span>\[\begin{split}p(\mathbf{y}_* \mid \mathbf{y}) &amp;= \mathcal{N}(\boldsymbol{\mu}_{*}, \boldsymbol{\Sigma}_{*}) \\
+\boldsymbol{\mu}_{*} &amp;= \boldsymbol{\Sigma}_{21} \boldsymbol{\Sigma}_{11}^{-1} \mathbf{y} \\
+\boldsymbol{\Sigma}_{*} &amp;=  \boldsymbol{\Sigma}_{22} - \boldsymbol{\Sigma}_{21} \boldsymbol{\Sigma}_{11}^{-1} \boldsymbol{\Sigma}_{12}\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\boldsymbol{\mu}_{*}\)</span> is the posterior predictive mean and <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{*}\)</span> is the posterior predictive covariance.</p>
+</section>
+<section id="learning-hyperparameters">
+<h2>Learning Hyperparameters<a class="headerlink" href="#learning-hyperparameters" title="Link to this heading">#</a></h2>
+<p>The kernel hyperparameters, <span class="math notranslate nohighlight">\(\psi\)</span>, are not set manually but are instead learned from the training data <span class="math notranslate nohighlight">\(\mathcal{D}\)</span>. A standard approach is to find the values that maximize the log marginal likelihood of the observations, <span class="math notranslate nohighlight">\(p(\mathbf{y} \mid \mathbf{X}, \boldsymbol{\psi})\)</span> <span id="id4">[<a class="reference internal" href="#id20" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">5</a>]</span>. For a noise-free model, the log marginal likelihood is given by:</p>
 <div class="math notranslate nohighlight" id="equation-mll">
-<span class="eqno">(7)<a class="headerlink" href="#equation-mll" title="Link to this equation">#</a></span>\[\log p(\mathbf{y}|\mathbf{X}, \boldsymbol{\psi}) =
--\frac{1}{2} \mathbf{y}^\top \mathbf{K}_{\boldsymbol{\psi}}^{-1} \mathbf{y}
-- \frac{1}{2}\log|\mathbf{K}_{\boldsymbol{\psi}}|
-- \frac{n}{2}\log 2\pi\]</div>
-<p>where <span class="math notranslate nohighlight">\(\mathbf{K}_{\boldsymbol{\psi}} = K(\mathbf{X},\mathbf{X})\)</span>. Optimized hyperparameters, <span class="math notranslate nohighlight">\(\boldsymbol{\psi}^*\)</span>, are then selected according to Equation <a class="reference internal" href="#equation-maxmll">(8)</a>.</p>
+<span class="eqno">(8)<a class="headerlink" href="#equation-mll" title="Link to this equation">#</a></span>\[\log p(\mathbf{y}|\mathbf{X}, \boldsymbol{\psi}) = -\frac{1}{2} \mathbf{y}^\top \mathbf{K}_{\boldsymbol{\psi}}^{-1} \mathbf{y} - \frac{1}{2}\log|\mathbf{K}_{\boldsymbol{\psi}}| - \frac{n}{2}\log 2\pi\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{K}_{\boldsymbol{\psi}} = K(\mathbf{X},\mathbf{X})\)</span>. Optimized hyperparameters, <span class="math notranslate nohighlight">\(\boldsymbol{\psi}^*\)</span>, are then selected according to:</p>
 <div class="math notranslate nohighlight" id="equation-maxmll">
-<span class="eqno">(8)<a class="headerlink" href="#equation-maxmll" title="Link to this equation">#</a></span>\[\boldsymbol{\psi}^* = \arg\max_{\boldsymbol{\psi}} \left( \log p(\mathbf{y}|\mathbf{X}, \boldsymbol{\psi}) \right)\]</div>
+<span class="eqno">(9)<a class="headerlink" href="#equation-maxmll" title="Link to this equation">#</a></span>\[\boldsymbol{\psi}^* = \argmax_{\boldsymbol{\psi}} \left( \log p(\mathbf{y}|\mathbf{X}, \boldsymbol{\psi}) \right)\]</div>
+</section>
+<section id="computational-considerations">
+<h2>Computational Considerations<a class="headerlink" href="#computational-considerations" title="Link to this heading">#</a></h2>
+<p>Note that directly computing the expression in Equation <a class="reference internal" href="#equation-mll">(8)</a> requires evaluating both the inverse and determinant of the matrix <span class="math notranslate nohighlight">\(K = k(\mathbf{X}, \mathbf{X}')\)</span>, operations that are computationally expensive and numerically unstable for large <em>n</em>. To address these challenges, the Cholesky decomposition is typically employed <span id="id5">[<a class="reference internal" href="#id20" title="Carl Edward Rasmussen and Christopher K. I. Williams. Gaussian Processes for Machine Learning. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: http://www.gaussianprocess.org/gpml/.">5</a>]</span>. For a symmetric positive definite matrix <em>K</em>, the Cholesky decomposition yields a lower triangular matrix <em>L</em> such that <span class="math notranslate nohighlight">\(K = LL^\top\)</span>. This factorization enables efficient computation of both the matrix inverse and the log-determinant. Indeed, the Cholesky method is approximately twice as fast as Gaussian elimination for symmetric positive definite matrices <span id="id6">[<a class="reference internal" href="#id17" title="Gregoire Allaire and Sidi Mahmoud Kaber. Numerical Linear Algebra. Texts in applied mathematics. Springer, New York, NY, January 2008.">6</a>]</span>, and it provides better numerical stability, especially for large-scale problems where the kernel matrix may be ill-conditioned.</p>
+<div class="docutils container" id="id7">
+<div role="list" class="citation-list">
+<div class="citation" id="id19" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">1</a><span class="fn-bracket">]</span></span>
+<p><em>A Comparison of Numerical Optimizers in Developing High Dimensional Surrogate Models</em>, volume Volume 2B: 45th Design Automation Conference of International Design Engineering Technical Conferences and Computers and Information in Engineering Conference, 08 2019. URL: <a class="reference external" href="https://doi.org/10.1115/DETC2019-97499">https://doi.org/10.1115/DETC2019-97499</a>, <a class="reference external" href="https://arxiv.org/abs/https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings-pdf/IDETC-CIE2019/59193/V02BT03A037/6452976/v02bt03a037-detc2019-97499.pdf">arXiv:https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings-pdf/IDETC-CIE2019/59193/V02BT03A037/6452976/v02bt03a037-detc2019-97499.pdf</a>, <a class="reference external" href="https://doi.org/10.1115/DETC2019-97499">doi:10.1115/DETC2019-97499</a>.</p>
+</div>
+<div class="citation" id="id18" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Matheron Georges. Principles of geostatistics. <em>Economic geology</em>, 58(8):1246–1266, 1963.</p>
+</div>
+<div class="citation" id="id11" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">3</a><span class="fn-bracket">]</span></span>
+<p>D. G. Krige. A statistical approach to some basic mine valuation problems on the witwatersrand. <em>OR</em>, 4(1):18–18, 1953. URL: <a class="reference external" href="http://www.jstor.org/stable/3006914">http://www.jstor.org/stable/3006914</a> (visited on 2025-02-20).</p>
+</div>
+<div class="citation" id="id8" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">4</a><span class="fn-bracket">]</span></span>
+<p>William J. Welch, Robert J. Buck, Jerome Sacks, Henry P. Wynn, and Toby J. Mitchell. Screening, predicting, and computer experiments. <em>Technometrics</em>, 34(1):15–25, 1992. URL: <a class="reference external" href="https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229">https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229</a>, <a class="reference external" href="https://arxiv.org/abs/https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229">arXiv:https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229</a>, <a class="reference external" href="https://doi.org/10.1080/00401706.1992.10485229">doi:10.1080/00401706.1992.10485229</a>.</p>
+</div>
+<div class="citation" id="id20" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id3">1</a>,<a role="doc-backlink" href="#id4">2</a>,<a role="doc-backlink" href="#id5">3</a>)</span>
+<p>Carl Edward Rasmussen and Christopher K. I. Williams. <em>Gaussian Processes for Machine Learning</em>. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: <a class="reference external" href="http://www.gaussianprocess.org/gpml/">http://www.gaussianprocess.org/gpml/</a>.</p>
+</div>
+<div class="citation" id="id17" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">6</a><span class="fn-bracket">]</span></span>
+<p>Gregoire Allaire and Sidi Mahmoud Kaber. <em>Numerical Linear Algebra</em>. Texts in applied mathematics. Springer, New York, NY, January 2008.</p>
+</div>
+<div class="citation" id="id12" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></span>
+<p>Weiyu Liu and Stephen Batill. Gradient-enhanced response surface approximations using kriging models. In <em>9th AIAA/ISSMO Symposium on Multidisciplinary Analysis and Optimization</em>. Reston, Virigina, September 2002. American Institute of Aeronautics and Astronautics.</p>
+</div>
+<div class="citation" id="id16" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></span>
+<p>Wataru Yamazaki, Markus Rumpfkeil, and Dimitri Mavriplis. Design optimization utilizing gradient/hessian enhanced surrogate model. In <em>28th AIAA Applied Aerodynamics Conference</em>. Reston, Virigina, June 2010. American Institute of Aeronautics and Astronautics.</p>
+</div>
+<div class="citation" id="id14" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></span>
+<p>Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Joris Degroote, and Eric Laermans. Performance study of gradient-enhanced kriging. <em>Eng. Comput.</em>, 32(1):15–34, January 2016.</p>
+</div>
+<div class="citation" id="id13" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></span>
+<p>Alexander I.J. Forrester and Andy J. Keane. Recent advances in surrogate-based optimization. <em>Progress in Aerospace Sciences</em>, 45(1):50–79, 2009. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0376042108000766">https://www.sciencedirect.com/science/article/pii/S0376042108000766</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.paerosci.2008.11.001">doi:https://doi.org/10.1016/j.paerosci.2008.11.001</a>.</p>
+</div>
+<div class="citation" id="id15" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></span>
+<p>Youwei He, Kuan Tan, Chunming Fu, and Jinliang Luo. An efficient gradient-enhanced kriging modeling method assisted by fast kriging for high-dimension problems. <em>International journal of numerical methods for heat &amp; fluid flow</em>, 33(12):3967–3993, 2023.</p>
+</div>
+<div class="citation" id="id36" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></span>
+<p>Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Eric Laermans, and Joris Degroote. On the use of gradients in kriging surrogate models. In <em>Proceedings of the Winter Simulation Conference 2014</em>. IEEE, December 2014.</p>
+</div>
+<div class="citation" id="id37" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></span>
+<p>Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. <em>Applied Mathematical Modelling</em>, 69:15–31, 2019. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0307904X18305900">https://www.sciencedirect.com/science/article/pii/S0307904X18305900</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.apm.2018.11.048">doi:https://doi.org/10.1016/j.apm.2018.11.048</a>.</p>
+</div>
+<div class="citation" id="id34" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></span>
+<p>Yiming Yao, Fei Liu, and Qingfu Zhang. High-Throughput Multi-Objective bayesian optimization using gradients. In <em>2024 IEEE Congress on Evolutionary Computation (CEC)</em>, volume 2, 1–8. IEEE, June 2024.</p>
+</div>
+<div class="citation" id="id35" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></span>
+<p>Misha Padidar, Xinran Zhu, Leo Huang, Jacob R Gardner, and David Bindel. Scaling gaussian processes with derivative information using variational inference. <em>Advances in Neural Information Processing Systems</em>, 34:6442–6453, 2021. <a class="reference external" href="https://arxiv.org/abs/2107.04061">arXiv:2107.04061</a>.</p>
+</div>
+<div class="citation" id="id32" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></span>
+<p>Haitao Liu, Jianfei Cai, and Yew-Soon Ong. Remarks on multi-output gaussian process regression. <em>Knowledge-Based Systems</em>, 144:102–121, 2018. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0950705117306123">https://www.sciencedirect.com/science/article/pii/S0950705117306123</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.knosys.2017.12.034">doi:https://doi.org/10.1016/j.knosys.2017.12.034</a>.</p>
+</div>
+<div class="citation" id="id33" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></span>
+<p>B. Rakitsch, Christoph Lippert, K. Borgwardt, and Oliver Stegle. It is all in the noise: efficient multi-task gaussian process inference with structured residuals. <em>Advances in Neural Information Processing Systems</em>, pages, 01 2013.</p>
+</div>
+<div class="citation" id="id10" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></span>
+<p>Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. <em>AIAA Journal</em>, 55(12):4330–4346, 2017. URL: <a class="reference external" href="https://doi.org/10.2514/1.J055842">https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://arxiv.org/abs/https://doi.org/10.2514/1.J055842">arXiv:https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://doi.org/10.2514/1.J055842">doi:10.2514/1.J055842</a>.</p>
+</div>
+<div class="citation" id="id9" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></span>
+<p>Chen Zhou Xu, Zhong Hua Han, Ke Shi Zhang, and Wen Ping Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In <em>32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021</em>, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021.</p>
+</div>
+</div>
+</div>
+</section>
 </section>
 
 
@@ -541,6 +649,24 @@ document.write(`
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#making-predictions">Making Predictions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#posterior-predictive-distribution">Posterior Predictive Distribution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-hyperparameters">Learning Hyperparameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#computational-considerations">Computational Considerations</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>

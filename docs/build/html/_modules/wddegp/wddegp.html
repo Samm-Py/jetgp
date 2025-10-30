@@ -180,7 +180,16 @@
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -229,6 +238,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -357,7 +369,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="wddegp">
-<a class="viewcode-back" href="../../api/index.html#wddegp.wddegp.wddegp">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_ddegp.html#wddegp.wddegp.wddegp">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">wddegp</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP) model.</span>
@@ -466,7 +478,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indicies</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">,</span> <span class="n">flattened_base_der_indicies</span><span class="p">)</span>
 
 <div class="viewcode-block" id="wddegp.optimize_hyperparameters">
-<a class="viewcode-back" href="../../api/index.html#wddegp.wddegp.wddegp.optimize_hyperparameters">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_ddegp.html#wddegp.wddegp.wddegp.optimize_hyperparameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimize_hyperparameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Optimize kernel hyperparameters using PSO to minimize the marginal likelihood.</span>
@@ -480,7 +492,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="wddegp.predict">
-<a class="viewcode-back" href="../../api/index.html#wddegp.wddegp.wddegp.predict">[docs]</a>
+<a class="viewcode-back" href="../../api/weighted_ddegp.html#wddegp.wddegp.wddegp.predict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_submodels</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Predict mean and optionally variance at new input locations using the wdDEGP model.</span>
@@ -516,18 +528,12 @@ document.write(`
             <span class="n">X_test</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_test</span><span class="p">(</span>
                 <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">)</span>
 
-        <span class="n">weights_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_train</span><span class="p">))</span>
-        <span class="n">diffs_train_train</span> <span class="o">=</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="p">):</span>
-            <span class="n">x_k</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">diffs_train_test</span> <span class="o">=</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">determine_weights</span><span class="p">(</span>
-                <span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">)</span>
-            <span class="n">weights_matrix</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-
+        <span class="n">diffs_train_train</span> <span class="o">=</span>  <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">diffs_train_test</span> <span class="o">=</span>  <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                        <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">weights_matrix</span> <span class="o">=</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">determine_weights</span><span class="p">(</span>
+            <span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span> <span class="n">sigma_n</span><span class="p">)</span>
         <span class="n">y_val</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">y_var</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">submodel_vals</span> <span class="o">=</span> <span class="p">[]</span>

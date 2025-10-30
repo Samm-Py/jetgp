@@ -177,8 +177,11 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -482,7 +485,7 @@ document.write(`
 <ol class="arabic simple">
 <li><p>Go to the root of the cloned repository. Create and activate the conda environment with the supplied <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file at root:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;path-to-oti_gp&gt;
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;path-to-JetGP&gt;
 $<span class="w"> </span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>environment.yml
 $<span class="w"> </span>conda<span class="w"> </span>activate<span class="w"> </span>jetgp
 </pre></div>
@@ -509,7 +512,7 @@ $<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span
 <p>If using Anaconda, you can register the repository path with your environment using <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">develop</span></code>
 (from the <code class="docutils literal notranslate"><span class="pre">conda-build</span></code> package):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>conda<span class="w"> </span>install<span class="w"> </span>conda-build
-$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;path-to-oti_gp&gt;<span class="w"> </span><span class="o">(</span>e.g.,<span class="w"> </span><span class="sb">``</span>.<span class="se">\j</span>etgp-main<span class="se">\j</span>etgp<span class="sb">``</span><span class="o">)</span>.
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;path-to-JetGP&gt;<span class="w"> </span><span class="o">(</span>e.g.,<span class="w"> </span><span class="sb">``</span>.<span class="se">\j</span>etgp-main<span class="se">\j</span>etgp<span class="sb">``</span><span class="o">)</span>.
 $<span class="w"> </span>conda<span class="w"> </span>develop<span class="w"> </span>.
 </pre></div>
 </div>

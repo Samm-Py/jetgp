@@ -11,4 +11,3 @@ This section provides **tutorials** for using JetGP classes, including DEGP, WDE
    Initializing_JetGP_Modules
    hyperparameter_optimization
    making_predictions
-   # future tutorials can be added here like wdegp_getting_started

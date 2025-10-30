@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Multi-Output Gaussian Processes &#8212; JetGP 0.0.1 documentation</title>
+    <title>Multi-output Gaussian Processes &#8212; JetGP 0.0.1 documentation</title>
   
   
   
@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'theory/mogp';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api/index.html" />
+    <link rel="next" title="Note on Observation Noise" href="observation_noise.html" />
     <link rel="prev" title="Directional Derivative-Enhanced Gaussian Processes" href="directional_degp.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -176,8 +176,11 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Theory Manual</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -240,6 +243,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -412,7 +418,9 @@ document.write(`
   </button>
 `);
 </script>
-
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
 </div></div>
       
     </div>
@@ -423,11 +431,21 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Multi-Output Gaussian Processes</h1>
+    <h1>Multi-output Gaussian Processes</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
             
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-distribution">Joint Distribution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connection-to-gradient-enhanced-gps">Connection to Gradient-Enhanced GPs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+            </nav>
         </div>
     </div>
 </div>
@@ -438,12 +456,12 @@ document.write(`
                 <article class="bd-article">
                   
   <section id="multi-output-gaussian-processes">
-<h1>Multi-Output Gaussian Processes<a class="headerlink" href="#multi-output-gaussian-processes" title="Link to this heading">#</a></h1>
-<p>A multi-output Gaussian process (MOGP) extends the standard single-output GP to jointly approximate multiple outputs
-${ mathbf{y}_t }_{t=1}^T$, explicitly modeling their correlations to improve predictive accuracy compared to independent modeling <span id="id1">[<a class="reference internal" href="directional_degp.html#id27" title="Haitao Liu, Jianfei Cai, and Yew-Soon Ong. Remarks on multi-output gaussian process regression. Knowledge-Based Systems, 144:102-121, 2018. URL: https://www.sciencedirect.com/science/article/pii/S0950705117306123, doi:https://doi.org/10.1016/j.knosys.2017.12.034.">10</a>]</span>. For convenience isotropic training sets are considered so that for $t in left{ 1 , ldots, T right}, mathbf{X}_T = mathbf{X}$.</p>
+<h1>Multi-output Gaussian Processes<a class="headerlink" href="#multi-output-gaussian-processes" title="Link to this heading">#</a></h1>
+<p>A multi-output Gaussian process (MOGP) extends the standard single-output GP to jointly approximate multiple outputs <span class="math notranslate nohighlight">\(\{ \mathbf{y}_t \}_{t=1}^T\)</span>, explicitly modeling their correlations to improve predictive accuracy compared to independent modeling <span id="id1">[<a class="reference internal" href="observation_noise.html#id26" title="Haitao Liu, Jianfei Cai, and Yew-Soon Ong. Remarks on multi-output gaussian process regression. Knowledge-Based Systems, 144:102-121, 2018. URL: https://www.sciencedirect.com/science/article/pii/S0950705117306123, doi:https://doi.org/10.1016/j.knosys.2017.12.034.">17</a>]</span>. For convenience isotropic training sets are considered so that for <span class="math notranslate nohighlight">\(t \in \{ 1 , \ldots, T \}\)</span>, <span class="math notranslate nohighlight">\(\mathbf{X}_T = \mathbf{X}\)</span>.</p>
+<p>Formally,</p>
 <div class="math notranslate nohighlight">
 \[\mathbf{f}(\mathbf{x}) = \big( f_1(\mathbf{x}), \ldots, f_T(\mathbf{x}) \big)^T
-\sim \mathcal{GP}\big(0, \mathcal{K}_M(\mathbf{x}, \mathbf{x}')\big),\]</div>
+\sim \mathcal{GP}\big(0, \mathcal{K}_M(\mathbf{x}, \mathbf{x}')\big)\]</div>
 <p>where the multi-output covariance is defined as</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\mathcal{K}_M(\mathbf{x}, \mathbf{x}') =
@@ -451,13 +469,14 @@ ${ mathbf{y}_t }_{t=1}^T$, explicitly modeling their correlations to improve pre
 k_{11}(\mathbf{x}, \mathbf{x}') &amp; \cdots &amp; k_{1T}(\mathbf{x}, \mathbf{x}') \\
 \vdots &amp; \ddots &amp; \vdots \\
 k_{T1}(\mathbf{x}, \mathbf{x}') &amp; \cdots &amp; k_{TT}(\mathbf{x}, \mathbf{x}')
-\end{bmatrix}.\end{split}\]</div>
-<p>Where in particular, $k_{tt’}(mathbf{x}, mathbf{x}’)$ corresponds to the correlation between outputs $f_{t}(mathbf{x})$ and $f_{t’}(mathbf{x})$. Then, it is assumed that:</p>
+\end{bmatrix}\end{split}\]</div>
+<p>Where in particular, <span class="math notranslate nohighlight">\(k_{tt'}(\mathbf{x}, \mathbf{x}')\)</span> corresponds to the correlation between outputs <span class="math notranslate nohighlight">\(f_{t}(\mathbf{x})\)</span> and <span class="math notranslate nohighlight">\(f_{t'}(\mathbf{x})\)</span>. Then, it is assumed that:</p>
 <div class="math notranslate nohighlight" id="equation-mogp-input">
 <span class="eqno">(1)<a class="headerlink" href="#equation-mogp-input" title="Link to this equation">#</a></span>\[y_t(\mathbf{x}) = f_t(\mathbf{x}) + \epsilon_t\]</div>
-<p>where $epsilon_t sim mathcal{N}(0, sigma_{n, t} ^2 )$ is an additive independent and identically
-distributed (i.i.d) Gaussian noise of the $t^{text{th}}$ output. Consideration of this noise not only improves robustness of the covariance matrix but also information transfer across the outputs <span id="id2">[<a class="reference internal" href="directional_degp.html#id28" title="B. Rakitsch, Christoph Lippert, K. Borgwardt, and Oliver Stegle. It is all in the noise: efficient multi-task gaussian process inference with structured residuals. Advances in Neural Information Processing Systems, pages, 01 2013.">11</a>]</span>.</p>
-<p>To predict outputs at a new set of test locations, $mathbf{X}_*$, we model the joint distribution given by Equation <a class="reference internal" href="#equation-eqn-joint-mo">(2)</a> over the training and test outputs where the training outputs are described by $[f_1(X), ldots, f_T(mathbf{X})]^T$ and the test outputs by $[f_1(X_*), ldots, f_T(mathbf{X_*})]^T$.</p>
+<p>where <span class="math notranslate nohighlight">\(\epsilon_t \sim \mathcal{N}(0, \sigma_{n, t}^2)\)</span> is an additive independent and identically distributed (i.i.d) Gaussian noise of the <span class="math notranslate nohighlight">\(t^{\text{th}}\)</span> output. Consideration of this noise not only improves robustness of the covariance matrix but also information transfer across the outputs <span id="id2">[<a class="reference internal" href="observation_noise.html#id27" title="B. Rakitsch, Christoph Lippert, K. Borgwardt, and Oliver Stegle. It is all in the noise: efficient multi-task gaussian process inference with structured residuals. Advances in Neural Information Processing Systems, pages, 01 2013.">18</a>]</span>.</p>
+<section id="joint-distribution">
+<h2>Joint Distribution<a class="headerlink" href="#joint-distribution" title="Link to this heading">#</a></h2>
+<p>To predict outputs at a new set of test locations, <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span>, we model the joint distribution given by Equation <a class="reference internal" href="#equation-eqn-joint-mo">(2)</a> over the training and test outputs where the training outputs are described by <span class="math notranslate nohighlight">\([f_1(X), \ldots, f_T(\mathbf{X})]^T\)</span> and the test outputs by <span class="math notranslate nohighlight">\([f_1(X_*), \ldots, f_T(\mathbf{X}_*)]^T\)</span>.</p>
 <p>The joint distribution between the augmented training observations and the augmented test predictions is a multivariate Gaussian:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-joint-mo">
 <span class="eqno">(2)<a class="headerlink" href="#equation-eqn-joint-mo" title="Link to this equation">#</a></span>\[\begin{split}\begin{pmatrix}
@@ -470,46 +489,125 @@ distributed (i.i.d) Gaussian noise of the $t^{text{th}}$ output. Consideration o
     \boldsymbol{\Sigma}_{11}^{MO} &amp; \boldsymbol{\Sigma}_{12}^{MO} \\
     \boldsymbol{\Sigma}^{MO}_{21} &amp; \boldsymbol{\Sigma}_{22}^{MO}
 \end{pmatrix}
-\right).\end{split}\]</div>
-<p>Here, the training covariance block, $boldsymbol{Sigma}^{MO}_{11}$, is an $nT times nT$ matrix:</p>
+\right)\end{split}\]</div>
+<p>Here, the training covariance block, <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}^{MO}_{11}\)</span>, is an <span class="math notranslate nohighlight">\(nT \times nT\)</span> matrix:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-full-mo-s11">
 <span class="eqno">(3)<a class="headerlink" href="#equation-eqn-full-mo-s11" title="Link to this equation">#</a></span>\[\begin{split}\boldsymbol{\Sigma}^{MO}_{11} =
 \begin{pmatrix}
 k_{11}(\mathbf{X}, \mathbf{X}') &amp; \cdots &amp; k_{1T}(\mathbf{X}, \mathbf{X}') \\
 \vdots &amp; \ddots &amp; \vdots \\
 k_{T1}(\mathbf{X}, \mathbf{X}') &amp; \cdots &amp; k_{TT}(\mathbf{X}, \mathbf{X}')
-\end{pmatrix}.\end{split}\]</div>
-<p>The training-test covariance block, $dot{boldsymbol{Sigma}}_{12}$, contains the covariances between all training and test observations:</p>
+\end{pmatrix}\end{split}\]</div>
+<p>The training-test covariance block, <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{12}^{MO}\)</span>, contains the covariances between all training and test observations:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-full-mo-s12">
 <span class="eqno">(4)<a class="headerlink" href="#equation-eqn-full-mo-s12" title="Link to this equation">#</a></span>\[\begin{split}\boldsymbol{\Sigma}^{MO}_{12} =
 \begin{pmatrix}
-k_{11}(\mathbf{X}, \mathbf{X_*}) &amp; \cdots &amp; k_{1T}(\mathbf{X}, \mathbf{X_*}) \\
+k_{11}(\mathbf{X}, \mathbf{X}_*) &amp; \cdots &amp; k_{1T}(\mathbf{X}, \mathbf{X}_*) \\
 \vdots &amp; \ddots &amp; \vdots \\
-k_{T1}(\mathbf{X}, \mathbf{X_*}) &amp; \cdots &amp; k_{TT}(\mathbf{X}, \mathbf{X_*})
-\end{pmatrix}.\end{split}\]</div>
-<p>The remaining blocks are defined as $boldsymbol{Sigma}_{21}^{MO} = boldsymbol{Sigma}_{12}^{MO}$, and $boldsymbol{Sigma}_{22}^{MO}$ has the same structure as $boldsymbol{Sigma}_{11}^{MO}$ but is evaluated at the test points $mathbf{X}_*$.</p>
-<p>The posterior predictive distribution for the augmented test vector $mathbf{y}_*^{MO}$ is then given by:</p>
-<div class="math notranslate nohighlight" id="equation-eqn-full-gek-posterior">
-<span class="eqno">(5)<a class="headerlink" href="#equation-eqn-full-gek-posterior" title="Link to this equation">#</a></span>\[\begin{split}\begin{split}
-    \boldsymbol{\mu}_{*} &amp;= \boldsymbol{\Sigma}_{21}^{MO} \left(\boldsymbol{\Sigma}^{MO}_{11}\right)^{-1} \mathbf{y}^{MO} \\
-    \boldsymbol{\Sigma}_{*} &amp;=  \boldsymbol{\Sigma}_{22}^{MO} - \boldsymbol{\Sigma}_{21}^{MO} \left(\boldsymbol{\Sigma}_{11}^{MO} \right)^{-1} \boldsymbol{\Sigma}_{12}^{MO}
-\end{split}\end{split}\]</div>
-<p>Each element $k_{tt’}(mathbf{X}, mathbf{X}’)$ specifies the covariance between outputs
-$f_t(mathbf{X})$ and $f_{t’}(mathbf{X}’)$, and the model can be trained by maximum likelihood estimation of
-kernel hyperparameters.</p>
+k_{T1}(\mathbf{X}, \mathbf{X}_*) &amp; \cdots &amp; k_{TT}(\mathbf{X}, \mathbf{X}_*)
+\end{pmatrix}\end{split}\]</div>
+<p>The remaining blocks are defined as <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{21}^{MO} = \boldsymbol{\Sigma}_{12}^{MO}\)</span>, and <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{22}^{MO}\)</span> has the same structure as <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}_{11}^{MO}\)</span> but is evaluated at the test points <span class="math notranslate nohighlight">\(\mathbf{X}_*\)</span>. The posterior predictive distribution for the augmented test vector <span class="math notranslate nohighlight">\(\mathbf{y}_*^{MO}\)</span> is then given by:</p>
+<div class="math notranslate nohighlight" id="equation-eqn-full-mo-posterior">
+<span class="eqno">(5)<a class="headerlink" href="#equation-eqn-full-mo-posterior" title="Link to this equation">#</a></span>\[\begin{split}\boldsymbol{\mu}_{*} &amp;= \boldsymbol{\Sigma}_{21}^{MO} \left(\boldsymbol{\Sigma}^{MO}_{11}\right)^{-1} \mathbf{y}^{MO} \\
+\boldsymbol{\Sigma}_{*} &amp;=  \boldsymbol{\Sigma}_{22}^{MO} - \boldsymbol{\Sigma}_{21}^{MO} \left(\boldsymbol{\Sigma}_{11}^{MO} \right)^{-1} \boldsymbol{\Sigma}_{12}^{MO}\end{split}\]</div>
+<p>Each element <span class="math notranslate nohighlight">\(k_{tt'}(\mathbf{X}, \mathbf{X}')\)</span> specifies the covariance between outputs <span class="math notranslate nohighlight">\(f_t(\mathbf{X})\)</span> and <span class="math notranslate nohighlight">\(f_{t'}(\mathbf{X}')\)</span>, and the model can be trained by maximum likelihood estimation of kernel hyperparameters.</p>
+</section>
+<section id="connection-to-gradient-enhanced-gps">
+<h2>Connection to Gradient-Enhanced GPs<a class="headerlink" href="#connection-to-gradient-enhanced-gps" title="Link to this heading">#</a></h2>
 <p>A gradient-enhanced GP (GEK) or derivative-enhanced GP (DEGP) can be interpreted as a <em>structured MOGP</em>, where the outputs correspond to the function value and its partial derivatives:</p>
 <div class="math notranslate nohighlight">
-\[\mathbf{f}(\mathbf{x}) = \Big(f(\mathbf{x}), \; \tfrac{\partial f}{\partial x_1}(\mathbf{x}), \; \ldots, \; \tfrac{\partial f}{\partial x_d}(\mathbf{x}) \Big)^T .\]</div>
-<p>In this setting, the cross-covariances $k_{tt’}$ are not arbitrary but derived by differentiation of a single latent
-covariance function $k$:</p>
+\[\mathbf{f}(\mathbf{x}) = \Big(f(\mathbf{x}), \; \tfrac{\partial f}{\partial x_1}(\mathbf{x}), \; \ldots, \; \tfrac{\partial f}{\partial x_d}(\mathbf{x}) \Big)^T\]</div>
+<p>In this setting, the cross-covariances <span class="math notranslate nohighlight">\(k_{tt'}\)</span> are not arbitrary but derived by differentiation of a single latent covariance function <span class="math notranslate nohighlight">\(k\)</span>:</p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\begin{aligned}
-k_{11}(\mathbf{x}, \mathbf{x}') &amp;= k(\mathbf{x}, \mathbf{x}'), \\
+\[\begin{split}k_{11}(\mathbf{x}, \mathbf{x}') &amp;= k(\mathbf{x}, \mathbf{x}'), \\
 k_{1j}(\mathbf{x}, \mathbf{x}') &amp;= \frac{\partial}{\partial x'_j} k(\mathbf{x}, \mathbf{x}'), \\
 k_{i1}(\mathbf{x}, \mathbf{x}') &amp;= \frac{\partial}{\partial x_i} k(\mathbf{x}, \mathbf{x}'), \\
-k_{ij}(\mathbf{x}, \mathbf{x}') &amp;= \frac{\partial^2}{\partial x_i \partial x'_j} k(\mathbf{x}, \mathbf{x}').
-\end{aligned}\end{split}\]</div>
+k_{ij}(\mathbf{x}, \mathbf{x}') &amp;= \frac{\partial^2}{\partial x_i \partial x'_j} k(\mathbf{x}, \mathbf{x}')\end{split}\]</div>
 <p>Thus, GEK/DEGP can be viewed as a special case of MOGP where the correlation between outputs is dictated by calculus rather than learned freely. This structured interpretation highlights that gradient information augments the GP model within the same multi-output framework, providing richer posterior inference without introducing additional latent processes.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading">#</a></h2>
+<div class="docutils container" id="id3">
+<div role="list" class="citation-list">
+<div class="citation" id="id15" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p><em>A Comparison of Numerical Optimizers in Developing High Dimensional Surrogate Models</em>, volume Volume 2B: 45th Design Automation Conference of International Design Engineering Technical Conferences and Computers and Information in Engineering Conference, 08 2019. URL: <a class="reference external" href="https://doi.org/10.1115/DETC2019-97499">https://doi.org/10.1115/DETC2019-97499</a>, <a class="reference external" href="https://arxiv.org/abs/https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings-pdf/IDETC-CIE2019/59193/V02BT03A037/6452976/v02bt03a037-detc2019-97499.pdf">arXiv:https://asmedigitalcollection.asme.org/IDETC-CIE/proceedings-pdf/IDETC-CIE2019/59193/V02BT03A037/6452976/v02bt03a037-detc2019-97499.pdf</a>, <a class="reference external" href="https://doi.org/10.1115/DETC2019-97499">doi:10.1115/DETC2019-97499</a>.</p>
+</div>
+<div class="citation" id="id14" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<p>Matheron Georges. Principles of geostatistics. <em>Economic geology</em>, 58(8):1246–1266, 1963.</p>
+</div>
+<div class="citation" id="id7" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></span>
+<p>D. G. Krige. A statistical approach to some basic mine valuation problems on the witwatersrand. <em>OR</em>, 4(1):18–18, 1953. URL: <a class="reference external" href="http://www.jstor.org/stable/3006914">http://www.jstor.org/stable/3006914</a> (visited on 2025-02-20).</p>
+</div>
+<div class="citation" id="id4" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<p>William J. Welch, Robert J. Buck, Jerome Sacks, Henry P. Wynn, and Toby J. Mitchell. Screening, predicting, and computer experiments. <em>Technometrics</em>, 34(1):15–25, 1992. URL: <a class="reference external" href="https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229">https://www.tandfonline.com/doi/abs/10.1080/00401706.1992.10485229</a>, <a class="reference external" href="https://arxiv.org/abs/https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229">arXiv:https://www.tandfonline.com/doi/pdf/10.1080/00401706.1992.10485229</a>, <a class="reference external" href="https://doi.org/10.1080/00401706.1992.10485229">doi:10.1080/00401706.1992.10485229</a>.</p>
+</div>
+<div class="citation" id="id16" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></span>
+<p>Carl Edward Rasmussen and Christopher K. I. Williams. <em>Gaussian Processes for Machine Learning</em>. MIT Press, Cambridge, MA, 2006. ISBN 9780262182539. URL: <a class="reference external" href="http://www.gaussianprocess.org/gpml/">http://www.gaussianprocess.org/gpml/</a>.</p>
+</div>
+<div class="citation" id="id13" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></span>
+<p>Gregoire Allaire and Sidi Mahmoud Kaber. <em>Numerical Linear Algebra</em>. Texts in applied mathematics. Springer, New York, NY, January 2008.</p>
+</div>
+<div class="citation" id="id8" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></span>
+<p>Weiyu Liu and Stephen Batill. Gradient-enhanced response surface approximations using kriging models. In <em>9th AIAA/ISSMO Symposium on Multidisciplinary Analysis and Optimization</em>. Reston, Virigina, September 2002. American Institute of Aeronautics and Astronautics.</p>
+</div>
+<div class="citation" id="id12" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></span>
+<p>Wataru Yamazaki, Markus Rumpfkeil, and Dimitri Mavriplis. Design optimization utilizing gradient/hessian enhanced surrogate model. In <em>28th AIAA Applied Aerodynamics Conference</em>. Reston, Virigina, June 2010. American Institute of Aeronautics and Astronautics.</p>
+</div>
+<div class="citation" id="id10" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></span>
+<p>Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Joris Degroote, and Eric Laermans. Performance study of gradient-enhanced kriging. <em>Eng. Comput.</em>, 32(1):15–34, January 2016.</p>
+</div>
+<div class="citation" id="id9" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>10<span class="fn-bracket">]</span></span>
+<p>Alexander I.J. Forrester and Andy J. Keane. Recent advances in surrogate-based optimization. <em>Progress in Aerospace Sciences</em>, 45(1):50–79, 2009. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0376042108000766">https://www.sciencedirect.com/science/article/pii/S0376042108000766</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.paerosci.2008.11.001">doi:https://doi.org/10.1016/j.paerosci.2008.11.001</a>.</p>
+</div>
+<div class="citation" id="id11" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>11<span class="fn-bracket">]</span></span>
+<p>Youwei He, Kuan Tan, Chunming Fu, and Jinliang Luo. An efficient gradient-enhanced kriging modeling method assisted by fast kriging for high-dimension problems. <em>International journal of numerical methods for heat &amp; fluid flow</em>, 33(12):3967–3993, 2023.</p>
+</div>
+<div class="citation" id="id32" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>12<span class="fn-bracket">]</span></span>
+<p>Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Eric Laermans, and Joris Degroote. On the use of gradients in kriging surrogate models. In <em>Proceedings of the Winter Simulation Conference 2014</em>. IEEE, December 2014.</p>
+</div>
+<div class="citation" id="id33" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>13<span class="fn-bracket">]</span></span>
+<p>Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. <em>Applied Mathematical Modelling</em>, 69:15–31, 2019. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0307904X18305900">https://www.sciencedirect.com/science/article/pii/S0307904X18305900</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.apm.2018.11.048">doi:https://doi.org/10.1016/j.apm.2018.11.048</a>.</p>
+</div>
+<div class="citation" id="id6" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></span>
+<p>Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. <em>AIAA Journal</em>, 55(12):4330–4346, 2017. URL: <a class="reference external" href="https://doi.org/10.2514/1.J055842">https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://arxiv.org/abs/https://doi.org/10.2514/1.J055842">arXiv:https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://doi.org/10.2514/1.J055842">doi:10.2514/1.J055842</a>.</p>
+</div>
+<div class="citation" id="id30" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></span>
+<p>Yiming Yao, Fei Liu, and Qingfu Zhang. High-Throughput Multi-Objective bayesian optimization using gradients. In <em>2024 IEEE Congress on Evolutionary Computation (CEC)</em>, volume 2, 1–8. IEEE, June 2024.</p>
+</div>
+<div class="citation" id="id31" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></span>
+<p>Misha Padidar, Xinran Zhu, Leo Huang, Jacob R Gardner, and David Bindel. Scaling gaussian processes with derivative information using variational inference. <em>Advances in Neural Information Processing Systems</em>, 34:6442–6453, 2021. <a class="reference external" href="https://arxiv.org/abs/2107.04061">arXiv:2107.04061</a>.</p>
+</div>
+<div class="citation" id="id28" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">17</a><span class="fn-bracket">]</span></span>
+<p>Haitao Liu, Jianfei Cai, and Yew-Soon Ong. Remarks on multi-output gaussian process regression. <em>Knowledge-Based Systems</em>, 144:102–121, 2018. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0950705117306123">https://www.sciencedirect.com/science/article/pii/S0950705117306123</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.knosys.2017.12.034">doi:https://doi.org/10.1016/j.knosys.2017.12.034</a>.</p>
+</div>
+<div class="citation" id="id29" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">18</a><span class="fn-bracket">]</span></span>
+<p>B. Rakitsch, Christoph Lippert, K. Borgwardt, and Oliver Stegle. It is all in the noise: efficient multi-task gaussian process inference with structured residuals. <em>Advances in Neural Information Processing Systems</em>, pages, 01 2013.</p>
+</div>
+<div class="citation" id="id5" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></span>
+<p>Chen Zhou Xu, Zhong Hua Han, Ke Shi Zhang, and Wen Ping Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In <em>32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021</em>, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021.</p>
+</div>
+</div>
+</div>
+</section>
 </section>
 
 
@@ -533,11 +631,11 @@ k_{ij}(\mathbf{x}, \mathbf{x}') &amp;= \frac{\partial^2}{\partial x_i \partial x
       </div>
     </a>
     <a class="right-next"
-       href="../api/index.html"
+       href="observation_noise.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">API Reference</p>
+        <p class="prev-next-title">Note on Observation Noise</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -547,6 +645,23 @@ k_{ij}(\mathbf{x}, \mathbf{x}') &amp;= \frac{\partial^2}{\partial x_i \partial x
             </div>
             
             
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#joint-distribution">Joint Distribution</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#connection-to-gradient-enhanced-gps">Connection to Gradient-Enhanced GPs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#references">References</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
               
             
           </div>
