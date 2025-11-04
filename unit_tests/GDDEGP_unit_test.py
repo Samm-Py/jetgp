@@ -10,9 +10,9 @@ import sys
 import unittest
 import numpy as np
 import sympy as sp
-from full_gddegp.gddegp import gddegp
+from jetgp.full_gddegp.gddegp import gddegp
 from scipy.stats import qmc
-import utils
+import jetgp.utils
 
 
 class TestGDDEGPBraninGradientAligned(unittest.TestCase):
@@ -113,14 +113,16 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
 
         # --- Package training data for GDDEGP ---
         cls.y_train = [cls.y_func, cls.y_dir]
-        cls.der_indices = [[[1, 1]]]
+        cls.der_indices = [
+            [[[1, 1]]]
+            ]
         cls.rays_array = np.hstack(cls.rays_list)  # (2, num_training_pts)
 
         # --- Initialize and train GDDEGP model ---
         cls.model = gddegp(
             cls.X_train,
             cls.y_train,
-            n_order=[cls.n_order],
+            n_order=cls.n_order,
             der_indices=cls.der_indices,
             rays_array=[cls.rays_array],
             normalize=cls.normalize_data,

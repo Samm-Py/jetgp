@@ -174,13 +174,26 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -229,6 +242,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -355,7 +371,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">hyperparameter_optimizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">OPTIMIZERS</span>
 
 <div class="viewcode-block" id="Optimizer">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.optimizer.Optimizer">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.optimizer.Optimizer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Optimizer</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -369,7 +385,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
 
 <div class="viewcode-block" id="Optimizer.negative_log_marginal_likelihood">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.optimizer.Optimizer.negative_log_marginal_likelihood">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.optimizer.Optimizer.negative_log_marginal_likelihood">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">negative_log_marginal_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.</span>
@@ -389,8 +405,12 @@ document.write(`
 <span class="sd">        float</span>
 <span class="sd">            The computed NLL value. Returns a large value (1e6) if Cholesky fails.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        
+        
         <span class="n">ell</span> <span class="o">=</span> <span class="n">x0</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">sigma_n</span> <span class="o">=</span> <span class="n">x0</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        
+        
 
         <span class="c1"># Compute kernel matrix with current hyperparameters</span>
         <span class="n">K</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
@@ -398,7 +418,7 @@ document.write(`
             <span class="n">ell</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
-            <span class="c1"># self.model.flattened_der_indices,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">,</span>
             <span class="c1"># self.model.der_indices_tr,</span>
             <span class="c1"># self.model.der_ind_order,</span>
             <span class="c1"># self.model.der_map,</span>
@@ -426,7 +446,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="Optimizer.nll_wrapper">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.optimizer.Optimizer.nll_wrapper">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.optimizer.Optimizer.nll_wrapper">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">nll_wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Wrapper for the negative log marginal likelihood function.</span>
@@ -445,7 +465,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="Optimizer.optimize_hyperparameters">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.optimizer.Optimizer.optimize_hyperparameters">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.optimizer.Optimizer.optimize_hyperparameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">optimize_hyperparameters</span><span class="p">(</span>    <span class="bp">self</span><span class="p">,</span>
     <span class="n">optimizer</span><span class="o">=</span><span class="s2">&quot;pso&quot;</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>

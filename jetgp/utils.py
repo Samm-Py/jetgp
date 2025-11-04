@@ -16,7 +16,7 @@ from scipy.special import comb
 from numpy.polynomial import Polynomial
 import math
 #import utils
-from full_degp import degp_utils
+from jetgp.full_degp import degp_utils
 
 
 def scale_samples(samples, lower_bounds, upper_bounds):

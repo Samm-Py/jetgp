@@ -67,8 +67,8 @@ Step 1: Import required packages
     import numpy as np
     import sympy as sp
     import itertools
-    from wddegp.wddegp import wddegp
-    import utils
+    from jetgp.wddegp.wddegp import wddegp
+    import jetgp.utils as utils
     from matplotlib import pyplot as plt
 
     plt.rcParams.update({'font.size': 12})

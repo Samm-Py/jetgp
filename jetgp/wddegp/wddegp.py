@@ -1,9 +1,9 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
-from wddegp import wddegp_utils as wddegp_utils
-import utils as utils
-from kernel_funcs.kernel_funcs import KernelFactory
-from wddegp.optimizer import Optimizer
+from jetgp.wddegp import wddegp_utils as wddegp_utils
+import jetgp.utils as utils
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.wddegp.optimizer import Optimizer
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
 
 

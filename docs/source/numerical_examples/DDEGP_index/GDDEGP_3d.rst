@@ -11,7 +11,7 @@ Configuration
     import numpy as np
     import pyoti.sparse as oti
     import itertools
-    from full_gddegp.gddegp import gddegp
+    from jetgp.full_gddegp.gddegp import gddegp
     from scipy.stats import qmc
     import utils
 

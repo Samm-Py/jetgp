@@ -1,10 +1,10 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
-from full_degp import degp_utils
-import utils as utils
-from kernel_funcs.kernel_funcs import KernelFactory
-from full_degp.optimizer import Optimizer
+from jetgp.full_degp import degp_utils
+import jetgp.utils as utils
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.full_degp.optimizer import Optimizer
 
 
 class degp:

@@ -1,4 +1,4 @@
-from utils import pso as core_pso
+from jetgp.utils import pso as core_pso
 
 def pso(func, lb, ub, **kwargs):
     """

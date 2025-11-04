@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.linalg import cho_solve, cho_factor
-from wddegp import wddegp_utils as utils
+from jetgp.wddegp import wddegp_utils as utils
 from line_profiler import profile
-import utils as gen_utils
-from hyperparameter_optimizers import OPTIMIZERS
+import jetgp.utils as gen_utils
+from jetgp.hyperparameter_optimizers import OPTIMIZERS
 
 class Optimizer:
     """

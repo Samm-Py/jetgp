@@ -18,8 +18,8 @@ import unittest
 import numpy as np
 import sympy as sp
 import itertools
-from wddegp.wddegp import wddegp
-import utils
+from jetgp.wddegp.wddegp import wddegp
+import jetgp.utils as utils
 
 
 class TestWDDEGPHeterogeneousSubmodels(unittest.TestCase):

@@ -14,4 +14,5 @@ Gaussian Processes
    weighted_gp
    directional_degp
    mogp
+   gemogp
    observation_noise

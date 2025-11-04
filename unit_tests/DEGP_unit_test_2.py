@@ -8,7 +8,7 @@ derivatives for f(x,y) = sin(x)cos(y).
 
 import unittest
 import numpy as np
-from full_degp.degp import degp
+from jetgp.full_degp.degp import degp
 import sys
 
 class TestDEGP2DSecondOrderV2(unittest.TestCase):
@@ -200,7 +200,7 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
 def run_tests_with_details():
     """Run tests with detailed output."""
     # Create test suite
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestDEGP2DSecondOrder)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestDEGP2DSecondOrderV2)
     
     # Run with verbosity
     runner = unittest.TextTestRunner(verbosity=2)

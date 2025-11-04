@@ -6,12 +6,12 @@
 
 import numpy as np
 import sympy as sp
-from full_gddegp.gddegp import gddegp
+from jetgp.full_gddegp.gddegp import gddegp
 from scipy.stats import qmc
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
-import utils
+import jetgp.utils as utils
 
 plt.rcParams.update({'font.size': 12})
 
@@ -122,7 +122,7 @@ directional_derivs_array = np.array(directional_derivs).reshape(-1, 1)
 # 5. Package training data
 # y_train_list should be a list of two arrays, each of shape [num_training_pts, 1]
 y_train_list = [y_func, directional_derivs_array]
-der_indices = [[[1, 1]]]
+der_indices = [[[[1, 1]]]]
 
 print(f"Training data generated!")
 print(f"X_train shape: {X_train.shape}")
@@ -150,7 +150,7 @@ print("Initializing GDDEGP model...")
 gp_model = gddegp(
     X_train,
     y_train_list,
-    n_order=[n_order],
+    n_order=n_order,
     der_indices=der_indices,
     rays_array=[rays_array],
     normalize=normalize_data,
@@ -346,12 +346,12 @@ print(f"\nFinal NRMSE: {nrmse_val:.6f}")
 import numpy as np
 import pyoti.sparse as oti
 import itertools
-from full_gddegp.gddegp import gddegp
+from jetgp.full_gddegp.gddegp import gddegp
 from scipy.stats import qmc
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib.lines import Line2D
-import utils
+import jetgp.utils as utils
 
 plt.rcParams.update({'font.size': 12})
 
@@ -489,7 +489,7 @@ for ray_set in rays_list:
         derivs.append(deriv)
     y_train_list.append(np.array(derivs).reshape(-1, 1))
 
-der_indices = [[[1, 1]], [[2, 1]]]  # Keep for compatibility if needed
+der_indices = [[[[1, 1]], [[2, 1]]]]  # Keep for compatibility if needed
 
 print(f"\nTraining data generated!")
 print(f"  Function values: {y_train_list[0].shape}")
@@ -512,7 +512,7 @@ rays_array = [np.hstack(rays_list[i])
 gp_model = gddegp(
     X_train,
     y_train_list,
-    n_order=[n_order, n_order],
+    n_order=n_order,
     der_indices=der_indices,
     rays_array=rays_array,
     normalize=normalize_data,

@@ -1,10 +1,10 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
-from wdegp import wdegp_utils as wdegp_utils
-import utils as utils
-from kernel_funcs.kernel_funcs import KernelFactory
-from wdegp.optimizer import Optimizer
+from jetgp.wdegp import wdegp_utils as wdegp_utils
+import jetgp.utils as utils
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.wdegp.optimizer import Optimizer
 
 
 class wdegp:

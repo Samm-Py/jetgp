@@ -174,8 +174,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -363,7 +367,7 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">kernel_funcs.kernel_funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">KernelFactory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp.optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optimizer</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp_utils</span> <span class="k">as</span> <span class="n">gddegp_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cho_solve</span><span class="p">,</span> <span class="n">cho_factor</span><span class="p">,</span> <span class="n">solve_triangular</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">solve</span>
 
@@ -559,7 +563,7 @@ document.write(`
         <span class="n">K_ss</span> <span class="o">=</span> <span class="n">gddegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
             <span class="n">diff_x_test_x_test</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span>
-            <span class="c1"># self.der_indices_tr,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">,</span>
             <span class="c1"># self.der_ind_order,</span>
             <span class="c1"># self.der_map,</span>
             <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span><span class="p">)</span>

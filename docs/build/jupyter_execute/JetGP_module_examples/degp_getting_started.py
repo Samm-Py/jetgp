@@ -5,7 +5,7 @@
 
 
 import numpy as np
-from full_degp.degp import degp
+from jetgp.full_degp.degp import degp
 import matplotlib.pyplot as plt
 
 print("Modules imported successfully.")
@@ -210,7 +210,7 @@ plt.show()
 
 
 import numpy as np
-from full_degp.degp import degp
+from jetgp.full_degp.degp import degp
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -346,7 +346,7 @@ plt.show()
 
 
 import numpy as np
-from full_degp.degp import degp
+from jetgp.full_degp.degp import degp
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 

@@ -8,7 +8,7 @@ derivatives for f(x,y) = sin(x)cos(y).
 
 import unittest
 import numpy as np
-from full_degp.degp import degp
+from jetgp.full_degp.degp import degp
 import sys
 
 class TestDEGP2DSecondOrder(unittest.TestCase):

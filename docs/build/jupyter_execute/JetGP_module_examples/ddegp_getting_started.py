@@ -6,8 +6,8 @@
 
 import numpy as np
 import sympy as sp
-from full_ddegp.ddegp import ddegp
-import utils
+from jetgp.full_ddegp.ddegp import ddegp
+import jetgp.utils as utils
 from scipy.stats import qmc
 from matplotlib import pyplot as plt
 from matplotlib.colors import LogNorm

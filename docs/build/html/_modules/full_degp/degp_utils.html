@@ -174,13 +174,26 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -229,6 +242,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -352,7 +368,7 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">line_profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">profile</span>
 
 <div class="viewcode-block" id="differences_by_dim_func">
-<a class="viewcode-back" href="../../api/index.html#full_degp.degp_utils.differences_by_dim_func">[docs]</a>
+<a class="viewcode-back" href="../../api/full_degp.html#full_degp.degp_utils.differences_by_dim_func">[docs]</a>
 <span class="nd">@profile</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">differences_by_dim_func</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -453,7 +469,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="differences_by_dim_func_SI">
-<a class="viewcode-back" href="../../api/index.html#full_degp.degp_utils.differences_by_dim_func_SI">[docs]</a>
+<a class="viewcode-back" href="../../api/full_degp.html#full_degp.degp_utils.differences_by_dim_func_SI">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">differences_by_dim_func_SI</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute pairwise differences between two input arrays X1 and X2 for each dimension,</span>
@@ -549,7 +565,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="rbf_kernel">
-<a class="viewcode-back" href="../../api/index.html#full_degp.degp_utils.rbf_kernel">[docs]</a>
+<a class="viewcode-back" href="../../api/full_degp.html#full_degp.degp_utils.rbf_kernel">[docs]</a>
 <span class="nd">@profile</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">rbf_kernel</span><span class="p">(</span>
     <span class="n">differences</span><span class="p">,</span>
@@ -678,7 +694,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="deriv_map">
-<a class="viewcode-back" href="../../api/index.html#full_degp.degp_utils.deriv_map">[docs]</a>
+<a class="viewcode-back" href="../../api/full_degp.html#full_degp.degp_utils.deriv_map">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">deriv_map</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.core</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">coti</span>
     <span class="c1"># dh = coti.get_dHelp()</span>
@@ -697,7 +713,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="transform_der_indices">
-<a class="viewcode-back" href="../../api/index.html#full_degp.degp_utils.transform_der_indices">[docs]</a>
+<a class="viewcode-back" href="../../api/full_degp.html#full_degp.degp_utils.transform_der_indices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.core</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">coti</span>
     <span class="n">deriv_ind_transf</span> <span class="o">=</span> <span class="p">[]</span>

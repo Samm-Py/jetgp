@@ -175,8 +175,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -446,6 +450,8 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.make_der_indices"><code class="docutils literal notranslate"><span class="pre">make_der_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.make_first_even"><code class="docutils literal notranslate"><span class="pre">make_first_even()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.make_first_odd"><code class="docutils literal notranslate"><span class="pre">make_first_odd()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
@@ -553,8 +559,20 @@ Optimized version that pre-computes tags to avoid redundant calculations.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="full_gddegp.gddegp_utils.make_first_even">
+<span class="sig-prename descclassname"><span class="pre">full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">make_first_even</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_gddegp/gddegp_utils.html#make_first_even"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_gddegp.gddegp_utils.make_first_even" title="Link to this definition">#</a></dt>
+<dd><p>Transform indices so first entry of each subcomponent is even.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="full_gddegp.gddegp_utils.make_first_odd">
+<span class="sig-prename descclassname"><span class="pre">full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">make_first_odd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_gddegp/gddegp_utils.html#make_first_odd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_gddegp.gddegp_utils.make_first_odd" title="Link to this definition">#</a></dt>
+<dd><p>Transform indices so first entry of each subcomponent is odd.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="full_gddegp.gddegp_utils.rbf_kernel">
-<span class="sig-prename descclassname"><span class="pre">full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_orders_per_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_gddegp/gddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_gddegp.gddegp_utils.rbf_kernel" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_orders_per_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_gddegp/gddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_gddegp.gddegp_utils.rbf_kernel" title="Link to this definition">#</a></dt>
 <dd><p>Assembles the full DD-GP covariance matrix, handling different maximum
 derivative orders for each spatial dimension.</p>
 <dl class="field-list simple">
@@ -717,6 +735,8 @@ NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5 * N * log(2 * pi)</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.make_der_indices"><code class="docutils literal notranslate"><span class="pre">make_der_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.make_first_even"><code class="docutils literal notranslate"><span class="pre">make_first_even()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.make_first_odd"><code class="docutils literal notranslate"><span class="pre">make_first_odd()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.gddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_gddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">

@@ -6,8 +6,8 @@ Tests the 1D Sparse WDEGP with selective derivative observations
 import unittest
 import numpy as np
 import sympy as sp
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils as utils
 
 
 class TestSparseWDEGP1D(unittest.TestCase):

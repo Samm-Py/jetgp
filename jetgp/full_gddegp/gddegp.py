@@ -1,8 +1,8 @@
 import numpy as np
-import utils as utils
-from kernel_funcs.kernel_funcs import KernelFactory
-from full_gddegp.optimizer import Optimizer
-from full_gddegp import gddegp_utils
+import jetgp.utils as utils
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.full_gddegp.optimizer import Optimizer
+from jetgp.full_gddegp import gddegp_utils as gddegp_utils
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
 from numpy.linalg import cholesky, solve
 
@@ -191,7 +191,7 @@ class gddegp:
         K_ss = gddegp_utils.rbf_kernel(
             diff_x_test_x_test, length_scales, self.n_order,
             self.kernel_func,
-            # self.der_indices_tr,
+            self.flattened_der_indices,
             # self.der_ind_order,
             # self.der_map,
             return_deriv=return_deriv)

@@ -1,4 +1,4 @@
-from utils import jade as core_jade
+from jetgp.utils import jade as core_jade
 
 def jade(func, lb, ub, **kwargs):
     """

@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'theory/directional_degp';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Multi-Output Gaussian Processes" href="mogp.html" />
+    <link rel="next" title="Multi-output Gaussian Processes" href="mogp.html" />
     <link rel="prev" title="Weighted Gradient Enchanced Gaussian Processes" href="weighted_gp.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -179,7 +179,9 @@
 <li class="toctree-l2"><a class="reference internal" href="derivative_screening.html">Derivative Screening</a></li>
 <li class="toctree-l2"><a class="reference internal" href="weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -457,7 +459,7 @@ document.write(`
                   
   <section id="directional-derivative-enhanced-gaussian-processes">
 <h1>Directional Derivative-Enhanced Gaussian Processes<a class="headerlink" href="#directional-derivative-enhanced-gaussian-processes" title="Link to this heading">#</a></h1>
-<p>First-order directional derivatives offer an alternative approach to incorporating derivative information in Gaussian processes <span id="id1">[<a class="reference internal" href="#id29" title="Yiming Yao, Fei Liu, and Qingfu Zhang. High-Throughput Multi-Objective bayesian optimization using gradients. In 2024 IEEE Congress on Evolutionary Computation (CEC), volume 2, 1–8. IEEE, June 2024.">15</a>, <a class="reference internal" href="#id30" title="Misha Padidar, Xinran Zhu, Leo Huang, Jacob R Gardner, and David Bindel. Scaling gaussian processes with derivative information using variational inference. Advances in Neural Information Processing Systems, 34:6442–6453, 2021. arXiv:2107.04061.">16</a>]</span>. Rather than using all <span class="math notranslate nohighlight">\(d\)</span> partial derivatives at each training point as in GEK, directional derivative GPs (DDGP) use only <span class="math notranslate nohighlight">\(q \ll d\)</span> derivatives along user-selected directions. This reduces computational cost while still capturing important local geometric information. A key feature of this approach is that the directions can be chosen uniquely for each training point, allowing for a more flexible and adaptive model.</p>
+<p>First-order directional derivatives offer an alternative approach to incorporating derivative information in Gaussian processes <span id="id1">[<a class="reference internal" href="weighted_gp.html#id32" title="Yiming Yao, Fei Liu, and Qingfu Zhang. High-Throughput Multi-Objective bayesian optimization using gradients. In 2024 IEEE Congress on Evolutionary Computation (CEC), volume 2, 1–8. IEEE, June 2024.">15</a>, <a class="reference internal" href="weighted_gp.html#id33" title="Misha Padidar, Xinran Zhu, Leo Huang, Jacob R Gardner, and David Bindel. Scaling gaussian processes with derivative information using variational inference. Advances in Neural Information Processing Systems, 34:6442–6453, 2021. arXiv:2107.04061.">16</a>]</span>. Rather than using all <span class="math notranslate nohighlight">\(d\)</span> partial derivatives at each training point as in GEK, directional derivative GPs (DDGP) use only <span class="math notranslate nohighlight">\(q \ll d\)</span> derivatives along user-selected directions. This reduces computational cost while still capturing important local geometric information. A key feature of this approach is that the directions can be chosen uniquely for each training point, allowing for a more flexible and adaptive model.</p>
 <p>For a training point <span class="math notranslate nohighlight">\(\mathbf{x}_i\)</span>, let <span class="math notranslate nohighlight">\(\mathbf{v}_{i,j} \in \mathbb{R}^d\)</span> denote the <span class="math notranslate nohighlight">\(j\)</span>-th direction vector (with <span class="math notranslate nohighlight">\(\|\mathbf{v}_{i,j}\| = 1\)</span>), for <span class="math notranslate nohighlight">\(j = 1, \ldots, q\)</span>. The directional derivative of <span class="math notranslate nohighlight">\(f\)</span> at <span class="math notranslate nohighlight">\(\mathbf{x}_i\)</span> along direction <span class="math notranslate nohighlight">\(\mathbf{v}_{i,j}\)</span> is:</p>
 <div class="math notranslate nohighlight">
 \[\frac{\partial f(\mathbf{x}_i)}{\partial \mathbf{v}_{i,j}} = \nabla f(\mathbf{x}_i)^T \mathbf{v}_{i,j} = \sum_{k=1}^{d} \frac{\partial f(\mathbf{x}_i)}{\partial x_k} v_{i,j,k}\]</div>
@@ -595,8 +597,12 @@ document.write(`
 <span class="label"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></span>
 <p>B. Rakitsch, Christoph Lippert, K. Borgwardt, and Oliver Stegle. It is all in the noise: efficient multi-task gaussian process inference with structured residuals. <em>Advances in Neural Information Processing Systems</em>, pages, 01 2013.</p>
 </div>
-<div class="citation" id="id4" role="doc-biblioentry">
+<div class="citation" id="id33" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></span>
+<p>Edwin V Bonilla, Kian Chai, and Christopher Williams. Multi-task gaussian process prediction. In J. Platt, D. Koller, Y. Singer, and S. Roweis, editors, <em>Advances in Neural Information Processing Systems</em>, volume 20. Curran Associates, Inc., 2007. URL: <a class="reference external" href="https://proceedings.neurips.cc/paper_files/paper/2007/file/66368270ffd51418ec58bd793f2d9b1b-Paper.pdf">https://proceedings.neurips.cc/paper_files/paper/2007/file/66368270ffd51418ec58bd793f2d9b1b-Paper.pdf</a>.</p>
+</div>
+<div class="citation" id="id4" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></span>
 <p>Chen Zhou Xu, Zhong Hua Han, Ke Shi Zhang, and Wen Ping Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In <em>32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021</em>, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021.</p>
 </div>
 </div>
@@ -629,7 +635,7 @@ document.write(`
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Multi-Output Gaussian Processes</p>
+        <p class="prev-next-title">Multi-output Gaussian Processes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

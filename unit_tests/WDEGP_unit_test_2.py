@@ -15,8 +15,8 @@ import unittest
 import numpy as np
 import sympy as sp
 import itertools
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils
 
 
 class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):

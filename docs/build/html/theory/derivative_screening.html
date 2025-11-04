@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'theory/derivative_screening';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Directional Derivative-Enhanced Gaussian Processes" href="directional_degp.html" />
+    <link rel="next" title="Weighted Gradient Enchanced Gaussian Processes" href="weighted_gp.html" />
     <link rel="prev" title="Derivative-Enhanced Gaussian Processes" href="derivative_enhanced_gaussian_processes.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -177,8 +177,11 @@
 <li class="toctree-l2"><a class="reference internal" href="gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -443,7 +446,7 @@ document.write(`
                   
   <section id="derivative-screening">
 <h1>Derivative Screening<a class="headerlink" href="#derivative-screening" title="Link to this heading">#</a></h1>
-<p>One approach to reducing computational cost selectively incorporates partial derivative information, using only a subset of available gradients rather than all <span class="math notranslate nohighlight">\(d\)</span> derivatives <span id="id1">[<a class="reference internal" href="weighted_gp.html#id38" title="Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Joris Degroote, and Eric Laermans. Performance study of gradient-enhanced kriging. Eng. Comput., 32(1):15–34, January 2016.">9</a>, <a class="reference internal" href="weighted_gp.html#id60" title="Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Eric Laermans, and Joris Degroote. On the use of gradients in kriging surrogate models. In Proceedings of the Winter Simulation Conference 2014. IEEE, December 2014.">12</a>]</span>. Partial gradient-enhanced kriging (PGEK) extends this concept by systematically identifying which gradients to include <span id="id2">[<a class="reference internal" href="weighted_gp.html#id61" title="Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. Applied Mathematical Modelling, 69:15-31, 2019. URL: https://www.sciencedirect.com/science/article/pii/S0307904X18305900, doi:https://doi.org/10.1016/j.apm.2018.11.048.">13</a>]</span>. PGEK employs a two-step process: first, a feature selection technique, such as Mutual Information (MI), ranks the influence of each input variable on the output; second, an empirical evaluation rule determines the optimal number of gradients to include, balancing modeling efficiency and accuracy.</p>
+<p>One approach to reducing computational cost selectively incorporates partial derivative information, using only a subset of available gradients rather than all <span class="math notranslate nohighlight">\(d\)</span> derivatives <span id="id1">[<a class="reference internal" href="weighted_gp.html#id12" title="Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Joris Degroote, and Eric Laermans. Performance study of gradient-enhanced kriging. Eng. Comput., 32(1):15–34, January 2016.">9</a>, <a class="reference internal" href="weighted_gp.html#id34" title="Selvakumar Ulaganathan, Ivo Couckuyt, Tom Dhaene, Eric Laermans, and Joris Degroote. On the use of gradients in kriging surrogate models. In Proceedings of the Winter Simulation Conference 2014. IEEE, December 2014.">12</a>]</span>. Partial gradient-enhanced kriging (PGEK) extends this concept by systematically identifying which gradients to include <span id="id2">[<a class="reference internal" href="weighted_gp.html#id35" title="Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. Applied Mathematical Modelling, 69:15-31, 2019. URL: https://www.sciencedirect.com/science/article/pii/S0307904X18305900, doi:https://doi.org/10.1016/j.apm.2018.11.048.">13</a>]</span>. PGEK employs a two-step process: first, a feature selection technique, such as Mutual Information (MI), ranks the influence of each input variable on the output; second, an empirical evaluation rule determines the optimal number of gradients to include, balancing modeling efficiency and accuracy.</p>
 <p>Suppose that feature selection identifies a subset of <span class="math notranslate nohighlight">\(m \leq d\)</span> input variables <span class="math notranslate nohighlight">\(\mathbf{X}_A = \{x_1, x_2, \ldots, x_m\}\)</span> whose derivatives provide the best trade-off between accuracy and efficiency. The formulation follows the structure of the derivative-enhanced GPs section, but with a reduced observation vector. The observation vector <span class="math notranslate nohighlight">\(\mathbf{y}\)</span> is augmented to include only the selected partial derivatives, forming <span class="math notranslate nohighlight">\(\mathbf{y}^{\text{PGEK}}\)</span>, and similarly for test predictions <span class="math notranslate nohighlight">\(\mathbf{y}^{\text{PGEK}}_*\)</span>:</p>
 <div class="math notranslate nohighlight" id="equation-eqn-pgek-aug-vectors">
 <span class="eqno">(1)<a class="headerlink" href="#equation-eqn-pgek-aug-vectors" title="Link to this equation">#</a></span>\[\begin{split}\mathbf{y}^{\text{PGEK}} = \begin{bmatrix} f(\mathbf{X}) \\ \frac{\partial f(\mathbf{X})}{\partial x_1} \\ \vdots \\ \frac{\partial f(\mathbf{X})}{\partial x_m} \end{bmatrix}, \quad
@@ -468,8 +471,8 @@ document.write(`
     K(\mathbf{X}, \mathbf{X}') &amp; \frac{\partial K(\mathbf{X}, \mathbf{X}')}{\partial \mathbf{X}_A'} \\
     \frac{\partial K(\mathbf{X}, \mathbf{X}')}{\partial \mathbf{X}_A} &amp; \frac{\partial^2 K(\mathbf{X}, \mathbf{X}')}{\partial \mathbf{X}_A \partial \mathbf{X}_A'}
 \end{pmatrix}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(\mathbf{X}_A\)</span> denotes the subset of selected input dimensions. The cross-covariance blocks <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}^{\text{PGEK}}_{12}\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}^{\text{PGEK}}_{22}\)</span> are constructed analogously. The posterior predictive distribution for <span class="math notranslate nohighlight">\(\mathbf{y}^{\text{PGEK}}_*\)</span> follows the standard GP conditioning formula (analogous to Equation <a class="reference internal" href="derivative_enhanced_gaussian_processes.html#equation-eqn-full-gek-posterior">(5)</a>), and hyperparameters are optimized by maximizing the marginal log-likelihood (analogous to Equation <a class="reference internal" href="derivative_enhanced_gaussian_processes.html#equation-eqn-gek-mll">(6)</a>).</p>
-<p>The key advantage of PGEK is the reduction in covariance matrix size from :math: <span class="math notranslate nohighlight">\(n(d + 1) \times n(d + 1)\)</span> to <span class="math notranslate nohighlight">\(n(m + 1) \times n(m + 1)\)</span>, where <span class="math notranslate nohighlight">\(m \ll d\)</span>, resulting in substantial computational savings while retaining the most informative derivative information. Studies have demonstrated that PGEK can reduce modeling time by 30-60% compared to full GEK while maintaining or even improving accuracy in some cases <span id="id3">[<a class="reference internal" href="weighted_gp.html#id61" title="Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. Applied Mathematical Modelling, 69:15-31, 2019. URL: https://www.sciencedirect.com/science/article/pii/S0307904X18305900, doi:https://doi.org/10.1016/j.apm.2018.11.048.">13</a>]</span>.</p>
+<p>where <span class="math notranslate nohighlight">\(\mathbf{X}_A\)</span> denotes the subset of selected input dimensions. The cross-covariance blocks <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}^{\text{PGEK}}_{12}\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\Sigma}^{\text{PGEK}}_{22}\)</span> are constructed analogously. The posterior predictive distribution for <span class="math notranslate nohighlight">\(\mathbf{y}^{\text{PGEK}}_*\)</span> follows the standard GP conditioning formula (analogous to Equation <a class="reference internal" href="gemogp.html#equation-eqn-full-gek-posterior">(5)</a>), and hyperparameters are optimized by maximizing the marginal log-likelihood (analogous to Equation <a class="reference internal" href="gemogp.html#equation-eqn-gek-mll">(6)</a>).</p>
+<p>The key advantage of PGEK is the reduction in covariance matrix size from :math: <span class="math notranslate nohighlight">\(n(d + 1) \times n(d + 1)\)</span> to <span class="math notranslate nohighlight">\(n(m + 1) \times n(m + 1)\)</span>, where <span class="math notranslate nohighlight">\(m \ll d\)</span>, resulting in substantial computational savings while retaining the most informative derivative information. Studies have demonstrated that PGEK can reduce modeling time by 30-60% compared to full GEK while maintaining or even improving accuracy in some cases <span id="id3">[<a class="reference internal" href="weighted_gp.html#id35" title="Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. Applied Mathematical Modelling, 69:15-31, 2019. URL: https://www.sciencedirect.com/science/article/pii/S0307904X18305900, doi:https://doi.org/10.1016/j.apm.2018.11.048.">13</a>]</span>.</p>
 <div class="docutils container" id="id4">
 <div role="list" class="citation-list">
 <div class="citation" id="id16" role="doc-biblioentry">
@@ -525,28 +528,32 @@ document.write(`
 <span class="backrefs">(<a role="doc-backlink" href="#id2">1</a>,<a role="doc-backlink" href="#id3">2</a>)</span>
 <p>Liming Chen, Haobo Qiu, Liang Gao, Chen Jiang, and Zan Yang. A screening-based gradient-enhanced kriging modeling method for high-dimensional problems. <em>Applied Mathematical Modelling</em>, 69:15–31, 2019. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0307904X18305900">https://www.sciencedirect.com/science/article/pii/S0307904X18305900</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.apm.2018.11.048">doi:https://doi.org/10.1016/j.apm.2018.11.048</a>.</p>
 </div>
-<div class="citation" id="id31" role="doc-biblioentry">
+<div class="citation" id="id7" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span>14<span class="fn-bracket">]</span></span>
+<p>Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. <em>AIAA Journal</em>, 55(12):4330–4346, 2017. URL: <a class="reference external" href="https://doi.org/10.2514/1.J055842">https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://arxiv.org/abs/https://doi.org/10.2514/1.J055842">arXiv:https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://doi.org/10.2514/1.J055842">doi:10.2514/1.J055842</a>.</p>
+</div>
+<div class="citation" id="id31" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></span>
 <p>Yiming Yao, Fei Liu, and Qingfu Zhang. High-Throughput Multi-Objective bayesian optimization using gradients. In <em>2024 IEEE Congress on Evolutionary Computation (CEC)</em>, volume 2, 1–8. IEEE, June 2024.</p>
 </div>
 <div class="citation" id="id32" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>15<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></span>
 <p>Misha Padidar, Xinran Zhu, Leo Huang, Jacob R Gardner, and David Bindel. Scaling gaussian processes with derivative information using variational inference. <em>Advances in Neural Information Processing Systems</em>, 34:6442–6453, 2021. <a class="reference external" href="https://arxiv.org/abs/2107.04061">arXiv:2107.04061</a>.</p>
 </div>
 <div class="citation" id="id29" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>16<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></span>
 <p>Haitao Liu, Jianfei Cai, and Yew-Soon Ong. Remarks on multi-output gaussian process regression. <em>Knowledge-Based Systems</em>, 144:102–121, 2018. URL: <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0950705117306123">https://www.sciencedirect.com/science/article/pii/S0950705117306123</a>, <a class="reference external" href="https://doi.org/https://doi.org/10.1016/j.knosys.2017.12.034">doi:https://doi.org/10.1016/j.knosys.2017.12.034</a>.</p>
 </div>
 <div class="citation" id="id30" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>17<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></span>
 <p>B. Rakitsch, Christoph Lippert, K. Borgwardt, and Oliver Stegle. It is all in the noise: efficient multi-task gaussian process inference with structured residuals. <em>Advances in Neural Information Processing Systems</em>, pages, 01 2013.</p>
 </div>
-<div class="citation" id="id7" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>18<span class="fn-bracket">]</span></span>
-<p>Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. <em>AIAA Journal</em>, 55(12):4330–4346, 2017. URL: <a class="reference external" href="https://doi.org/10.2514/1.J055842">https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://arxiv.org/abs/https://doi.org/10.2514/1.J055842">arXiv:https://doi.org/10.2514/1.J055842</a>, <a class="reference external" href="https://doi.org/10.2514/1.J055842">doi:10.2514/1.J055842</a>.</p>
+<div class="citation" id="id35" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></span>
+<p>Edwin V Bonilla, Kian Chai, and Christopher Williams. Multi-task gaussian process prediction. In J. Platt, D. Koller, Y. Singer, and S. Roweis, editors, <em>Advances in Neural Information Processing Systems</em>, volume 20. Curran Associates, Inc., 2007. URL: <a class="reference external" href="https://proceedings.neurips.cc/paper_files/paper/2007/file/66368270ffd51418ec58bd793f2d9b1b-Paper.pdf">https://proceedings.neurips.cc/paper_files/paper/2007/file/66368270ffd51418ec58bd793f2d9b1b-Paper.pdf</a>.</p>
 </div>
 <div class="citation" id="id6" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span>19<span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span>20<span class="fn-bracket">]</span></span>
 <p>Chen Zhou Xu, Zhong Hua Han, Ke Shi Zhang, and Wen Ping Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In <em>32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021</em>, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021.</p>
 </div>
 </div>
@@ -574,11 +581,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="directional_degp.html"
+       href="weighted_gp.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Directional Derivative-Enhanced Gaussian Processes</p>
+        <p class="prev-next-title">Weighted Gradient Enchanced Gaussian Processes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

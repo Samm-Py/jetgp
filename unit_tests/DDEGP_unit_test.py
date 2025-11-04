@@ -11,9 +11,9 @@ import sys
 import unittest
 import numpy as np
 import sympy as sp
-from full_ddegp.ddegp import ddegp
+from jetgp.full_ddegp.ddegp import ddegp
 from scipy.stats import qmc
-import utils
+import jetgp.utils
 
 
 class TestGlobalDirectionalBranin(unittest.TestCase):

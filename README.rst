@@ -48,7 +48,7 @@ There are two recommended ways to do this:
 
 .. code-block:: bash
 
-   # From  ``.\jetgp-main\jetgp``
+   # From  ``.\jetgp-main``
    $ export PYTHONPATH=$PYTHONPATH:$(pwd)
 
    # Optional: verify that JetGP is accessible
@@ -64,7 +64,7 @@ If using Anaconda, you can register the repository path with your environment us
 .. code-block:: bash
 
    $ conda install conda-build
-   $ cd <path-to-JetGP> (e.g., ``.\jetgp-main\jetgp``).
+   $ cd <path-to-JetGP> (e.g., ``.\jetgp-main``).
    $ conda develop .
 
 This method automatically makes ``jetgp`` importable whenever the ``jetgp`` environment is active.

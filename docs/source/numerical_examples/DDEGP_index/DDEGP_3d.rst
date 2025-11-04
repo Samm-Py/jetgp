@@ -24,8 +24,8 @@ Setup
     import numpy as np
     import pyoti.sparse as oti
     import itertools
-    from full_ddegp.ddegp import ddegp
-    import utils
+    from jetgp.full_ddegp.ddegp import ddegp
+    import jetgp.utils
     import plotting_helper
 
 Configuration

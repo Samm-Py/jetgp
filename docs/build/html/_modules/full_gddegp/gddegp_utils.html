@@ -174,13 +174,26 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
 </ul>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -229,6 +242,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -351,10 +367,67 @@ document.write(`
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oti</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">line_profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">profile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.core</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">coti</span>
+<div class="viewcode-block" id="make_first_odd">
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.make_first_odd">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_first_odd</span><span class="p">(</span><span class="n">der_indices</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform indices so first entry of each subcomponent is odd.&quot;&quot;&quot;</span>
+    <span class="c1"># Check if it&#39;s a flat list of pairs or nested groups</span>
+    <span class="k">if</span> <span class="n">der_indices</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># Flat structure: [[1, 1], [1, 2]]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Make odd: if even, add 1; if odd, keep it</span>
+            <span class="k">if</span> <span class="n">first</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">first</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Nested structure: [[[1, 1]], [[2, 1]], ...]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
+            <span class="n">new_group</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">first</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">new_group</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">first</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">new_group</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_group</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="make_first_even">
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.make_first_even">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_first_even</span><span class="p">(</span><span class="n">der_indices</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Transform indices so first entry of each subcomponent is even.&quot;&quot;&quot;</span>
+    <span class="c1"># Check if it&#39;s a flat list of pairs or nested groups</span>
+    <span class="k">if</span> <span class="n">der_indices</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="c1"># Flat structure: [[1, 1], [1, 2]]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Make even: double the value to ensure it&#39;s even</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">first</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Nested structure: [[[1, 1]], [[2, 1]], ...]</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">der_indices</span><span class="p">:</span>
+            <span class="n">new_group</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">group</span><span class="p">:</span>
+                <span class="n">first</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># Make even: double the value to ensure it&#39;s even</span>
+                <span class="n">new_group</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">first</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_group</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+
 
 
 <div class="viewcode-block" id="compute_dimension_differences">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.gddegp_utils.compute_dimension_differences">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.compute_dimension_differences">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_dimension_differences</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">rays_X1</span><span class="p">,</span> <span class="n">rays_X2</span><span class="p">,</span> <span class="n">e_tags_1</span><span class="p">,</span> <span class="n">e_tags_2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute differences for a single dimension k.</span>
@@ -382,7 +455,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="differences_by_dim_func">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.gddegp_utils.differences_by_dim_func">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.differences_by_dim_func">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">differences_by_dim_func</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">rays_X1</span><span class="p">,</span> <span class="n">rays_X2</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">num_directions_per_point</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute dimension-wise differences with OTI tagging on both X1 and X2.</span>
@@ -399,12 +472,12 @@ document.write(`
     <span class="c1"># Pre-compute OTI basis elements (avoid recomputing in loops)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">return_deriv</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-            <span class="n">e_tags_1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">n_order</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-            <span class="n">e_tags_2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">n_order</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">e_tags_1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">n_order</span><span class="p">))</span>
+            <span class="n">e_tags_2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="n">n_order</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
-            <span class="n">e_tags_1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">n_order</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
-            <span class="n">e_tags_2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">n_order</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="n">e_tags_1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">n_order</span><span class="p">))</span>
+            <span class="n">e_tags_2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span><span class="o">*</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="o">*</span><span class="n">n_order</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
@@ -424,7 +497,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="make_der_indices">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.gddegp_utils.make_der_indices">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.make_der_indices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">make_der_indices</span><span class="p">(</span><span class="n">num_directions</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">max_order</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build the list of derivative-index specs:</span>
@@ -601,7 +674,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="deriv_map">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.gddegp_utils.deriv_map">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.deriv_map">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">deriv_map</span><span class="p">(</span><span class="n">nbases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.core</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">coti</span>
     <span class="c1"># dh = coti.get_dHelp()</span>
@@ -620,7 +693,7 @@ document.write(`
 
 
 <div class="viewcode-block" id="transform_der_indices">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.gddegp_utils.transform_der_indices">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.transform_der_indices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">transform_der_indices</span><span class="p">(</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">der_map</span><span class="p">):</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.core</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">coti</span>
     <span class="n">deriv_ind_transf</span> <span class="o">=</span> <span class="p">[]</span>
@@ -638,12 +711,12 @@ document.write(`
 
 
 <div class="viewcode-block" id="rbf_kernel">
-<a class="viewcode-back" href="../../api/index.html#full_gddegp.gddegp_utils.rbf_kernel">[docs]</a>
+<a class="viewcode-back" href="../../api/full_gddegp.html#full_gddegp.gddegp_utils.rbf_kernel">[docs]</a>
 <span class="nd">@profile</span>
 <span class="c1"># Assuming &#39;coti&#39; and &#39;deriv_map&#39; are defined elsewhere in your project</span>
 <span class="c1"># import coti</span>
 <span class="c1"># from some_module import deriv_map</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">rbf_kernel</span><span class="p">(</span><span class="n">differences</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">max_orders_per_dim</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">rbf_kernel</span><span class="p">(</span><span class="n">differences</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">max_orders_per_dim</span><span class="p">,</span> <span class="n">kernel_func</span><span class="p">,</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">index</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assembles the full DD-GP covariance matrix, handling different maximum</span>
 <span class="sd">    derivative orders for each spatial dimension.</span>
@@ -680,38 +753,19 @@ document.write(`
     <span class="c1"># --- VALIDATION AND SETUP ---</span>
     <span class="k">assert</span> <span class="n">n_bases</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;n_bases must be an even number.&quot;</span>
     <span class="n">spatial_dims</span> <span class="o">=</span> <span class="n">n_bases</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">max_orders_per_dim</span><span class="p">)</span> <span class="o">==</span> <span class="n">spatial_dims</span><span class="p">,</span> \
-        <span class="s2">&quot;Length of max_orders_per_dim must match the number of spatial dimensions.&quot;</span>
 
     <span class="c1"># The max order for the hypercomplex expansion needs to be the highest possible</span>
     <span class="c1"># order of any mixed derivative we might compute.</span>
-    <span class="n">highest_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">max_orders_per_dim</span><span class="p">)</span> <span class="k">if</span> <span class="n">max_orders_per_dim</span> <span class="k">else</span> <span class="mi">0</span>
+    <span class="n">highest_order</span> <span class="o">=</span> <span class="n">max_orders_per_dim</span>
 
     <span class="c1"># 1. Evaluate the kernel once</span>
     <span class="n">phi</span> <span class="o">=</span> <span class="n">kernel_func</span><span class="p">(</span><span class="n">differences</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
     <span class="n">PHIrows</span><span class="p">,</span> <span class="n">PHIcols</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">total_derivs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">max_orders_per_dim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">phi</span><span class="o">.</span><span class="n">real</span>
         <span class="c1"># 2. Extract ALL derivative components into a single flat array</span>
         <span class="c1"># The order must be 2 * highest_order to capture mixed derivative terms</span>
-
-    <span class="c1"># --- BUILD DERIVATIVE INDEX MAPS ---</span>
-    <span class="c1"># Create explicit maps from a linear derivative index (1, 2, 3...) to the</span>
-    <span class="c1"># corresponding (direction, order) tuple. This handles the variable orders per dimension.</span>
-    <span class="n">deriv_map_x1</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">dim_idx</span><span class="p">,</span> <span class="n">max_ord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">max_orders_per_dim</span><span class="p">):</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dim_idx</span>  <span class="c1"># Directions for X1 are 1, 3, 5, ...</span>
-        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_ord</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">deriv_map_x1</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="n">direction</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="n">order</span><span class="p">})</span>
-
-    <span class="n">deriv_map_x2</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">dim_idx</span><span class="p">,</span> <span class="n">max_ord</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">max_orders_per_dim</span><span class="p">):</span>
-        <span class="n">direction</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dim_idx</span>  <span class="c1"># Directions for X2 are 2, 4, 6, ...</span>
-        <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_ord</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
-            <span class="n">deriv_map_x2</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;direction&#39;</span><span class="p">:</span> <span class="n">direction</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">:</span> <span class="n">order</span><span class="p">})</span>
-
-    <span class="c1"># The total number of derivative components is the length of these maps</span>
-    <span class="n">total_derivs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">deriv_map_x1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">return_deriv</span><span class="p">:</span>
 
@@ -735,40 +789,44 @@ document.write(`
         <span class="n">row_iters</span> <span class="o">=</span> <span class="n">total_derivs</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="n">col_iters</span> <span class="o">=</span> <span class="n">total_derivs</span> <span class="o">+</span> <span class="mi">1</span>
 
-    <span class="c1"># 5. Fill the matrix block by block</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">row_iters</span><span class="p">):</span>      <span class="c1"># Block-row index</span>
+    <span class="n">der_indices_even</span> <span class="o">=</span> <span class="n">make_first_even</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
+    <span class="n">der_indices_odd</span> <span class="o">=</span> <span class="n">make_first_odd</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
+    <span class="n">der_indices_tr_even</span><span class="p">,</span> <span class="n">der_ind_order_even</span> <span class="o">=</span> <span class="n">transform_der_indices</span><span class="p">(</span><span class="n">der_indices_even</span><span class="p">,</span> <span class="n">der_map</span><span class="p">)</span>
+    <span class="n">der_indices_tr_odd</span><span class="p">,</span> <span class="n">der_ind_order_odd</span> <span class="o">=</span> <span class="n">transform_der_indices</span><span class="p">(</span><span class="n">der_indices_odd</span><span class="p">,</span> <span class="n">der_map</span><span class="p">)</span>
+
+    <span class="c1"># 4. Pre-allocate the full covariance matrix</span>
+    <span class="n">block_rows</span><span class="p">,</span> <span class="n">block_cols</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c1"># 5. Fill the matrix block by block using the pre-computed derivative array</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">row_iters</span><span class="p">):</span>  <span class="c1"># Block-row index</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">col_iters</span><span class="p">):</span>  <span class="c1"># Block-column index</span>
 
-            <span class="n">Klocal</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">PHIrows</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">PHIrows</span><span class="p">,</span> <span class="n">j</span><span class="o">*</span><span class="n">PHIcols</span><span class="p">:(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">PHIcols</span><span class="p">]</span>
+            <span class="c1"># Get a view of the current block</span>
+            <span class="n">K_block</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">i</span><span class="o">*</span><span class="n">block_rows</span><span class="p">:(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">block_rows</span><span class="p">,</span>
+                        <span class="n">j</span><span class="o">*</span><span class="n">block_cols</span><span class="p">:(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">block_cols</span><span class="p">]</span>
 
-            <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># K_ff: Real part</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># K_ff: Access the real part (index 0 of the flat array)</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="k">elif</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># K_fd: Derivative w.r.t. X2&#39;s tag</span>
-                <span class="n">spec</span> <span class="o">=</span> <span class="n">deriv_map_x2</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="n">imdir</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">imdir</span><span class="p">([[</span><span class="n">spec</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">],</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]]])</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">der_map</span><span class="p">[</span><span class="n">imdir</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="n">imdir</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="c1"># K_df: Derivative w.r.t. X1&#39;s tag</span>
-                <span class="n">spec</span> <span class="o">=</span> <span class="n">deriv_map_x1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="n">imdir</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">imdir</span><span class="p">([[</span><span class="n">spec</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">],</span> <span class="n">spec</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]]])</span>
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">der_map</span><span class="p">[</span><span class="n">imdir</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="n">imdir</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
-            <span class="k">else</span><span class="p">:</span>  <span class="c1"># i &gt; 0 and j &gt; 0</span>
-                <span class="c1"># K_dd: Mixed derivative</span>
-                <span class="n">spec1</span> <span class="o">=</span> <span class="n">deriv_map_x1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="n">spec2</span> <span class="o">=</span> <span class="n">deriv_map_x2</span><span class="p">[</span><span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                <span class="n">imdir1</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">imdir</span><span class="p">([[</span><span class="n">spec1</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">],</span> <span class="n">spec1</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]]])</span>
-                <span class="n">imdir2</span> <span class="o">=</span> <span class="n">coti</span><span class="o">.</span><span class="n">imdir</span><span class="p">([[</span><span class="n">spec2</span><span class="p">[</span><span class="s1">&#39;direction&#39;</span><span class="p">],</span> <span class="n">spec2</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]]])</span>
-
+            <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># K_fd: Access the j-th derivative using its flat index</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">der_indices_tr_even</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># K_df: Access the i-th derivative using its flat index</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">der_indices_tr_odd</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># K_dd: Multiply the derivative indices to find the correct flat index</span>
+                <span class="n">imdir1</span> <span class="o">=</span> <span class="n">der_ind_order_even</span><span class="p">[</span><span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">imdir2</span> <span class="o">=</span> <span class="n">der_ind_order_odd</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">new_idx</span><span class="p">,</span> <span class="n">new_ord</span> <span class="o">=</span> <span class="n">dh</span><span class="o">.</span><span class="n">mult_dir</span><span class="p">(</span>
                     <span class="n">imdir1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
                 <span class="n">idx</span> <span class="o">=</span> <span class="n">der_map</span><span class="p">[</span><span class="n">new_ord</span><span class="p">][</span><span class="n">new_idx</span><span class="p">]</span>
 
             <span class="c1"># Assign content from the flat array using the calculated index</span>
-            <span class="n">Klocal</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">K_block</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
     <span class="k">return</span> <span class="n">K</span></div>
+
 
 <span class="c1"># def rbf_kernel(differences, length_scales, max_order, kernel_func, der_indices, index=-1, return_deriv=True):</span>
 <span class="c1">#     &quot;&quot;&quot;</span>

@@ -1,9 +1,9 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
-from full_gddegp import gddegp_utils as utils
-import utils as gen_utils
+from jetgp.full_gddegp import gddegp_utils as utils
+import jetgp.utils as gen_utils
 from scipy.linalg import cho_solve, cho_factor
-from hyperparameter_optimizers import OPTIMIZERS
+from jetgp.hyperparameter_optimizers import OPTIMIZERS
 
 class Optimizer:
     def __init__(self, model):
@@ -36,8 +36,12 @@ class Optimizer:
         float
             The computed NLL value. Returns a large value (1e6) if Cholesky fails.
         """
+        
+        
         ell = x0[:-1]
         sigma_n = x0[-1]
+        
+        
 
         # Compute kernel matrix with current hyperparameters
         K = utils.rbf_kernel(
@@ -45,7 +49,7 @@ class Optimizer:
             ell,
             self.model.n_order,
             self.model.kernel_func,
-            # self.model.flattened_der_indices,
+            self.model.flattened_der_indices,
             # self.model.der_indices_tr,
             # self.model.der_ind_order,
             # self.model.der_map,

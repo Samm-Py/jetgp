@@ -1,6 +1,6 @@
 import numpy as np
 import pyoti.sparse as oti
-import utils
+import jetgp.utils
 from line_profiler import profile
 # -------------------------------------------------------------------
 # Utility Functions
@@ -104,11 +104,11 @@ class KernelFactory:
             return self.sine_exp_kernel_anisotropic
         elif kernel == "Matern":
             self._add_bounds([(-1, 5), sigma_n_bound])
-            self.matern_kernel_prebuild = utils.matern_kernel_builder(self.nu)
+            self.matern_kernel_prebuild = jetgp.utils.matern_kernel_builder(self.nu)
             return self.matern_kernel_anisotropic
         elif kernel == "SI":
             self._add_bounds([(-5, 5), sigma_n_bound])
-            self.SI_kernel_prebuild = utils.generate_bernoulli_lambda(self.alpha)
+            self.SI_kernel_prebuild = jetgp.utils.generate_bernoulli_lambda(self.alpha)
             return self.SI_kernel_anisotropic
         else:
             raise NotImplementedError("Anisotropic kernel not implemented")
@@ -144,11 +144,11 @@ class KernelFactory:
             return self.sine_exp_kernel_isotropic
         elif kernel == "Matern":
             self.bounds = core_bounds + [(-1, 5), sigma_n_bound]
-            self.matern_kernel_prebuild = utils.matern_kernel_builder(self.nu)
+            self.matern_kernel_prebuild = jetgp.utils.matern_kernel_builder(self.nu)
             return self.matern_kernel_isotropic
         elif kernel == "SI":
             self.bounds = core_bounds + [(-5, 5), sigma_n_bound]
-            self.SI_kernel_prebuild = utils.generate_bernoulli_lambda(self.alpha)
+            self.SI_kernel_prebuild = jetgp.utils.generate_bernoulli_lambda(self.alpha)
             return self.SI_kernel_prebuild 
         else:
             raise NotImplementedError("Isotropic kernel not implemented")
