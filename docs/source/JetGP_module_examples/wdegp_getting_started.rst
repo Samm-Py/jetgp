@@ -2249,7 +2249,7 @@ Step 1: Import required packages
     import numpy as np
     import sympy as sp
     import itertools
-    from jetgp.wdegp import wdegp
+    from jetgp.wdegp.wdegp import wdegp
     from matplotlib import pyplot as plt
     import jetgp.utils as utils
 

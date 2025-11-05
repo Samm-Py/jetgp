@@ -8,8 +8,8 @@ import numpy as np
 import itertools
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils as utils
 
 
 # In[2]:

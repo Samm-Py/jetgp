@@ -17,6 +17,8 @@ dependencies:
   - sympy
   - line_profiler
   - scikit-learn
-  - pytest
-  - pytest-cov
-  - torch
+  - pytorch
+  - pip
+  - pip:
+    - pytest
+    - pytest-cov

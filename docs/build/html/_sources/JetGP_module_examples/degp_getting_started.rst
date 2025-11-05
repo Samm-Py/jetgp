@@ -30,7 +30,7 @@ Step 1: Import required packages
 .. jupyter-execute::
 
    import numpy as np
-   from full_degp.degp import degp
+   from jetgp.full_degp.degp import degp
    import matplotlib.pyplot as plt
 
    print("Modules imported successfully.")
@@ -356,7 +356,7 @@ Step 1: Import required packages
 .. jupyter-execute::
 
    import numpy as np
-   from full_degp.degp import degp
+   from jetgp.full_degp.degp import degp
    import matplotlib.pyplot as plt
    from mpl_toolkits.mplot3d import Axes3D
 
@@ -565,7 +565,7 @@ Step 1: Import required packages
 .. jupyter-execute::
 
    import numpy as np
-   from full_degp.degp import degp
+   from jetgp.full_degp.degp import degp
    import matplotlib.pyplot as plt
    from mpl_toolkits.mplot3d import Axes3D
 

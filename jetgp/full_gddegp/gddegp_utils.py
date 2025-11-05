@@ -3,55 +3,28 @@ import pyoti.sparse as oti
 from line_profiler import profile
 import pyoti.core as coti
 def make_first_odd(der_indices):
-    """Transform indices so first entry of each subcomponent is odd."""
-    # Check if it's a flat list of pairs or nested groups
-    if der_indices and isinstance(der_indices[0], list) and len(der_indices[0]) == 2 and isinstance(der_indices[0][0], int):
-        # Flat structure: [[1, 1], [1, 2]]
-        result = []
-        for pair in der_indices:
+
+    # Nested structure: [[[1, 1]], [[2, 1]], ...]
+    result = []
+    for group in der_indices:
+        new_group = []
+        for pair in group:
             first = pair[0]
-            # Make odd: if even, add 1; if odd, keep it
-            if first % 2 == 0:
-                result.append([first + 1, pair[1]])
-            else:
-                result.append(pair.copy())
-        return result
-    else:
-        # Nested structure: [[[1, 1]], [[2, 1]], ...]
-        result = []
-        for group in der_indices:
-            new_group = []
-            for pair in group:
-                first = pair[0]
-                if first % 2 == 0:
-                    new_group.append([first + 1, pair[1]])
-                else:
-                    new_group.append(pair.copy())
-            result.append(new_group)
-        return result
+            new_group.append([2*first - 1, pair[1]])
+        result.append(new_group)
+    return result
 
 def make_first_even(der_indices):
-    """Transform indices so first entry of each subcomponent is even."""
-    # Check if it's a flat list of pairs or nested groups
-    if der_indices and isinstance(der_indices[0], list) and len(der_indices[0]) == 2 and isinstance(der_indices[0][0], int):
-        # Flat structure: [[1, 1], [1, 2]]
-        result = []
-        for pair in der_indices:
+
+    # Nested structure: [[[1, 1]], [[2, 1]], ...]
+    result = []
+    for group in der_indices:
+        new_group = []
+        for pair in group:
             first = pair[0]
-            # Make even: double the value to ensure it's even
-            result.append([first * 2, pair[1]])
-        return result
-    else:
-        # Nested structure: [[[1, 1]], [[2, 1]], ...]
-        result = []
-        for group in der_indices:
-            new_group = []
-            for pair in group:
-                first = pair[0]
-                # Make even: double the value to ensure it's even
-                new_group.append([first * 2, pair[1]])
-            result.append(new_group)
-        return result
+            new_group.append([2*first, pair[1]])
+        result.append(new_group)
+    return result
 
 
 

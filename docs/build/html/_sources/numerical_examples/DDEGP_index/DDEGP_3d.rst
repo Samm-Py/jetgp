@@ -24,9 +24,8 @@ Setup
     import numpy as np
     import pyoti.sparse as oti
     import itertools
-    from full_ddegp.ddegp import ddegp
-    import utils
-    import plotting_helper
+    from jetgp.full_ddegp.ddegp import ddegp
+    import jetgp.utils as utils
 
 Configuration
 -------------
@@ -160,15 +159,47 @@ Visualization
 
 .. jupyter-execute::
 
+    import matplotlib.pyplot as plt
+    
     def visualize_slice(training_data, results):
         """Visualize GP prediction and true function on 2D slice."""
-        plotting_helper.make_plots(
-            training_data['X_train'], training_data['y_train_list'],
-            results['X_test'], results['y_pred'], true_function,
-            X1_grid=results['X1_grid'], X2_grid=results['X2_grid'],
-            n_order=n_order, plot_derivative_surrogates=False,
-            der_indices=training_data['der_indices']
-        )
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+        
+        # Reshape data for plotting
+        y_pred_grid = results['y_pred'].reshape(results['X1_grid'].shape)
+        y_true_grid = results['y_true'].reshape(results['X1_grid'].shape)
+        abs_error_grid = np.abs(results['y_true'] - results['y_pred']).reshape(results['X1_grid'].shape)
+        
+        # GP Prediction
+        c1 = axes[0].contourf(results['X1_grid'], results['X2_grid'], y_pred_grid, 
+                              levels=50, cmap="viridis")
+        axes[0].set_title(f"GP Prediction (x₃={slice_dimension_value})")
+        axes[0].set_xlabel("$x_1$")
+        axes[0].set_ylabel("$x_2$")
+        fig.colorbar(c1, ax=axes[0])
+        
+        # True Function
+        c2 = axes[1].contourf(results['X1_grid'], results['X2_grid'], y_true_grid, 
+                              levels=50, cmap="viridis")
+        axes[1].set_title("True Function")
+        axes[1].set_xlabel("$x_1$")
+        axes[1].set_ylabel("$x_2$")
+        fig.colorbar(c2, ax=axes[1])
+        
+        # Absolute Error
+        c3 = axes[2].contourf(results['X1_grid'], results['X2_grid'], abs_error_grid, 
+                              levels=50, cmap="magma")
+        axes[2].set_title(f"Absolute Error (NRMSE={results['nrmse']:.4f})")
+        axes[2].set_xlabel("$x_1$")
+        axes[2].set_ylabel("$x_2$")
+        fig.colorbar(c3, ax=axes[2])
+        
+        for ax in axes:
+            ax.set_aspect("equal")
+        
+        plt.tight_layout()
+        plt.show()
+        
         print(f"  Visualization of slice at x₃={slice_dimension_value} created.")
 
 Run Tutorial

@@ -6,8 +6,8 @@
 
 import numpy as np
 import pyoti.sparse as oti
-from full_degp.degp import degp
-import utils
+from jetgp.full_degp.degp import degp
+import jetgp.utils as utils
 import time
 from matplotlib import pyplot as plt
 from scipy.stats import qmc

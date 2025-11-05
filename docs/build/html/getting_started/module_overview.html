@@ -176,8 +176,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -210,7 +214,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -240,6 +244,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -486,8 +493,8 @@ Implements a standard Derivative-Enhanced Gaussian Process (DEGP) where function
 <li><p><strong>Class:</strong> <cite>wdegp</cite></p></li>
 <li><p><strong>Description:</strong>
 Implements the <strong>Weighted Derivative-Enhanced Gaussian Process (WDEGP)</strong> framework, inspired by the
-<em>Weighted Gradient-Enhanced Kriging (WGEK)</em> method introduced by Han <em>et al.</em> <span id="id1">[<a class="reference internal" href="../theory/directional_degp.html#id5" title="Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. AIAA Journal, 55(12):4330-4346, 2017. URL: https://doi.org/10.2514/1.J055842, arXiv:https://doi.org/10.2514/1.J055842, doi:10.2514/1.J055842.">12</a>]</span>
-and extended in <span id="id2">[<a class="reference internal" href="../theory/directional_degp.html#id4" title="\Chen Zhou\ Xu, \Zhong Hua\ Han, \Ke Shi\ Zhang, and \Wen Ping\ Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021. Publisher Copyright: © 2021 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. All rights reserved.; 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021 ; Conference date: 06-09-2021 Through 10-09-2021.">13</a>]</span>.</p>
+<em>Weighted Gradient-Enhanced Kriging (WGEK)</em> method introduced by Han <em>et al.</em> <span id="id1">[<a class="reference internal" href="../theory/weighted_gp.html#id8" title="Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. AIAA Journal, 55(12):4330-4346, 2017. URL: https://doi.org/10.2514/1.J055842, arXiv:https://doi.org/10.2514/1.J055842, doi:10.2514/1.J055842.">14</a>]</span>
+and extended in <span id="id2">[<a class="reference internal" href="../theory/weighted_gp.html#id7" title="Chen Zhou Xu, Zhong Hua Han, Ke Shi Zhang, and Wen Ping Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021.">20</a>]</span>.</p>
 <p>In this formulation, the training data are divided into smaller subsets to build multiple <strong>submodels</strong>,
 each trained on a reduced set of derivatives. Predictions from all submodels are then
 <strong>combined through weighted summation</strong>. This approach preserves the accuracy advantages of

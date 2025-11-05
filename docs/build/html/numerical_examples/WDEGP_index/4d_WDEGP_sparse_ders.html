@@ -175,8 +175,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -209,7 +213,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -239,6 +243,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -516,7 +523,7 @@ for a high-dimensional (4D) function. Key features include:</p>
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">generate_sobol_points</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
     <span class="n">sampler</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">Sobol</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">scramble</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -579,7 +586,7 @@ for a high-dimensional (4D) function. Key features include:</p>
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oti</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">prepare_submodel_data</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">submodel_indices</span><span class="p">):</span>
     <span class="n">main_derivatives</span> <span class="o">=</span> <span class="p">[</span>
@@ -622,7 +629,7 @@ for a high-dimensional (4D) function. Key features include:</p>
 <h2>Build and Optimize GP<a class="headerlink" href="#build-and-optimize-gp" title="Link to this heading">#</a></h2>
 <div class="jupyter_cell jupyter_container docutils container">
 <div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
 
 <span class="n">gp_model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
     <span class="n">X_train_reordered</span><span class="p">,</span> <span class="n">submodel_data</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span>
@@ -642,49 +649,49 @@ for a high-dimensional (4D) function. Key features include:</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=571.4019621875942
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=806.9259411367651
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=571.4019621875942
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=806.9259411367651
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=571.4019621875942
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=806.9259411367651
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=571.4019621875942
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=806.9259411367651
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=571.4019621875942
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=737.0499013793097
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=571.4019621875942
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=737.0499013793097
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=558.5655991364986
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=737.0499013793097
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=558.5655991364986
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=737.0499013793097
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=558.5655991364986
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=737.0499013793097
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=502.3793582794559
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=723.8981599377895
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=502.3793582794559
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=723.8981599377895
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=502.3793582794559
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=723.8981599377895
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=502.3793582794559
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=723.8981599377895
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=502.3793582794559
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=723.8981599377895
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=502.3793582794559
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=721.7770025318879
 GP model built and optimized.
 </pre></div>
 </div>

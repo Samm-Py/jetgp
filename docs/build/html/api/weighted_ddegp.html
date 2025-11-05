@@ -175,8 +175,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -209,7 +213,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -414,9 +418,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -432,29 +434,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp.wddegp"><code class="docutils literal notranslate"><span class="pre">wddegp</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp.wddegp.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">wddegp.optimize_hyperparameters()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp.wddegp.predict"><code class="docutils literal notranslate"><span class="pre">wddegp.predict()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.determine_weights"><code class="docutils literal notranslate"><span class="pre">determine_weights()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer.negative_log_marginal_likelihood"><code class="docutils literal notranslate"><span class="pre">Optimizer.negative_log_marginal_likelihood()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer.nll_wrapper"><code class="docutils literal notranslate"><span class="pre">Optimizer.nll_wrapper()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_hyperparameters()</span></code></a></li>
-</ul>
-</li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -464,248 +443,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-wddegp.wddegp">
-<span id="weighted-ddegp-wddegp"></span><h1>Weighted DDEGP (WDDEGP)<a class="headerlink" href="#module-wddegp.wddegp" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="wddegp.wddegp.wddegp">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wddegp.wddegp.</span></span><span class="sig-name descname"><span class="pre">wddegp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'anisotropic'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp.html#wddegp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.wddegp" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP) model.</p>
-<p>This model augments standard GP regression by incorporating weighted directional derivatives
-through a hypercomplex framework. It supports submodel decomposition to handle multiple
-directional structures and adapts to anisotropic kernels.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x_train</strong> (<em>ndarray</em>) – Training input locations (N, d).</p></li>
-<li><p><strong>y_train</strong> (<em>list</em><em> of </em><em>arrays</em>) – List of training outputs, including function values and derivatives.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Order of directional derivatives.</p></li>
-<li><p><strong>n_bases</strong> (<em>int</em>) – Number of hypercomplex basis components.</p></li>
-<li><p><strong>index</strong> (<em>list</em><em> of </em><em>lists</em>) – Submodel point indices.</p></li>
-<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Multi-index derivative directions for each submodel.</p></li>
-<li><p><strong>rays</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Directional vectors associated with each submodel.</p></li>
-<li><p><strong>normalize</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to normalize the data.</p></li>
-<li><p><strong>sigma_data</strong> (<em>ndarray</em><em> or </em><em>None</em>) – Noise variances for each data point.</p></li>
-<li><p><strong>kernel</strong> (<em>str</em><em>, </em><em>default=&quot;SE&quot;</em>) – Kernel type (‘SE’, ‘RQ’, etc).</p></li>
-<li><p><strong>kernel_type</strong> (<em>str</em><em>, </em><em>default=&quot;anisotropic&quot;</em>) – Use ‘anisotropic’ or ‘isotropic’ kernel behavior.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="wddegp.wddegp.wddegp.optimize_hyperparameters">
-<span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp.html#wddegp.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.wddegp.optimize_hyperparameters" title="Link to this definition">#</a></dt>
-<dd><p>Optimize kernel hyperparameters using PSO to minimize the marginal likelihood.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>best_x</strong> – Optimal log-transformed hyperparameters.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="wddegp.wddegp.wddegp.predict">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_submodels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp.html#wddegp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp.wddegp.predict" title="Link to this definition">#</a></dt>
-<dd><p>Predict mean and optionally variance at new input locations using the wdDEGP model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X_test</strong> (<em>ndarray</em>) – Input locations to predict (M, d).</p></li>
-<li><p><strong>length_scales</strong> (<em>ndarray</em>) – Optimized log-transformed kernel hyperparameters.</p></li>
-<li><p><strong>calc_cov</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True, return predictive variance.</p></li>
-<li><p><strong>return_submodels</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If True, return individual submodel predictions and variances.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>y_val</strong> (<em>ndarray</em>) – Predicted function values at X_test.</p></li>
-<li><p><strong>y_var</strong> (<em>ndarray, optional</em>) – Predicted variances if calc_cov is True.</p></li>
-<li><p><strong>submodel_vals</strong> (<em>list of ndarray, optional</em>) – Submodel predictions.</p></li>
-<li><p><strong>submodel_cov</strong> (<em>list of ndarray, optional</em>) – Submodel variances.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function" id="module-wddegp.wddegp_utils">
-<dt class="sig sig-object py" id="wddegp.wddegp_utils.deriv_map">
-<span class="sig-prename descclassname"><span class="pre">wddegp.wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">deriv_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp_utils.html#deriv_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp_utils.deriv_map" title="Link to this definition">#</a></dt>
-<dd><p>Creates a mapping from (order, index_within_order) to a single
-flattened index for all derivative components.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="wddegp.wddegp_utils.determine_weights">
-<span class="sig-prename descclassname"><span class="pre">wddegp.wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">determine_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">diffs_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">diffs_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp_utils.html#determine_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp_utils.determine_weights" title="Link to this definition">#</a></dt>
-<dd><p>Vectorized version: compute interpolation weights for multiple test points at once.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>diffs_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences between training points (by dimension).</p></li>
-<li><p><strong>diffs_test</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences between test points and training points (by dimension).
-Shape: each array is (n_test, n_train) or similar batch dimension.</p></li>
-<li><p><strong>length_scales</strong> (<em>array-like</em>) – Kernel hyperparameters.</p></li>
-<li><p><strong>kernel_func</strong> (<em>callable</em>) – Kernel function.</p></li>
-<li><p><strong>sigma_n</strong> (<em>float</em>) – Noise parameter (if needed).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>weights_matrix</strong> – Interpolation weights for each test point.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray of shape (n_test, n_train)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="wddegp.wddegp_utils.differences_by_dim_func">
-<span class="sig-prename descclassname"><span class="pre">wddegp.wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">differences_by_dim_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp_utils.html#differences_by_dim_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp_utils.differences_by_dim_func" title="Link to this definition">#</a></dt>
-<dd><p>Compute directional differences between input arrays X1 and X2 along specified rays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X1</strong> (<em>ndarray</em>) – Array of shape (n_samples1, n_features) representing the first set of input points.</p></li>
-<li><p><strong>X2</strong> (<em>ndarray</em>) – Array of shape (n_samples2, n_features) representing the second set of input points.</p></li>
-<li><p><strong>rays</strong> (<em>ndarray</em>) – Array of shape (n_features, n_rays) representing direction vectors.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order for hypercomplex expansion.</p></li>
-<li><p><strong>index</strong> (<em>int</em><em>, </em><em>default=-1</em>) – Index of the current submodel (used to select directional rays specific to this submodel).</p></li>
-<li><p><strong>index_list</strong> (<em>list</em><em>, </em><em>default=</em><em>[</em><em>]</em>) – List of indices corresponding to the training points included in the current submodel.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>differences_by_dim</strong> – List containing the directional differences for each feature dimension.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list of ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="wddegp.wddegp_utils.rbf_kernel">
-<span class="sig-prename descclassname"><span class="pre">wddegp.wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">powers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp_utils.rbf_kernel" title="Link to this definition">#</a></dt>
-<dd><p>Constructs the RBF kernel matrix with derivative entries using an
-efficient pre-allocation strategy combined with a single call to
-extract all derivative components.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>differences</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Precomputed pairwise differences by dimension.</p></li>
-<li><p><strong>length_scales</strong> (<em>ndarray</em>) – Kernel hyperparameters.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
-<li><p><strong>n_bases</strong> (<em>int</em>) – Number of hypercomplex bases (input dimensions).</p></li>
-<li><p><strong>kernel_func</strong> (<em>callable</em>) – Base kernel function that returns a hypercomplex result.</p></li>
-<li><p><strong>der_indices</strong> (<em>list</em>) – List of derivative multi-indices to include.</p></li>
-<li><p><strong>powers</strong> (<em>list</em>) – Parity powers for applying sign conventions.</p></li>
-<li><p><strong>index</strong> (<em>list</em><em> or </em><em>int</em><em>, </em><em>optional</em>) – Indices of points that have derivative information.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>K</strong> – Fully assembled kernel matrix with function and derivative blocks.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="wddegp.wddegp_utils.transform_der_indices">
-<span class="sig-prename descclassname"><span class="pre">wddegp.wddegp_utils.</span></span><span class="sig-name descname"><span class="pre">transform_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/wddegp_utils.html#transform_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.wddegp_utils.transform_der_indices" title="Link to this definition">#</a></dt>
-<dd><p>Transforms a list of user-facing derivative specifications into the
-internal (order, index) format and the final flattened index.</p>
-</dd></dl>
-
-<dl class="py class" id="module-wddegp.optimizer">
-<dt class="sig sig-object py" id="wddegp.optimizer.Optimizer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wddegp.optimizer.</span></span><span class="sig-name descname"><span class="pre">Optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/optimizer.html#Optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.optimizer.Optimizer" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Optimizer class for Weighted Directional Derivative-Enhanced Gaussian Process (wdDEGP).</p>
-<p>This optimizer uses Particle Swarm Optimization (PSO) to minimize the negative log marginal likelihood (NLL)
-across submodels of the wdDEGP framework. Each submodel corresponds to a subset of data associated with
-directional derivative observations and uses a dedicated radial basis kernel to model correlations.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>model</strong> (<em>object</em>) – An instance of the <cite>wddegp</cite> model containing submodel structures, training data,
-kernel functions, and noise matrices.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="wddegp.optimizer.Optimizer.negative_log_marginal_likelihood">
-<span class="sig-name descname"><span class="pre">negative_log_marginal_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rays_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/optimizer.html#Optimizer.negative_log_marginal_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.optimizer.Optimizer.negative_log_marginal_likelihood" title="Link to this definition">#</a></dt>
-<dd><p>Compute the total negative log marginal likelihood (NLL) across all wdDEGP submodels.</p>
-<p>NLL = 0.5 * y^T K^-1 y + 0.5 * log|K| + 0.5 * N * log(2 * pi)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x0</strong> (<em>ndarray</em>) – Log-scaled hyperparameters including kernel parameters and noise.</p></li>
-<li><p><strong>x_train</strong> (<em>ndarray</em>) – Training input data.</p></li>
-<li><p><strong>y_train</strong> (<em>list</em><em> of </em><em>ndarray</em>) – List of outputs for each submodel.</p></li>
-<li><p><strong>sigma_n</strong> (<em>float</em><em> or </em><em>array-like</em>) – Observation noise vector or matrix.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
-<li><p><strong>n_bases</strong> (<em>int</em>) – Number of OTI basis terms.</p></li>
-<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Directional derivative indices per submodel.</p></li>
-<li><p><strong>index</strong> (<em>list</em><em> of </em><em>lists</em>) – Index mapping of training points to submodels.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Total NLL for all submodels.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="wddegp.optimizer.Optimizer.nll_wrapper">
-<span class="sig-name descname"><span class="pre">nll_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/optimizer.html#Optimizer.nll_wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.optimizer.Optimizer.nll_wrapper" title="Link to this definition">#</a></dt>
-<dd><p>Wrapper for negative_log_marginal_likelihood using internal model state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x0</strong> (<em>ndarray</em>) – Vector of hyperparameters.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>NLL value.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="wddegp.optimizer.Optimizer.optimize_hyperparameters">
-<span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pso'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/wddegp/optimizer.html#Optimizer.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wddegp.optimizer.Optimizer.optimize_hyperparameters" title="Link to this definition">#</a></dt>
-<dd><p>Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).</p>
-<section id="parameters">
-<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
-<dl class="simple">
-<dt>n_restart_optimizer<span class="classifier">int, default=20</span></dt><dd><p>Maximum number of iterations for PSO.</p>
-</dd>
-<dt>swarm_size<span class="classifier">int, default=20</span></dt><dd><p>Number of particles in the swarm.</p>
-</dd>
-<dt>verbose<span class="classifier">bool, default=True</span></dt><dd><p>Controls verbosity of PSO output.</p>
-</dd>
-</dl>
-</section>
-<section id="returns">
-<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
-<dl class="simple">
-<dt>best_x<span class="classifier">ndarray</span></dt><dd><p>The optimal set of hyperparameters found.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-</dd></dl>
-
+  <section id="weighted-ddegp-wddegp">
+<h1>Weighted DDEGP (WDDEGP)<a class="headerlink" href="#weighted-ddegp-wddegp" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -743,36 +482,6 @@ kernel functions, and noise matrices.</p>
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp.wddegp"><code class="docutils literal notranslate"><span class="pre">wddegp</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp.wddegp.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">wddegp.optimize_hyperparameters()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp.wddegp.predict"><code class="docutils literal notranslate"><span class="pre">wddegp.predict()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.determine_weights"><code class="docutils literal notranslate"><span class="pre">determine_weights()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.wddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer.negative_log_marginal_likelihood"><code class="docutils literal notranslate"><span class="pre">Optimizer.negative_log_marginal_likelihood()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer.nll_wrapper"><code class="docutils literal notranslate"><span class="pre">Optimizer.nll_wrapper()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp.optimizer.Optimizer.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_hyperparameters()</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

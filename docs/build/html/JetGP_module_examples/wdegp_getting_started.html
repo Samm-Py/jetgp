@@ -176,8 +176,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -210,7 +214,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -240,6 +244,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -599,8 +606,8 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oti</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 </pre></div>
 </div>
 </div>
@@ -1053,9 +1060,7 @@ Submodel 7 at Point 7 (x = 2.056):
                    Abs Error: 3.04e-10, Rel Error: 9.31e-11
   2nd derivative - Analytic: -221.649371, FD: -221.649810
                    Abs Error: 4.39e-04, Rel Error: 1.98e-06
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+
 Submodel 8 at Point 8 (x = 2.278):
   1st derivative - Analytic: +3.000267, FD: +3.000267
                    Abs Error: 9.86e-10, Rel Error: 3.29e-10
@@ -1191,8 +1196,8 @@ By leveraging higher-order derivative information and a weighted aggregation str
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 </pre></div>
 </div>
 </div>
@@ -1720,8 +1725,8 @@ Since this example uses a single submodel, only one curve is displayed. This sub
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 </pre></div>
 </div>
 </div>
@@ -2595,8 +2600,8 @@ The single submodel leverages both function values at all 10 training points and
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 </pre></div>
 </div>
 </div>
@@ -3127,7 +3132,7 @@ X_train[1] (SM1, x=0.9444): Abs Error = 1.11e-16, Rel Error = 2.13e-16
 X_train[2] (SM1, x=1.3889): Abs Error = 2.50e-16, Rel Error = 2.49e-15
 X_train[3] (SM1, x=1.8333): Abs Error = 0.00e+00, Rel Error = 0.00e+00
 X_train[4] (SM1, x=2.2778): Abs Error = 4.44e-16, Rel Error = 1.58e-16
-X_train[5] (SM2, x=0.7222): Abs Error = 5.55e-17, Rel Error = 1.26e-16
+X_train[5] (SM2, x=0.7222): Abs Error = 1.11e-16, Rel Error = 2.53e-16
 X_train[6] (SM2, x=1.1667): Abs Error = 0.00e+00, Rel Error = 0.00e+00
 X_train[7] (SM2, x=1.6111): Abs Error = 3.05e-16, Rel Error = 1.24e-15
 X_train[8] (SM2, x=2.0556): Abs Error = 0.00e+00, Rel Error = 0.00e+00
@@ -3558,9 +3563,9 @@ This visualization shows how each submodel makes predictions across the entire d
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">})</span>
 </pre></div>
@@ -4500,17 +4505,13 @@ Note: Using larger h (1e-5) for 2nd order derivatives to improve numerical stabi
 
 Submodel 3 at X_train[12] (original index 5)
   Location: x₁=-0.333, x₂=-0.333
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  ∂f/∂x₁ - Analytic: -2.697119, FD: -2.694116
+  ∂f/∂x₁ - Analytic: -2.697119, FD: -2.694116
            Abs Error: 3.00e-03, Rel Error: 1.11e-03
   ∂f/∂x₂ - Analytic: +1.740741, FD: +1.741412
            Abs Error: 6.71e-04, Rel Error: 3.86e-04
   ∂²f/∂x₁² - Analytic: +5.323457, FD: +5.333346
              Abs Error: 9.89e-03, Rel Error: 1.86e-03
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  ∂²f/∂x₁∂x₂ - Analytic: +1.000000, FD: +0.997820
+  ∂²f/∂x₁∂x₂ - Analytic: +1.000000, FD: +0.997820
                Abs Error: 2.18e-03, Rel Error: 2.18e-03
   ∂²f/∂x₂² - Analytic: -2.666667, FD: -2.656455
              Abs Error: 1.02e-02, Rel Error: 3.83e-03
@@ -4530,13 +4531,17 @@ Submodel 3 at X_train[13] (original index 6)
 
 Submodel 3 at X_train[14] (original index 9)
   Location: x₁=0.333, x₂=-0.333
-  ∂f/∂x₁ - Analytic: +2.030453, FD: +2.029978
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  ∂f/∂x₁ - Analytic: +2.030453, FD: +2.029978
            Abs Error: 4.74e-04, Rel Error: 2.34e-04
   ∂f/∂x₂ - Analytic: +2.407407, FD: +2.407627
            Abs Error: 2.20e-04, Rel Error: 9.14e-05
   ∂²f/∂x₁² - Analytic: +5.323457, FD: +5.327205
              Abs Error: 3.75e-03, Rel Error: 7.04e-04
-  ∂²f/∂x₁∂x₂ - Analytic: +1.000000, FD: +0.998410
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  ∂²f/∂x₁∂x₂ - Analytic: +1.000000, FD: +0.998410
                Abs Error: 1.59e-03, Rel Error: 1.59e-03
   ∂²f/∂x₂² - Analytic: -2.666667, FD: -2.665492
              Abs Error: 1.17e-03, Rel Error: 4.41e-04
@@ -4549,9 +4554,7 @@ Submodel 3 at X_train[15] (original index 10)
            Abs Error: 1.55e-03, Rel Error: 8.92e-04
   ∂²f/∂x₁² - Analytic: +5.323457, FD: +5.328717
              Abs Error: 5.26e-03, Rel Error: 9.88e-04
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  ∂²f/∂x₁∂x₂ - Analytic: +1.000000, FD: +1.000260
+  ∂²f/∂x₁∂x₂ - Analytic: +1.000000, FD: +1.000260
                Abs Error: 2.60e-04, Rel Error: 2.60e-04
   ∂²f/∂x₂² - Analytic: -2.666667, FD: -2.660328
              Abs Error: 6.34e-03, Rel Error: 2.38e-03

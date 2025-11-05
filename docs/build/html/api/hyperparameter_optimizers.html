@@ -175,8 +175,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -209,7 +213,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -239,6 +243,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -411,9 +418,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -429,18 +434,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.cobyla.cobyla"><code class="docutils literal notranslate"><span class="pre">cobyla()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.jade.jade"><code class="docutils literal notranslate"><span class="pre">jade()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.lbfgs.lbfgs"><code class="docutils literal notranslate"><span class="pre">lbfgs()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.powell.powell"><code class="docutils literal notranslate"><span class="pre">powell()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.pso.pso"><code class="docutils literal notranslate"><span class="pre">pso()</span></code></a></li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -450,83 +443,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-hyperparameter_optimizers.cobyla">
-<span id="hyperparameter-optimizers"></span><h1>Hyperparameter Optimizers<a class="headerlink" href="#module-hyperparameter_optimizers.cobyla" title="Link to this heading">#</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="hyperparameter_optimizers.cobyla.cobyla">
-<span class="sig-prename descclassname"><span class="pre">hyperparameter_optimizers.cobyla.</span></span><span class="sig-name descname"><span class="pre">cobyla</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hyperparameter_optimizers/cobyla.html#cobyla"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hyperparameter_optimizers.cobyla.cobyla" title="Link to this definition">#</a></dt>
-<dd><p>COBYLA optimizer with bounds as inequality constraints and multi-start.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> (<em>callable</em>) – Function to minimize.</p></li>
-<li><p><strong>lb</strong> (<em>array-like</em>) – Lower and upper bounds.</p></li>
-<li><p><strong>ub</strong> (<em>array-like</em>) – Lower and upper bounds.</p></li>
-<li><p><strong>kwargs</strong> (<em>dict</em>) – Optional arguments:
-- x0 : initial guess for first restart
-- n_restart_optimizer : number of random restarts (default=10)
-- debug : bool, print intermediate results (default=False)
-- Any COBYLA options: maxiter, rhobeg, catol, f_target</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function" id="module-hyperparameter_optimizers.jade">
-<dt class="sig sig-object py" id="hyperparameter_optimizers.jade.jade">
-<span class="sig-prename descclassname"><span class="pre">hyperparameter_optimizers.jade.</span></span><span class="sig-name descname"><span class="pre">jade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hyperparameter_optimizers/jade.html#jade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hyperparameter_optimizers.jade.jade" title="Link to this definition">#</a></dt>
-<dd><p>Wrapper for JADE with unified interface.</p>
-</dd></dl>
-
-<dl class="py function" id="module-hyperparameter_optimizers.lbfgs">
-<dt class="sig sig-object py" id="hyperparameter_optimizers.lbfgs.lbfgs">
-<span class="sig-prename descclassname"><span class="pre">hyperparameter_optimizers.lbfgs.</span></span><span class="sig-name descname"><span class="pre">lbfgs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hyperparameter_optimizers/lbfgs.html#lbfgs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hyperparameter_optimizers.lbfgs.lbfgs" title="Link to this definition">#</a></dt>
-<dd><p>L-BFGS-B optimizer with bounds and multi-start.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> (<em>callable</em>) – Function to minimize.</p></li>
-<li><p><strong>lb</strong> (<em>array-like</em>) – Lower and upper bounds.</p></li>
-<li><p><strong>ub</strong> (<em>array-like</em>) – Lower and upper bounds.</p></li>
-<li><p><strong>kwargs</strong> (<em>dict</em>) – Optional arguments:
-- x0 : initial guess for first restart
-- n_restart_optimizer : number of random restarts (default=10)
-- maxiter : max iterations per restart (default=100)
-- ftol : function tolerance (default=1e-8)
-- gtol : gradient tolerance (default=1e-8)
-- debug : bool, print intermediate results (default=False)
-- disp : bool, print optimization info (default=False)</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function" id="module-hyperparameter_optimizers.powell">
-<dt class="sig sig-object py" id="hyperparameter_optimizers.powell.powell">
-<span class="sig-prename descclassname"><span class="pre">hyperparameter_optimizers.powell.</span></span><span class="sig-name descname"><span class="pre">powell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hyperparameter_optimizers/powell.html#powell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hyperparameter_optimizers.powell.powell" title="Link to this definition">#</a></dt>
-<dd><p>Powell’s method with bounds and multi-start.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>func</strong> (<em>callable</em>) – Function to minimize.</p></li>
-<li><p><strong>lb</strong> (<em>array-like</em>) – Lower and upper bounds.</p></li>
-<li><p><strong>ub</strong> (<em>array-like</em>) – Lower and upper bounds.</p></li>
-<li><p><strong>kwargs</strong> (<em>dict</em>) – Optional arguments:
-- x0 : initial guess for first restart
-- n_restart_optimizer : number of random restarts (default=10)
-- debug : bool, print intermediate results (default=False)
-- Any Powell-specific options: maxiter, xtol, ftol, disp</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function" id="module-hyperparameter_optimizers.pso">
-<dt class="sig sig-object py" id="hyperparameter_optimizers.pso.pso">
-<span class="sig-prename descclassname"><span class="pre">hyperparameter_optimizers.pso.</span></span><span class="sig-name descname"><span class="pre">pso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/hyperparameter_optimizers/pso.html#pso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#hyperparameter_optimizers.pso.pso" title="Link to this definition">#</a></dt>
-<dd><p>Wrapper for PSO with unified interface.</p>
-</dd></dl>
-
+  <section id="hyperparameter-optimizers">
+<h1>Hyperparameter Optimizers<a class="headerlink" href="#hyperparameter-optimizers" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -564,25 +482,6 @@ document.write(`
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.cobyla.cobyla"><code class="docutils literal notranslate"><span class="pre">cobyla()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.jade.jade"><code class="docutils literal notranslate"><span class="pre">jade()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.lbfgs.lbfgs"><code class="docutils literal notranslate"><span class="pre">lbfgs()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.powell.powell"><code class="docutils literal notranslate"><span class="pre">powell()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hyperparameter_optimizers.pso.pso"><code class="docutils literal notranslate"><span class="pre">pso()</span></code></a></li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

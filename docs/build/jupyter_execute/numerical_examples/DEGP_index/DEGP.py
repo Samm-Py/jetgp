@@ -7,8 +7,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti
-from full_degp.degp import degp
-import utils
+from jetgp.full_degp.degp import degp
+import jetgp.utils as utils
 import time
 
 plt.rcParams.update({'font.size': 12})

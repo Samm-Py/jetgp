@@ -13,7 +13,7 @@ Configuration
     import itertools
     from jetgp.full_gddegp.gddegp import gddegp
     from scipy.stats import qmc
-    import utils
+    import jetgp.utils as utils
 
     n_order = 1
     n_bases = 3
@@ -162,10 +162,11 @@ Generate Training Data
         
         # Extract derivatives
         y_train_list = [f_hc.real.reshape(-1, 1)]
-        der_indices_to_extract = [[[i, 1]] for i in range(1, num_directions_per_point+1)]
+        der_indices_to_extract = [ [ [[i, 1]] for i in range(1, num_directions_per_point+1)]]
         
-        for idx in der_indices_to_extract:
-            y_train_list.append(f_hc.get_deriv(idx).reshape(-1, 1))
+        for group in der_indices_to_extract:
+            for sub_group in group:
+                y_train_list.append(f_hc.get_deriv(sub_group).reshape(-1, 1))
         
         print(f"Data structure:")
         print(f"  Function values: {y_train_list[0].shape}")
@@ -194,7 +195,7 @@ Train GDDEGP Model
         gp_model = gddegp(
             training_data['X_train'],
             training_data['y_train_list'],
-            n_order=[1, 1, 1],
+            n_order=1,
             rays_array=rays_array,
             der_indices=training_data['der_indices'],
             normalize=normalize_data,

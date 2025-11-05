@@ -69,8 +69,8 @@ Step 1: Import required packages
    import numpy as np
    import matplotlib.pyplot as plt
    import pyoti.sparse as oti
-   from wdegp.wdegp import wdegp
-   import utils
+   from jetgp.wdegp.wdegp import wdegp
+   import jetgp.utils as utils
 
 **Explanation:**  
 We import the required modules for numerical operations, visualization, and automatic differentiation.  
@@ -506,8 +506,8 @@ Step 1: Import required packages
     import numpy as np
     import sympy as sp
     import matplotlib.pyplot as plt
-    from wdegp.wdegp import wdegp
-    import utils
+    from jetgp.wdegp.wdegp import wdegp
+    import jetgp.utils as utils
 
 **Explanation:**  
 We import the required modules for numerical operations, symbolic differentiation, visualization, and the WDEGP framework.
@@ -909,8 +909,8 @@ Step 1: Import required packages
     import numpy as np
     import sympy as sp
     import matplotlib.pyplot as plt
-    from wdegp.wdegp import wdegp
-    import utils
+    from jetgp.wdegp.wdegp import wdegp
+    import jetgp.utils as utils
 
 **Explanation:**  
 We import the required modules for numerical operations, symbolic differentiation, visualization, and the WDEGP framework.
@@ -1548,8 +1548,8 @@ Step 1: Import required packages
     import numpy as np
     import sympy as sp
     import matplotlib.pyplot as plt
-    from wdegp.wdegp import wdegp
-    import utils
+    from jetgp.wdegp.wdegp import wdegp
+    import jetgp.utils as utils
 
 **Explanation:**  
 We import the required modules for numerical operations, symbolic differentiation, visualization, and the WDEGP framework.
@@ -2249,9 +2249,9 @@ Step 1: Import required packages
     import numpy as np
     import sympy as sp
     import itertools
-    from wdegp.wdegp import wdegp
+    from jetgp.wdegp.wdegp import wdegp
     from matplotlib import pyplot as plt
-    import utils
+    import jetgp.utils as utils
 
     plt.rcParams.update({'font.size': 12})
 

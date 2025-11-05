@@ -42,7 +42,7 @@ def styblinski_tang_function(X, alg=oti):
 
 
 from scipy.stats import qmc
-import utils
+import jetgp.utils as utils
 
 def generate_sobol_points(num_points):
     sampler = qmc.Sobol(d=n_bases, scramble=True)
@@ -87,7 +87,7 @@ print("Reordered training points shape:", X_train_reordered.shape)
 
 
 import pyoti.sparse as oti
-import utils
+import jetgp.utils as utils
 
 def prepare_submodel_data(X_train, submodel_indices):
     main_derivatives = [
@@ -121,7 +121,7 @@ print("Number of submodels:", len(submodel_data))
 # In[6]:
 
 
-from wdegp.wdegp import wdegp
+from jetgp.wdegp.wdegp import wdegp
 
 gp_model = wdegp(
     X_train_reordered, submodel_data, n_order, n_bases,

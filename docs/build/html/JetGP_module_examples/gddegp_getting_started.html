@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/gddegp_getting_started';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)" href="wddegp_getting_started.html" />
+    <link rel="next" title="Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)" href="wddegp_getting_started_v2.html" />
     <link rel="prev" title="Directional Derivative-Enhanced Gaussian Process (DDEGP)" href="ddegp_getting_started.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -176,8 +176,12 @@
 <li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-Output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
 </ul>
 </details></li>
 </ul>
@@ -210,7 +214,7 @@
 <li class="toctree-l2"><a class="reference internal" href="ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -240,6 +244,9 @@
 <li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
 </ul>
 </details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
 </ul>
 
     </div>
@@ -528,12 +535,12 @@ document.write(`
 <div class="cell_input code_cell docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">})</span>
 </pre></div>
@@ -697,7 +704,7 @@ This utility function draws arrows representing gradient directions while ensuri
 <span class="c1"># 5. Package training data</span>
 <span class="c1"># y_train_list should be a list of two arrays, each of shape [num_training_pts, 1]</span>
 <span class="n">y_train_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">y_func</span><span class="p">,</span> <span class="n">directional_derivs_array</span><span class="p">]</span>
-<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Training data generated!&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_train shape: </span><span class="si">{</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -760,7 +767,7 @@ This step performs several critical operations:</p>
 <span class="n">gp_model</span> <span class="o">=</span> <span class="n">gddegp</span><span class="p">(</span>
     <span class="n">X_train</span><span class="p">,</span>
     <span class="n">y_train_list</span><span class="p">,</span>
-    <span class="n">n_order</span><span class="o">=</span><span class="p">[</span><span class="n">n_order</span><span class="p">],</span>
+    <span class="n">n_order</span><span class="o">=</span><span class="n">n_order</span><span class="p">,</span>
     <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span>
     <span class="n">rays_array</span><span class="o">=</span><span class="p">[</span><span class="n">rays_array</span><span class="p">],</span>
     <span class="n">normalize</span><span class="o">=</span><span class="n">normalize_data</span><span class="p">,</span>
@@ -1263,12 +1270,12 @@ training point)</p></td>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">oti</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">itertools</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogNorm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;font.size&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">})</span>
 </pre></div>
@@ -1466,7 +1473,7 @@ This utility function draws arrows representing ray directions while ensuring th
         <span class="n">derivs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deriv</span><span class="p">)</span>
     <span class="n">y_train_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">derivs</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 
-<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>  <span class="c1"># Keep for compatibility if needed</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>  <span class="c1"># Keep for compatibility if needed</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Training data generated!&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Function values: </span><span class="si">{</span><span class="n">y_train_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1533,7 +1540,7 @@ This step performs several critical operations:</p>
 <span class="n">gp_model</span> <span class="o">=</span> <span class="n">gddegp</span><span class="p">(</span>
     <span class="n">X_train</span><span class="p">,</span>
     <span class="n">y_train_list</span><span class="p">,</span>
-    <span class="n">n_order</span><span class="o">=</span><span class="p">[</span><span class="n">n_order</span><span class="p">,</span> <span class="n">n_order</span><span class="p">],</span>
+    <span class="n">n_order</span><span class="o">=</span><span class="n">n_order</span><span class="p">,</span>
     <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span>
     <span class="n">rays_array</span><span class="o">=</span><span class="n">rays_array</span><span class="p">,</span>
     <span class="n">normalize</span><span class="o">=</span><span class="n">normalize_data</span><span class="p">,</span>
@@ -2094,7 +2101,7 @@ distribution</p></td>
       </div>
     </a>
     <a class="right-next"
-       href="wddegp_getting_started.html"
+       href="wddegp_getting_started_v2.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>

@@ -213,7 +213,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
 
-<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wddegp_getting_started_v2.html">Weighted Directional Derivative-Enhanced Gaussian Process (WDDEGP)</a></li>
 
 </ul>
 </details></li>
@@ -418,9 +418,7 @@ document.write(`
   </button>
 `);
 </script>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="fa-solid fa-list"></span>
-</button>
+
 </div></div>
       
     </div>
@@ -436,28 +434,6 @@ document.write(`
     <div id="print-main-content">
         <div id="jb-print-toc">
             
-            <div>
-                <h2> Contents </h2>
-            </div>
-            <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp.ddegp"><code class="docutils literal notranslate"><span class="pre">ddegp</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp.ddegp.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">ddegp.optimize_hyperparameters()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp.ddegp.predict"><code class="docutils literal notranslate"><span class="pre">ddegp.predict()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer.negative_log_marginal_likelihood"><code class="docutils literal notranslate"><span class="pre">Optimizer.negative_log_marginal_likelihood()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer.nll_wrapper"><code class="docutils literal notranslate"><span class="pre">Optimizer.nll_wrapper()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_hyperparameters()</span></code></a></li>
-</ul>
-</li>
-</ul>
-            </nav>
         </div>
     </div>
 </div>
@@ -467,197 +443,8 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="module-full_ddegp.ddegp">
-<span id="full-ddegp"></span><h1>Full DDEGP<a class="headerlink" href="#module-full_ddegp.ddegp" title="Link to this heading">#</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="full_ddegp.ddegp.ddegp">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">full_ddegp.ddegp.</span></span><span class="sig-name descname"><span class="pre">ddegp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'anisotropic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothness_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp.html#ddegp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp.ddegp" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Directional Derivative-Enhanced Gaussian Process (dDEGP) model.</p>
-<p>Supports multiple directional derivatives, hypercomplex representation,
-and automatic normalization. Includes methods for training, prediction,
-and uncertainty quantification using kernel methods.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x_train</strong> (<em>ndarray</em>) – Training input data of shape (n_samples, n_features).</p></li>
-<li><p><strong>y_train</strong> (<em>list</em><em> or </em><em>ndarray</em>) – Training targets or list of directional derivatives.</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
-<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Derivative multi-indices corresponding to each derivative term.</p></li>
-<li><p><strong>rays</strong> (<em>ndarray</em>) – Array of shape (d, n_rays), where each column is a direction vector.</p></li>
-<li><p><strong>normalize</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to normalize inputs and outputs.</p></li>
-<li><p><strong>sigma_data</strong> (<em>float</em><em> or </em><em>array-like</em><em>, </em><em>optional</em>) – Observation noise standard deviation or diagonal noise values.</p></li>
-<li><p><strong>kernel</strong> (<em>str</em><em>, </em><em>default='SE'</em>) – Kernel type (‘SE’, ‘RQ’, ‘Matern’, etc.).</p></li>
-<li><p><strong>kernel_type</strong> (<em>str</em><em>, </em><em>default='anisotropic'</em>) – Kernel anisotropy (‘anisotropic’ or ‘isotropic’).</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="full_ddegp.ddegp.ddegp.optimize_hyperparameters">
-<span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp.html#ddegp.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp.ddegp.optimize_hyperparameters" title="Link to this definition">#</a></dt>
-<dd><p>Run the optimizer to find the best kernel hyperparameters.
-Returns optimized hyperparameter vector.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="full_ddegp.ddegp.ddegp.predict">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp.html#ddegp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp.ddegp.predict" title="Link to this definition">#</a></dt>
-<dd><p>Predict posterior mean and optional variance at test points.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X_test</strong> (<em>ndarray</em>) – Test input points of shape (n_test, n_features).</p></li>
-<li><p><strong>params</strong> (<em>ndarray</em>) – Log-scaled kernel hyperparameters.</p></li>
-<li><p><strong>calc_cov</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to compute predictive variance.</p></li>
-<li><p><strong>return_deriv</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to return derivative predictions.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>f_mean</strong> (<em>ndarray</em>) – Predictive mean vector.</p></li>
-<li><p><strong>f_var</strong> (<em>ndarray, optional</em>) – Predictive variance vector (only if calc_cov=True).</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function" id="module-full_ddegp.ddegp_utils">
-<dt class="sig sig-object py" id="full_ddegp.ddegp_utils.deriv_map">
-<span class="sig-prename descclassname"><span class="pre">full_ddegp.ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">deriv_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp_utils.html#deriv_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp_utils.deriv_map" title="Link to this definition">#</a></dt>
-<dd><p>Creates a mapping from (order, index_within_order) to a single
-flattened index for all derivative components.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="full_ddegp.ddegp_utils.differences_by_dim_func">
-<span class="sig-prename descclassname"><span class="pre">full_ddegp.ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">differences_by_dim_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp_utils.html#differences_by_dim_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp_utils.differences_by_dim_func" title="Link to this definition">#</a></dt>
-<dd><p>Compute dimension-wise pairwise differences between X1 and X2,
-including hypercomplex perturbations in the directions specified by <cite>rays</cite>.</p>
-<p>This optimized version pre-calculates the perturbation and uses a single
-efficient loop for subtraction, avoiding broadcasting issues with OTI arrays.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>X1</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n1</em><em>, </em><em>d</em><em>)</em>)</p></li>
-<li><p><strong>X2</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n2</em><em>, </em><em>d</em><em>)</em>)</p></li>
-<li><p><strong>rays</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>d</em><em>, </em><em>n_rays</em><em>)</em>)</p></li>
-<li><p><strong>n_order</strong> (<em>int</em>)</p></li>
-<li><p><strong>index</strong> (<em>list</em><em> or </em><em>int</em><em>, </em><em>optional</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>differences_by_dim</strong></p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list of ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="full_ddegp.ddegp_utils.rbf_kernel">
-<span class="sig-prename descclassname"><span class="pre">full_ddegp.ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">powers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp_utils.rbf_kernel" title="Link to this definition">#</a></dt>
-<dd><p>Assembles the full DD-GP covariance matrix using an efficient, pre-computed
-derivative array and block-wise matrix filling.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>function</strong> (<em>(</em><em>Parameters are the same as your original</em>)</p></li>
-<li><p><strong>added</strong><strong>)</strong> (<em>with n_bases</em>)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>K</strong> – Full kernel matrix with function values and derivative blocks.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="full_ddegp.ddegp_utils.transform_der_indices">
-<span class="sig-prename descclassname"><span class="pre">full_ddegp.ddegp_utils.</span></span><span class="sig-name descname"><span class="pre">transform_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/ddegp_utils.html#transform_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.ddegp_utils.transform_der_indices" title="Link to this definition">#</a></dt>
-<dd><p>Transforms a list of user-facing derivative specifications into the
-internal (order, index) format and the final flattened index.</p>
-</dd></dl>
-
-<dl class="py class" id="module-full_ddegp.optimizer">
-<dt class="sig sig-object py" id="full_ddegp.optimizer.Optimizer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">full_ddegp.optimizer.</span></span><span class="sig-name descname"><span class="pre">Optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/optimizer.html#Optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.optimizer.Optimizer" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
-by minimizing the negative log marginal likelihood (NLL).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>model</strong> (<em>object</em>) – An instance of a model (e.g., ddegp) containing the necessary training data
-and kernel configuration.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="full_ddegp.optimizer.Optimizer.negative_log_marginal_likelihood">
-<span class="sig-name descname"><span class="pre">negative_log_marginal_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/optimizer.html#Optimizer.negative_log_marginal_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.optimizer.Optimizer.negative_log_marginal_likelihood" title="Link to this definition">#</a></dt>
-<dd><p>Compute the negative log marginal likelihood (NLL) of the model.</p>
-<p>NLL = 0.5 * y^T K^-1 y + 0.5 * log|K| + 0.5 * N * log(2π)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x0</strong> (<em>ndarray</em>) – Vector of log-scaled hyperparameters (length scales and noise).</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Value of the negative log marginal likelihood.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="full_ddegp.optimizer.Optimizer.nll_wrapper">
-<span class="sig-name descname"><span class="pre">nll_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/optimizer.html#Optimizer.nll_wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.optimizer.Optimizer.nll_wrapper" title="Link to this definition">#</a></dt>
-<dd><p>Wrapper function to compute NLL for optimizer.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>x0</strong> (<em>ndarray</em>) – Hyperparameter vector.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>NLL evaluated at x0.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="full_ddegp.optimizer.Optimizer.optimize_hyperparameters">
-<span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pso'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/full_ddegp/optimizer.html#Optimizer.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#full_ddegp.optimizer.Optimizer.optimize_hyperparameters" title="Link to this definition">#</a></dt>
-<dd><p>Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).</p>
-<section id="parameters">
-<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
-<dl class="simple">
-<dt>n_restart_optimizer<span class="classifier">int, default=20</span></dt><dd><p>Maximum number of iterations for PSO.</p>
-</dd>
-<dt>swarm_size<span class="classifier">int, default=20</span></dt><dd><p>Number of particles in the swarm.</p>
-</dd>
-<dt>verbose<span class="classifier">bool, default=True</span></dt><dd><p>Controls verbosity of PSO output.</p>
-</dd>
-</dl>
-</section>
-<section id="returns">
-<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
-<dl class="simple">
-<dt>best_x<span class="classifier">ndarray</span></dt><dd><p>The optimal set of hyperparameters found.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-</dd></dl>
-
+  <section id="full-ddegp">
+<h1>Full DDEGP<a class="headerlink" href="#full-ddegp" title="Link to this heading">#</a></h1>
 </section>
 
 
@@ -695,35 +482,6 @@ and kernel configuration.</p>
             </div>
             
             
-              
-                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
-
-
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
-    <i class="fa-solid fa-list"></i> Contents
-  </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp.ddegp"><code class="docutils literal notranslate"><span class="pre">ddegp</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp.ddegp.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">ddegp.optimize_hyperparameters()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp.ddegp.predict"><code class="docutils literal notranslate"><span class="pre">ddegp.predict()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.ddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer.negative_log_marginal_likelihood"><code class="docutils literal notranslate"><span class="pre">Optimizer.negative_log_marginal_likelihood()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer.nll_wrapper"><code class="docutils literal notranslate"><span class="pre">Optimizer.nll_wrapper()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full_ddegp.optimizer.Optimizer.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_hyperparameters()</span></code></a></li>
-</ul>
-</li>
-</ul>
-  </nav></div>
-
-</div></div>
               
             
           </div>

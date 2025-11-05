@@ -54,7 +54,7 @@ Data Generation (Sobol Sequence)
 .. jupyter-execute::
 
     from scipy.stats import qmc
-    import utils
+    import jetgp.utils as utils
 
     def generate_sobol_points(num_points):
         sampler = qmc.Sobol(d=n_bases, scramble=True)
@@ -101,7 +101,7 @@ Prepare Submodel Data (Main Derivatives Only)
 .. jupyter-execute::
 
     import pyoti.sparse as oti
-    import utils
+    import jetgp.utils as utils
 
     def prepare_submodel_data(X_train, submodel_indices):
         main_derivatives = [
@@ -136,7 +136,7 @@ Build and Optimize GP
 
 .. jupyter-execute::
 
-    from wdegp.wdegp import wdegp
+    from jetgp.wdegp.wdegp import wdegp
 
     gp_model = wdegp(
         X_train_reordered, submodel_data, n_order, n_bases,

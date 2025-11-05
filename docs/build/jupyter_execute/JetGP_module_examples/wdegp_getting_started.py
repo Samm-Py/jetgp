@@ -7,8 +7,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pyoti.sparse as oti
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils as utils
 
 
 # In[2]:
@@ -272,8 +272,8 @@ plt.show()
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils as utils
 
 
 # In[14]:
@@ -515,8 +515,8 @@ plt.show()
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils as utils
 
 
 # In[26]:
@@ -881,8 +881,8 @@ plt.show()
 import numpy as np
 import sympy as sp
 import matplotlib.pyplot as plt
-from wdegp.wdegp import wdegp
-import utils
+from jetgp.wdegp.wdegp import wdegp
+import jetgp.utils as utils
 
 
 # In[41]:
@@ -1320,9 +1320,9 @@ plt.show()
 import numpy as np
 import sympy as sp
 import itertools
-from wdegp.wdegp import wdegp
+from jetgp.wdegp.wdegp import wdegp
 from matplotlib import pyplot as plt
-import utils
+import jetgp.utils as utils
 
 plt.rcParams.update({'font.size': 12})
 
