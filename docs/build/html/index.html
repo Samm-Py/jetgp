@@ -454,6 +454,8 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start-examples">Quick Start Examples</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#degp-derivative-enhanced-gaussian-process">DEGP: Derivative-Enhanced Gaussian Process</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wdegp-weighted-derivative-enhanced-gaussian-process">WDEGP: Weighted Derivative-Enhanced Gaussian Process</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ddegp-directional-derivative-enhanced-gaussian-process">DDEGP: Directional Derivative-Enhanced Gaussian Process</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp-weighted-directional-derivative-enhanced-gaussian-process">WDDEGP: Weighted Directional Derivative-Enhanced Gaussian Process</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-access">Quick Access</a><ul class="nav section-nav flex-column">
@@ -628,10 +630,11 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 </section>
 <section id="wdegp-weighted-derivative-enhanced-gaussian-process">
 <h3>WDEGP: Weighted Derivative-Enhanced Gaussian Process<a class="headerlink" href="#wdegp-weighted-derivative-enhanced-gaussian-process" title="Link to this heading">#</a></h3>
-<p>This example demonstrates WDEGP on the 1D function <span class="math notranslate nohighlight">\(f(x) = \frac{\sin(10\pi x)}{2x} + (x-1)^4\)</span> using two submodels with alternating training points. Each submodel has access to function values and first and second-order derivatives.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<p>This example demonstrates WDEGP on the 1D function <span class="math notranslate nohighlight">\(f(x) = \frac{\sin(10\pi x)}{2x} + (x-1)^4\)</span>
+using two submodels with alternating training points. Each submodel has access to function values and
+first and second-order derivatives.</p>
+<p><strong>Example code:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
@@ -665,16 +668,7 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training data prepared with 2 submodels (5 points each)&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Training data prepared with 2 submodels (5 points each)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute derivatives for each submodel</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute derivatives for each submodel</span>
 <span class="n">d1_sm1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">f1_fun</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">])]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)])</span>
 <span class="n">d2_sm1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">f2_fun</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">])]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)])</span>
 <span class="n">d1_sm2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">f1_fun</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">])]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">10</span><span class="p">)])</span>
@@ -692,16 +686,7 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initializing WDEGP model...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Initializing WDEGP model...
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and optimize</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and optimize</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">submodel_data</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_bases</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
               <span class="n">index</span><span class="o">=</span><span class="n">submodel_indices</span><span class="p">,</span>
               <span class="n">der_indices</span><span class="o">=</span><span class="n">derivative_specs</span><span class="p">,</span>
@@ -716,21 +701,11 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization complete!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimizing hyperparameters...
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimization complete!
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict</span>
 <span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-<span class="n">y_pred</span><span class="p">,</span> <span class="n">y_cov</span><span class="p">,</span> <span class="n">submodel_preds</span><span class="p">,</span> <span class="n">submodel_covs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_submodels</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">y_pred</span><span class="p">,</span> <span class="n">y_cov</span><span class="p">,</span> <span class="n">submodel_preds</span><span class="p">,</span> <span class="n">submodel_covs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_submodels</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
 
 <span class="c1"># Predict individual submodels</span>
 <span class="n">y_pred_sm1</span> <span class="o">=</span> <span class="n">submodel_preds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
@@ -750,18 +725,278 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Predictions complete for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> test points&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions complete for 250 test points
-</pre></div>
-</div>
-</div>
-</div>
 <figure class="align-center" id="id2">
 <a class="reference internal image-reference" href="_images/wdegp_sin_example.png"><img alt="WDEGP 1D example visualization" src="_images/wdegp_sin_example.png" style="width: 100%;" />
 </a>
 <figcaption>
-<p><span class="caption-text">Comparison of submodel and global predictions for a 1D test function. Left: Submodel 1 trained with derivatives on alternating points (red triangles) and function values only on remaining points (black circles). Center: Submodel 2 trained with the complementary partition of derivative information. Right: Global model combining information from both submodels, where all training points have associated derivative observations. The shaded regions represent 95% confidence intervals.</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+<p><span class="caption-text">Comparison of submodel and global predictions for a 1D test function.
+Left: Submodel 1 trained with derivatives on alternating points (red triangles)
+and function values only on remaining points (black circles).
+Center: Submodel 2 trained with the complementary partition of derivative
+information. Right: Global model combining information from both submodels,
+where all training points have associated derivative observations.
+The shaded regions represent 95% confidence intervals.</span><a class="headerlink" href="#id2" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="ddegp-directional-derivative-enhanced-gaussian-process">
+<h3>DDEGP: Directional Derivative-Enhanced Gaussian Process<a class="headerlink" href="#ddegp-directional-derivative-enhanced-gaussian-process" title="Link to this heading">#</a></h3>
+<p>This example demonstrates DDEGP on the 2D function <span class="math notranslate nohighlight">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> using two global directional derivative directions applied at all training points. Unlike DEGP which uses coordinate-aligned derivatives, DDEGP allows arbitrary directional derivatives specified by ray vectors.</p>
+<p><strong>Example code:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_ddegp.ddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">ddegp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="c1"># Generate 2D training data: f(x,y) = x^2 + y^2</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># [-1, 1]^2</span>
+<span class="n">y_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X_train</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="si">}</span><span class="s2"> training points&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define two global directional derivative directions</span>
+<span class="n">rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>   <span class="c1"># x-components</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>    <span class="c1"># y-components</span>
+<span class="p">])</span>
+
+<span class="c1"># Normalize direction vectors to unit length</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rays</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+    <span class="n">rays</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rays</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rays</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+
+<span class="c1"># Compute directional derivatives: grad(f) · ray</span>
+<span class="n">dy_dray1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">X_train</span> <span class="o">*</span> <span class="n">rays</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">dy_dray2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">X_train</span> <span class="o">*</span> <span class="n">rays</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">Y_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">y_vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+           <span class="n">dy_dray1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+           <span class="n">dy_dray2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+
+<span class="c1"># Specify directional derivative structure</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]]]]</span>  <span class="c1"># Two directions</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training data prepared with 2 directional derivatives per point&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and optimize</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ddegp</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+              <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">rays</span><span class="o">=</span><span class="n">rays</span><span class="p">,</span>
+              <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+              <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimizing hyperparameters...&quot;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span> <span class="n">n_restarts</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization complete!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict on grid</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">x_test</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">flatten</span><span class="p">()])</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Compute true function and error</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X_test</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">abs_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id3">
+<a class="reference internal image-reference" href="_images/ddegp_quadratic.png"><img alt="DDEGP 2D example visualization" src="_images/ddegp_quadratic.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">GP prediction (left), true function (center), and absolute error (right) for <span class="math notranslate nohighlight">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> using two global directional derivatives (shown as red and blue arrows) at ten randomly-placed training points. The directional rays are the same at all training locations, enabling efficient computation while capturing non-axis-aligned function behavior.</span><a class="headerlink" href="#id3" title="Link to this image">#</a></p>
+<div class="legend">
+<p>GDDEGP: Generalized Directional Derivative-Enhanced Gaussian Process</p>
+</div>
+</figcaption>
+</figure>
+<hr class="docutils" />
+<p>This example demonstrates GDDEGP on the 2D function <span class="math notranslate nohighlight">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> using point-specific directional derivatives. Unlike DDEGP which uses the same global directions everywhere, GDDEGP allows different directional derivatives at each training point. Here, we use gradient-aligned and perpendicular directions that adapt to each location.</p>
+<p><strong>Example code:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
+
+<span class="c1"># Generate 2D training data: f(x,y) = x^2 + y^2</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># [-1, 1]^2</span>
+<span class="n">y_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X_train</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="si">}</span><span class="s2"> training points&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create gradient and perpendicular directions for each point</span>
+<span class="n">n_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">rays_array</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_points</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_points</span><span class="p">))]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">):</span>
+    <span class="c1"># Gradient direction: [2x, 2y]</span>
+    <span class="n">gradient</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">gradient</span><span class="p">)</span>
+
+    <span class="c1"># Direction 1: normalized gradient</span>
+    <span class="n">rays_array</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">gradient</span> <span class="o">/</span> <span class="n">grad_norm</span>
+
+    <span class="c1"># Direction 2: perpendicular (rotate 90 degrees)</span>
+    <span class="n">rays_array</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">rays_array</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+    <span class="n">rays_array</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">rays_array</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Created point-specific gradient and perpendicular directions&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute directional derivatives</span>
+<span class="n">dy_dray1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">rays_array</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span><span class="n">i</span><span class="p">])</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">)])</span>
+<span class="n">dy_dray2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">X_train</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">rays_array</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span><span class="n">i</span><span class="p">])</span>
+                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_points</span><span class="p">)])</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">y_vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">dy_dray1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+           <span class="n">dy_dray2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Directional derivatives computed&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and optimize</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">gddegp</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+               <span class="n">rays_array</span><span class="o">=</span><span class="n">rays_array</span><span class="p">,</span>
+               <span class="n">der_indices</span><span class="o">=</span><span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]]]],</span>
+               <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+               <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimizing hyperparameters...&quot;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span> <span class="n">n_restarts</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization complete!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict on grid</span>
+<span class="n">x_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">x_test</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">flatten</span><span class="p">()])</span>
+
+<span class="c1"># Dummy rays for prediction (not used for function values)</span>
+<span class="n">dummy_rays</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">))),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))]</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">dummy_rays</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Compute true function and error</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">X_test</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">abs_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id4">
+<a class="reference internal image-reference" href="_images/gddegp_quadratic.png"><img alt="GDDEGP 2D example visualization" src="_images/gddegp_quadratic.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">GP prediction (left), true function (center), and absolute error (right) for <span class="math notranslate nohighlight">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> using point-specific directional derivatives. At each training point (red circles), two orthogonal directional derivatives are used: one aligned with the local gradient (red arrows pointing radially outward) and one perpendicular to it (blue arrows tangential to level curves). Unlike DDEGP where all arrows would be parallel, GDDEGP adapts the derivative directions to local function behavior.</span><a class="headerlink" href="#id4" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="wddegp-weighted-directional-derivative-enhanced-gaussian-process">
+<h3>WDDEGP: Weighted Directional Derivative-Enhanced Gaussian Process<a class="headerlink" href="#wddegp-weighted-directional-derivative-enhanced-gaussian-process" title="Link to this heading">#</a></h3>
+<p>This example demonstrates WDDEGP on the 2D function <span class="math notranslate nohighlight">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> using two submodels with different directional derivative configurations. Each submodel has its own set of global directional rays, combining the computational efficiency of partitioning with the flexibility of directional derivatives.</p>
+<p><strong>Example code:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wddegp.wddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wddegp</span>
+
+<span class="c1"># Generate training data (16 points)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">y_vals</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Partition into 2 submodels (8 points each)</span>
+<span class="n">submodel_indices</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">,</span><span class="mi">15</span><span class="p">]]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="si">}</span><span class="s2"> training points in 2 submodels&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define different directional derivatives for each submodel</span>
+<span class="c1"># Submodel 1: Two orthogonal directions at -22.5° and 67.5°</span>
+<span class="c1"># Submodel 2: Two orthogonal directions at 135° and 225°</span>
+<span class="n">rays_data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">8</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">8</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)],</span>
+              <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">8</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">8</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)]]),</span>  <span class="c1"># Submodel 1</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)],</span>
+              <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">4</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="mi">2</span><span class="p">)]])</span>   <span class="c1"># Submodel 2</span>
+<span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Defined different directional rays for each submodel&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute directional derivatives for each submodel</span>
+<span class="c1"># For f(x,y) = x^2 + y^2: grad f = [2x, 2y]</span>
+<span class="n">grad_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="mi">2</span> <span class="o">*</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]])</span>
+
+<span class="c1"># Submodel 1 - two directions</span>
+<span class="n">v1_1</span> <span class="o">=</span> <span class="n">rays_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">v1_2</span> <span class="o">=</span> <span class="n">rays_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">dy_dray_sub1_dir1</span> <span class="o">=</span> <span class="n">grad_f</span> <span class="o">@</span> <span class="n">v1_1</span>
+<span class="n">dy_dray_sub1_dir2</span> <span class="o">=</span> <span class="n">grad_f</span> <span class="o">@</span> <span class="n">v1_2</span>
+
+<span class="c1"># Submodel 2 - two directions</span>
+<span class="n">v2_1</span> <span class="o">=</span> <span class="n">rays_data</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">v2_2</span> <span class="o">=</span> <span class="n">rays_data</span><span class="p">[</span><span class="mi">1</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">dy_dray_sub2_dir1</span> <span class="o">=</span> <span class="n">grad_f</span> <span class="o">@</span> <span class="n">v2_1</span>
+<span class="n">dy_dray_sub2_dir2</span> <span class="o">=</span> <span class="n">grad_f</span> <span class="o">@</span> <span class="n">v2_2</span>
+
+<span class="n">y_train_data</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">y_vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+     <span class="n">dy_dray_sub1_dir1</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+     <span class="n">dy_dray_sub1_dir2</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">8</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)],</span>
+    <span class="p">[</span><span class="n">y_vals</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+     <span class="n">dy_dray_sub2_dir1</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+     <span class="n">dy_dray_sub2_dir2</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)]</span>
+<span class="p">]</span>
+
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]],</span>  <span class="c1"># Submodel 1: two directional derivatives</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>   <span class="c1"># Submodel 2: two directional derivatives</span>
+<span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Directional derivatives computed for both submodels&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and train</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">wddegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_data</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bases</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">submodel_indices</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">rays</span><span class="o">=</span><span class="n">rays_data</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimizing hyperparameters...&quot;</span><span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span> <span class="n">pop_size</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+                                         <span class="n">n_generations</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization complete!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Make predictions on a grid</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+<span class="c1"># Compute true function and error</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">X_test</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span>
+<span class="n">abs_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<figure class="align-center" id="id5">
+<a class="reference internal image-reference" href="_images/wddegp_quadratic.png"><img alt="WDDEGP 2D example visualization" src="_images/wddegp_quadratic.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">GP prediction (left), true function (center), and absolute error (right) for <span class="math notranslate nohighlight">\(f(x_1, x_2) = x_1^2 + x_2^2\)</span> using two weighted submodels. Submodel 1 (first 8 points, cyan markers) uses directional derivatives at -22.5° and 67.5° (cyan arrows). Submodel 2 (remaining 8 points, magenta markers) uses directional derivatives at 135° and 225° (magenta arrows). Each submodel has its own directional configuration, and the final prediction combines both weighted submodels.</span><a class="headerlink" href="#id5" title="Link to this image">#</a></p>
 </figcaption>
 </figure>
 </section>
@@ -871,6 +1106,8 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start-examples">Quick Start Examples</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#degp-derivative-enhanced-gaussian-process">DEGP: Derivative-Enhanced Gaussian Process</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wdegp-weighted-derivative-enhanced-gaussian-process">WDEGP: Weighted Derivative-Enhanced Gaussian Process</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#ddegp-directional-derivative-enhanced-gaussian-process">DDEGP: Directional Derivative-Enhanced Gaussian Process</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#wddegp-weighted-directional-derivative-enhanced-gaussian-process">WDDEGP: Weighted Directional Derivative-Enhanced Gaussian Process</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-access">Quick Access</a><ul class="nav section-nav flex-column">
