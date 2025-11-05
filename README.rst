@@ -272,12 +272,10 @@ first and second-order derivatives.
 
    # Compute true function
    y_true = f_fun(X_test.flatten())
+   abs_error = np.abs(y_true.flatten() - y_pred.flatten())
 
-   # Compute confidence intervals (95%)
-   std_global = np.sqrt(y_cov)
-   std_sm1 = np.sqrt(y_cov_sm1)
-   std_sm2 = np.sqrt(y_cov_sm2)
-
+   print(f"Mean absolute error: {np.mean(abs_error):.6f}")
+   print(f"Max absolute error: {np.max(abs_error):.6f}")
    print(f"Predictions complete for {len(X_test)} test points")
 
 .. figure:: ./_static/wdegp_sin_example.png
