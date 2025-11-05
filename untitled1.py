@@ -150,8 +150,24 @@ plt.tight_layout(rect=[0, 0.02, 1, 1])
 # 6. Save Figure
 # ============================
 
-output_path = "./docs/source/_static/degp_sin_cos.png"
+# output_path = "./docs/source/_static/degp_sin_cos.png"
+# plt.savefig(output_path, dpi=300, bbox_inches='tight')
+# plt.close(fig)
+
+# print(f"Figure saved to: {output_path}")
+
+import shutil
+from pathlib import Path
+
+# Primary output (for Sphinx)
+output_path = Path("./docs/source/_static/degp_sin_cos.png")
+output_path.parent.mkdir(parents=True, exist_ok=True)
 plt.savefig(output_path, dpi=300, bbox_inches='tight')
 plt.close(fig)
 
-print(f"Figure saved to: {output_path}")
+# Copy to repo root _static for GitHub rendering
+github_static = Path("_static")
+github_static.mkdir(exist_ok=True)
+shutil.copy(output_path, github_static / output_path.name)
+
+print(f"Figures saved to:\n - {output_path}\n - {github_static / output_path.name}")

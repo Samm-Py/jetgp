@@ -167,7 +167,7 @@ This example demonstrates DEGP on the 2D function :math:`f(x_1, x_2) = \sin(x_1)
    print(f"Mean absolute error: {np.mean(abs_error):.6f}")
    print(f"Max absolute error: {np.max(abs_error):.6f}")
 
-.. figure:: _static/degp_sin_cos.png
+.. figure:: ./_static/degp_sin_cos.png
    :alt: DEGP 2D example visualization
    :align: center
    :width: 100%
