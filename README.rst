@@ -275,71 +275,9 @@ This example demonstrates WDEGP on the 1D function :math:`f(x) = \frac{\sin(10\p
    
    print(f"Predictions complete for {len(X_test)} test points")
 
-.. jupyter-execute::
-   :hide-code:
+.. figure:: ./_static/wdegp_sin_example.png
+   :alt: WDEGP 1D example visualization
+   :align: center
+   :width: 100%
 
-   # Create visualization
-   fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-   
-   # Submodel 1
-   axes[0].plot(X_test, y_true, 'k-', linewidth=2, label='True function')
-   axes[0].plot(X_test, y_pred_sm1, 'b-', linewidth=2, label='GP mean')
-   axes[0].fill_between(X_test.flatten(), 
-                        y_pred_sm1.flatten() - 1.96*std_sm1,
-                        y_pred_sm1.flatten() + 1.96*std_sm1,
-                        color='gray', alpha=0.3, label='95% CI')
-   axes[0].scatter(X_train[:5], y_vals[:5], c='black', s=100, 
-                   zorder=5, marker='o', label='Function values only')
-   axes[0].scatter(X_train[:5], y_vals[:5], c='red', s=100,
-                   zorder=6, marker='^', label='Function + derivatives')
-   axes[0].set_xlabel('x')
-   axes[0].set_ylabel('y')
-   axes[0].set_title('Submodel 1')
-   axes[0].grid(True, alpha=0.3)
-   axes[0].set_xlim([0.5, 2.5])
-   
-   # Submodel 2
-   axes[1].plot(X_test, y_true, 'k-', linewidth=2, label='True function')
-   axes[1].plot(X_test, y_pred_sm2, 'b-', linewidth=2, label='GP mean')
-   axes[1].fill_between(X_test.flatten(),
-                        y_pred_sm2.flatten() - 1.96*std_sm2,
-                        y_pred_sm2.flatten() + 1.96*std_sm2,
-                        color='gray', alpha=0.3, label='95% CI')
-   axes[1].scatter(X_train[5:], y_vals[5:], c='black', s=100,
-                   zorder=5, marker='o')
-   axes[1].scatter(X_train[5:], y_vals[5:], c='red', s=100,
-                   zorder=6, marker='^')
-   axes[1].set_xlabel('x')
-   axes[1].set_ylabel('y')
-   axes[1].set_title('Submodel 2')
-   axes[1].grid(True, alpha=0.3)
-   axes[1].set_xlim([0.5, 2.5])
-   
-   # Global Model
-   axes[2].plot(X_test, y_true, 'k-', linewidth=2, label='True function')
-   axes[2].plot(X_test, y_pred.flatten(), 'b-', linewidth=2, label='GP mean')
-   axes[2].fill_between(X_test.flatten(),
-                        y_pred.flatten() - 1.96*std_global,
-                        y_pred.flatten() + 1.96*std_global,
-                        color='gray', alpha=0.3, label='95% CI')
-   axes[2].scatter(X_train[:5], y_vals[:5], c='black', s=100,
-                   zorder=5, marker='o')
-   axes[2].scatter(X_train[:5], y_vals[:5], c='red', s=100,
-                   zorder=6, marker='^')
-   axes[2].scatter(X_train[5:], y_vals[5:], c='black', s=100,
-                   zorder=5, marker='o')
-   axes[2].scatter(X_train[5:], y_vals[5:], c='red', s=100,
-                   zorder=6, marker='^')
-   axes[2].set_xlabel('x')
-   axes[2].set_ylabel('y')
-   axes[2].set_title('Global Model')
-   axes[2].grid(True, alpha=0.3)
-   axes[2].set_xlim([0.5, 2.5])
-   
-   # Create legend
-   handles, labels = axes[0].get_legend_handles_labels()
-   fig.legend(handles, labels, loc='lower center', ncol=5,
-              frameon=False, fontsize=11, bbox_to_anchor=(0.5, -0.05))
-   
-   plt.tight_layout(rect=[0, 0.05, 1, 1])
-   plt.show()
+   Comparison of submodel and global predictions for a 1D test function. Left: Submodel 1 trained with derivatives on alternating points (red triangles) and function values only on remaining points (black circles). Center: Submodel 2 trained with the complementary partition of derivative information. Right: Global model combining information from both submodels, where all training points have associated derivative observations. The shaded regions represent 95\% confidence intervals.
