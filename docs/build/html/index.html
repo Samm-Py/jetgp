@@ -554,10 +554,8 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <h2>Quick Start Examples<a class="headerlink" href="#quick-start-examples" title="Link to this heading">#</a></h2>
 <section id="degp-derivative-enhanced-gaussian-process">
 <h3>DEGP: Derivative-Enhanced Gaussian Process<a class="headerlink" href="#degp-derivative-enhanced-gaussian-process" title="Link to this heading">#</a></h3>
-<p>This example demonstrates DEGP on the 2D function <span class="math notranslate nohighlight">\(f(x,y) = \sin(x)\cos(y)\)</span> using a 3×3 training grid with first and second-order coordinate derivatives.</p>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<p>This example demonstrates DEGP on the 2D function <span class="math notranslate nohighlight">\(f(x_1, x_2) = \sin(x_1)\cos(x_2)\)</span> using a 3×3 training grid with first and second-order coordinate derivatives.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_degp.degp</span><span class="w"> </span><span class="kn">import</span> <span class="n">degp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.lines</span><span class="w"> </span><span class="kn">import</span> <span class="n">Line2D</span>
@@ -590,16 +588,7 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Initializing DEGP model...&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Initializing DEGP model...
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and optimize</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize and optimize</span>
 <span class="n">model</span> <span class="o">=</span> <span class="n">degp</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_bases</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
              <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
              <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">)</span>
@@ -609,20 +598,10 @@ $<span class="w"> </span>firefox<span class="w"> </span>index.html
                                          <span class="n">pop_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                                          <span class="n">n_generations</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Optimization complete!&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimization complete!&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimizing hyperparameters...
-Optimization complete!
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell jupyter_container docutils container">
-<div class="cell_input code_cell docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict on test grid</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict on test grid</span>
 <span class="n">x_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
 <span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">x_test</span><span class="p">)</span>
 <span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">X2_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">()])</span>
@@ -638,19 +617,14 @@ Optimization complete!
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Mean absolute error: 0.000178
-Max absolute error: 0.000523
-</pre></div>
-</div>
-</div>
-</div>
-<div class="jupyter_cell docutils container">
-<div class="cell_output docutils container">
-<img alt="_images/index_3_0.png" src="_images/index_3_0.png" />
-</div>
-</div>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="_images/degp_sin_cos.png"><img alt="DEGP 2D example visualization" src="_images/degp_sin_cos.png" style="width: 100%;" />
+</a>
+<figcaption>
+<p><span class="caption-text">GP prediction (left), true function (center), and absolute error (right) for <span class="math notranslate nohighlight">\(f(x_1, x_2) = \sin(x_1)\cos(x_2)\)</span> using first and second-order coordinate-wise partial derivatives at nine regularly-spaced training points.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+<p>—</p>
 </section>
 <section id="wdegp-weighted-derivative-enhanced-gaussian-process">
 <h3>WDEGP: Weighted Derivative-Enhanced Gaussian Process<a class="headerlink" href="#wdegp-weighted-derivative-enhanced-gaussian-process" title="Link to this heading">#</a></h3>
@@ -785,7 +759,7 @@ Max absolute error: 0.000523
 </div>
 <div class="jupyter_cell docutils container">
 <div class="cell_output docutils container">
-<img alt="_images/index_8_0.png" src="_images/index_8_0.png" />
+<img alt="_images/index_4_0.png" src="_images/index_4_0.png" />
 </div>
 </div>
 </section>
