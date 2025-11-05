@@ -716,12 +716,10 @@ first and second-order derivatives.</p>
 
 <span class="c1"># Compute true function</span>
 <span class="n">y_true</span> <span class="o">=</span> <span class="n">f_fun</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+<span class="n">abs_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">-</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
 
-<span class="c1"># Compute confidence intervals (95%)</span>
-<span class="n">std_global</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y_cov</span><span class="p">)</span>
-<span class="n">std_sm1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y_cov_sm1</span><span class="p">)</span>
-<span class="n">std_sm2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">y_cov_sm2</span><span class="p">)</span>
-
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Max absolute error: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">abs_error</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Predictions complete for </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="si">}</span><span class="s2"> test points&quot;</span><span class="p">)</span>
 </pre></div>
 </div>

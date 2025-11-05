@@ -104,7 +104,7 @@ def setup(app):
     app.connect('build-finished', copy_coverage_to_build)
 
 # Generate coverage when building docs
-#generate_coverage()
+generate_coverage()
 
 # -- Project information -----------------------------------------------------
 
