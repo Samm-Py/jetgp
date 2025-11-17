@@ -59,11 +59,9 @@ To make this change permanent, add the export line to your shell configuration f
 **Option 2: Persistent addition using Conda (recommended for Anaconda users)**
 
 If using Anaconda, you can register the repository path with your environment using ``conda develop``  
-(from the ``conda-build`` package):
 
 .. code-block:: bash
 
-   $ conda install conda-build
    $ cd <path-to-JetGP> (e.g., ``.\jetgp-main``).
    $ conda develop .
 
