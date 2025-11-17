@@ -2,6 +2,7 @@ name: jetgp
 channels:
   - conda-forge
 dependencies:
+  - python=3.9
   - mauriaristi::pyoti
   - ipython
   - jupyter_sphinx
@@ -16,9 +17,9 @@ dependencies:
   - sphinxcontrib-bibtex
   - sympy
   - line_profiler
-  - scikit-learn
-  - pytorch
   - pip
   - pip:
+    - torch
+    - scikit-learn
     - pytest
     - pytest-cov
