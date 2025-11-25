@@ -162,19 +162,14 @@ class TestWDEGP1DIndividual(unittest.TestCase):
         for i, idx in enumerate(self.submodel_indices):
             x_point = self.X_train[idx].flatten()[0]
             
-            # Get predictions from individual submodel
-            X_plus = np.array([[x_point + h]])
-            X_minus = np.array([[x_point - h]])
-            
-            _, submodel_vals_plus = self.model.predict(
-                X_plus, self.params, calc_cov=False, return_submodels=True
+
+            f_mean = self.model.predict(
+                np.array([x_point]), self.params, calc_cov=False, return_submodels=False, return_deriv=True
             )
-            _, submodel_vals_minus = self.model.predict(
-                X_minus, self.params, calc_cov=False, return_submodels=True
-            )
+
             
             # First derivative via central difference on the i-th submodel
-            fd_first_deriv = (submodel_vals_plus[i][0, 0] - submodel_vals_minus[i][0, 0]) / (2 * h)
+            fd_first_deriv = f_mean[1,0]
             analytic_first_deriv = self.submodel_data[i][1][0, 0]
             
             error = abs(fd_first_deriv - analytic_first_deriv)
@@ -195,24 +190,15 @@ class TestWDEGP1DIndividual(unittest.TestCase):
         for i, idx in enumerate(self.submodel_indices):
             x_point = self.X_train[idx].flatten()[0]
             
-            # Get predictions from individual submodel
-            X_plus = np.array([[x_point + h]])
-            X_minus = np.array([[x_point - h]])
+
             X_center = self.X_train[idx].reshape(1, -1)
             
-            _, submodel_vals_plus = self.model.predict(
-                X_plus, self.params, calc_cov=False, return_submodels=True
-            )
-            _, submodel_vals_minus = self.model.predict(
-                X_minus, self.params, calc_cov=False, return_submodels=True
-            )
-            _, submodel_vals_center = self.model.predict(
-                X_center, self.params, calc_cov=False, return_submodels=True
+            f_mean = self.model.predict(
+                X_center, self.params, calc_cov=False, return_submodels=False, return_deriv=True
             )
             
             # Second derivative via central difference on the i-th submodel
-            fd_second_deriv = (submodel_vals_plus[i][0, 0] - 2 * submodel_vals_center[i][0, 0] + 
-                              submodel_vals_minus[i][0, 0]) / (h ** 2)
+            fd_second_deriv = f_mean[2,0]
             analytic_second_deriv = self.submodel_data[i][2][0, 0]
             
             error = abs(fd_second_deriv - analytic_second_deriv)
@@ -255,17 +241,14 @@ class TestWDEGP1DIndividual(unittest.TestCase):
         for i, idx in enumerate(self.submodel_indices):
             x_point = self.X_train[idx].flatten()[0]
             
-            X_plus = np.array([[x_point + h]])
-            X_minus = np.array([[x_point - h]])
-            
-            _, submodel_vals_plus = self.model.predict(
-                X_plus, self.params, calc_cov=False, return_submodels=True
+
+            f_mean = self.model.predict(
+                np.array([x_point]), self.params, calc_cov=False, return_submodels=False, return_deriv=True
             )
-            _, submodel_vals_minus = self.model.predict(
-                X_minus, self.params, calc_cov=False, return_submodels=True
-            )
+
             
-            fd_first_deriv = (submodel_vals_plus[i][0, 0] - submodel_vals_minus[i][0, 0]) / (2 * h)
+            # First derivative via central difference on the i-th submodel
+            fd_first_deriv = f_mean[1,0]
             analytic_first_deriv = self.submodel_data[i][1][0, 0]
             error = abs(fd_first_deriv - analytic_first_deriv)
             first_deriv_errors.append(error)
@@ -286,22 +269,15 @@ class TestWDEGP1DIndividual(unittest.TestCase):
         for i, idx in enumerate(self.submodel_indices):
             x_point = self.X_train[idx].flatten()[0]
             
-            X_plus = np.array([[x_point + h]])
-            X_minus = np.array([[x_point - h]])
+
             X_center = self.X_train[idx].reshape(1, -1)
             
-            _, submodel_vals_plus = self.model.predict(
-                X_plus, self.params, calc_cov=False, return_submodels=True
-            )
-            _, submodel_vals_minus = self.model.predict(
-                X_minus, self.params, calc_cov=False, return_submodels=True
-            )
-            _, submodel_vals_center = self.model.predict(
-                X_center, self.params, calc_cov=False, return_submodels=True
+            f_mean = self.model.predict(
+                X_center, self.params, calc_cov=False, return_submodels=False, return_deriv=True
             )
             
-            fd_second_deriv = (submodel_vals_plus[i][0, 0] - 2 * submodel_vals_center[i][0, 0] + 
-                              submodel_vals_minus[i][0, 0]) / (h ** 2)
+            # Second derivative via central difference on the i-th submodel
+            fd_second_deriv = f_mean[2,0]
             analytic_second_deriv = self.submodel_data[i][2][0, 0]
             error = abs(fd_second_deriv - analytic_second_deriv)
             second_deriv_errors.append(error)

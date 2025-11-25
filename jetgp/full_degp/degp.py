@@ -56,8 +56,8 @@ class degp:
         self.normalize = normalize
         
         
-        self.y_train_input = y_train
-        self.x_train_input = x_train
+        self.y_train_input = y_train.copy()
+        self.x_train_input = x_train.copy()
         
         # Prepare indices and powers
         indices = der_indices

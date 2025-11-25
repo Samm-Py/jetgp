@@ -45,7 +45,7 @@ from line_profiler import profile
 #     return differences_by_dim
 
 
-def differences_by_dim_func(X1, X2, n_order, index=-1):
+def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
     """
     Compute pairwise differences between two input arrays X1 and X2 for each dimension,
     embedding hypercomplex units along each dimension for automatic differentiation.
@@ -91,10 +91,8 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
     >>> diffs[0].shape
     (2, 2)
     """
-
     X1 = oti.array(X1)
     X2 = oti.array(X2)
-
     n1, d = X1.shape
 
     n2, d = X2.shape
@@ -103,22 +101,46 @@ def differences_by_dim_func(X1, X2, n_order, index=-1):
     differences_by_dim = []
 
     # Loop over each dimension k
-    for k in range(d):
-        # Create an empty (n, m) array for this dimension
-        diffs_k = oti.zeros((n1, n2))
+    if n_order == 0:
+        for k in range(d):
+            diffs_k = oti.zeros((n1, n2))
+            for i in range(n1):
+                diffs_k[i, :] = (
+                    X1[i, k]
+                    - (X2[:, k].T)
+                )
+            differences_by_dim.append(diffs_k)
+    elif not return_deriv:
 
-        # Nested loops to fill diffs_k
-        for i in range(n1):
-            diffs_k[i, :] = (
-                X1[i, k]
-                + oti.e(k + 1, order=2 * n_order)
-                - (X2[:, k].T)
-            )
+        for k in range(d):
+            # Create an empty (n, m) array for this dimension
+            diffs_k = oti.zeros((n1, n2))
 
-        # Append to our list
-        differences_by_dim.append(diffs_k)
+            # Nested loops to fill diffs_k
+            for i in range(n1):
+                diffs_k[i, :] = (
+                    X1[i, k]
+                    + oti.e(k + 1, order=n_order)
+                    - (X2[:, k].T)
+                )
+
+            # Append to our list
+            differences_by_dim.append(diffs_k)
+    else:
+        for k in range(d):
+            # Create an empty (n, m) array for this dimension
+            diffs_k = oti.zeros((n1, n2))
+
+            # Nested loops to fill diffs_k
+            for i in range(n1):
+                diffs_k[i, :] = (
+                    X1[i, k]
+                    - (X2[:, k].T)
+                )
+
+            # Append to our list
+            differences_by_dim.append(diffs_k+ oti.e(k + 1, order=2*n_order))
     return differences_by_dim
-
 
 # @profile
 # def rbf_kernel(differences, length_scales, n_order, n_bases, kernel_func, der_indices, powers, index=-1):
@@ -311,6 +333,128 @@ def rbf_kernel(
         row_offset += n_pts_with_derivs_rows
 
     return K
+
+@profile
+def rbf_kernel_predictions(
+        phi,
+    phi_exp,
+    n_order,
+    n_bases,
+    der_indices,
+    powers,
+    return_deriv,
+    index=-1,
+    calc_cov = False
+):
+    """
+    Constructs the RBF kernel matrix with derivative entries using an
+    efficient pre-allocation strategy combined with a single call to
+    extract all derivative components.
+
+    Parameters
+    ----------
+    (Parameters are the same as the original function)
+
+    Returns
+    -------
+    K : ndarray
+        Full RBF kernel matrix with mixed function and derivative entries.
+    """
+    # --- 1. Initial Setup and Efficient Derivative Extraction ---
+    dh = coti.get_dHelp()
+    # Create maps to translate derivative specifications to flat indices
+    if return_deriv:
+        der_map = deriv_map(n_bases, 2 * n_order)
+        index_2 = [i for i in range(phi_exp.shape[-1])]
+        if calc_cov:
+            index = [i for i in range(phi_exp.shape[-1])]
+    else:
+        der_map = deriv_map(n_bases, n_order)
+        index_2 = []
+    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+
+    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
+    n_rows_func, n_cols_func = phi.shape
+    n_deriv_types = len(der_indices)
+   
+    n_pts_with_derivs_cols = len([i for i in range(n_cols_func) if i in index_2])
+    n_pts_with_derivs_rows = len([i for i in range(n_rows_func) if i in index])
+    total_rows = n_rows_func + n_pts_with_derivs_rows * n_deriv_types
+    total_cols = n_cols_func + n_pts_with_derivs_cols * n_deriv_types
+
+    K = np.zeros((total_rows, total_cols))
+
+    # The full content blocks are always the size of the original phi matrix
+    base_shape = (n_rows_func, n_cols_func)
+
+    # --- 3. Fill the Matrix Block by Block ---
+
+    # Block (0,0): Function-Function (K_ff)
+    # The real part is always at index 0 of the flat array
+    content_full = phi_exp[0].reshape(base_shape)
+    K[:n_rows_func, :n_cols_func] = content_full * ((-1) ** powers[0])
+    
+    if not return_deriv:
+        # First Block-Column: Derivative-Function (K_df)
+        row_offset = n_rows_func
+        for i in range(n_deriv_types):
+            flat_idx = der_indices_tr[i]
+            content_full = phi_exp[flat_idx].reshape(base_shape)
+            # Slice the content to match the number of derivative points
+            content_sliced = content_full[index[0]:index[-1]+1, :]
+
+            K[row_offset: row_offset +  n_pts_with_derivs_rows,
+                :n_cols_func] = content_sliced * ((-1) ** powers[0])
+            row_offset += n_pts_with_derivs_rows
+        return K
+    else:
+        # First Block-Row: Function-Derivative (K_fd)
+        col_offset = n_cols_func
+        for j in range(n_deriv_types):
+            flat_idx = der_indices_tr[j]
+            content_full = phi_exp[flat_idx].reshape(base_shape)
+            # Slice the content to match the number of derivative points
+            content_sliced = content_full[:, index_2[0]:index_2[-1]+1]
+    
+            K[:n_rows_func, col_offset: col_offset +
+                n_pts_with_derivs_cols ] = content_sliced * ((-1) ** powers[j + 1])
+            col_offset += n_pts_with_derivs_cols
+    
+        # First Block-Column: Derivative-Function (K_df)
+        row_offset = n_rows_func
+        for i in range(n_deriv_types):
+            flat_idx = der_indices_tr[i]
+            content_full = phi_exp[flat_idx].reshape(base_shape)
+            # Slice the content to match the number of derivative points
+            content_sliced = content_full[index[0]:index[-1]+1, :]
+    
+            K[row_offset: row_offset +  n_pts_with_derivs_rows,
+                :n_cols_func] = content_sliced * ((-1) ** powers[0])
+            row_offset += n_pts_with_derivs_rows
+    
+        # Inner Blocks: Derivative-Derivative (K_dd)
+        row_offset = n_rows_func
+        for i in range(n_deriv_types):
+            col_offset = n_cols_func
+            for j in range(n_deriv_types):
+                # Multiply the derivative indices to find the correct flat index
+                imdir1 = der_ind_order[j]
+                imdir2 = der_ind_order[i]
+                new_idx, new_ord = dh.mult_dir(
+                    imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+                flat_idx = der_map[new_ord][new_idx]
+    
+                content_full = phi_exp[flat_idx].reshape(base_shape)
+                # Slice the content for the derivative-derivative block
+                content_sliced = content_full[index[0]
+                    :index[-1]+1, index_2[0]:index_2[-1]+1]
+    
+                K[row_offset: row_offset +  n_pts_with_derivs_rows, col_offset: col_offset +
+                    n_pts_with_derivs_cols] = content_sliced * ((-1) ** powers[j + 1])
+                col_offset += n_pts_with_derivs_cols
+            row_offset += n_pts_with_derivs_rows
+    
+        return K
 
 def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigma_n):
     """
