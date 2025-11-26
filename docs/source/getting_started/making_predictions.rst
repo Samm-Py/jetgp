@@ -212,9 +212,8 @@ Standard interface with full support for function and derivative predictions.
 **2. WDEGP (Weighted DEGP)**
 
 Weighted models combine predictions from multiple submodels and provide additional 
-diagnostics for each submodel.
-
-**Important:** Derivative predictions are **not currently supported** for weighted models.
+diagnostics for each submodel. Derivative predictions are supported with some restrictions
+(see below).
 
 **Standard prediction:**
 
@@ -231,6 +230,27 @@ diagnostics for each submodel.
   
 - ``y_cov`` : array, shape ``(n_test,)`` (if ``calc_cov=True``)  
   Predictive variance from weighted model
+
+**With derivative predictions:**
+
+::
+
+    y_pred, y_cov = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True
+    )
+
+**Additional arguments:**
+
+- ``return_deriv`` – Boolean flag to include derivative predictions (default: ``False``)
+
+**Returns when return_deriv=True:**
+
+- ``y_pred`` : array, shape ``(n_test * (1 + n_shared_derivs),)``  
+  Stacked predictions: ``[f(x1), df/dx1(x1), ..., f(x2), df/dx2(x2), ...]``
+  Only includes derivatives that are shared across all submodels (see restrictions below)
+  
+- ``y_cov`` : array, shape ``(n_test * (1 + n_shared_derivs),)`` (if ``calc_cov=True``)  
+  Stacked predictive variances corresponding to ``y_pred``
 
 **With submodel outputs:**
 
@@ -251,6 +271,59 @@ diagnostics for each submodel.
   
 - ``submodel_cov`` : array, shape ``(n_submodels, n_test)`` (if ``calc_cov=True``)  
   Predictive variances from each individual submodel
+
+**Derivative Prediction Restrictions:**
+
+Derivative predictions in WDEGP have the following limitations:
+
+1. **Shared derivatives only (multi-submodel case):**  
+   For weighted predictions across multiple submodels, derivatives can only be predicted if 
+   they appear in **all** submodels.
+   
+   ::
+   
+       # Example: Two submodels
+       # Submodel 1 has derivatives: [[[1,1]]]              (∂f/∂x only)
+       # Submodel 2 has derivatives: [[[1,1]], [[1,2]]]    (∂f/∂x and ∂²f/∂x²)
+       
+       # Global predictions can ONLY be made for [[1,1]] (∂f/∂x)
+       # [[1,2]] (∂²f/∂x²) is not shared, so it's excluded from weighted predictions
+
+2. **Training derivatives only (single submodel case):**  
+   Predictions can only be made for derivatives that were explicitly included in training.
+   
+   ::
+   
+       # Example: Single submodel with [[1,1]]
+       # Can predict: f(x) and ∂f/∂x
+       # Cannot predict: ∂²f/∂x² (not used in training)
+
+3. **Point-level availability:**  
+   As long as **at least one training point** includes a specific derivative, that derivative
+   can be predicted anywhere in the input space via the GP.
+   
+   ::
+   
+       # Example: 10 training points
+       # Only points [0, 2, 5] have ∂f/∂x information
+       # GP can still predict ∂f/∂x at any test point
+
+4. **Alternative for unavailable derivatives:**  
+   If a desired derivative was not used in training, you can approximate it using finite 
+   differences on the GP function predictions:
+   
+   ::
+   
+       # Approximate ∂²f/∂x² using finite differences
+       h = 1e-5
+       X_test_plus = X_test + h
+       X_test_minus = X_test - h
+       
+       f_plus, _ = gp.predict(X_test_plus, params)
+       f_center, _ = gp.predict(X_test, params)
+       f_minus, _ = gp.predict(X_test_minus, params)
+       
+       d2f_dx2_approx = (f_plus - 2*f_center + f_minus) / (h**2)
 
 **Use case for return_submodels:**
 
@@ -277,6 +350,21 @@ Examining individual submodel predictions is useful for:
     plt.plot(X_test, y_pred, 'k-', linewidth=2, label='Weighted prediction')
     plt.legend()
     plt.show()
+    
+    # Get derivative predictions (shared derivatives only)
+    y_with_derivs, cov_with_derivs = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True
+    )
+    
+    # Extract function and derivative values
+    n_test = len(X_test)
+    n_derivs_per_point = len(y_with_derivs) // n_test
+    
+    y_pred_reshaped = y_with_derivs.reshape(n_derivs_per_point, n_test).T
+    # y_pred_reshaped[i, 0] = f(x_i)
+    # y_pred_reshaped[i, 1] = df/dx(x_i)  (first shared derivative)
+    # y_pred_reshaped[i, 2] = d2f/dx2(x_i)  (second shared derivative, if available)
+    # etc.
 
 ----
 

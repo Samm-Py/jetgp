@@ -54,8 +54,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">192 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">188<span class="text"> run</span></button>
+            <span class="text">206 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">202<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">4<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="index.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-11-26 02:28 -0600
+            created at 2025-11-26 16:01 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -645,6 +645,36 @@
     <p class="run"><span class="n"><a id="t563" href="#t563">563</a></span><span class="t">    <span class="nam">weights_matrix</span> <span class="op">=</span> <span class="nam">solution</span><span class="op">[</span><span class="op">:</span><span class="nam">n_train</span><span class="op">,</span> <span class="op">:</span><span class="op">]</span><span class="op">.</span><span class="nam">T</span>  <span class="com"># shape: (n_test, n_train)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t564" href="#t564">564</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t565" href="#t565">565</a></span><span class="t">    <span class="key">return</span> <span class="nam">weights_matrix</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t566" href="#t566">566</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t567" href="#t567">567</a></span><span class="t"><span class="key">def</span> <span class="nam">to_tuple</span><span class="op">(</span><span class="nam">item</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t568" href="#t568">568</a></span><span class="t">    <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">item</span><span class="op">,</span> <span class="nam">list</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t569" href="#t569">569</a></span><span class="t">        <span class="key">return</span> <span class="nam">tuple</span><span class="op">(</span><span class="nam">to_tuple</span><span class="op">(</span><span class="nam">x</span><span class="op">)</span> <span class="key">for</span> <span class="nam">x</span> <span class="key">in</span> <span class="nam">item</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t570" href="#t570">570</a></span><span class="t">    <span class="key">return</span> <span class="nam">item</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t571" href="#t571">571</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t572" href="#t572">572</a></span><span class="t"><span class="key">def</span> <span class="nam">find_common_derivatives</span><span class="op">(</span><span class="nam">all_indices</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t573" href="#t573">573</a></span><span class="t">    <span class="str">"""Find derivative indices common to all submodels."""</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t574" href="#t574">574</a></span><span class="t">    <span class="nam">sets</span> <span class="op">=</span> <span class="op">[</span><span class="nam">set</span><span class="op">(</span><span class="nam">to_tuple</span><span class="op">(</span><span class="nam">elem</span><span class="op">)</span> <span class="key">for</span> <span class="nam">elem</span> <span class="key">in</span> <span class="nam">idx_list</span><span class="op">)</span> <span class="key">for</span> <span class="nam">idx_list</span> <span class="key">in</span> <span class="nam">all_indices</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t575" href="#t575">575</a></span><span class="t">    <span class="key">return</span> <span class="nam">sets</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">.</span><span class="nam">intersection</span><span class="op">(</span><span class="op">*</span><span class="nam">sets</span><span class="op">[</span><span class="num">1</span><span class="op">:</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t576" href="#t576">576</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t577" href="#t577">577</a></span><span class="t"><span class="key">def</span> <span class="nam">extract_common_predictions</span><span class="op">(</span><span class="nam">predictions</span><span class="op">,</span> <span class="nam">indices</span><span class="op">,</span> <span class="nam">common_tuples</span><span class="op">,</span> <span class="nam">include_fvals</span><span class="op">=</span><span class="key">True</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t578" href="#t578">578</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t579" href="#t579">579</a></span><span class="t"><span class="str">    Extract rows corresponding to common derivatives.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t580" href="#t580">580</a></span><span class="t"><span class="str">    </span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t581" href="#t581">581</a></span><span class="t"><span class="str">    predictions: shape (num_ders, num_funcs) where row 0 is f_vals</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t582" href="#t582">582</a></span><span class="t"><span class="str">    indices: list of derivative indices for this submodel</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t583" href="#t583">583</a></span><span class="t"><span class="str">    common_tuples: set of common derivative indices (as tuples)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t584" href="#t584">584</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t585" href="#t585">585</a></span><span class="t">    <span class="nam">offset</span> <span class="op">=</span> <span class="num">1</span> <span class="key">if</span> <span class="nam">include_fvals</span> <span class="key">else</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t586" href="#t586">586</a></span><span class="t">    <span class="nam">extract_rows</span> <span class="op">=</span> <span class="op">[</span><span class="num">0</span><span class="op">]</span> <span class="key">if</span> <span class="nam">include_fvals</span> <span class="key">else</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t587" href="#t587">587</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t588" href="#t588">588</a></span><span class="t">    <span class="com"># Build a lookup: tuple -> row index</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t589" href="#t589">589</a></span><span class="t">    <span class="nam">idx_to_row</span> <span class="op">=</span> <span class="op">{</span><span class="nam">to_tuple</span><span class="op">(</span><span class="nam">idx</span><span class="op">)</span><span class="op">:</span> <span class="nam">i</span> <span class="op">+</span> <span class="nam">offset</span> <span class="key">for</span> <span class="nam">i</span><span class="op">,</span> <span class="nam">idx</span> <span class="key">in</span> <span class="nam">enumerate</span><span class="op">(</span><span class="nam">indices</span><span class="op">)</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t590" href="#t590">590</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t591" href="#t591">591</a></span><span class="t">    <span class="com"># Extract rows in a consistent order (sorted by the tuple for reproducibility)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t592" href="#t592">592</a></span><span class="t">    <span class="key">for</span> <span class="nam">common_idx</span> <span class="key">in</span> <span class="nam">sorted</span><span class="op">(</span><span class="nam">common_tuples</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t593" href="#t593">593</a></span><span class="t">        <span class="nam">extract_rows</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">idx_to_row</span><span class="op">[</span><span class="nam">common_idx</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t594" href="#t594">594</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t595" href="#t595">595</a></span><span class="t">    <span class="key">return</span> <span class="nam">predictions</span><span class="op">[</span><span class="nam">extract_rows</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -654,7 +684,7 @@
             <a class="nav" href="index.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-11-26 02:28 -0600
+            created at 2025-11-26 16:01 -0600
         </p>
     </div>
 </footer>

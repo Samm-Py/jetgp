@@ -42,7 +42,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         
         # Submodel groupings (grid indices - can be non-contiguous)
         cls.submodel_indices = [
-            [[]],                 # Corners (no derivatives)
+            [[0, 3, 12, 15]],                 # Corners (df/dx)
             [[1, 2, 4, 8, 7, 11, 13, 14],[1, 2, 4, 8, 7, 11, 13, 14]],   # Edges (1st order)
             [[5, 6, 9, 10],[5, 6, 9, 10],[5, 6, 9, 10],[5, 6, 9, 10],[5, 6, 9, 10]] # Center (2nd order)
         ]
@@ -129,7 +129,9 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         
         # Define derivative indices for each submodel
         der_indices = [
-            [],  # Submodel 1: no derivatives
+            [
+                [[[1, 1]]]  # df/dx1, df/dx2
+                ],  # Submodel 1: no derivatives
             [  # Submodel 2: 1st order
                 [[[1, 1]], [[2, 1]]]  # df/dx1, df/dx2
             ],
@@ -146,7 +148,11 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         submodel_data = []
         
         # Submodel 1: Corners (no derivatives)
-        submodel_data.append([y_all])
+        edges_idx = cls.submodel_indices[0][0]
+        X_edges = cls.X_train[edges_idx]
+        dy_dx1_edges = df_dx1_func(X_edges[:, 0], X_edges[:, 1]).reshape(-1, 1)
+        submodel_data.append([y_all, dy_dx1_edges])
+        
         
         # Submodel 2: Edges (1st order)
         edges_idx = cls.submodel_indices[1][0]
@@ -177,11 +183,11 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         X_corners = self.X_train[corners_idx]
         
         y_pred, submodel_vals = self.model.predict(
-            X_corners, self.params, calc_cov=False, return_submodels=True
+            X_corners, self.params, calc_cov=False, return_submodels=True, return_deriv=True
         )
         
         y_true = self.submodel_data[0][0][corners_idx].flatten()
-        y_pred_submodel = submodel_vals[0].flatten()
+        y_pred_submodel = submodel_vals[0][0,:].flatten()
         
         abs_error = np.abs(y_pred_submodel - y_true)
         max_error = np.max(abs_error)
@@ -217,21 +223,22 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         for i, local_idx in enumerate(range(len(edges_idx))):
             x_point = X_edges[local_idx]
             
-            # Test ∂f/∂x₁
-            X_plus = x_point.copy().reshape(1, -1)
-            X_minus = x_point.copy().reshape(1, -1)
-            X_plus[0, 0] += h
-            X_minus[0, 0] -= h
+        
             
-            _, sm_plus = self.model.predict(X_plus, self.params, calc_cov=False, return_submodels=True)
-            _, sm_minus = self.model.predict(X_minus, self.params, calc_cov=False, return_submodels=True)
+            f_plus = self.model.predict(x_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True)
             
-            fd_deriv_x1 = (sm_plus[1][0, 0] - sm_minus[1][0, 0]) / (2 * h)
+            fd_deriv_x1 = f_plus[1,0]
             analytic_deriv_x1 = self.submodel_data[1][1][local_idx, 0]
             
             error_x1 = abs(fd_deriv_x1 - analytic_deriv_x1)
             self.assertLess(error_x1, 1e-3,
                            f"Submodel 2 ∂f/∂x₁ error at point {i}: {error_x1}")
+            
+            # Test ∂f/∂x₁
+            X_plus = x_point.copy().reshape(1, -1)
+            X_minus = x_point.copy().reshape(1, -1)
+            X_plus[0, 0] += h
+            X_minus[0, 0] -= h
             
             # Test ∂f/∂x₂
             X_plus[0, 0] = x_point[0]
@@ -283,14 +290,14 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             X_plus[0, 0] += h
             X_minus[0, 0] -= h
             
-            _, sm_plus = self.model.predict(X_plus, self.params, calc_cov=False, return_submodels=True)
-            _, sm_minus = self.model.predict(X_minus, self.params, calc_cov=False, return_submodels=True)
+             
+            f_plus = self.model.predict(x_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True)
             
-            fd_deriv_x1 = (sm_plus[2][0, 0] - sm_minus[2][0, 0]) / (2 * h)
+            fd_deriv_x1 = f_plus[1,0]
             analytic_deriv_x1 = self.submodel_data[2][1][local_idx, 0]
             
             error_x1 = abs(fd_deriv_x1 - analytic_deriv_x1)
-            self.assertLess(error_x1, 1e-2,
+            self.assertLess(error_x1, 1e-3,
                            f"Submodel 3 ∂f/∂x₁ error at point {i}: {error_x1}")
             
             # Test ∂f/∂x₂

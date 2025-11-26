@@ -151,7 +151,8 @@ class wdegp:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
 
-
+        if return_deriv:
+            common = wdegp_utils.find_common_derivatives(self.flattened_der_indicies)
 
         y_val = 0
         y_var = 0
@@ -253,13 +254,12 @@ class wdegp:
                         else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
                     )
  
-
+               
                 if self.normalize:
                     f_var = utils.transform_cov(f_cov, self.sigma_y, self.sigmas_x,
                                                 self.flattened_der_indicies[i], X_test)
                 else:
                     f_var = np.diag(np.abs(f_cov))
-
                 y_var += np.sqrt(f_var)
                 if return_submodels:
                     submodel_cov.append(f_var)
@@ -326,6 +326,7 @@ class wdegp:
                     self.flattened_der_indicies[i], self.powers[i],return_deriv=return_deriv, index=index_i
                 )
                 f_mean = K_s.T @ alpha
+                f_mean = f_mean.reshape(-1,1)
                 if self.normalize:
                     if return_deriv:
                         f_mean = utils.transform_predictions(
@@ -338,6 +339,8 @@ class wdegp:
                         )
                     else:
                         f_mean = self.mu_y + f_mean * self.sigma_y
+                
+                
                 unique_indices = set()
                 for subindex in self.index[i]:
                     unique_indices.update(subindex)
@@ -347,6 +350,18 @@ class wdegp:
                 weight = np.zeros(weights_matrix.shape[0])  # Initialize weight vector
                 for idx in unique_indices:
                     weight = weight + weights_matrix[:, idx]
+                n = len(weight)
+                m = f_mean.shape[0]
+                num_derivs = m // n
+                
+                # Reshape to (num_derivs, n), multiply by A, then flatten back
+                reshaped = f_mean.reshape(num_derivs, n)
+                if return_deriv:
+                    reshaped = wdegp_utils.extract_common_predictions(reshaped,  self.flattened_der_indicies[i], common)
+                if return_submodels:
+                    submodel_vals.append(reshaped)
+                reshaped = reshaped * weight  # broadcasts (num_derivs, n) * (n,)
+                
                 # for j in range(len(self.index[i])):
                 #     y_val += weights_matrix[:, self.index[i][j]] * f_mean
                 
@@ -356,9 +371,8 @@ class wdegp:
                 #     weight = np.array([0,0,0,0,0, 1,1,1,1,1])
                     
                     
-                y_val += weight * f_mean
-                if return_submodels:
-                    submodel_vals.append(f_mean)
+                y_val += reshaped
+   
 
                 if calc_cov:
                     diffs_test_test = wdegp_utils.differences_by_dim_func(
@@ -394,7 +408,6 @@ class wdegp:
                                                     self.flattened_der_indicies[i], X_test)
                     else:
                         f_var = np.diag(np.abs(f_cov))
-                    
                     unique_indices = set()
                     for subindex in self.index[i]:
                         unique_indices.update(subindex)
@@ -404,9 +417,20 @@ class wdegp:
                     weight = np.zeros(weights_matrix.shape[0])  # Initialize weight vector
                     for idx in unique_indices:
                         weight = weight + weights_matrix[:, idx]
-                    y_var += weight * np.sqrt(f_var)
+                    n = len(weight)
+                    m = f_mean.shape[0]
+                    num_derivs = m // n
+                    f_var = np.sqrt(f_var)
+                    # Reshape to (num_derivs, n), multiply by A, then flatten back
+                    reshaped = f_var.reshape(num_derivs, n)
+                    if return_deriv:
+                        reshaped = wdegp_utils.extract_common_predictions(reshaped,  self.flattened_der_indicies[i], common)
                     if return_submodels:
-                        submodel_cov.append(f_var)
+                        submodel_cov.append(reshaped)
+                    reshaped= reshaped* weight  # broadcasts (num_derivs, n) * (n,)
+                    
+                    y_var += reshaped
+
 
             if return_submodels:
                 return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)

@@ -97,7 +97,10 @@ def find_next_point_batch(
         # Precompute all differences once
         precomputed_diffs = {
             'train_cand': wdegp_utils.differences_by_dim_func(
-                candidate_points_norm,gp[0].x_train , gp[0].n_order
+                gp[0].x_train,candidate_points_norm, gp[0].n_order
+            ),
+            'cand_train': wdegp_utils.differences_by_dim_func(
+                candidate_points_norm,gp[0].x_train, gp[0].n_order
             ),
             'cand_cand': wdegp_utils.differences_by_dim_func(
                 candidate_points_norm, candidate_points_norm, gp[0].n_order
@@ -150,7 +153,10 @@ def find_next_point_batch(
                 
                 # Compute differences for this single candidate
                 diff_train_cand = wdegp_utils.differences_by_dim_func(
-                    x_cand_norm, gp[0].x_train , gp[0].n_order
+                     gp[0].x_train,x_cand_norm,  gp[0].n_order
+                )
+                diff_cand_train = wdegp_utils.differences_by_dim_func(
+                     x_cand_norm,gp[0].x_train,  gp[0].n_order
                 )
                 diff_cand_cand = wdegp_utils.differences_by_dim_func(
                     x_cand_norm, x_cand_norm, gp[0].n_order
@@ -162,6 +168,7 @@ def find_next_point_batch(
                 # Precomputed diffs for this candidate
                 local_precomputed_diffs = {
                     'train_cand': diff_train_cand,
+                    'cand_train': diff_cand_train,
                     'cand_cand': diff_cand_cand,
                     'domain_cand': diff_domain_cand,
                     'train_domain': precomputed_diffs['train_domain']  # Reuse this one
@@ -321,9 +328,10 @@ def mse_reduction(
     # Training kernel
     diff_train_train = gp.differences_by_dim
     diff_train_cand = precomputed_diffs['train_cand']
+    diff_cand_train = precomputed_diffs['cand_train']
     diff_cand_cand = precomputed_diffs['cand_cand']
     weights_matrix = wdegp_utils.determine_weights(
-        diff_train_train, diff_train_cand, length_scales, gp.kernel_func, sigma_n)
+        diff_train_train, diff_cand_train, length_scales, gp.kernel_func, sigma_n)
     
     phi_train_train = gp.kernel_func(
     diff_train_train, length_scales)
@@ -359,24 +367,31 @@ def mse_reduction(
     
         
         # Compute kernels from differences
-        K_s = wdegp_utils.rbf_kernel(
+        K_s = wdegp_utils.rbf_kernel_predictions(
             phi_train_test, phi_exp_train_test, gp.n_order, gp.n_bases,
-            gp.flattened_der_indicies[i], gp.powers[i], index=index_i
+            gp.flattened_der_indicies[i], gp.powers[i],return_deriv, index=index_i
         )
 
         n = weights_matrix.shape[0]
         
-        K_ss = wdegp_utils.rbf_kernel(
+        K_ss = wdegp_utils.rbf_kernel_predictions(
             phi_test_test, phi_exp_test_test, gp.n_order, gp.n_bases,
-            gp.flattened_der_indicies[i], gp.powers[i], index=index_i
+            gp.flattened_der_indicies[i], gp.powers[i],return_deriv, index=index_i, calc_cov=True
         )
         
         # Compute posterior covariance
-        f_cov = K_ss[:n, :n] - K_s[:n,:] @ np.linalg.solve(K, K_s[:n,:].T)
+        f_cov = K_ss[:n, :n] -K_s[:, :n].T @ np.linalg.solve(K, K_s[:, :n])
         f_var = np.diag(np.abs(f_cov))
-        for j in range(len(submodel_indices[i])):
-            y_var += weights_matrix[:,
-                                    submodel_indices[i][j]] * np.sqrt(f_var)
+        unique_indices = set()
+        for subindex in submodel_indices[i]:
+            unique_indices.update(subindex)
+        unique_indices = sorted(unique_indices)
+        
+        # Sum weights for all unique indices
+        weight = np.zeros(weights_matrix.shape[0])  # Initialize weight vector
+        for idx in unique_indices:
+            weight = weight + weights_matrix[:, idx]
+        y_var += weight * np.sqrt(f_var)
         
     
     return y_var**2
@@ -453,22 +468,11 @@ def gradient_selection(gp, next_points, params, integration_points, candidate_po
         new_point_idx = len(x_aug_1) - 1
         
         base_der_indices = utils.gen_OTI_indices(gp.n_bases, gp.n_order)
-        insert_pos = len(gp.index[0])
+        insert_pos = len(gp.index[0][0])
         
         for i in range(len(y_aug_3)):
             y_aug_3[i][0] = np.vstack([y_aug_3[i][0].copy(), y_to_add_1[0]])
                     
-        # Swap to maintain contiguous indices if needed
-        if new_point_idx != insert_pos:
-            temp1 = x_aug_3[[insert_pos, new_point_idx]].copy() 
-            temp2 = x_aug_3[[new_point_idx, insert_pos]].copy()
-            x_aug_3[[insert_pos, new_point_idx]] = temp2
-            x_aug_3[[new_point_idx, insert_pos]] = temp1
-            temp1 = y_aug_3[0][0][new_point_idx].copy() 
-            temp2 = y_aug_3[0][0][insert_pos].copy()
-            y_aug_3[0][0][new_point_idx] = temp2
-            y_aug_3[0][0][insert_pos] = temp1
-            print(f"  Swapped point {new_point_idx} with point {insert_pos} to maintain contiguous indices")
         
         # Append derivatives to first submodel
         deriv_idx = 1
@@ -481,7 +485,7 @@ def gradient_selection(gp, next_points, params, integration_points, candidate_po
                 ])
                 deriv_idx += 1
         
-        index_t[0].append(insert_pos + gp.index[0][0])
+        index_t[0][0].append(insert_pos + gp.index[0][0][0])
         
         gp_t_3 = gp.__class__(
             x_aug_3, y_aug_3,
@@ -1115,43 +1119,38 @@ def gradient_selection(gp, next_points, params, integration_points, candidate_po
             next_points[1],
         )
      
+         
         # ===== GP_T_3: Add function value + gradient at next_points[0] =====
-        grad_x_next = y_pred_1[1,0]
+        grad_x_next = y_pred_1[1]
         y_aug_3 = copy.deepcopy(gp.y_train_input)
+        x_aug_3 = copy.deepcopy(x_aug_1)
+        
         index_t = copy.deepcopy(gp.index)
 
-   
         new_point_idx = len(x_aug_1) - 1
+        
         base_der_indices = utils.gen_OTI_indices(gp.n_bases, gp.n_order)
         insert_pos = len(gp.index[0])
         
         for i in range(len(y_aug_3)):
             y_aug_3[i][0] = np.vstack([y_aug_3[i][0].copy(), y_to_add_1[0]])
                     
-        if new_point_idx != insert_pos:
-            temp1 = x_aug_1[[insert_pos, new_point_idx]].copy() 
-            temp2 = x_aug_1[[new_point_idx, insert_pos]].copy()
-            x_aug_1[[insert_pos, new_point_idx]] = temp2
-            x_aug_1[[new_point_idx, insert_pos]] = temp1
-            temp1 = y_aug_3[0][0][new_point_idx].copy() 
-            temp2 = y_aug_3[0][0][insert_pos].copy()
-            y_aug_3[0][0][new_point_idx] = temp2
-            y_aug_3[0][0][insert_pos] = temp1
         
+        # Append derivatives to first submodel
         deriv_idx = 1
         for i in range(len(base_der_indices)):
             for j in range(len(base_der_indices[i])):
-                deriv = grad_x_next.reshape(-1, 1)
+                deriv = y_pred_1[j + 1].reshape(-1, 1)
                 y_aug_3[0][deriv_idx] = np.vstack([
                     y_aug_3[0][deriv_idx],
                     deriv
                 ])
                 deriv_idx += 1
         
-        index_t[0].append(insert_pos + gp.index[0][0])
+        index_t[0][0].append(insert_pos + gp.index[0][0][0])
         
-        gp_t_2 = gp.__class__(
-            x_aug_1, y_aug_3,
+        gp_t_3 = gp.__class__(
+            x_aug_3, y_aug_3,
             gp.n_order,
             n_bases=gp.n_bases,
             index=index_t,
@@ -1162,7 +1161,7 @@ def gradient_selection(gp, next_points, params, integration_points, candidate_po
         )
         
         # Calculate integrated variance for gp_t_1
-        expected_improvement_2 = EI(gp_t_2, params,
+        expected_improvement_2 = EI(gp_t_3, params,
            next_points[1])
         
      
@@ -1189,9 +1188,9 @@ def gradient_selection(gp, next_points, params, integration_points, candidate_po
           mu_1, cov_1 = gp_t_1.predict(x_plot, params_t, calc_cov=True, return_submodels=False)
           std_1 = np.sqrt(abs(cov_1))
           EI_1 = EI(gp_t_1, params_t, x_plot)
-          mu_2, cov_2 = gp_t_2.predict(x_plot, params_t, calc_cov=True, return_submodels=False)
+          mu_2, cov_2 = gp_t_3.predict(x_plot, params_t, calc_cov=True, return_submodels=False)
           std_2 = np.sqrt(abs(cov_2))
-          EI_2 = EI(gp_t_2, params_t, x_plot)
+          EI_2 = EI(gp_t_3, params_t, x_plot)
     
           import os
           output_dir = 'gp_evolution_plots_EI'

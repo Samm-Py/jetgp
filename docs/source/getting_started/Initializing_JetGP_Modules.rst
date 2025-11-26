@@ -173,36 +173,37 @@ Module-Specific Initialization
 **submodel_indices**
   Training point assignments for submodels.
   
-  - **Type:** ``list`` of ``list`` of ``int``
-  - **Description:** Specifies which training point(s) are associated with each submodel.
-    Each inner list contains indices corresponding to rows in ``X_train``.
+  - **Type:** ``list`` of ``list`` of ``list`` of ``int``
+  - **Description:** Specifies which training point(s) are associated with each derivative type
+    for each submodel. The structure is nested three levels deep:
     
-    **CRITICAL REQUIREMENT:** Indices for each submodel **must be contiguous**. For example,
-    ``[0, 1, 2]`` is valid, but ``[0, 2, 4]`` is not. If you want to use non-contiguous
-    points from your original data, you must **reorder** ``X_train`` so that each submodel's
-    points become contiguous before initialization.
+    - Outermost list: one entry per submodel
+    - Middle list: one entry per derivative type in that submodel
+    - Inner list: indices of training points that have this derivative type
+    
+    Indices correspond to rows in ``X_train`` and can be non-contiguous (e.g., ``[0, 2, 4]`` is valid).
     
   - **Example:**
   
     .. code-block:: python
     
-        # Valid: contiguous indices for each submodel
-        submodel_indices = [[0, 1, 2], [3, 4, 5], [6, 7, 8, 9]]
+        # Example 1: Simple case with contiguous indices
+        submodel_indices = [
+            [[0, 1, 2], [3, 4, 5]],      # Submodel 1: deriv1 at points 0-2, deriv2 at points 3-5
+            [[6, 7, 8], [9, 10, 11]]     # Submodel 2: deriv1 at points 6-8, deriv2 at points 9-11
+        ]
         
-        # Invalid: non-contiguous indices
-        # submodel_indices = [[0, 2, 4], [1, 3, 5]]  # This will NOT work!
+        # Example 2: Non-contiguous indices (now supported!)
+        submodel_indices = [
+            [[0, 2, 4], [1, 3, 5]],      # Submodel 1: alternating point assignments
+            [[6, 8, 10], [7, 9, 11]]     # Submodel 2: alternating point assignments
+        ]
         
-        # To use non-contiguous points, reorder X_train first:
-        # Original points at indices [0, 2, 4, 6, 8] and [1, 3, 5, 7, 9]
-        original_indices_sub1 = [0, 2, 4, 6, 8]
-        original_indices_sub2 = [1, 3, 5, 7, 9]
-        
-        # Reorder training data
-        reorder = original_indices_sub1 + original_indices_sub2
-        X_train = X_train_original[reorder]
-        
-        # Now use contiguous indices
-        submodel_indices = [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]
+        # Example 3: Different numbers of points per derivative type
+        submodel_indices = [
+            [[0, 1, 2, 3], [5, 7, 9]],   # Submodel 1: 4 points for deriv1, 3 for deriv2
+            [[10, 11], [12, 13, 14, 15]] # Submodel 2: 2 points for deriv1, 4 for deriv2
+        ]
 
 **derivative_specifications**
   Derivative components for each submodel.
@@ -211,23 +212,25 @@ Module-Specific Initialization
   - **Description:** Specifies which derivatives each submodel incorporates. Each entry
     corresponds to one submodel and contains a subset of derivative labels.
     These labels typically come from a helper function like ``gen_OTI_indices``.
+    The order and length of derivative specifications must match the structure in ``submodel_indices``.
   - **Example:**
   
     .. code-block:: python
     
+        # For 1D functions
         derivative_specifications = [
-            [[[1, 1]], [[2, 1]]],                      # Submodel 1: first-order only
-            [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]],   # Submodel 2: second-order
+            [[[1, 1]], [[2, 1]]],                      # Submodel 1: ∂f/∂x, ∂²f/∂x²
+            [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]],   # Submodel 2: higher-order derivatives
             ...
         ]
+        
 
 **Usage Notes:**
 
 - WDEGP partitions training data into submodels to reduce computational cost.
 - **All submodels share the same function values** but may incorporate different derivative information.
 - Each submodel uses derivatives only at its designated subset of training points.
-- **Critical:** Submodel indices must be contiguous. If you want to assign non-contiguous points
-  to a submodel, you must reorder ``X_train`` and all associated data before initialization.
+- Indices in ``submodel_indices`` can be non-contiguous, allowing flexible assignment of training points.
 - Predictions are combined via weighted averaging across submodels.
 
 ------------------------------------------------------------
