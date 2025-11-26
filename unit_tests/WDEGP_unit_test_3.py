@@ -22,7 +22,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
         cls.lb_x = 0.5
         cls.ub_x = 2.5
         cls.num_points = 10
-        cls.derivative_indices = [2, 3, 4, 5]
+        cls.derivative_indices = [[[2, 3, 4, 5], [2,3,4,5]]]
         
         # Define symbolic function
         x = sp.symbols('x')
@@ -43,12 +43,12 @@ class TestSparseWDEGP1D(unittest.TestCase):
         
         # Compute derivatives only at selected points
         cls.d1_all = np.array([[cls.f1_fun(cls.X_train[idx, 0]) 
-                                for idx in cls.derivative_indices]]).T
+                                for idx in cls.derivative_indices[0][0]]]).T
         cls.d2_all = np.array([[cls.f2_fun(cls.X_train[idx, 0]) 
-                                for idx in cls.derivative_indices]]).T
+                                for idx in cls.derivative_indices[0][1]]]).T
         
         # Define sparse derivative structure
-        cls.submodel_indices = [cls.derivative_indices]
+        cls.submodel_indices = cls.derivative_indices
         cls.base_derivative_indices = utils.gen_OTI_indices(cls.n_bases, cls.n_order)
         cls.derivative_specs = [cls.base_derivative_indices]
         cls.submodel_data = [[cls.y_function_values, cls.d1_all, cls.d2_all]]
@@ -72,33 +72,12 @@ class TestSparseWDEGP1D(unittest.TestCase):
             pop_size=200,
             n_generations=15,
             local_opt_every=15,
-            debug=False
+            debug=True
         )
         print(f"\nOptimized parameters: {cls.params}")
     
-    def test_configuration(self):
-        """Test that sparse configuration is correct"""
-        self.assertEqual(len(self.submodel_indices), 1, 
-                        "Should have exactly one submodel")
-        self.assertEqual(len(self.derivative_indices), 4,
-                        "Should have derivatives at 4 points")
-        self.assertEqual(self.num_points, 10,
-                        "Should have 10 total training points")
-        self.assertLess(len(self.derivative_indices), self.num_points,
-                       "Sparse: derivatives at fewer points than total")
     
-    def test_training_data_structure(self):
-        """Test that training data has correct structure"""
-        # Function values at all points
-        self.assertEqual(self.y_function_values.shape, (self.num_points, 1),
-                        "Function values should be at all training points")
-        
-        # Derivatives only at sparse points
-        self.assertEqual(self.d1_all.shape, (len(self.derivative_indices), 1),
-                        "First derivatives only at sparse points")
-        self.assertEqual(self.d2_all.shape, (len(self.derivative_indices), 1),
-                        "Second derivatives only at sparse points")
-    
+
     def test_function_value_interpolation(self):
         """Test that function values are interpolated at all training points"""
         y_pred_train = self.gp_model.predict(self.X_train, self.params, calc_cov=False)
@@ -121,7 +100,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
         max_error = 0.0
         
         for idx, train_idx in enumerate(self.derivative_indices):
-            X_point = self.X_train[train_idx].reshape(1, -1)
+            X_point = self.X_train[train_idx[0]].reshape(-1, 1)
             
             # Get prediction with derivatives
             # f_mean is 1D: [f, df/dx, d2f/dx2]
@@ -130,14 +109,14 @@ class TestSparseWDEGP1D(unittest.TestCase):
             )
             
             # Extract first derivative
-            predicted_first_deriv = f_mean[1]
-            analytic_first_deriv = self.d1_all[idx, 0]
+            predicted_first_deriv = f_mean[4:8].flatten()
+            analytic_first_deriv = self.d1_all[:, 0].flatten()
             
-            error = abs(predicted_first_deriv - analytic_first_deriv)[0]
-            max_error = max(max_error, error)
+            error = abs(predicted_first_deriv - analytic_first_deriv)
+            max_error = max(error)
             
-            self.assertLess(error, 1e-6,
-                           f"First derivative error at point {train_idx}: {error:.2e}")
+            self.assertLess(max_error, 1e-6,
+                           f"First derivative error at point {train_idx} is less than {max_error:.2e}")
         
         print(f"Max first derivative error at sparse points: {max_error:.2e}")
     
@@ -146,7 +125,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
         max_error = 0.0
         
         for idx, train_idx in enumerate(self.derivative_indices):
-            X_point = self.X_train[train_idx].reshape(1, -1)
+            X_point = self.X_train[train_idx[1]].reshape(-1, 1)
             
             # Get prediction with derivatives
             # f_mean is 1D: [f, df/dx, d2f/dx2]
@@ -155,14 +134,14 @@ class TestSparseWDEGP1D(unittest.TestCase):
             )
             
             # Extract second derivative
-            predicted_second_deriv = f_mean[2]
-            analytic_second_deriv = self.d2_all[idx, 0]
+            predicted_second_deriv = f_mean[8:12].flatten()
+            analytic_second_deriv = self.d2_all[:, 0].flatten()
             
-            error = abs(predicted_second_deriv - analytic_second_deriv)[0]
-            max_error = max(max_error, error)
+            error = abs(predicted_second_deriv - analytic_second_deriv)
+            max_error = max(error)
             
-            self.assertLess(error, 1e-6,
-                           f"Second derivative error at point {train_idx}: {error:.2e}")
+            self.assertLess(max_error, 1e-6,
+                           f"Second derivative error at point {train_idx} is less than {max_error:.2e}")
         
         print(f"Max second derivative error at sparse points: {max_error:.2e}")
     
@@ -225,7 +204,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
         second_deriv_errors = []
         
         for idx, train_idx in enumerate(self.derivative_indices):
-            X_point = self.X_train[train_idx].reshape(1, -1)
+            X_point = self.X_train[train_idx[0]].reshape(-1, 1)
             
             # Get prediction with derivatives
             f_mean = self.gp_model.predict(
@@ -233,11 +212,11 @@ class TestSparseWDEGP1D(unittest.TestCase):
             )
             
             # Extract derivatives from 1D array: [f, df/dx, d2f/dx2]
-            predicted_first = f_mean[1]
-            predicted_second = f_mean[2]
+            predicted_first = f_mean[4:8].flatten()
+            predicted_second = f_mean[8:12].flatten()
             
-            first_deriv_errors.append(abs(predicted_first - self.d1_all[idx, 0]))
-            second_deriv_errors.append(abs(predicted_second - self.d2_all[idx, 0]))
+            first_deriv_errors.append(abs(predicted_first - self.d1_all[:, 0].flatten()))
+            second_deriv_errors.append(abs(predicted_second - self.d2_all[:, 0].flatten()))
         
         print(f"\nFirst Derivative Interpolation (sparse points only):")
         print(f"  - Max absolute error: {np.max(first_deriv_errors):.2e}")

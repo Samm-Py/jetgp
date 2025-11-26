@@ -85,7 +85,7 @@ class Optimizer:
                 der_indices_sub, powers, index=idx
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
-            K += self.model.sigma_data[i]**2
+            # K += self.model.sigma_data[i]**2
 
             try:
                 L, low = cho_factor(K)

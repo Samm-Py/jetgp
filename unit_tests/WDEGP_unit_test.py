@@ -36,7 +36,7 @@ class TestWDEGP1DIndividual(unittest.TestCase):
         cls.X_train = np.linspace(cls.lb_x, cls.ub_x, cls.num_points).reshape(-1, 1)
         
         # Each submodel corresponds to one training point
-        cls.submodel_indices = [[i] for i in range(cls.num_points)]
+        cls.submodel_indices = [[[i], [i]] for i in range(cls.num_points)]
         
         # Compute derivatives using SymPy
         cls.submodel_data, cls.y_function_values = cls._compute_symbolic_derivatives()
@@ -194,7 +194,7 @@ class TestWDEGP1DIndividual(unittest.TestCase):
             X_center = self.X_train[idx].reshape(1, -1)
             
             f_mean = self.model.predict(
-                X_center, self.params, calc_cov=False, return_submodels=False, return_deriv=True
+                np.array([x_point]), self.params, calc_cov=False, return_submodels=False, return_deriv=True
             )
             
             # Second derivative via central difference on the i-th submodel
@@ -269,11 +269,8 @@ class TestWDEGP1DIndividual(unittest.TestCase):
         for i, idx in enumerate(self.submodel_indices):
             x_point = self.X_train[idx].flatten()[0]
             
-
-            X_center = self.X_train[idx].reshape(1, -1)
-            
             f_mean = self.model.predict(
-                X_center, self.params, calc_cov=False, return_submodels=False, return_deriv=True
+                np.array([x_point]), self.params, calc_cov=False, return_submodels=False, return_deriv=True
             )
             
             # Second derivative via central difference on the i-th submodel

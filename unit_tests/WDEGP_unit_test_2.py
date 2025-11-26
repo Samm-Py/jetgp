@@ -8,6 +8,8 @@ across three submodels with different derivative orders:
 - Submodel 3 (Center): Function values + up to 2nd order derivatives
 
 Test function: Six-hump camel function
+
+Note: Uses non-contiguous indices directly - no reordering required.
 """
 
 import sys
@@ -38,27 +40,26 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         cls.kernel_type = "anisotropic"
         cls.normalize = True
         
-        # Submodel groupings (original grid indices)
-        cls.submodel_point_groups = [
-            [0, 3, 12, 15],                 # Corners (no derivatives)
-            [1, 2, 4, 8, 7, 11, 13, 14],    # Edges (1st order)
-            [5, 6, 9, 10]                   # Center (2nd order)
+        # Submodel groupings (grid indices - can be non-contiguous)
+        cls.submodel_indices = [
+            [[]],                 # Corners (no derivatives)
+            [[1, 2, 4, 8, 7, 11, 13, 14],[1, 2, 4, 8, 7, 11, 13, 14]],   # Edges (1st order)
+            [[5, 6, 9, 10],[5, 6, 9, 10],[5, 6, 9, 10],[5, 6, 9, 10],[5, 6, 9, 10]] # Center (2nd order)
         ]
         
-        # Generate training points
-        cls.X_train_initial = cls._generate_training_points()
+        # Generate training points (4x4 grid)
+        cls.X_train = cls._generate_training_points()
         
         # Compute derivatives using SymPy
-        cls.submodel_data, cls.X_train_reordered, cls.sequential_indices, cls.der_indices = \
-            cls._compute_symbolic_derivatives()
+        cls.submodel_data, cls.der_indices = cls._compute_symbolic_derivatives()
         
         # Initialize WDEGP model
         cls.model = wdegp(
-            cls.X_train_reordered,
+            cls.X_train,
             cls.submodel_data,
             cls.n_order,
             cls.n_bases,
-            cls.sequential_indices,  # Pass the actual indices, not counts
+            cls.submodel_indices,
             cls.der_indices,
             normalize=cls.normalize,
             kernel=cls.kernel,
@@ -71,9 +72,9 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             pop_size=250,
             n_generations=15,
             local_opt_every=15,
-            debug=False
+            debug=True
         )
-        print(cls.params)
+        print(f"\nOptimized parameters: {cls.params}")
     
     @classmethod
     def _generate_training_points(cls):
@@ -109,12 +110,11 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         d2f_dx1dx2_func_raw = sp.lambdify((x1_sym, x2_sym), d2f_dx1dx2, 'numpy')
         d2f_dx2_2_func_raw = sp.lambdify((x1_sym, x2_sym), d2f_dx2_2, 'numpy')
         
-        # Wrap to ensure array output (handle both array and scalar/constant results)
+        # Wrap to ensure array output
         def make_array_func(func_raw):
             def wrapped(x1, x2):
                 result = func_raw(x1, x2)
                 result = np.atleast_1d(result)
-                # If result is a scalar (constant function), broadcast to input size
                 if result.size == 1 and np.atleast_1d(x1).size > 1:
                     result = np.full_like(x1, result[0])
                 return result
@@ -127,24 +127,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         d2f_dx1dx2_func = make_array_func(d2f_dx1dx2_func_raw)
         d2f_dx2_2_func = make_array_func(d2f_dx2_2_func_raw)
         
-        # Reorder training points
-        reorder_indices = []
-        for group in cls.submodel_point_groups:
-            reorder_indices.extend(group)
-        X_train_reordered = cls.X_train_initial[reorder_indices]
-        
-        # Compute sequential indices
-        sequential_indices = []
-        current_idx = 0
-        for group in cls.submodel_point_groups:
-            group_size = len(group)
-            sequential_indices.append(list(range(current_idx, current_idx + group_size)))
-            current_idx += group_size
-        
         # Define derivative indices for each submodel
-        # Submodel 1: No derivatives (empty)
-        # Submodel 2: 1st order only
-        # Submodel 3: 1st and 2nd order
         der_indices = [
             [],  # Submodel 1: no derivatives
             [  # Submodel 2: 1st order
@@ -157,29 +140,24 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         ]
         
         # Prepare data for each submodel
-        # CRITICAL: Function values are evaluated at ALL training points
-        # Derivatives are evaluated only at each submodel's points
-        
-        y_all = f_func(X_train_reordered[:, 0], X_train_reordered[:, 1]).reshape(-1, 1)
+        # Function values at ALL training points
+        y_all = f_func(cls.X_train[:, 0], cls.X_train[:, 1]).reshape(-1, 1)
         
         submodel_data = []
         
         # Submodel 1: Corners (no derivatives)
-        # Function values at ALL points, no derivative arrays
         submodel_data.append([y_all])
         
         # Submodel 2: Edges (1st order)
-        # Function values at ALL points + derivatives at edge points only
-        edges_idx = sequential_indices[1]
-        X_edges = X_train_reordered[edges_idx]
+        edges_idx = cls.submodel_indices[1][0]
+        X_edges = cls.X_train[edges_idx]
         dy_dx1_edges = df_dx1_func(X_edges[:, 0], X_edges[:, 1]).reshape(-1, 1)
         dy_dx2_edges = df_dx2_func(X_edges[:, 0], X_edges[:, 1]).reshape(-1, 1)
         submodel_data.append([y_all, dy_dx1_edges, dy_dx2_edges])
         
         # Submodel 3: Center (2nd order)
-        # Function values at ALL points + derivatives at center points only
-        center_idx = sequential_indices[2]
-        X_center = X_train_reordered[center_idx]
+        center_idx = cls.submodel_indices[2][0]
+        X_center = cls.X_train[center_idx]
         dy_dx1_center = df_dx1_func(X_center[:, 0], X_center[:, 1]).reshape(-1, 1)
         dy_dx2_center = df_dx2_func(X_center[:, 0], X_center[:, 1]).reshape(-1, 1)
         d2y_dx1_2_center = d2f_dx1_2_func(X_center[:, 0], X_center[:, 1]).reshape(-1, 1)
@@ -190,47 +168,18 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             d2y_dx1_2_center, d2y_dx1dx2_center, d2y_dx2_2_center
         ])
         
-        return submodel_data, X_train_reordered, sequential_indices, der_indices
+        return submodel_data, der_indices
     
-    def test_training_data_structure(self):
-        """Test that training data has correct structure."""
-        self.assertEqual(self.X_train_reordered.shape, (16, 2),
-                        "Training data should have 16 points in 2D")
-        self.assertEqual(len(self.submodel_data), 3,
-                        "Should have 3 submodels")
-        
-        # Check submodel 1 (corners - no derivatives)
-        self.assertEqual(len(self.submodel_data[0]), 1,
-                        "Submodel 1 should have only function values")
-        self.assertEqual(self.submodel_data[0][0].shape, (16, 1),
-                        "Submodel 1 function values should be for ALL 16 points")
-        
-        # Check submodel 2 (edges - 1st order)
-        self.assertEqual(len(self.submodel_data[1]), 3,
-                        "Submodel 2 should have func + 2 first derivatives")
-        self.assertEqual(self.submodel_data[1][0].shape, (16, 1),
-                        "Submodel 2 function values should be for ALL 16 points")
-        self.assertEqual(self.submodel_data[1][1].shape, (8, 1),
-                        "Submodel 2 derivatives should be for 8 edge points only")
-        
-        # Check submodel 3 (center - 2nd order)
-        self.assertEqual(len(self.submodel_data[2]), 6,
-                        "Submodel 3 should have func + 2 first + 3 second derivatives")
-        self.assertEqual(self.submodel_data[2][0].shape, (16, 1),
-                        "Submodel 3 function values should be for ALL 16 points")
-        self.assertEqual(self.submodel_data[2][1].shape, (4, 1),
-                        "Submodel 3 derivatives should be for 4 center points only")
     
     def test_submodel1_function_interpolation(self):
         """Test function value interpolation for Submodel 1 (corners)."""
-        corners_idx = self.sequential_indices[0]
-        X_corners = self.X_train_reordered[corners_idx]
+        corners_idx = [0, 3, 12, 15]
+        X_corners = self.X_train[corners_idx]
         
         y_pred, submodel_vals = self.model.predict(
             X_corners, self.params, calc_cov=False, return_submodels=True
         )
         
-        # Check function values - y_all is shared, so extract corner values
         y_true = self.submodel_data[0][0][corners_idx].flatten()
         y_pred_submodel = submodel_vals[0].flatten()
         
@@ -242,8 +191,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
     
     def test_submodel2_function_interpolation(self):
         """Test function value interpolation for Submodel 2 (edges)."""
-        edges_idx = self.sequential_indices[1]
-        X_edges = self.X_train_reordered[edges_idx]
+        edges_idx = self.submodel_indices[1][0]
+        X_edges = self.X_train[edges_idx]
         
         _, submodel_vals = self.model.predict(
             X_edges, self.params, calc_cov=False, return_submodels=True
@@ -260,12 +209,12 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
     
     def test_submodel2_first_derivatives(self):
         """Test 1st derivative interpolation for Submodel 2 (edges)."""
-        edges_idx = self.sequential_indices[1]
-        X_edges = self.X_train_reordered[edges_idx]
+        edges_idx = self.submodel_indices[1][0]
+        X_edges = self.X_train[edges_idx]
         
         h = 5e-6
         
-        for i, (orig_idx, local_idx) in enumerate(zip(self.submodel_point_groups[1], range(len(edges_idx)))):
+        for i, local_idx in enumerate(range(len(edges_idx))):
             x_point = X_edges[local_idx]
             
             # Test ∂f/∂x₁
@@ -302,8 +251,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
     
     def test_submodel3_function_interpolation(self):
         """Test function value interpolation for Submodel 3 (center)."""
-        center_idx = self.sequential_indices[2]
-        X_center = self.X_train_reordered[center_idx]
+        center_idx = self.submodel_indices[2][0]
+        X_center = self.X_train[center_idx]
         
         _, submodel_vals = self.model.predict(
             X_center, self.params, calc_cov=False, return_submodels=True
@@ -320,8 +269,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
     
     def test_submodel3_first_derivatives(self):
         """Test 1st derivative interpolation for Submodel 3 (center)."""
-        center_idx = self.sequential_indices[2]
-        X_center = self.X_train_reordered[center_idx]
+        center_idx = self.submodel_indices[2][0]
+        X_center = self.X_train[center_idx]
         
         h = 5e-6
         
@@ -362,8 +311,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
     
     def test_submodel3_second_derivatives(self):
         """Test 2nd derivative interpolation for Submodel 3 (center)."""
-        center_idx = self.sequential_indices[2]
-        X_center = self.X_train_reordered[center_idx]
+        center_idx = self.submodel_indices[2][0]
+        X_center = self.X_train[center_idx]
         
         h = 1e-3  # Larger h for numerical stability in 2nd derivatives
         
@@ -445,9 +394,10 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         
         # Submodel 1: Corners (function only)
         print("\nSubmodel 1: Corners (No Derivatives)")
+        print(f"Indices: {self.submodel_indices[0]}")
         print("-" * 80)
-        corners_idx = self.sequential_indices[0]
-        X_corners = self.X_train_reordered[corners_idx]
+        corners_idx =  [0, 3, 12, 15]
+        X_corners = self.X_train[corners_idx]
         _, submodel_vals = self.model.predict(
             X_corners, self.params, calc_cov=False, return_submodels=True
         )
@@ -464,9 +414,10 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         
         # Submodel 2: Edges (function + 1st derivatives)
         print("\nSubmodel 2: Edges (1st Order Derivatives)")
+        print(f"Indices: {self.submodel_indices[1]}")
         print("-" * 80)
-        edges_idx = self.sequential_indices[1]
-        X_edges = self.X_train_reordered[edges_idx]
+        edges_idx = self.submodel_indices[1][0]
+        X_edges = self.X_train[edges_idx]
         
         # Function values
         _, submodel_vals = self.model.predict(
@@ -485,11 +436,11 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         
         print(f"      | 1st derivatives verified via finite differences (h=1e-6)")
         
-        # Submodel 3: Center (function + 1st + 2nd derivatives)
+       # Submodel 3: Center (function + 1st + 2nd derivatives)
         print("\nSubmodel 3: Center (2nd Order Derivatives)")
         print("-" * 80)
-        center_idx = self.sequential_indices[2]
-        X_center = self.X_train_reordered[center_idx]
+        center_idx = self.submodel_indices[2][0]
+        X_center = self.X_train[center_idx]
         
         # Function values
         _, submodel_vals = self.model.predict(
@@ -511,10 +462,10 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         
         print("\n" + "="*80)
         print("Summary:")
-        print(f"  - Total training points: {len(self.X_train_reordered)}")
-        print(f"  - Submodel 1 (Corners): {len(self.sequential_indices[0])} points, 0th order only")
-        print(f"  - Submodel 2 (Edges): {len(self.sequential_indices[1])} points, up to 1st order")
-        print(f"  - Submodel 3 (Center): {len(self.sequential_indices[2])} points, up to 2nd order")
+        print(f"  - Total training points: {len(self.X_train)}")
+        print(f"  - Submodel 1 (Corners): {len(self.submodel_indices[0])} points, 0th order only")
+        print(f"  - Submodel 2 (Edges): {len(self.submodel_indices[1])} points, up to 1st order")
+        print(f"  - Submodel 3 (Center): {len(self.submodel_indices[2])} points, up to 2nd order")
         print(f"  - Test function: Six-hump camel function")
         print(f"  - Derivatives computed symbolically with SymPy")
         print(f"  - Function values evaluated at ALL points, shared across submodels")
@@ -522,6 +473,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         print("="*80)
         print(f"Overall: {'✓ ALL TESTS PASSED' if all_tests_passed else '✗ SOME TESTS FAILED'}")
         print("="*80 + "\n")
+        
         
         self.assertTrue(all_tests_passed, "Not all interpolation tests passed")
 

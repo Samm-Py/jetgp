@@ -269,10 +269,10 @@ def rbf_kernel(
     # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
-    n_pts_with_derivs_cols = len([i for i in range(n_cols_func) if i in index])
-    n_pts_with_derivs_rows = len([i for i in range(n_rows_func) if i in index])
-    total_rows = n_rows_func + n_pts_with_derivs_rows * n_deriv_types
-    total_cols = n_cols_func + n_pts_with_derivs_cols * n_deriv_types
+    n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
+    n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
+    total_rows = n_rows_func + n_pts_with_derivs_rows
+    total_cols = n_cols_func + n_pts_with_derivs_cols
 
     K = np.zeros((total_rows, total_cols))
 
@@ -291,46 +291,68 @@ def rbf_kernel(
     for j in range(n_deriv_types):
         flat_idx = der_indices_tr[j]
         content_full = phi_exp[flat_idx].reshape(base_shape)
-        # Slice the content to match the number of derivative points
-        content_sliced = content_full[:, index[0]:index[-1]+1]
-
-        K[:n_rows_func, col_offset: col_offset +
-            n_pts_with_derivs_cols ] = content_sliced * ((-1) ** powers[j + 1])
-        col_offset += n_pts_with_derivs_cols
-
+        
+        # Get the indices for this derivative order
+        current_indices = index[j]
+        
+        # Use fancy indexing to select only the columns at the specified indices
+        content_sliced = content_full[:, current_indices]
+        
+        # Number of points with this derivative order
+        n_pts_this_order = len(current_indices)
+        
+        K[:n_rows_func, col_offset: col_offset + n_pts_this_order] = content_sliced * ((-1) ** powers[j + 1])
+        col_offset += n_pts_this_order
     # First Block-Column: Derivative-Function (K_df)
     row_offset = n_rows_func
     for i in range(n_deriv_types):
-        flat_idx = der_indices_tr[i]
-        content_full = phi_exp[flat_idx].reshape(base_shape)
-        # Slice the content to match the number of derivative points
-        content_sliced = content_full[index[0]:index[-1]+1, :]
-
-        K[row_offset: row_offset +  n_pts_with_derivs_rows,
-            :n_cols_func] = content_sliced * ((-1) ** powers[0])
-        row_offset += n_pts_with_derivs_rows
+         flat_idx = der_indices_tr[i]
+         content_full = phi_exp[flat_idx].reshape(base_shape)
+         
+         # Get the indices for this derivative order
+         current_indices = index[i]
+         
+         # Use fancy indexing to select only the rows at the specified indices
+         content_sliced = content_full[current_indices, :]
+         
+         # Number of points with this derivative order
+         n_pts_this_order = len(current_indices)
+         
+         K[row_offset: row_offset + n_pts_this_order, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+         row_offset += n_pts_this_order
 
     # Inner Blocks: Derivative-Derivative (K_dd)
     row_offset = n_rows_func
     for i in range(n_deriv_types):
         col_offset = n_cols_func
+        
+        # Get row indices for this derivative order
+        row_indices = index[i]
+        n_pts_row = len(row_indices)
+        
         for j in range(n_deriv_types):
+            # Get column indices for this derivative order
+            col_indices = index[j]
+            n_pts_col = len(col_indices)
+            
             # Multiply the derivative indices to find the correct flat index
             imdir1 = der_ind_order[j]
             imdir2 = der_ind_order[i]
             new_idx, new_ord = dh.mult_dir(
                 imdir1[0], imdir1[1], imdir2[0], imdir2[1])
             flat_idx = der_map[new_ord][new_idx]
-
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            # Slice the content for the derivative-derivative block
-            content_sliced = content_full[index[0]
-                :index[-1]+1, index[0]:index[-1]+1]
-
-            K[row_offset: row_offset +  n_pts_with_derivs_rows, col_offset: col_offset +
-                n_pts_with_derivs_cols] = content_sliced * ((-1) ** powers[j + 1])
-            col_offset += n_pts_with_derivs_cols
-        row_offset += n_pts_with_derivs_rows
+            
+            # Slice both rows and columns using non-contiguous indices
+            # Use numpy's ix_ for efficient 2D fancy indexing
+            content_sliced = content_full[np.ix_(row_indices, col_indices)]
+            
+            K[row_offset: row_offset + n_pts_row, 
+              col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+            
+            col_offset += n_pts_col
+        
+        row_offset += n_pts_row
 
     return K
 
@@ -363,24 +385,27 @@ def rbf_kernel_predictions(
     # --- 1. Initial Setup and Efficient Derivative Extraction ---
     dh = coti.get_dHelp()
     # Create maps to translate derivative specifications to flat indices
+    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
+    n_rows_func, n_cols_func = phi.shape
+    n_deriv_types = len(der_indices)
     if return_deriv:
         der_map = deriv_map(n_bases, 2 * n_order)
         index_2 = [i for i in range(phi_exp.shape[-1])]
         if calc_cov:
             index = [i for i in range(phi_exp.shape[-1])]
+            n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
+        else:
+            n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
     else:
         der_map = deriv_map(n_bases, n_order)
         index_2 = []
-    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+        n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
 
-    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
-    n_rows_func, n_cols_func = phi.shape
-    n_deriv_types = len(der_indices)
-   
-    n_pts_with_derivs_cols = len([i for i in range(n_cols_func) if i in index_2])
-    n_pts_with_derivs_rows = len([i for i in range(n_rows_func) if i in index])
-    total_rows = n_rows_func + n_pts_with_derivs_rows * n_deriv_types
-    total_cols = n_cols_func + n_pts_with_derivs_cols * n_deriv_types
+    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+    n_pts_with_derivs_cols = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
+
+    total_rows = n_rows_func + n_pts_with_derivs_rows 
+    total_cols = n_cols_func + n_pts_with_derivs_cols 
 
     K = np.zeros((total_rows, total_cols))
 
@@ -398,45 +423,74 @@ def rbf_kernel_predictions(
         # First Block-Column: Derivative-Function (K_df)
         row_offset = n_rows_func
         for i in range(n_deriv_types):
+            # Get row indices for this derivative order
+            if calc_cov:
+                row_indices = index_2
+            else:
+                row_indices = index[i]
+            n_pts_row = len(row_indices)
+            
             flat_idx = der_indices_tr[i]
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            # Slice the content to match the number of derivative points
-            content_sliced = content_full[index[0]:index[-1]+1, :]
-
-            K[row_offset: row_offset +  n_pts_with_derivs_rows,
-                :n_cols_func] = content_sliced * ((-1) ** powers[0])
-            row_offset += n_pts_with_derivs_rows
+            
+            # Slice rows using non-contiguous indices
+            content_sliced = content_full[row_indices, :]
+            
+            K[row_offset: row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+            row_offset += n_pts_row
         return K
     else:
         # First Block-Row: Function-Derivative (K_fd)
         col_offset = n_cols_func
         for j in range(n_deriv_types):
+            # Get column indices for this derivative order
+            col_indices = index_2
+            n_pts_col = len(col_indices)
+            
             flat_idx = der_indices_tr[j]
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            # Slice the content to match the number of derivative points
-            content_sliced = content_full[:, index_2[0]:index_2[-1]+1]
+            
+            # Slice columns using non-contiguous indices
+            content_sliced = content_full[:, col_indices]
     
-            K[:n_rows_func, col_offset: col_offset +
-                n_pts_with_derivs_cols ] = content_sliced * ((-1) ** powers[j + 1])
-            col_offset += n_pts_with_derivs_cols
+            K[:n_rows_func, col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+            col_offset += n_pts_col
     
         # First Block-Column: Derivative-Function (K_df)
         row_offset = n_rows_func
         for i in range(n_deriv_types):
+            # Get row indices for this derivative order
+            if calc_cov:
+                row_indices = index
+            else:
+                row_indices =index[i]
+            n_pts_row = len(row_indices)
+            
             flat_idx = der_indices_tr[i]
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            # Slice the content to match the number of derivative points
-            content_sliced = content_full[index[0]:index[-1]+1, :]
+            
+            # Slice rows using non-contiguous indices
+            content_sliced = content_full[row_indices, :]
     
-            K[row_offset: row_offset +  n_pts_with_derivs_rows,
-                :n_cols_func] = content_sliced * ((-1) ** powers[0])
-            row_offset += n_pts_with_derivs_rows
+            K[row_offset: row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+            row_offset += n_pts_row
     
         # Inner Blocks: Derivative-Derivative (K_dd)
         row_offset = n_rows_func
         for i in range(n_deriv_types):
+            # Get row indices for this derivative order
+            if calc_cov:
+                row_indices = index
+            else:
+                row_indices =index[i]
+            n_pts_row = len(row_indices)
+            
             col_offset = n_cols_func
             for j in range(n_deriv_types):
+                # Get column indices for this derivative order
+                col_indices = index_2
+                n_pts_col = len(col_indices)
+                
                 # Multiply the derivative indices to find the correct flat index
                 imdir1 = der_ind_order[j]
                 imdir2 = der_ind_order[i]
@@ -445,14 +499,14 @@ def rbf_kernel_predictions(
                 flat_idx = der_map[new_ord][new_idx]
     
                 content_full = phi_exp[flat_idx].reshape(base_shape)
-                # Slice the content for the derivative-derivative block
-                content_sliced = content_full[index[0]
-                    :index[-1]+1, index_2[0]:index_2[-1]+1]
+                
+                # Slice both rows and columns using non-contiguous indices
+                content_sliced = content_full[np.ix_(row_indices, col_indices)]
     
-                K[row_offset: row_offset +  n_pts_with_derivs_rows, col_offset: col_offset +
-                    n_pts_with_derivs_cols] = content_sliced * ((-1) ** powers[j + 1])
-                col_offset += n_pts_with_derivs_cols
-            row_offset += n_pts_with_derivs_rows
+                K[row_offset: row_offset + n_pts_row, 
+                  col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+                col_offset += n_pts_col
+            row_offset += n_pts_row
     
         return K
 

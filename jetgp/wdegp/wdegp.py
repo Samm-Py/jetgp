@@ -102,8 +102,8 @@ class wdegp:
         self.bounds = self.kernel_factory.bounds
         self.optimizer = Optimizer(self)
 
-        self.sigma_data = utils.generate_submodel_noise_matricies(
-            self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
+        # self.sigma_data = utils.generate_submodel_noise_matricies(
+        #     self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
 
     def optimize_hyperparameters(self, *args, **kwargs):
         """
@@ -176,7 +176,7 @@ class wdegp:
                 self.flattened_der_indicies[i], self.powers[i], index=index_i
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
-            K += self.sigma_data[i]**2
+            # K += self.sigma_data[i]**2
             # L = cholesky(K)
             # alpha = solve(L.T, solve(L, self.y_train[i]))
             # print(K)
@@ -294,7 +294,7 @@ class wdegp:
                     self.flattened_der_indicies[i], self.powers[i], index=index_i
                 )
                 K += (10 ** sigma_n) ** 2 * np.eye(len(K))
-                K += self.sigma_data[i]**2
+                # K += self.sigma_data[i]**2
                 # L = cholesky(K)
                 # alpha = solve(L.T, solve(L, self.y_train[i]))
                 # print(K)
@@ -338,9 +338,15 @@ class wdegp:
                         )
                     else:
                         f_mean = self.mu_y + f_mean * self.sigma_y
-                weight = 0
-                for j in range(len(self.index[i])):
-                    weight = weight + weights_matrix[:, self.index[i][j]]
+                unique_indices = set()
+                for subindex in self.index[i]:
+                    unique_indices.update(subindex)
+                unique_indices = sorted(unique_indices)
+                
+                # Sum weights for all unique indices
+                weight = np.zeros(weights_matrix.shape[0])  # Initialize weight vector
+                for idx in unique_indices:
+                    weight = weight + weights_matrix[:, idx]
                 # for j in range(len(self.index[i])):
                 #     y_val += weights_matrix[:, self.index[i][j]] * f_mean
                 
@@ -388,10 +394,17 @@ class wdegp:
                                                     self.flattened_der_indicies[i], X_test)
                     else:
                         f_var = np.diag(np.abs(f_cov))
-
-                    for j in range(len(self.index[i])):
-                        y_var += weights_matrix[:,
-                                                self.index[i][j]] * np.sqrt(f_var)
+                    
+                    unique_indices = set()
+                    for subindex in self.index[i]:
+                        unique_indices.update(subindex)
+                    unique_indices = sorted(unique_indices)
+                    
+                    # Sum weights for all unique indices
+                    weight = np.zeros(weights_matrix.shape[0])  # Initialize weight vector
+                    for idx in unique_indices:
+                        weight = weight + weights_matrix[:, idx]
+                    y_var += weight * np.sqrt(f_var)
                     if return_submodels:
                         submodel_cov.append(f_var)
 

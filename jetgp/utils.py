@@ -878,9 +878,12 @@ def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points
             if scale_factor == -1:
                 raise Exception('Unknown Error')
             scale_factor = k + 1
-            indices = (scale_factor*num_points)+np.array(idx)
-            values = np.concatenate(
-                (values, sigma_data[indices[0:], indices[0:]].flatten()))
+            indices = (scale_factor*num_points)+np.array(idx[j])
+            if len(indices) == 0:
+                pass
+            else:
+                values = np.concatenate(
+                    (values, sigma_data[indices[0:], indices[0:]].flatten()))
         sub_model_matricies.append(np.diag(values))
 
     return sub_model_matricies
