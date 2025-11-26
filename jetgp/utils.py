@@ -818,7 +818,6 @@ def normalize_y_data_directional(X_train, y_train, sigma_data, der_indices):
 
     return y_train_normalized.flatten(), mean_vec_y, std_vec_y, std_vec_x, mean_vec_x, noise_std_normalized
 
-
 def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices):
     """
     Generate diagonal noise covariance matrices for each submodel component
@@ -884,6 +883,71 @@ def generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points
             else:
                 values = np.concatenate(
                     (values, sigma_data[indices[0:], indices[0:]].flatten()))
+        sub_model_matricies.append(np.diag(values))
+
+    return sub_model_matricies
+def generate_submodel_noise_matricies_old(sigma_data, index, der_indices, num_points, base_der_indices):
+    """
+    Generate diagonal noise covariance matrices for each submodel component
+    (including function values and their associated derivatives).
+
+    This function constructs a list of diagonal matrices where each matrix corresponds
+    to a specific group of training indices (e.g., for a submodel), and includes
+    both function value noise and associated derivative noise.
+
+    Parameters
+    ----------
+    sigma_data : ndarray of shape (n_total, n_total)
+        Full covariance (typically diagonal) matrix for all training data, including function values and derivatives.
+    index : list of lists of int
+        List where each sublist contains indices of the function values for one submodel (e.g., a cluster or partition).
+    der_indices : list of lists
+        Each sublist contains derivative directions for the submodel, corresponding to base_der_indices.
+    num_points : int
+        Number of training points per function (used to compute index offsets for derivatives).
+    base_der_indices : list of lists
+        Master list of derivative indices that define the ordering of blocks in the covariance matrix.
+
+    Returns
+    -------
+    sub_model_matricies : list of ndarray
+        List of diagonal noise matrices (ndarray of shape (n_submodel_total, n_submodel_total)) for each submodel,
+        combining noise contributions from function values and all applicable derivative components.
+
+    Raises
+    ------
+    Exception
+        If a derivative index in `der_indices` is not found in `base_der_indices`.
+
+    Example
+    -------
+    >>> sigma_data.shape = (300, 300)
+    >>> index = [[0, 1, 2], [3, 4, 5]]
+    >>> der_indices = [[[1, 1]], [[2, 1], [1, 2]]]
+    >>> base_der_indices = [[[1, 1]], [[2, 1]], [[1, 2]]]
+    >>> num_points = 100
+    >>> generate_submodel_noise_matricies(sigma_data, index, der_indices, num_points, base_der_indices)
+    [array of shape (6, 6), array of shape (9, 9)]
+    """
+
+    sub_model_matricies = []
+    for i, idx in enumerate(index):
+        values = np.diag(sigma_data[:num_points, :num_points])
+        for j in range(len(der_indices[i])):
+            for k, item in enumerate(base_der_indices):
+                if item == der_indices[i][j]:
+                    scale_factor = k
+                    break
+                else:
+                    scale_factor = -1
+                    continue
+
+            if scale_factor == -1:
+                raise Exception('Unknown Error')
+            scale_factor = k + 1
+            indices = (scale_factor*num_points)+np.array(idx)
+            values = np.concatenate(
+                (values, sigma_data[indices[0:], indices[0:]].flatten()))
         sub_model_matricies.append(np.diag(values))
 
     return sub_model_matricies

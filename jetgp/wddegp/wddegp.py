@@ -111,7 +111,7 @@ class wddegp:
         )
         self.bounds = self.kernel_factory.bounds
         self.optimizer = Optimizer(self)
-        self.sigma_data = utils.generate_submodel_noise_matricies(
+        self.sigma_data = utils.generate_submodel_noise_matricies_old(
             self.sigma_data, index, self.flattened_der_indicies, self.num_points, flattened_base_der_indicies)
 
     def optimize_hyperparameters(self, *args, **kwargs):
