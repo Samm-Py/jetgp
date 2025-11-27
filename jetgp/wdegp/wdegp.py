@@ -209,6 +209,7 @@ class wdegp:
                 self.flattened_der_indicies[i], self.powers[i],return_deriv=return_deriv, index=index_i
             )
             f_mean = K_s.T @ alpha
+            f_mean = f_mean.reshape(-1,1)
             if self.normalize:
                 if return_deriv:
                     f_mean = utils.transform_predictions(
@@ -221,10 +222,12 @@ class wdegp:
                     )
                 else:
                     f_mean = self.mu_y + f_mean * self.sigma_y
-        
-            y_val += f_mean
-            if return_submodels:
-                submodel_vals.append(f_mean)
+            n = X_test.shape[0]
+            m = f_mean.shape[0]
+            num_derivs = m // n
+            # Reshape to (num_derivs, n), multiply by A, then flatten back
+            reshaped = f_mean.reshape(num_derivs, n)
+            y_val += reshaped
 
             if calc_cov:
                 diffs_test_test = wdegp_utils.differences_by_dim_func(
@@ -261,13 +264,11 @@ class wdegp:
                 else:
                     f_var = np.diag(np.abs(f_cov))
                 y_var += np.sqrt(f_var)
-                if return_submodels:
-                    submodel_cov.append(f_var)
 
-            if return_submodels:
-                return (y_val, y_var**2, submodel_vals, submodel_cov) if calc_cov else (y_val, submodel_vals)
-            else:
-                return (y_val, y_var**2) if calc_cov else y_val
+
+                reshaped = y_var.reshape(num_derivs, n)
+
+            return (y_val, reshaped**2) if calc_cov else y_val
         else:
             diffs_train_train = self.differences_by_dim
             diffs_train_test = wdegp_utils.differences_by_dim_func(

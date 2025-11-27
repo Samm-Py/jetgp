@@ -109,7 +109,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
             )
             
             # Extract first derivative
-            predicted_first_deriv = f_mean[4:8].flatten()
+            predicted_first_deriv = f_mean[1,:].flatten()
             analytic_first_deriv = self.d1_all[:, 0].flatten()
             
             error = abs(predicted_first_deriv - analytic_first_deriv)
@@ -134,7 +134,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
             )
             
             # Extract second derivative
-            predicted_second_deriv = f_mean[8:12].flatten()
+            predicted_second_deriv = f_mean[2,:].flatten()
             analytic_second_deriv = self.d2_all[:, 0].flatten()
             
             error = abs(predicted_second_deriv - analytic_second_deriv)
@@ -145,17 +145,6 @@ class TestSparseWDEGP1D(unittest.TestCase):
         
         print(f"Max second derivative error at sparse points: {max_error:.2e}")
     
-    def test_single_submodel_structure(self):
-        """Test that sparse formulation uses single submodel"""
-        X_test = np.linspace(self.lb_x, self.ub_x, 50).reshape(-1, 1)
-        _, _, submodel_vals, _ = self.gp_model.predict(
-            X_test, self.params, calc_cov=True, return_submodels=True
-        )
-        
-        self.assertEqual(len(submodel_vals), 1,
-                        "Sparse formulation should have exactly one submodel")
-        self.assertEqual(submodel_vals[0].shape[1], X_test.shape[0],
-                        "Submodel predictions should match test set size")
     
     def test_confidence_intervals(self):
         """Test that confidence intervals are reasonable"""
@@ -212,8 +201,8 @@ class TestSparseWDEGP1D(unittest.TestCase):
             )
             
             # Extract derivatives from 1D array: [f, df/dx, d2f/dx2]
-            predicted_first = f_mean[4:8].flatten()
-            predicted_second = f_mean[8:12].flatten()
+            predicted_first = f_mean[1,:].flatten()
+            predicted_second = f_mean[2,:].flatten()
             
             first_deriv_errors.append(abs(predicted_first - self.d1_all[:, 0].flatten()))
             second_deriv_errors.append(abs(predicted_second - self.d2_all[:, 0].flatten()))

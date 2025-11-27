@@ -9,7 +9,7 @@ and visualizing model accuracy.
 Key features
 -------------
 - 2D grid-based training data generation
-- Strategic point reordering for derivative placement
+- **Non-contiguous index support**: No reordering needed for derivative placement
 - Automatic differentiation using *pyOTI*
 - Contour visualization of the true function, GP prediction, and error
 - Highlighting of derivative points in the plots
@@ -73,81 +73,106 @@ Define the Six-Hump Camelback function
 Generate 2D training grid and derivative point assignment
 ---------------------------------------------------------
 
-We construct a \(4 \times 4\) grid, then reassign interior points for derivative computation.
+We construct a :math:`4 \times 4` grid and select interior points for derivative computation.
+
+**No reordering needed!** WDEGP supports non-contiguous indices, so we can use the 
+interior point indices directly.
 
 .. jupyter-execute::
 
    def create_training_grid(lb=-1.0, ub=1.0, num_points=4):
+       """
+       Create a 2D training grid with derivatives at interior points.
+       
+       No reordering needed - indices can be non-contiguous!
+       """
        # Uniform 2D grid
        x_vals = np.linspace(lb, ub, num_points)
        y_vals = np.linspace(lb, ub, num_points)
        X = np.array(list(itertools.product(x_vals, y_vals)))
 
-       # Interior and target points
-       interior = [5, 6, 9, 10]
-       target = [12, 13, 14, 15]
+       # Interior points where we want derivatives (no reordering needed!)
+       # In a 4x4 grid, interior points are [5, 6, 9, 10]
+       derivative_indices = [5, 6, 9, 10]
 
-       # Reorder points (swap interior with target)
-       X_reordered = X.copy()
-       X_reordered[interior], X_reordered[target] = X[target], X[interior]
+       # Build submodel_indices structure:
+       # submodel_indices[submodel][deriv_idx] = [list of point indices]
+       # We have 4 derivatives total (2 dims × 2 orders), so 4 entries
+       num_derivatives = n_bases * n_order  # 2 × 2 = 4
+       submodel_indices = [
+           [derivative_indices for _ in range(num_derivatives)]
+       ]
 
-       # Submodel: derivatives at [12, 13, 14, 15]
-       submodel_idx = [target]
+       # Build derivative_specs structure:
+       # derivative_specs[submodel][deriv_idx] = derivative spec
+       # For 2D with all derivatives (4 total):
+       derivative_specs = [
+        [
+            [[[1, 1]], [[2, 1]]],  # 1st order derivatives
+            [[[1, 2]], [[2, 2]]]   # 2nd order derivatives
+        ]
+        ]
 
-       # First and second order derivatives in 2D
-       deriv_spec = [[[[1,1]], [[2,1]]], [[[1,2]], [[2,2]]]]
-       deriv_specs = [deriv_spec]
+       return X, submodel_indices, derivative_specs, derivative_indices
 
-       return X_reordered, submodel_idx, deriv_specs, interior, target
+   X_train, submodel_indices, derivative_specs, derivative_indices = create_training_grid()
+   
+   print(f"Total training points: {len(X_train)}")
+   print(f"Derivative indices (non-contiguous): {derivative_indices}")
+   print(f"\nsubmodel_indices: {len(submodel_indices[0])} entries (one per derivative)")
+   print(f"\nderivative_specs:")
+   deriv_names = ["df/dx1", "df/dx2", "d2f/dx1^2", "d2f/dx2^2"]
+   for i, spec in enumerate(derivative_specs[0]):
+       print(f"  [{i}] {deriv_names[i]}: {spec}")
 
-   X_train, submodel_indices, derivative_specs, interior, target = create_training_grid()
-   X_train[:5]  # Show first few reordered points
+**Data structure explanation:**
+
+- ``submodel_indices[0]`` has 4 entries (one per derivative)
+- ``submodel_indices[0][i] = [5, 6, 9, 10]``: Point indices for derivative ``i``
+- ``derivative_specs[0][i]``: The derivative specification for derivative ``i``
+
+**Data structure explanation:**
+
+- ``submodel_indices[0][0] = [5, 6, 9, 10]``: 1st order derivatives at these points
+- ``submodel_indices[0][1] = [5, 6, 9, 10]``: 2nd order derivatives at same points
+- ``derivative_specs[0][0] = [[[1,1]], [[2,1]]]``: 1st order specs (df/dx1, df/dx2)
+- ``derivative_specs[0][1] = [[[1,2]], [[2,2]]]``: 2nd order specs (d²f/dx1², d²f/dx2²)
 
 ---
 
-Visualize grid reordering
--------------------------
+Visualize grid and derivative points
+------------------------------------
 
 .. jupyter-execute::
 
-   def visualize_reordering(X_train, interior, target, lb=-1.0, ub=1.0, num_points=4):
-       x_vals = np.linspace(lb, ub, num_points)
-       y_vals = np.linspace(lb, ub, num_points)
-       X_standard = np.array(list(itertools.product(x_vals, y_vals)))
+   def visualize_grid(X_train, derivative_indices, lb=-1.0, ub=1.0):
+       """Visualize the training grid with derivative points highlighted."""
+       fig, ax = plt.subplots(figsize=(8, 8))
 
-       fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
-
-       # Standard grid
-       ax1.scatter(X_standard[:,0], X_standard[:,1], c='lightgray', s=80, edgecolor='k')
-       ax1.scatter(X_standard[interior,0], X_standard[interior,1],
-                   c='red', s=120, edgecolor='k', label='Interior [5,6,9,10]')
-       ax1.scatter(X_standard[target,0], X_standard[target,1],
-                   c='green', s=120, edgecolor='k', label='Target [12,13,14,15]')
-       for i, p in enumerate(X_standard):
-           ax1.text(p[0]+0.02, p[1]+0.02, str(i), fontsize=8)
-       ax1.set_title("Standard Grid Ordering")
-       ax1.legend()
-       ax1.grid(True, alpha=0.3)
-
-       # Reordered grid
-       ax2.scatter(X_train[:,0], X_train[:,1], c='lightgray', s=80, edgecolor='k')
-       ax2.scatter(X_train[target,0], X_train[target,1],
-                   c='red', s=120, edgecolor='k', label='Derivative Points [12–15]')
+       # All points
+       ax.scatter(X_train[:, 0], X_train[:, 1], 
+                  c='lightgray', s=100, edgecolor='k', label='Function only')
+       
+       # Derivative points (non-contiguous indices!)
+       ax.scatter(X_train[derivative_indices, 0], X_train[derivative_indices, 1],
+                  c='red', s=150, edgecolor='k', label=f'Derivative pts {derivative_indices}')
+       
+       # Label all points with their index
        for i, p in enumerate(X_train):
-           label = f"d@{i}" if i in target else str(i)
-           ax2.text(p[0]+0.02, p[1]+0.02, label, fontsize=8)
-       ax2.set_title("Reordered Grid (Derivative Points Highlighted)")
-       ax2.legend()
-       ax2.grid(True, alpha=0.3)
-
-       for ax in (ax1, ax2):
-           ax.set_xlabel("$x_1$")
-           ax.set_ylabel("$x_2$")
+           label = f"{i}*" if i in derivative_indices else str(i)
+           ax.text(p[0] + 0.03, p[1] + 0.03, label, fontsize=10)
+       
+       ax.set_title("Training Grid\n(* = derivative points, indices are non-contiguous)")
+       ax.set_xlabel("$x_1$")
+       ax.set_ylabel("$x_2$")
+       ax.legend(loc='upper left')
+       ax.grid(True, alpha=0.3)
+       ax.set_aspect('equal')
 
        plt.tight_layout()
        plt.show()
 
-   visualize_reordering(X_train, interior, target)
+   visualize_grid(X_train, derivative_indices)
 
 ---
 
@@ -157,33 +182,60 @@ Prepare training data with derivatives
 .. jupyter-execute::
 
    def prepare_training_data(X_train, submodel_indices, derivative_specs, func, n_order=2):
-       y_train_data = []
-       y_real = func(X_train, alg=np)
-
-       for k, point_indices in enumerate(submodel_indices):
+       """
+       Prepare function values and derivatives for WDEGP.
+       
+       Returns:
+           submodel_data: List of [func_values, deriv_0, deriv_1, ...]
+           where each deriv corresponds to one entry in derivative_specs
+       """
+       # Function values at ALL training points
+       y_function_values = func(X_train, alg=np).reshape(-1, 1)
+       
+       submodel_data = []
+       
+       for k, (sm_indices, sm_deriv_specs) in enumerate(zip(submodel_indices, derivative_specs)):
+           # Get the point indices for derivatives (same for all derivs in this example)
+           point_indices = sm_indices[0]
+           
+           # Create OTI array for automatic differentiation
            X_sub = oti.array(X_train[point_indices])
 
-           # Add OTI tags
-           for i in range(2):  # 2D
+           # Add OTI dual components for each dimension
+           for dim in range(n_bases):
                for j in range(X_sub.shape[0]):
-                   X_sub[j, i] += oti.e(i + 1, order=n_order)
+                   X_sub[j, dim] += oti.e(dim + 1, order=n_order)
 
-           # Evaluate function with hypercomplex perturbations
-           y_hc = oti.array([func(x, alg=oti) for x in X_sub])
-           y_sub = [y_real]  # base function values
+           # Evaluate function with OTI to get derivatives automatically
+           y_with_derivs = oti.array([
+               func(x, alg=oti)[0] for x in X_sub
+           ])
+           
+           # Build submodel data: [func_values, deriv_0, deriv_1, ...]
+           # Each derivative corresponds to one entry in derivative_specs
+           current_data = [y_function_values]
+           
+           # Extract derivatives for each order
+           for order_idx, order_specs in enumerate(sm_deriv_specs):
+                for deriv_spec in order_specs:
+                    deriv_values = y_with_derivs.get_deriv(deriv_spec).reshape(-1, 1)
+                    current_data.append(deriv_values)
+           
+           submodel_data.append(current_data)
+           
+           print(f"Submodel {k} data structure:")
+           print(f"  Function values: shape {current_data[0].shape} (all {len(X_train)} points)")
+           deriv_names = ["df/dx1", "df/dx2", "d2f/dx1^2", "d2f/dx2^2"]
+           for idx, arr in enumerate(current_data[1:]):
+               print(f"  [{idx}] {deriv_names[idx]}: shape {arr.shape} ({len(point_indices)} points)")
 
-           # Extract derivatives
-           for i in range(len(derivative_specs[k])):
-               for j in range(len(derivative_specs[k][i])):
-                   deriv = y_hc.get_deriv(derivative_specs[k][i][j]).reshape(-1,1)
-                   y_sub.append(deriv)
+       return submodel_data
 
-           y_train_data.append(y_sub)
-
-       return y_train_data
-
-   y_train_data = prepare_training_data(X_train, submodel_indices, derivative_specs, six_hump_camelback)
-   print(f"Submodels: {len(y_train_data)}, Arrays per submodel: {len(y_train_data[0])}")
+   submodel_data = prepare_training_data(
+       X_train, submodel_indices, derivative_specs, six_hump_camelback, n_order
+   )
+   print(f"\nTotal submodels: {len(submodel_data)}")
+   print(f"Arrays per submodel: {len(submodel_data[0])}")
 
 ---
 
@@ -192,9 +244,14 @@ Build and optimize the GP model
 
 .. jupyter-execute::
 
+   print("Building WDEGP model...")
+   print(f"  Training points: {len(X_train)}")
+   print(f"  Derivative points: {len(derivative_indices)} (at indices {derivative_indices})")
+   print(f"  Derivatives per point: {n_bases * n_order} (2 dims × 2 orders)")
+
    gp_model = wdegp(
        X_train,
-       y_train_data,
+       submodel_data,
        n_order,
        n_bases,
        submodel_indices,
@@ -204,15 +261,17 @@ Build and optimize the GP model
        kernel_type=kernel_type,
    )
 
+   print("\nOptimizing hyperparameters...")
    params = gp_model.optimize_hyperparameters(
-        optimizer='jade',
-        pop_size = 100,
-        n_generations = 15,
-        local_opt_every = None,
-        debug = True
-        )
+       optimizer='jade',
+       pop_size=100,
+       n_generations=15,
+       local_opt_every=None,
+       debug=True
+   )
 
-   params
+   print("\nOptimized parameters:")
+   print(params)
 
 ---
 
@@ -221,20 +280,29 @@ Evaluate model performance on test grid
 
 .. jupyter-execute::
 
-   def evaluate_gp(gp_model, func, params, lb=-1.0, ub=1.0, N=25):
+   def evaluate_gp(gp_model, func, params, lb=-1.0, ub=1.0, N=50):
+       """Evaluate GP on a dense test grid."""
        x_lin = np.linspace(lb, ub, N)
        y_lin = np.linspace(lb, ub, N)
        X1, X2 = np.meshgrid(x_lin, y_lin)
        X_test = np.column_stack([X1.ravel(), X2.ravel()])
 
-       y_pred, _ = gp_model.predict(X_test, params, calc_cov=False, return_submodels=True)
+       y_pred = gp_model.predict(X_test, params, calc_cov=False)
        y_true = func(X_test, alg=np)
-       nrmse = utils.nrmse(y_true, y_pred)
+       
+       # Error metrics
+       rmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2))
+       nrmse = rmse / (y_true.max() - y_true.min())
+       mae = np.mean(np.abs(y_true - y_pred.flatten()))
 
-       return X1, X2, y_true.reshape(N,N), y_pred.reshape(N,N), nrmse
+       return X1, X2, y_true.reshape(N, N), y_pred.reshape(N, N), nrmse, rmse, mae
 
-   X1, X2, y_true_grid, y_pred_grid, nrmse = evaluate_gp(gp_model, six_hump_camelback, params)
+   X1, X2, y_true_grid, y_pred_grid, nrmse, rmse, mae = evaluate_gp(
+       gp_model, six_hump_camelback, params
+   )
    print(f"NRMSE: {nrmse:.6f}")
+   print(f"RMSE:  {rmse:.6f}")
+   print(f"MAE:   {mae:.6f}")
 
 ---
 
@@ -243,37 +311,114 @@ Visualize results
 
 .. jupyter-execute::
 
-   def visualize_results(X1, X2, y_true, y_pred, X_train, target):
+   def visualize_results(X1, X2, y_true, y_pred, X_train, derivative_indices, nrmse):
+       """Create contour plots of true function, prediction, and error."""
        abs_err = np.abs(y_true - y_pred)
        fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-       titles = ["True Function", "GP Prediction", "Absolute Error"]
+       titles = ["True Function", "GP Prediction", f"Absolute Error (NRMSE={nrmse:.4f})"]
        data = [y_true, y_pred, abs_err]
        cmaps = ["viridis", "viridis", "magma"]
 
        for ax, Z, title, cmap in zip(axes, data, titles, cmaps):
            c = ax.contourf(X1, X2, Z, levels=50, cmap=cmap)
            fig.colorbar(c, ax=ax)
-           ax.scatter(X_train[:,0], X_train[:,1], c='red', edgecolor='k', s=40)
-           ax.scatter(X_train[target,0], X_train[target,1],
-                      c='white', edgecolor='k', s=80, label="Derivative Points")
+           
+           # All training points
+           ax.scatter(X_train[:, 0], X_train[:, 1], 
+                      c='red', edgecolor='k', s=40, label='Training pts')
+           
+           # Derivative points (highlighted)
+           ax.scatter(X_train[derivative_indices, 0], X_train[derivative_indices, 1],
+                      c='white', edgecolor='k', s=100, marker='s', 
+                      label=f'Deriv pts {derivative_indices}')
+           
            ax.set_title(title)
            ax.set_xlabel("$x_1$")
            ax.set_ylabel("$x_2$")
-           ax.legend()
+           ax.legend(loc='upper right', fontsize=8)
            ax.grid(alpha=0.3)
 
        plt.tight_layout()
        plt.show()
 
-   visualize_results(X1, X2, y_true_grid, y_pred_grid, X_train, target)
+   visualize_results(X1, X2, y_true_grid, y_pred_grid, X_train, derivative_indices, nrmse)
+
+---
+
+Verify derivative interpolation
+-------------------------------
+
+Since this is a single submodel, ``return_deriv=True`` is available for direct derivative predictions.
+
+.. jupyter-execute::
+
+   print("=" * 70)
+   print("Derivative verification using return_deriv=True")
+   print("=" * 70)
+
+   # Get predictions with derivatives at the derivative training points
+   X_deriv_pts = X_train[derivative_indices]
+   y_pred_with_derivs = gp_model.predict(X_deriv_pts, params, calc_cov=False, return_deriv=True)
+
+   print(f"\nPrediction shape: {y_pred_with_derivs.shape}")
+   print("  Row 0: function values")
+   print("  Row 1: df/dx1 (1st order, dim 1)")
+   print("  Row 2: df/dx2 (1st order, dim 2)")
+   print("  Row 3: d²f/dx1² (2nd order, dim 1)")
+   print("  Row 4: d²f/dx2² (2nd order, dim 2)")
+
+   # Compare with training data
+   print("\n1st order derivatives (df/dx1):")
+   pred_d1_x1 = y_pred_with_derivs[1, :]
+   true_d1_x1 = submodel_data[0][1].flatten()  # 1st deriv array
+   for i, idx in enumerate(derivative_indices):
+       rel_err = abs(pred_d1_x1[i] - true_d1_x1[i]) / abs(true_d1_x1[i]) if true_d1_x1[i] != 0 else 0
+       print(f"  Point {idx}: Pred={pred_d1_x1[i]:.6f}, True={true_d1_x1[i]:.6f}, RelErr={rel_err:.2e}")
+
+   print("\n1st order derivatives (df/dx2):")
+   pred_d1_x2 = y_pred_with_derivs[2, :]
+   true_d1_x2 = submodel_data[0][2].flatten()
+   for i, idx in enumerate(derivative_indices):
+       rel_err = abs(pred_d1_x2[i] - true_d1_x2[i]) / abs(true_d1_x2[i]) if true_d1_x2[i] != 0 else 0
+       print(f"  Point {idx}: Pred={pred_d1_x2[i]:.6f}, True={true_d1_x2[i]:.6f}, RelErr={rel_err:.2e}")
 
 ---
 
 Summary
 -------
 
-This experiment demonstrates a **2D sparse DEGP** model with selective derivative placement.
-Derivative points concentrated in the interior region improve local accuracy 
-in areas where the function exhibits strong nonlinear behavior.  
-The approach efficiently balances computational cost and model fidelity.
+This tutorial demonstrated a **2D sparse DEGP** model with selective derivative placement.
+
+**Key features:**
+
+1. **No reordering needed**: Non-contiguous indices (``[5, 6, 9, 10]``) are used directly
+2. **Interior derivative points**: Derivatives at interior grid points improve accuracy in nonlinear regions
+3. **Direct derivative verification**: ``return_deriv=True`` provides predicted derivatives
+
+**Data structures used:**
+
+.. code-block:: python
+
+   # submodel_indices[submodel][deriv_idx] = [point indices]
+   # One entry per derivative (4 total for 2D × 2 orders)
+   submodel_indices = [
+       [d_indices, d_indices, d_indices, d_indices]
+   ]
+   
+   # derivative_specs[submodel][deriv_idx] = derivative spec
+   derivative_specs = [
+       [
+           [[[1, 1]]],  # df/dx1
+           [[[2, 1]]],  # df/dx2
+           [[[1, 2]]],  # d²f/dx1²
+           [[[2, 2]]]   # d²f/dx2²
+       ]
+   ]
+
+**Advantages:**
+
+- Efficient use of derivative information at strategic locations
+- No data reorganization required
+- Direct access to derivative predictions via ``return_deriv=True``
+
