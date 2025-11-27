@@ -208,20 +208,39 @@ Module-Specific Initialization
 **derivative_specifications**
   Derivative components for each submodel.
   
-  - **Type:** ``list`` of ``list``
-  - **Description:** Specifies which derivatives each submodel incorporates. Each entry
-    corresponds to one submodel and contains a subset of derivative labels.
-    These labels typically come from a helper function like ``gen_OTI_indices``.
-    The order and length of derivative specifications must match the structure in ``submodel_indices``.
+  - **Type:** ``list`` of ``list`` of ``list`` of ``list`` of ``int``
+  - **Description:** Specifies which derivatives each submodel incorporates. The structure is nested:
+    
+    - Outermost list: one entry per submodel
+    - Middle list: one entry per derivative type in that submodel  
+    - Inner list: derivative specifications for that type (can include multiple derivatives)
+    - Innermost: ``[[dim, order]]`` for pure derivatives or ``[[dim1, order1], [dim2, order2]]`` for mixed
+    
+  - **Notation:** 
+    - ``[[dim, order]]`` = derivative of order ``order`` w.r.t. dimension ``dim``
+    - ``[[dim1, order1], [dim2, order2]]`` = mixed derivative (e.g., ∂²f/∂x₁∂x₂)
+    
   - **Example:**
   
     .. code-block:: python
     
-        # For 1D functions
-        derivative_specifications = [
-            [[[1, 1]], [[2, 1]]],                      # Submodel 1: ∂f/∂x, ∂²f/∂x²
-            [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]],   # Submodel 2: higher-order derivatives
-            ...
+        # 2D example: Submodel 0 with 1st order only, Submodel 1 with 1st and 2nd order
+        derivative_specs = [
+            # Submodel 0: only 1st order derivatives
+            [
+                [[[1, 1]], [[2, 1]]]   # ∂f/∂x₁ and ∂f/∂x₂
+            ],
+            # Submodel 1: 1st and 2nd order derivatives  
+            [
+                [[[1, 1]], [[2, 1]]],                    # 1st order: ∂f/∂x₁, ∂f/∂x₂
+                [[[1, 2]], [[1,1],[2,1]], [[2, 2]]]      # 2nd order: ∂²f/∂x₁², ∂²f/∂x₁∂x₂, ∂²f/∂x₂²
+            ]
+        ]
+        
+        # Matching submodel_indices structure:
+        submodel_indices = [
+            [boundary_indices],                    # Submodel 0: 1 derivative type
+            [interior_indices, interior_indices]   # Submodel 1: 2 derivative types
         ]
         
 

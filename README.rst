@@ -205,7 +205,7 @@ first and second-order derivatives.
               np.sin(10*np.pi*x)/(x**3) + 12*(x-1)**2
 
    # Generate training points
-   X_all = np.linspace(0.5, 2.5, 10).reshape(-1, 1)
+   X_train = np.linspace(0.5, 2.5, 10).reshape(-1, 1)
 
    # Partition into two submodels (alternating points)
    submodel1_indices = [0, 2, 4, 6, 8]
@@ -232,7 +232,7 @@ first and second-order derivatives.
        [y_vals, d1_sm2, d2_sm2]   # Submodel 2
    ]
 
-   submodel_indices = [[0,1,2,3,4], [5,6,7,8,9]]
+   submodel_indices = [[[0,1,2,3,4],[0,1,2,3,4]], [[5,6,7,8,9],[5,6,7,8,9]]]
    derivative_specs = [[[[[1,1]]], [[[1,2]]]], [[[[1,1]]], [[[1,2]]]]]
 
    print("Initializing WDEGP model...")

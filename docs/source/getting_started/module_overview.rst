@@ -109,7 +109,63 @@ Examples:
       [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ],                     # second-order
       [ [[1, 3]], [[1, 2], [2, 1]], [[1, 1], [2, 2]], [[2, 3]] ]    # third-order
   ]
+**derivative_locations**  
+Specifies which training points have each derivative defined in ``der_indices``.  
+This argument is a **list of lists**, where each sublist contains the training point indices for the corresponding derivative.  
+The structure must match ``der_indices`` exactly—one entry per derivative.  
+Indices can be **non-contiguous** (e.g., ``[0, 2, 5, 7]`` is valid).
 
+Examples:
+
+**1D function** – first-order derivative at points 2, 3, 4, 5  
+::
+
+  der_indices = [[[[1, 1]]]]
+  derivative_locations = [[2, 3, 4, 5]]  # 1 derivative → 1 entry
+
+**1D function** – first and second-order derivatives at different locations  
+::
+
+  der_indices = [[[[1, 1]], [[1, 2]]]]
+  derivative_locations = [
+      [0, 1, 2, 3, 4, 5],  # df/dx at all 6 points
+      [2, 3, 4]            # d²f/dx² at middle 3 points only
+  ]
+
+**2D function** – all first-order derivatives at same locations  
+::
+
+  der_indices = [[ [[1, 1]], [[2, 1]] ]]
+  derivative_locations = [
+      [0, 1, 2, 3, 4],  # ∂f/∂x₁ at these points
+      [0, 1, 2, 3, 4]   # ∂f/∂x₂ at these points
+  ]
+
+**2D function** – first and second-order with different coverage  
+::
+
+  der_indices = [
+      [ [[1, 1]], [[2, 1]] ],                      # 2 first-order derivatives
+      [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ]    # 3 second-order derivatives
+  ]
+  derivative_locations = [
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],  # ∂f/∂x₁ at all 9 points
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],  # ∂f/∂x₂ at all 9 points
+      [4, 5, 7, 8],                  # ∂²f/∂x₁² at interior only
+      [4, 5, 7, 8],                  # ∂²f/∂x₁∂x₂ at interior only
+      [4, 5, 7, 8]                   # ∂²f/∂x₂² at interior only
+  ]
+
+**Non-contiguous indices** – derivatives at alternating points  
+::
+
+  der_indices = [[[[1, 1]], [[1, 2]]]]
+  derivative_locations = [
+      [0, 2, 4, 6, 8],  # df/dx at even indices
+      [1, 3, 5, 7, 9]   # d²f/dx² at odd indices
+  ]
+
+**Note:** If ``derivative_locations`` is ``None`` or not provided, all derivatives are assumed to be available at all training points.
 .. _normalize_argument:
 
 **normalize**  

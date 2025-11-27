@@ -15,6 +15,7 @@ class degp:
         n_order,
         n_bases,
         der_indices,
+        derivative_locations = None,
         normalize=True,
         sigma_data=None,
         kernel="SE",
@@ -54,10 +55,10 @@ class degp:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.normalize = normalize
+        self.derivative_locations = derivative_locations
         
-        
-        self.y_train_input = y_train.copy()
-        self.x_train_input = x_train.copy()
+        self.y_train_input = y_train
+        self.x_train_input = x_train
         
         # Prepare indices and powers
         indices = der_indices
@@ -153,6 +154,7 @@ class degp:
             self.n_bases,
             self.kernel_func,
             self.flattened_der_indicies,
+            self.derivative_locations,
             self.powers,
         )
         self.K += (10**sigma_n) ** 2 * np.eye(self.K.shape[0])
@@ -188,20 +190,21 @@ class degp:
 
         # Compute train-test kernel
 
-        self.K_s = degp_utils.rbf_kernel(
+        self.K_s = degp_utils.rbf_kernel_predictions(
             diff_x_test_x_train,
             length_scales,
             self.n_order,
             self.n_bases,
             self.kernel_func,
             self.flattened_der_indicies,
+            self.derivative_locations,
             self.powers,
             return_deriv=return_deriv
         )
 
         # Compute posterior mean
         f_mean = self.K_s.T@alpha
-
+        
         if self.normalize:
             if return_deriv:
                 f_mean = utils.transform_predictions(
@@ -214,9 +217,13 @@ class degp:
                 )
             else:
                 f_mean = self.mu_y + f_mean * self.sigma_y
-
+        n = X_test.shape[0]
+        m = f_mean.shape[0]
+        num_derivs = m // n
+        # Reshape to (num_derivs, n), multiply by A, then flatten back
+        reshaped_mean = f_mean.reshape(num_derivs, n)
         if not calc_cov:
-            return f_mean
+            return reshaped_mean
 
         # Compute test-test kernel and covariance
         if self.kernel == 'SI':
@@ -228,15 +235,17 @@ class degp:
                 X_test, X_test, self.n_order, return_deriv=return_deriv
             )
 
-        self.K_ss = degp_utils.rbf_kernel(
+        self.K_ss = degp_utils.rbf_kernel_predictions(
             diff_x_test_x_test,
             length_scales,
             self.n_order,
             self.n_bases,
             self.kernel_func,
             self.flattened_der_indicies,
+            self.derivative_locations,
             self.powers,
-            return_deriv=return_deriv
+            return_deriv=return_deriv,
+            calc_cov=calc_cov
         )
 
         if cho_solve_failed:
@@ -269,4 +278,6 @@ class degp:
         else:
             f_var = np.diag(np.abs(f_cov))
 
-        return f_mean, f_var
+        # Reshape to (num_derivs, n), multiply by A, then flatten back
+        reshaped_var = f_var.reshape(num_derivs, n)
+        return reshaped_mean, reshaped_var

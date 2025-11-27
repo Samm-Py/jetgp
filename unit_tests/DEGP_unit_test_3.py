@@ -11,7 +11,7 @@ import numpy as np
 from jetgp.full_degp.degp import degp
 import sys
 
-class TestDEGP2DSecondOrder(unittest.TestCase):
+class TestDEGP2DSecondOrderV2(unittest.TestCase):
     """Test case for 2D DEGP with second-order derivatives."""
     
     @classmethod
@@ -22,13 +22,18 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
         X2 = np.array([0.0, 0.5, 1.0])
         X1_grid, X2_grid = np.meshgrid(X1, X2)
         cls.X_train = np.column_stack([X1_grid.flatten(), X2_grid.flatten()])
-        
+        # Define derivative indices
+        cls.der_indices = [
+            [[[1, 1]], [[2, 1]]],  # first-order derivatives
+            [[[1, 2]], [[2, 2]]]   # second-order derivatives
+        ]
+        cls.derivative_locations = [[0,1,2,3,7,8],[4,5,6],[0,1,2,3,4],[5,6,7,8]]
         # Compute true function and derivatives
         cls.y_func = np.sin(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
-        cls.y_deriv_x = np.cos(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
-        cls.y_deriv_y = -np.sin(cls.X_train[:, 0]) * np.sin(cls.X_train[:, 1])
-        cls.y_deriv_xx = -np.sin(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
-        cls.y_deriv_yy = -np.sin(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
+        cls.y_deriv_x = np.cos(cls.X_train[cls.derivative_locations[0], 0]) * np.cos(cls.X_train[cls.derivative_locations[0],1])
+        cls.y_deriv_y = -np.sin(cls.X_train[cls.derivative_locations[1],0]) * np.sin(cls.X_train[cls.derivative_locations[1],1])
+        cls.y_deriv_xx = -np.sin(cls.X_train[cls.derivative_locations[2],0]) * np.cos(cls.X_train[cls.derivative_locations[2],1])
+        cls.y_deriv_yy = -np.sin(cls.X_train[cls.derivative_locations[3],0]) * np.cos(cls.X_train[cls.derivative_locations[3],1])
         
         # Prepare training data list
         cls.y_train = [
@@ -39,11 +44,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
             cls.y_deriv_yy.reshape(-1, 1)
         ]
         
-        # Define derivative indices
-        cls.der_indices = [
-            [[[1, 1]], [[2, 1]]],  # first-order derivatives
-            [[[1, 2]], [[2, 2]]]   # second-order derivatives
-        ]
+
         
         # Initialize model
         cls.model = degp(
@@ -52,9 +53,10 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
             n_order=2, 
             n_bases=2,
             der_indices=cls.der_indices, 
-            normalize=True,
-            kernel="SineExp", 
-            kernel_type="isotropic"
+            derivative_locations=cls.derivative_locations,
+            normalize=False,
+            kernel="RQ", 
+            kernel_type="anisotropic"
         )
         
         # Optimize hyperparameters
@@ -76,16 +78,6 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
         
         cls.n_train = len(cls.X_train)
     
-    def test_training_data_shape(self):
-        """Test that training data has correct shape."""
-        self.assertEqual(self.X_train.shape, (9, 2), 
-                        "Training data should have 9 points in 2D")
-        self.assertEqual(len(self.y_train), 5,
-                        "Should have 5 output arrays (func + 4 derivatives)")
-        for y in self.y_train:
-            self.assertEqual(y.shape, (9, 1),
-                           "Each output array should have shape (9, 1)")
-    
     def test_function_interpolation(self):
         """Test that function values are correctly interpolated."""
         y_func_pred = self.y_train_pred[0,:].flatten()
@@ -103,7 +95,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
     def test_first_derivative_x_interpolation(self):
         """Test that first derivative w.r.t. x is correctly interpolated."""
         y_deriv_x_pred = self.y_train_pred[1,:].flatten()
-        abs_error = np.abs(y_deriv_x_pred - self.y_deriv_x)
+        abs_error = np.abs(y_deriv_x_pred[self.derivative_locations[0]] - self.y_deriv_x)
         max_error = np.max(abs_error)
         
         self.assertLess(max_error, 1e-6,
@@ -116,7 +108,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
     def test_first_derivative_y_interpolation(self):
         """Test that first derivative w.r.t. y is correctly interpolated."""
         y_deriv_y_pred = self.y_train_pred[2,:].flatten()
-        abs_error = np.abs(y_deriv_y_pred - self.y_deriv_y)
+        abs_error = np.abs(y_deriv_y_pred[self.derivative_locations[1]] - self.y_deriv_y)
         max_error = np.max(abs_error)
         
         self.assertLess(max_error, 1e-6,
@@ -129,7 +121,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
     def test_second_derivative_xx_interpolation(self):
         """Test that second derivative w.r.t. x² is correctly interpolated."""
         y_deriv_xx_pred = self.y_train_pred[3,:].flatten()
-        abs_error = np.abs(y_deriv_xx_pred - self.y_deriv_xx)
+        abs_error = np.abs(y_deriv_xx_pred[self.derivative_locations[2]] - self.y_deriv_xx)
         max_error = np.max(abs_error)
         
         self.assertLess(max_error, 1e-6,
@@ -142,7 +134,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
     def test_second_derivative_yy_interpolation(self):
         """Test that second derivative w.r.t. y² is correctly interpolated."""
         y_deriv_yy_pred = self.y_train_pred[4,:].flatten()
-        abs_error = np.abs(y_deriv_yy_pred - self.y_deriv_yy)
+        abs_error = np.abs(y_deriv_yy_pred[self.derivative_locations[3]] - self.y_deriv_yy)
         max_error = np.max(abs_error)
         
         self.assertLess(max_error, 1e-6,
@@ -164,10 +156,10 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
         # Compute errors
         errors = {
             'Function': np.abs(y_func_pred - self.y_func),
-            'Derivative ∂f/∂x': np.abs(y_deriv_x_pred - self.y_deriv_x),
-            'Derivative ∂f/∂y': np.abs(y_deriv_y_pred - self.y_deriv_y),
-            'Second derivative ∂²f/∂x²': np.abs(y_deriv_xx_pred - self.y_deriv_xx),
-            'Second derivative ∂²f/∂y²': np.abs(y_deriv_yy_pred - self.y_deriv_yy)
+            'Derivative ∂f/∂x': np.abs(y_deriv_x_pred[self.derivative_locations[0]] - self.y_deriv_x),
+            'Derivative ∂f/∂y': np.abs(y_deriv_y_pred[self.derivative_locations[1]] - self.y_deriv_y),
+            'Second derivative ∂²f/∂x²': np.abs(y_deriv_xx_pred[self.derivative_locations[2]] - self.y_deriv_xx),
+            'Second derivative ∂²f/∂y²': np.abs(y_deriv_yy_pred[self.derivative_locations[3]]- self.y_deriv_yy)
         }
         
         print("\n" + "="*60)
@@ -195,7 +187,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
 def run_tests_with_details():
     """Run tests with detailed output."""
     # Create test suite
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestDEGP2DSecondOrder)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestDEGP2DSecondOrderV2)
     
     # Run with verbosity
     runner = unittest.TextTestRunner(verbosity=2)

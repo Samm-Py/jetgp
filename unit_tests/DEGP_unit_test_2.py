@@ -88,7 +88,7 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
     
     def test_function_interpolation(self):
         """Test that function values are correctly interpolated."""
-        y_func_pred = self.y_train_pred[:self.n_train].flatten()
+        y_func_pred = self.y_train_pred[0,:].flatten()
         abs_error = np.abs(y_func_pred - self.y_func)
         max_error = np.max(abs_error)
         
@@ -102,7 +102,7 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
     
     def test_first_derivative_x_interpolation(self):
         """Test that first derivative w.r.t. x is correctly interpolated."""
-        y_deriv_x_pred = self.y_train_pred[self.n_train:2*self.n_train].flatten()
+        y_deriv_x_pred = self.y_train_pred[1,:].flatten()
         abs_error = np.abs(y_deriv_x_pred - self.y_deriv_x)
         max_error = np.max(abs_error)
         
@@ -115,7 +115,7 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
     
     def test_first_derivative_y_interpolation(self):
         """Test that first derivative w.r.t. y is correctly interpolated."""
-        y_deriv_y_pred = self.y_train_pred[2*self.n_train:3*self.n_train].flatten()
+        y_deriv_y_pred = self.y_train_pred[2,:].flatten()
         abs_error = np.abs(y_deriv_y_pred - self.y_deriv_y)
         max_error = np.max(abs_error)
         
@@ -128,7 +128,7 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
     
     def test_second_derivative_xx_interpolation(self):
         """Test that second derivative w.r.t. x² is correctly interpolated."""
-        y_deriv_xx_pred = self.y_train_pred[3*self.n_train:4*self.n_train].flatten()
+        y_deriv_xx_pred = self.y_train_pred[3,:].flatten()
         abs_error = np.abs(y_deriv_xx_pred - self.y_deriv_xx)
         max_error = np.max(abs_error)
         
@@ -141,7 +141,7 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
     
     def test_second_derivative_yy_interpolation(self):
         """Test that second derivative w.r.t. y² is correctly interpolated."""
-        y_deriv_yy_pred = self.y_train_pred[4*self.n_train:5*self.n_train].flatten()
+        y_deriv_yy_pred = self.y_train_pred[4,:].flatten()
         abs_error = np.abs(y_deriv_yy_pred - self.y_deriv_yy)
         max_error = np.max(abs_error)
         
@@ -155,11 +155,11 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
     def test_all_interpolations_summary(self):
         """Test all interpolations and provide a summary."""
         # Extract all predictions
-        y_func_pred = self.y_train_pred[:self.n_train].flatten()
-        y_deriv_x_pred = self.y_train_pred[self.n_train:2*self.n_train].flatten()
-        y_deriv_y_pred = self.y_train_pred[2*self.n_train:3*self.n_train].flatten()
-        y_deriv_xx_pred = self.y_train_pred[3*self.n_train:4*self.n_train].flatten()
-        y_deriv_yy_pred = self.y_train_pred[4*self.n_train:5*self.n_train].flatten()
+        y_func_pred = self.y_train_pred[0,:].flatten()
+        y_deriv_x_pred = self.y_train_pred[1,:].flatten()
+        y_deriv_y_pred = self.y_train_pred[2,:].flatten()
+        y_deriv_xx_pred = self.y_train_pred[3,:].flatten()
+        y_deriv_yy_pred = self.y_train_pred[4,:].flatten()
         
         # Compute errors
         errors = {
@@ -190,11 +190,6 @@ class TestDEGP2DSecondOrderV2(unittest.TestCase):
         
         self.assertTrue(all_passed, "Not all interpolation tests passed")
     
-    def test_prediction_array_structure(self):
-        """Test that prediction array has correct structure."""
-        expected_length = 5 * self.n_train  # func + 4 derivatives
-        self.assertEqual(len(self.y_train_pred), expected_length,
-                        f"Prediction array should have length {expected_length}")
 
 
 def run_tests_with_details():
