@@ -46,6 +46,9 @@ class degp:
         kernel_type : str, default="anisotropic"
             Kernel type (anisotropic or isotropic).
         """
+        
+        if derivative_locations is None:
+            raise Exception('Must provide derivative locations!')
 
         self.n_order = n_order
         self.n_bases = n_bases
@@ -204,7 +207,7 @@ class degp:
 
         # Compute posterior mean
         f_mean = self.K_s.T@alpha
-        
+        f_mean = f_mean .reshape(-1,1)
         if self.normalize:
             if return_deriv:
                 f_mean = utils.transform_predictions(

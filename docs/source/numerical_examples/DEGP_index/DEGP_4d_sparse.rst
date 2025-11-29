@@ -3,7 +3,7 @@ High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization
 ================================================================================
 
 In this tutorial, **Derivative-Enhanced Gaussian Processes (DEGPs)** are applied
-to a high-dimensional 4D function. We analyze the model’s performance through
+to a high-dimensional 4D function. We analyze the model's performance through
 2D slices of the input space, which allows us to visualize complex high-dimensional
 behavior in a comprehensible way.
 
@@ -107,7 +107,8 @@ Training Data Generation
 
 We generate training data using **Sobol sequences** to efficiently cover the
 high-dimensional space. For each training point, we evaluate the function as
-well as the selected derivatives.
+well as the selected derivatives. We also construct the ``derivative_locations``
+list to specify that all derivatives are available at all training points.
 
 .. jupyter-execute::
 
@@ -126,30 +127,40 @@ well as the selected derivatives.
             for sub_group in group:
                 y_train_list.append(y_train_hc.get_deriv(sub_group))
 
+        # Build derivative_locations: one entry per derivative, all at all points
+        derivative_locations = []
+        for i in range(len(der_indices)):
+            for j in range(len(der_indices[i])):
+                derivative_locations.append([k for k in range(len(X_train))])
+
         print(f"Total observations: {sum(d.shape[0] for d in y_train_list)}")
-        return X_train, y_train_list
+        print(f"Derivative locations: {len(derivative_locations)} entries, each with {len(X_train)} points")
+        return X_train, y_train_list, derivative_locations
 
 Model Training
 --------------
 
-We initialize the DEGP model and optimize its hyperparameters using **particle
-swarm optimization**. The model incorporates both function values and selected
-derivatives.
+We initialize the DEGP model and optimize its hyperparameters using **JADE
+optimization**. The model incorporates both function values and selected
+derivatives, with ``derivative_locations`` specifying where each derivative
+is available.
 
 .. jupyter-execute::
 
-    def train_model(X_train, y_train_list, n_order, n_bases, der_indices, normalize_data, kernel, kernel_type, n_restarts, swarm_size):
+    def train_model(X_train, y_train_list, n_order, n_bases, der_indices, derivative_locations, normalize_data, kernel, kernel_type, n_restarts, swarm_size):
         gp_model = degp(
             X_train, y_train_list, n_order, n_bases,
-            der_indices, normalize=normalize_data,
+            der_indices, 
+            derivative_locations=derivative_locations,
+            normalize=normalize_data,
             kernel=kernel, kernel_type=kernel_type
         )
         params = gp_model.optimize_hyperparameters(
-        optimizer='jade',
-        pop_size = 100,
-        n_generations = 15,
-        local_opt_every = None,
-        debug = True
+            optimizer='jade',
+            pop_size=100,
+            n_generations=15,
+            local_opt_every=None,
+            debug=True
         )
         return gp_model, params
 
@@ -223,19 +234,21 @@ Full Workflow
 -------------
 
 Finally, we run the full workflow: analyze derivatives, generate training
-data, train the model, evaluate a zero slice, and visualize the results.
+data (including derivative locations), train the model, evaluate a zero slice, 
+and visualize the results.
 
 .. jupyter-execute::
 
     der_indices = analyze_derivatives(n_bases, n_order)
-    X_train, y_train_list = generate_training_data(
+    X_train, y_train_list, derivative_locations = generate_training_data(
         n_bases, n_order, num_training_pts,
         lower_bounds, upper_bounds, der_indices
     )
 
     gp_model, params = train_model(
         X_train, y_train_list, n_order, n_bases,
-        der_indices, normalize_data, kernel, kernel_type,
+        der_indices, derivative_locations, 
+        normalize_data, kernel, kernel_type,
         n_restarts, swarm_size
     )
 

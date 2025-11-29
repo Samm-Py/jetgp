@@ -1,17 +1,17 @@
 Weighted DDEGP (WDDEGP)
 ------------------------------
 
-.. automodule:: wddegp.wddegp
+.. automodule:: jetgp.wddegp.wddegp
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: wddegp.wddegp_utils
+.. automodule:: jetgp.wddegp.wddegp_utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: wddegp.optimizer
+.. automodule:: jetgp.wddegp.optimizer
     :members:
     :undoc-members:
     :show-inheritance:

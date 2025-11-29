@@ -191,13 +191,17 @@ Train GDDEGP Model
         
         rays_array = [np.hstack(training_data['rays_list'][i]) 
                       for i in range(num_directions_per_point)]
-        
+        derivative_locations = []
+        for i in range(len(training_data['der_indices'])):
+            for j in range(len(training_data['der_indices'][i])):
+                derivative_locations.append([i for i in range(len(training_data['X_train']))])
         gp_model = gddegp(
             training_data['X_train'],
             training_data['y_train_list'],
             n_order=1,
-            rays_array=rays_array,
+            rays_list=rays_array,
             der_indices=training_data['der_indices'],
+            derivative_locations = derivative_locations,
             normalize=normalize_data,
             kernel=kernel,
             kernel_type=kernel_type
@@ -208,7 +212,7 @@ Train GDDEGP Model
         optimizer='jade',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 5,
         debug = True
         )
         return gp_model, params
@@ -232,14 +236,10 @@ Evaluate Model
                            [b[0] for b in domain_bounds],
                            [b[1] for b in domain_bounds])
         
-        # Dummy rays for prediction
-        dummy_ray = np.array([[1.0], [0.0], [0.0]])
-        rays_pred = [np.hstack([dummy_ray for _ in range(n_test)]) 
-                     for _ in range(num_directions_per_point)]
         
         # Predict
         y_pred_full = gp_model.predict(
-            X_test, rays_pred, params,
+            X_test, params,
             calc_cov=False, return_deriv=False
         )
         y_pred = y_pred_full[:n_test]
@@ -310,7 +310,7 @@ Visualize 2D Slices
             rays_pred = [np.hstack([dummy_ray for _ in range(len(X_slice))]) 
                          for _ in range(num_directions_per_point)]
             
-            y_pred_full = gp_model.predict(X_slice, rays_pred, params,
+            y_pred_full = gp_model.predict(X_slice, params,
                                             calc_cov=False, return_deriv=False)
             y_pred = y_pred_full[:len(X_slice)].reshape(n_points, n_points)
             

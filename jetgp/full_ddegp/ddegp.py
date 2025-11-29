@@ -38,8 +38,12 @@ class ddegp:
         Kernel anisotropy ('anisotropic' or 'isotropic').
     """
 
-    def __init__(self, x_train, y_train, n_order, der_indices, rays,
+    def __init__(self, x_train, y_train, n_order, der_indices, rays,derivative_locations = None,
                  normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
+        
+        if derivative_locations is None:
+            raise Exception('Must provide derivative locations!')
+        
         self.x_train = x_train
         self.y_train = y_train
         self.sigma_data = sigma_data
@@ -51,6 +55,7 @@ class ddegp:
         self.kernel_type = kernel_type
         self.der_indices = der_indices
         self.normalize = normalize
+        self.derivative_locations = derivative_locations
 
         indices = der_indices
         self.flattened_der_indicies = utils.flatten_der_indices(indices)
@@ -119,7 +124,7 @@ class ddegp:
 
         K = ddegp_utils.rbf_kernel(
             self.differences_by_dim, length_scales, self.n_order, self.n_rays,
-            self.kernel_func, self.flattened_der_indicies, self.powers)
+            self.kernel_func, self.flattened_der_indicies, self.derivative_locations, self.powers)
         K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data**2
 
@@ -145,12 +150,11 @@ class ddegp:
 
         diff_x_test_x_train = ddegp_utils.differences_by_dim_func(
             self.x_train, X_test, self.rays, self.n_order)
-        K_s = ddegp_utils.rbf_kernel(
+        K_s = ddegp_utils.rbf_kernel_predictions(
             diff_x_test_x_train, length_scales, self.n_order, self.n_rays,
-            self.kernel_func, self.flattened_der_indicies, self.powers)
+            self.kernel_func, self.flattened_der_indicies, self.derivative_locations, self.powers, return_deriv=return_deriv, calc_cov=calc_cov)
 
-        f_mean = K_s.T @ alpha if return_deriv else K_s[:,
-                                                        :len(X_test)].T @ alpha
+        f_mean = K_s.T @ alpha 
 
         if self.normalize:
             if return_deriv:
@@ -159,15 +163,20 @@ class ddegp:
                     self.flattened_der_indicies, X_test)
             else:
                 f_mean = self.mu_y + f_mean * self.sigma_y
-
+        f_mean = f_mean.reshape(-1,1)
+        n = X_test.shape[0]
+        m = f_mean.shape[0]
+        num_derivs = m // n
+        # Reshape to (num_derivs, n), multiply by A, then flatten back
+        reshaped_mean = f_mean.reshape(num_derivs, n)
         if not calc_cov:
-            return f_mean
+            return reshaped_mean
 
         diff_x_test_x_test = ddegp_utils.differences_by_dim_func(
             X_test, X_test, self.rays, self.n_order)
-        K_ss = ddegp_utils.rbf_kernel(
+        K_ss = ddegp_utils.rbf_kernel_predictions(
             diff_x_test_x_test, length_scales, self.n_order, self.n_rays,
-            self.kernel_func, self.flattened_der_indicies, self.powers)
+            self.kernel_func, self.flattened_der_indicies,self.derivative_locations, self.powers, return_deriv=return_deriv, calc_cov=calc_cov)
 
         if cho_solve_failed:
             f_cov = (
@@ -193,5 +202,6 @@ class ddegp:
                 f_var = self.sigma_y**2 * np.diag(np.abs(f_cov))
         else:
             f_var = np.diag(np.abs(f_cov))
-
-        return f_mean, f_var
+        # Reshape to (num_derivs, n), multiply by A, then flatten back
+        reshaped_var = f_var.reshape(num_derivs, n)
+        return reshaped_mean, reshaped_var

@@ -110,10 +110,14 @@ Training
 
     def train_model(training_data):
         """Initialize and train the D-DEGP model."""
+        derivative_locations = []
+        for i in range(len(training_data['der_indices'])):
+            for j in range(len(training_data['der_indices'][i])):
+                derivative_locations.append([i for i in range(len(training_data['X_train']))])
         gp_model = ddegp(
             training_data['X_train'], training_data['y_train_list'],
             n_order=n_order, der_indices=training_data['der_indices'],
-            rays=training_data['rays'], normalize=normalize_data,
+            rays=training_data['rays'],derivative_locations=derivative_locations, normalize=normalize_data,
             kernel=kernel, kernel_type=kernel_type
         )
 
@@ -121,7 +125,7 @@ Training
         optimizer='jade',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 5,
         debug = True
         )
         return gp_model, params

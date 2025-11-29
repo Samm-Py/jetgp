@@ -139,6 +139,10 @@ Below is the function that implements this procedure:
         # Generate Training Data with Derivatives
         der_indices = utils.gen_OTI_indices(1, order)
         X_train_pert = oti.array(X_train) + oti.e(1, order=order)
+        derivative_locations = []
+        for i in range(len(der_indices)):
+            for j in range(len(der_indices[i])):
+                derivative_locations.append([i for i in range(len(X_train ))])
         y_train_hc = true_function(X_train_pert)
 
         y_train_list = [y_train_hc.real]
@@ -149,7 +153,7 @@ Below is the function that implements this procedure:
 
         # Initialize and train DEGP model
         gp = degp(
-            X_train, y_train_list, order, n_bases=1, der_indices=der_indices,
+            X_train, y_train_list, order, n_bases=1, der_indices=der_indices,derivative_locations = derivative_locations,
             normalize=normalize_data, kernel=kernel, kernel_type=kernel_type
         )
 

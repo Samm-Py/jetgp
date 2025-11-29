@@ -242,6 +242,7 @@ Prepare training data with derivatives
 Build and optimize the GP model
 -------------------------------
 
+
 .. jupyter-execute::
 
    print("Building WDEGP model...")
@@ -254,8 +255,8 @@ Build and optimize the GP model
        submodel_data,
        n_order,
        n_bases,
-       submodel_indices,
        derivative_specs,
+       derivative_locations = submodel_indices,
        normalize=normalize_data,
        kernel=kernel,
        kernel_type=kernel_type,

@@ -371,8 +371,8 @@ Step 7: Build weighted derivative-enhanced GP
        submodel_data,
        n_order,
        n_bases,
-       submodel_indices,
        derivative_specs,
+       derivative_locations = submodel_indices,
        normalize=normalize,
        kernel=kernel,
        kernel_type=kernel_type
@@ -669,8 +669,8 @@ Step 7: Build weighted derivative-enhanced GP
         submodel_data,
         n_order,
         n_bases,
-        submodel_indices,
         derivative_specs,
+        derivative_locations=submodel_indices,
         normalize=normalize,
         kernel=kernel,
         kernel_type=kernel_type
@@ -959,8 +959,8 @@ Step 7: Build weighted derivative-enhanced GP
         submodel_data,
         n_order,
         n_bases,
-        submodel_indices,
         derivative_specs,
+        derivative_locations = submodel_indices,
         normalize=normalize,
         kernel=kernel,
         kernel_type=kernel_type
@@ -1278,8 +1278,8 @@ Step 7: Build and optimize GP
         submodel_data,
         n_order,
         n_bases,
-        submodel_indices,
         derivative_specs,
+        derivative_locations =submodel_indices,
         normalize=True,
         kernel="SE",
         kernel_type="anisotropic"
@@ -1469,8 +1469,8 @@ Step 6: Build model and prepare data
         submodel_data,
         n_order,
         n_bases,
-        submodel_indices,
         derivative_specs,
+        derivative_locations = submodel_indices,
         normalize=True,
         kernel="SE",
         kernel_type="anisotropic"
@@ -1694,8 +1694,7 @@ Step 6: Build and optimize the model
     submodel_data = [[y_function_values, d1_values, d2_values]]
     
     gp_model = wdegp(
-        X_train, submodel_data, n_order, n_bases,
-        submodel_indices, derivative_specs,
+        X_train, submodel_data, n_order, n_bases, derivative_specs, derivative_locations= submodel_indices,
         normalize=True, kernel="SE", kernel_type="anisotropic"
     )
     
@@ -2043,6 +2042,7 @@ Step 6: Prepare training data
 
 ---
 
+
 Step 7: Build and optimize GP
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2050,7 +2050,7 @@ Step 7: Build and optimize GP
 
     gp_model = wdegp(
         X_train, submodel_data, n_order, n_bases,
-        submodel_indices, derivative_specs,
+         derivative_specs, derivative_locations=submodel_indices,
         normalize=True, kernel="SE", kernel_type="anisotropic"
     )
 

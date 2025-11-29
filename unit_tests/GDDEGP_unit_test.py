@@ -117,14 +117,18 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
             [[[1, 1]]]
             ]
         cls.rays_array = np.hstack(cls.rays_list)  # (2, num_training_pts)
-
+        cls.derivative_locations = []
+        for i in range(len(cls.der_indices)):
+            for j in range(len(cls.der_indices[i])):
+                cls.derivative_locations.append([i for i in range(len(cls.X_train ))])
         # --- Initialize and train GDDEGP model ---
         cls.model = gddegp(
             cls.X_train,
             cls.y_train,
             n_order=cls.n_order,
+            rays_list=[cls.rays_array],
             der_indices=cls.der_indices,
-            rays_array=[cls.rays_array],
+            derivative_locations=cls.derivative_locations,
             normalize=cls.normalize_data,
             kernel=cls.kernel,
             kernel_type=cls.kernel_type,
@@ -137,7 +141,7 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
         )
         # --- Predict at training points ---
         cls.y_pred_train_full, _ = cls.model.predict(
-            cls.X_train, [cls.rays_array], cls.params, calc_cov=True, return_deriv=True
+            cls.X_train, cls.params, rays_predict = [cls.rays_array], calc_cov=True, return_deriv=True
         )
         cls.N = cls.num_training_pts
 
@@ -183,7 +187,7 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
 
     def test_function_interpolation(self):
         """Verify that the GDDEGP interpolates function values exactly."""
-        y_pred_func = self.y_pred_train_full[:self.N].flatten()
+        y_pred_func = self.y_pred_train_full[0,:].flatten()
         abs_err = np.abs(y_pred_func - self.y_func.flatten())
         max_err = np.max(abs_err)
         mean_err = np.mean(abs_err)
@@ -193,7 +197,7 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
 
     def test_directional_derivative_interpolation(self):
         """Verify that the GDDEGP interpolates gradient-aligned directional derivatives."""
-        y_pred_dir = self.y_pred_train_full[self.N:].flatten()
+        y_pred_dir = self.y_pred_train_full[1,:].flatten()
         abs_err = np.abs(y_pred_dir - self.y_dir.flatten())
         max_err = np.max(abs_err)
         mean_err = np.mean(abs_err)
@@ -201,19 +205,12 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
         self.assertLess(max_err, 1e-2, f"Directional derivative max error too large: {max_err}")
         self.assertLess(mean_err, 1e-2, f"Directional derivative mean error too large: {mean_err}")
 
-    def test_prediction_vector_structure(self):
-        """Ensure that the prediction vector has correct total length."""
-        expected_len = 2 * self.N  # function values + directional derivatives
-        self.assertEqual(
-            len(self.y_pred_train_full),
-            expected_len,
-            f"Prediction vector length should be {expected_len}",
-        )
+
 
     def test_comprehensive_summary(self):
         """Print a comprehensive summary of interpolation accuracy."""
-        y_pred_func = self.y_pred_train_full[:self.N].flatten()
-        y_pred_dir = self.y_pred_train_full[self.N:].flatten()
+        y_pred_func = self.y_pred_train_full[0,:].flatten()
+        y_pred_dir = self.y_pred_train_full[1,:].flatten()
         func_err = np.abs(y_pred_func - self.y_func.flatten())
         dir_err = np.abs(y_pred_dir - self.y_dir.flatten())
 

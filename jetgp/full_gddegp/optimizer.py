@@ -50,6 +50,7 @@ class Optimizer:
             self.model.n_order,
             self.model.kernel_func,
             self.model.flattened_der_indices,
+            derivative_locations=self.model.derivative_locations
             # self.model.der_indices_tr,
             # self.model.der_ind_order,
             # self.model.der_map,

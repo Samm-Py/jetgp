@@ -47,6 +47,7 @@ class Optimizer:
             self.model.n_rays,
             self.model.kernel_func,
             self.model.flattened_der_indicies,
+            self.model.derivative_locations,
             self.model.powers
         )
         K += ((10 ** sigma_n) ** 2) * np.eye(len(K))

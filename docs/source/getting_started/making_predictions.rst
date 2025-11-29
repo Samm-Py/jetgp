@@ -23,14 +23,17 @@ After training and optimizing a GP model, predictions are made using the ``predi
 
     # 1. Initialize the model
     gp = degp(
-        X_train, y_train, n_order, n_bases=1, der_indices=der_indices,
+        X_train, y_train, n_order, n_bases=1, 
+        der_indices=der_indices,
+        derivative_locations=derivative_locations,
         normalize=True, kernel="SE", kernel_type="anisotropic"
     )
     
     # 2. Optimize hyperparameters
     params = gp.optimize_hyperparameters(
-        optimizer='lbfgs',
-        n_restart_optimizer=10
+        optimizer='jade',
+        pop_size=100,
+        n_generations=15
     )
     
     # 3. Make predictions
@@ -63,12 +66,14 @@ Boolean flag determining whether to compute predictive uncertainty.
 **return_deriv**  
 Boolean flag controlling whether derivative predictions are returned alongside function predictions.
 
-- ``True`` → Returns predictions for both function values and their derivatives in a stacked format
+- ``True`` → Returns predictions for both function values and their derivatives in a row-wise format
 - ``False`` → Returns only function value predictions
 
 **Default:** ``False``
 
-**Note:** Not all model variants support derivative predictions. When ``return_deriv=True``, the order of derivative predictions in the stacked output follows the same order as specified in ``der_indices``. See model-specific sections below for details.
+**Note:** Not all model variants support derivative predictions. When ``return_deriv=True``, the 
+output is a 2D array where each row corresponds to a different output type (function values, 
+then derivatives in order). See model-specific sections below for details.
 
 ------------------------------------------------------------
 
@@ -112,22 +117,20 @@ For standard derivative-enhanced models, the return signature is:
 
 **Returns:**
 
-- ``y_pred`` : array, shape ``(n_test * (num_derivs + 1), 1)``  
-  Stacked predictions including function values and all derivatives.
-  The first ``n_test`` rows contain function value predictions,
-  followed by ``n_test`` rows for each derivative component specified in ``der_indices``.
+- ``y_pred`` : array, shape ``(num_derivs + 1, n_test)``  
+  Row-wise predictions including function values and all derivatives.
   
   **Structure:**
   
-  - Rows 0 to n_test-1: Function value predictions
-  - Rows n_test to 2*n_test-1: First derivative component predictions
-  - Rows 2*n_test to 3*n_test-1: Second derivative component predictions
+  - Row 0: Function value predictions
+  - Row 1: First derivative component predictions
+  - Row 2: Second derivative component predictions
   - ... and so on for all derivative components
   
   where ``num_derivs`` is the total number of derivative components specified in ``der_indices``.
   
-- ``y_var`` : array, shape ``(n_test * (num_derivs + 1), 1)`` (if ``calc_cov=True``)  
-  Predictive variance corresponding to each row in ``y_pred``, following the same stacking structure.
+- ``y_var`` : array, shape ``(num_derivs + 1, n_test)`` (if ``calc_cov=True``)  
+  Predictive variance corresponding to each row in ``y_pred``, following the same structure.
 
 **Example with return_deriv=True:**
 
@@ -140,19 +143,18 @@ For standard derivative-enhanced models, the return signature is:
     X_test = np.random.rand(10, 2)  # 10 test points
     y_pred, y_var = gp.predict(X_test, params, calc_cov=True, return_deriv=True)
     
-    # y_pred.shape = (30, 1)  # 10 * (2 + 1) = 30
-    # y_var.shape = (30, 1)
+    # y_pred.shape = (3, 10)  # (2 + 1) rows, 10 columns
+    # y_var.shape = (3, 10)
     
-    # Extract predictions:
-    n_test = X_test.shape[0]
-    func_pred = y_pred[:n_test]              # Function predictions (rows 0-9)
-    deriv1_pred = y_pred[n_test:2*n_test]    # ∂/∂x₁ predictions (rows 10-19)
-    deriv2_pred = y_pred[2*n_test:3*n_test]  # ∂/∂x₂ predictions (rows 20-29)
+    # Extract predictions by row:
+    func_pred = y_pred[0, :]     # Function predictions (row 0)
+    deriv1_pred = y_pred[1, :]   # ∂f/∂x₁ predictions (row 1)
+    deriv2_pred = y_pred[2, :]   # ∂f/∂x₂ predictions (row 2)
     
     # Similarly for variances:
-    func_var = y_var[:n_test]
-    deriv1_var = y_var[n_test:2*n_test]
-    deriv2_var = y_var[2*n_test:3*n_test]
+    func_var = y_var[0, :]
+    deriv1_var = y_var[1, :]
+    deriv2_var = y_var[2, :]
 
 **With higher-order derivatives:**
 
@@ -168,15 +170,14 @@ For standard derivative-enhanced models, the return signature is:
     X_test = np.random.rand(10, 2)
     y_pred, y_var = gp.predict(X_test, params, calc_cov=True, return_deriv=True)
     
-    # y_pred.shape = (60, 1)  # 10 * (5 + 1) = 60
+    # y_pred.shape = (6, 10)  # (5 + 1) rows, 10 columns
     
-    n_test = 10
-    func_pred = y_pred[0*n_test:1*n_test]       # f(x)
-    d1_dx1 = y_pred[1*n_test:2*n_test]          # ∂f/∂x₁
-    d1_dx2 = y_pred[2*n_test:3*n_test]          # ∂f/∂x₂
-    d2_dx1 = y_pred[3*n_test:4*n_test]          # ∂²f/∂x₁²
-    d2_dx1dx2 = y_pred[4*n_test:5*n_test]       # ∂²f/∂x₁∂x₂
-    d2_dx2 = y_pred[5*n_test:6*n_test]          # ∂²f/∂x₂²
+    func_pred = y_pred[0, :]       # f(x)
+    d1_dx1 = y_pred[1, :]          # ∂f/∂x₁
+    d1_dx2 = y_pred[2, :]          # ∂f/∂x₂
+    d2_dx1 = y_pred[3, :]          # ∂²f/∂x₁²
+    d2_dx1dx2 = y_pred[4, :]       # ∂²f/∂x₁∂x₂
+    d2_dx2 = y_pred[5, :]          # ∂²f/∂x₂²
 
 ------------------------------------------------------------
 
@@ -204,7 +205,7 @@ Standard interface with full support for function and derivative predictions.
 **Returned shapes:**
 
 - ``y_pred``: ``(n_test,)`` if ``return_deriv=False``
-- ``y_pred``: ``(n_test * (num_derivs + 1), 1)`` if ``return_deriv=True``
+- ``y_pred``: ``(num_derivs + 1, n_test)`` if ``return_deriv=True``
 - ``y_var``: matches ``y_pred`` shape when ``calc_cov=True``
 
 ----
@@ -245,12 +246,12 @@ diagnostics for each submodel. Derivative predictions are supported with some re
 
 **Returns when return_deriv=True:**
 
-- ``y_pred`` : array, shape ``(n_test * (1 + n_shared_derivs),)``  
-  Stacked predictions: ``[f(x1), df/dx1(x1), ..., f(x2), df/dx2(x2), ...]``
-  Only includes derivatives that are shared across all submodels (see restrictions below)
+- ``y_pred`` : array, shape ``(n_shared_derivs + 1, n_test)``  
+  Row-wise predictions: row 0 is function values, subsequent rows are derivatives.
+  Only includes derivatives that are shared across all submodels (see restrictions below).
   
-- ``y_cov`` : array, shape ``(n_test * (1 + n_shared_derivs),)`` (if ``calc_cov=True``)  
-  Stacked predictive variances corresponding to ``y_pred``
+- ``y_cov`` : array, shape ``(n_shared_derivs + 1, n_test)`` (if ``calc_cov=True``)  
+  Row-wise predictive variances corresponding to ``y_pred``
 
 **With submodel outputs:**
 
@@ -305,7 +306,7 @@ Derivative predictions in WDEGP have the following limitations:
    ::
    
        # Example: 10 training points
-       # Only points [0, 2, 5] have ∂f/∂x information
+       # Only points [0, 2, 5] have ∂f/∂x information (via derivative_locations)
        # GP can still predict ∂f/∂x at any test point
 
 4. **Alternative for unavailable derivatives:**  
@@ -356,15 +357,10 @@ Examining individual submodel predictions is useful for:
         X_test, params, calc_cov=True, return_deriv=True
     )
     
-    # Extract function and derivative values
-    n_test = len(X_test)
-    n_derivs_per_point = len(y_with_derivs) // n_test
-    
-    y_pred_reshaped = y_with_derivs.reshape(n_derivs_per_point, n_test).T
-    # y_pred_reshaped[i, 0] = f(x_i)
-    # y_pred_reshaped[i, 1] = df/dx(x_i)  (first shared derivative)
-    # y_pred_reshaped[i, 2] = d2f/dx2(x_i)  (second shared derivative, if available)
-    # etc.
+    # Extract function and derivative values by row
+    func_pred = y_with_derivs[0, :]      # f(x)
+    deriv1_pred = y_with_derivs[1, :]    # First derivative (if shared)
+    deriv2_pred = y_with_derivs[2, :]    # Second derivative (if shared)
 
 ----
 
@@ -398,12 +394,12 @@ Uses directional derivatives along **global directions** (same direction at all 
 
 **Returns:**
 
-- ``y_pred`` : array, shape ``(n_test * (num_derivs + 1), 1)``  
-  Stacked predictions including function values and directional derivatives.
-  The first ``n_test`` rows contain function predictions, followed by ``n_test`` rows 
-  for each directional derivative order specified in ``der_indices``.
+- ``y_pred`` : array, shape ``(num_derivs + 1, n_test)``  
+  Row-wise predictions including function values and directional derivatives.
+  Row 0 contains function predictions, subsequent rows contain directional 
+  derivative predictions for each order specified in ``der_indices``.
   
-- ``y_var`` : array, shape ``(n_test * (num_derivs + 1), 1)`` (if ``calc_cov=True``)  
+- ``y_var`` : array, shape ``(num_derivs + 1, n_test)`` (if ``calc_cov=True``)  
   Predictive variance for each prediction component
 
 When ``return_deriv=True``, predictions include directional derivatives along the 
@@ -449,11 +445,11 @@ Allows **point-specific directional derivatives** (different directions at each 
 
 **Returns:**
 
-- ``y_pred`` : array, shape ``(n_test * (num_derivs + 1), 1)``  
-  Stacked predictions including function values and directional derivatives 
+- ``y_pred`` : array, shape ``(num_derivs + 1, n_test)``  
+  Row-wise predictions including function values and directional derivatives 
   along the directions specified in ``rays_pred``
   
-- ``y_var`` : array, shape ``(n_test * (num_derivs + 1), 1)`` (if ``calc_cov=True``)  
+- ``y_var`` : array, shape ``(num_derivs + 1, n_test)`` (if ``calc_cov=True``)  
   Predictive variance for each prediction component
 
 When ``return_deriv=True``, returns predictions for directional derivatives along 
@@ -664,23 +660,22 @@ Can occur when normalization is disabled and data scales vary widely.
       
       y_pred = gp.predict(X_test, rays_pred, params, calc_cov=False, return_deriv=False)
 
-**Issue 6: Confusion about stacked derivative output shape**
+**Issue 6: Understanding the row-wise derivative output format**
 
-When ``return_deriv=True``, predictions are returned in a stacked format.
+When ``return_deriv=True``, predictions are returned with shape ``(num_derivs + 1, n_test)``.
 
 **Solution:**
 
-- Remember the structure: ``(n_test * (num_derivs + 1), 1)``
-- Use slicing to extract components:
+- Remember the structure: rows = output types, columns = test points
+- Row 0 is always function values
+- Subsequent rows are derivatives in the order specified by ``der_indices``
+- Use row indexing to extract components:
   
   ::
   
-      n_test = X_test.shape[0]
-      func_pred = y_pred[:n_test]
-      deriv1_pred = y_pred[n_test:2*n_test]
-      deriv2_pred = y_pred[2*n_
-
-test:3*n_test]
+      func_pred = y_pred[0, :]     # Function values
+      deriv1_pred = y_pred[1, :]   # First derivative component
+      deriv2_pred = y_pred[2, :]   # Second derivative component
       # And so on for each derivative component
 
 ------------------------------------------------------------
@@ -694,56 +689,68 @@ Best Practices
    
        gp = degp(..., normalize=True)
 
-2. **Compute uncertainty** for critical predictions to quantify confidence:
+2. **Always provide derivative_locations** specifying which points have each derivative:
+   
+   ::
+   
+       # All derivatives at all points
+       derivative_locations = []
+       for i in range(len(der_indices)):
+           for j in range(len(der_indices[i])):
+               derivative_locations.append([k for k in range(len(X_train))])
+       
+       gp = degp(..., derivative_locations=derivative_locations)
+
+3. **Compute uncertainty** for critical predictions to quantify confidence:
    
    ::
    
        y_pred, y_var = gp.predict(X_test, params, calc_cov=True)
 
-3. **Visualize predictions** with confidence intervals to understand model behavior:
+4. **Visualize predictions** with confidence intervals to understand model behavior:
    
    ::
    
        y_std = np.sqrt(y_var)
-       plt.fill_between(X_test, y_pred - 2*y_std, y_pred + 2*y_std, alpha=0.3)
+       plt.fill_between(X_test.flatten(), y_pred - 2*y_std, y_pred + 2*y_std, alpha=0.3)
 
-4. **For weighted models**, examine submodel predictions to diagnose model behavior:
+5. **For weighted models**, examine submodel predictions to diagnose model behavior:
    
    ::
    
        y_pred, y_var, sub_vals, sub_cov = gp.predict(..., return_submodels=True)
 
-5. **Use appropriate prediction settings** based on application:
+6. **Use appropriate prediction settings** based on application:
    
    - **Real-time applications:** ``calc_cov=False``, ``return_deriv=False``
    - **Uncertainty quantification:** ``calc_cov=True``
    - **Sensitivity analysis:** ``return_deriv=True``
 
-6. **Validate predictions** against held-out test data when possible
+7. **Validate predictions** against held-out test data when possible
 
-7. **Check prediction uncertainty** - high uncertainty may indicate:
+8. **Check prediction uncertainty** - high uncertainty may indicate:
    
    - Insufficient training data
    - Extrapolation beyond training domain
    - Poor hyperparameter optimization
 
-8. **When using return_deriv=True**, carefully extract components using proper slicing:
+9. **When using return_deriv=True**, extract components using row indexing:
    
    ::
    
-       n_test = X_test.shape[0]
-       # Function values
-       func_pred = y_pred[:n_test].ravel()
-       # Each derivative component
-       deriv_i = y_pred[i*n_test:(i+1)*n_test].ravel()
+       # Function values (row 0)
+       func_pred = y_pred[0, :]
+       
+       # Each derivative component (rows 1, 2, ...)
+       deriv_i = y_pred[i + 1, :]
 
-9. **For GDDEGP**, always normalize directional vectors:
-   
-   ::
-   
-       rays_pred = rays_pred / np.linalg.norm(rays_pred, axis=1, keepdims=True)
+10. **For GDDEGP**, always normalize directional vectors:
+    
+    ::
+    
+        rays_pred = rays_pred / np.linalg.norm(rays_pred, axis=1, keepdims=True)
 
-10. **Profile prediction performance** for large-scale applications and optimize accordingly
+11. **Profile prediction performance** for large-scale applications and optimize accordingly
 
 ------------------------------------------------------------
 
@@ -757,33 +764,46 @@ JetGP provides a flexible and powerful prediction interface across all model var
 
 - **Unified interface** for function and derivative predictions
 - **Optional uncertainty quantification** via ``calc_cov`` parameter
-- **Stacked output format** when ``return_deriv=True``: shape ``(n_test * (num_derivs + 1), 1)``
+- **Row-wise output format** when ``return_deriv=True``: shape ``(num_derivs + 1, n_test)``
 - **Automatic denormalization** when ``normalize=True`` during training
 - **Efficient vectorized operations** for batch predictions
 
+**Output Format Summary:**
 
++------------------+----------------------------------+
+| ``return_deriv`` | Output Shape                     |
++==================+==================================+
+| ``False``        | ``(n_test,)``                    |
++------------------+----------------------------------+
+| ``True``         | ``(num_derivs + 1, n_test)``     |
++------------------+----------------------------------+
+
+**Row Structure when return_deriv=True:**
+
+- Row 0: Function value predictions
+- Row 1: First derivative component
+- Row 2: Second derivative component
+- ... (following order in ``der_indices``)
 
 **Best Practices:**
 
 1. Always use ``normalize=True`` during model initialization
-2. Compute uncertainty (``calc_cov=True``) for critical predictions
-3. Visualize predictions with confidence intervals
-4. Extract derivative components carefully using proper slicing when ``return_deriv=True``
-5. Use ``return_submodels=True`` for weighted models to diagnose performance
-6. Normalize directional vectors in GDDEGP/WDDEGP
-7. Batch large prediction sets for memory efficiency
+2. Always provide ``derivative_locations`` specifying point-derivative associations
+3. Compute uncertainty (``calc_cov=True``) for critical predictions
+4. Visualize predictions with confidence intervals
+5. Extract derivative components using row indexing when ``return_deriv=True``
+6. Use ``return_submodels=True`` for weighted models to diagnose performance
+7. Normalize directional vectors in GDDEGP/WDDEGP
+8. Batch large prediction sets for memory efficiency
 
 **Typical Workflow:**
 
-1. Initialize and train model with appropriate configuration
+1. Initialize and train model with appropriate configuration (including ``derivative_locations``)
 2. Optimize hyperparameters thoroughly
 3. Make predictions with uncertainty quantification
-4. Extract relevant components (function, derivatives, submodels)
+4. Extract relevant components using row indexing (function, derivatives, submodels)
 5. Visualize results with confidence bands
 6. Validate against test data when available
 
 For more information on model initialization and hyperparameter optimization, 
 see the respective documentation sections.
-```
-
-This completes the comprehensive Making Predictions documentation!

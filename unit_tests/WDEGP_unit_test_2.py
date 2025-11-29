@@ -59,8 +59,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             cls.submodel_data,
             cls.n_order,
             cls.n_bases,
-            cls.submodel_indices,
             cls.der_indices,
+            derivative_locations=cls.submodel_indices,
             normalize=cls.normalize,
             kernel=cls.kernel,
             kernel_type=cls.kernel_type
@@ -69,9 +69,9 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         # Optimize hyperparameters
         cls.params = cls.model.optimize_hyperparameters(
             optimizer='jade',
-            pop_size=250,
+            pop_size=100,
             n_generations=15,
-            local_opt_every=15,
+            local_opt_every=5,
             debug=True
         )
         print(f"\nOptimized parameters: {cls.params}")

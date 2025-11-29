@@ -38,13 +38,13 @@ class wdegp:
         Whether kernel is 'anisotropic' or 'isotropic'.
     """
 
-    def __init__(self, x_train, y_train, n_order, n_bases, index, der_indices,
+    def __init__(self, x_train, y_train, n_order, n_bases, der_indices, derivative_locations = None,
                  normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
         self.x_train = x_train
         self.y_train = y_train
         self.n_order = n_order
         self.n_bases = n_bases
-        self.index = index
+        self.index = derivative_locations 
         self.num_points = len(x_train)
 
         self.der_indices = der_indices
@@ -160,6 +160,8 @@ class wdegp:
         submodel_cov = []
 
         if len(self.index) == 1:
+            if return_submodels:
+                raise Exception('Can not return submodels for a single model')
             i = 0
             index_i = self.index[i]
             diffs_train_test = wdegp_utils.differences_by_dim_func(
@@ -272,7 +274,7 @@ class wdegp:
         else:
             diffs_train_train = self.differences_by_dim
             diffs_train_test = wdegp_utils.differences_by_dim_func(
-                X_test, self.x_train, 0, index=[-1], return_deriv=False)
+                X_test, self.x_train, 0, return_deriv=False)
             weights_matrix = wdegp_utils.determine_weights(
                 self.differences_by_dim, diffs_train_test, ell, self.kernel_func, sigma_n)
                 
@@ -308,7 +310,6 @@ class wdegp:
                     )
                 except:
                     cho_solve_failed = True
-                    L = cholesky(K)
                     alpha = np.linalg.solve(K, self.y_train[i])
                     print(
                         'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')

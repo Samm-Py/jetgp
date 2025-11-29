@@ -3,7 +3,7 @@ import pyoti.sparse as oti
 from line_profiler import profile
 
 @profile
-def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
+def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
     """
     Compute pairwise differences between two input arrays X1 and X2 for each dimension,
     embedding hypercomplex units along each dimension for automatic differentiation.
@@ -243,7 +243,7 @@ def rbf_kernel(
     import pyoti.core as coti
     dh = coti.get_dHelp()
 
-    phi = kernel_func(differences, length_scales, -1)
+    phi = kernel_func(differences, length_scales)
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
 
@@ -427,7 +427,7 @@ def rbf_kernel_predictions(
     import pyoti.core as coti
     dh = coti.get_dHelp()
 
-    phi = kernel_func(differences, length_scales, -1)
+    phi = kernel_func(differences, length_scales)
 
     if n_order == 0:
         return phi.real
@@ -447,33 +447,25 @@ def rbf_kernel_predictions(
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
-    if index is None:
-        total_rows = n_rows_func + phi_exp.shape[1]*n_deriv_types
-        total_cols = n_cols_func + phi_exp.shape[-1]*n_deriv_types
+
+    if return_deriv:
+        der_map = deriv_map(n_bases, 2 * n_order)
         index_2 = [i for i in range(phi_exp.shape[-1])]
         if calc_cov:
-            index = [i for i in range(phi_exp.shape[1])]
+            index = [i for i in range(phi_exp.shape[-1])]
+            n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
         else:
-            index = [[i for i in range(phi_exp.shape[1])] for j in range(phi_exp.shape[0])]
-    else:
-        if return_deriv:
-            der_map = deriv_map(n_bases, 2 * n_order)
-            index_2 = [i for i in range(phi_exp.shape[-1])]
-            if calc_cov:
-                index = [i for i in range(phi_exp.shape[-1])]
-                n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
-            else:
-                n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
-        else:
-            der_map = deriv_map(n_bases, n_order)
-            index_2 = []
             n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
-    
+    else:
+        der_map = deriv_map(n_bases, n_order)
+        index_2 = []
+        n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
 
-        n_pts_with_derivs_cols = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
 
-        total_rows = n_rows_func + n_pts_with_derivs_rows 
-        total_cols = n_cols_func + n_pts_with_derivs_cols 
+    n_pts_with_derivs_cols = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
+
+    total_rows = n_rows_func + n_pts_with_derivs_rows 
+    total_cols = n_cols_func + n_pts_with_derivs_cols 
     
 
     K = np.zeros((total_rows, total_cols))

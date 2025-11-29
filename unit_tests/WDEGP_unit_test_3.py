@@ -59,8 +59,8 @@ class TestSparseWDEGP1D(unittest.TestCase):
             cls.submodel_data,
             cls.n_order,
             cls.n_bases,
-            cls.submodel_indices,
             cls.derivative_specs,
+            derivative_locations=cls.submodel_indices,
             normalize=True,
             kernel="Matern",
             kernel_type="isotropic",
@@ -71,7 +71,7 @@ class TestSparseWDEGP1D(unittest.TestCase):
             optimizer='pso',
             pop_size=200,
             n_generations=15,
-            local_opt_every=15,
+            local_opt_every=5,
             debug=True
         )
         print(f"\nOptimized parameters: {cls.params}")

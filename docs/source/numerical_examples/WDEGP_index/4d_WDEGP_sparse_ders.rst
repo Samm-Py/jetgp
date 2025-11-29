@@ -260,7 +260,7 @@ Build and Optimize GP
 
     gp_model = wdegp(
         X_train, submodel_data, n_order, n_bases,
-        submodel_indices, derivative_specs, normalize=normalize,
+         derivative_specs, derivative_locations = submodel_indices, normalize=normalize,
         kernel=kernel, kernel_type=kernel_type
     )
 

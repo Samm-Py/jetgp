@@ -37,20 +37,26 @@ class gddegp:
         Kernel anisotropy ('anisotropic' or 'isotropic').
     """
 
-    def __init__(self, x_train, y_train, n_order, rays_array, der_indices,
+    def __init__(self, x_train, y_train, n_order, rays_list, der_indices, derivative_locations = None,
                  normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
+        
+        if derivative_locations is None:
+            raise Exception('Must provide derivative locations!')
+            
+            
         self.x_train = x_train
         self.y_train = y_train
         self.sigma_data = sigma_data
         self.n_order = n_order
         self.max_order = n_order
-        self.rays_array = rays_array
-        self.num_directions_per_point = len(rays_array)
+        self.rays_list = rays_list
+        #self.num_directions_per_point = len(rays_array)
         self.dim = x_train.shape[1]
         self.num_points = x_train.shape[0]
         self.kernel = kernel
         self.kernel_type = kernel_type
         self.normalize = normalize
+        self.derivative_locations = derivative_locations
         # self.num_directions = rays_array.shape[1]
         # indices = gddegp_utils.make_der_indices(
         #     2, self.n_order)
@@ -61,15 +67,15 @@ class gddegp:
         if normalize:
             self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = utils.normalize_y_data_directional(
                 x_train, y_train, sigma_data, self.flattened_der_indices)
-            self.rays_array = utils.normalize_directions_2(
-                self.sigmas_x, self.rays_array)
+            self.rays_list = utils.normalize_directions_2(
+                self.sigmas_x, self.rays_list)
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.x_train = x_train
             self.y_train = utils.reshape_y_train(y_train)
 
         self.differences_by_dim = gddegp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, self.rays_array, self.rays_array, self.n_order, self.num_directions_per_point)
+            self.x_train, self.x_train, self.rays_list, self.rays_list, self.derivative_locations,self.derivative_locations, self.n_order)
 
         self.sigma_data = (
             np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
@@ -95,7 +101,7 @@ class gddegp:
         self.params = self.optimizer.optimize_hyperparameters(*args, **kwargs)
         return self.params
 
-    def predict(self, X_test, rays_predict, params, calc_cov=False, return_deriv=False):
+    def predict(self, X_test,  params, rays_predict = None, calc_cov=False, return_deriv=False):
         """
         Predict posterior mean and optional variance at test points.
 
@@ -117,6 +123,11 @@ class gddegp:
         f_var : ndarray, optional
             Predictive variance vector (only if calc_cov=True).
         """
+        
+        if return_deriv and rays_predict is None:
+            raise Exception('Can not make derivative predictions without rays')
+        if not return_deriv and rays_predict is not None:
+            raise Exception("No need to pass prediction rays if return deriv is False")
         length_scales = params[:-1]
         sigma_n = params[-1]
 
@@ -125,7 +136,8 @@ class gddegp:
             length_scales,
             self.n_order,
             self.kernel_func,
-            self.flattened_der_indices
+            self.flattened_der_indices,
+            self.derivative_locations
             # self.der_indices_tr,
             # self.der_ind_order,
             # self.der_map,
@@ -160,21 +172,28 @@ class gddegp:
         if self.normalize:
             X_test = utils.normalize_x_data_test(
                 X_test, self.sigmas_x, self.mus_x)
-            rays_test = utils.normalize_directions_2(
-                self.sigmas_x, rays_test)
+            
+            if rays_test is not None:
+                rays_test = utils.normalize_directions_2(
+                    self.sigmas_x, rays_test)
+                derivative_locations_test = [[i for i in range(X_test.shape[0])] for j in range(len(self.derivative_locations))]
+            else:
+                derivative_locations_test = None
         diff_x_train_x_test = gddegp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.rays_array, rays_test, self.n_order, self.num_directions_per_point, return_deriv=return_deriv)
-        K_s = gddegp_utils.rbf_kernel(
+            self.x_train, X_test, self.rays_list, rays_test,self.derivative_locations,derivative_locations_test,  self.n_order, return_deriv=return_deriv)
+        K_s = gddegp_utils.rbf_kernel_predictions(
             diff_x_train_x_test, length_scales, self.n_order,
             self.kernel_func,
             self.flattened_der_indices,
+            self.derivative_locations,
+            derivative_locations_test,
             # self.der_indices_tr,
             # self.der_ind_order,
             # self.der_map,
             return_deriv=return_deriv)
 
-        f_mean = K_s.T@alpha
-
+        f_mean = K_s@alpha
+        f_mean = f_mean.reshape(-1,1)
         if self.normalize:
             if return_deriv:
                 f_mean = utils.transform_predictions_directional(
@@ -183,18 +202,27 @@ class gddegp:
             else:
                 f_mean = self.mu_y + f_mean * self.sigma_y
 
+        n = X_test.shape[0]
+        m = f_mean.shape[0]
+        num_derivs = m // n
+        # Reshape to (num_derivs, n), multiply by A, then flatten back
+        reshaped_mean = f_mean.reshape(num_derivs, n)
         if not calc_cov:
-            return f_mean
+            return reshaped_mean
 
         diff_x_test_x_test = gddegp_utils.differences_by_dim_func(
-            X_test, X_test, rays_test, rays_test, self.n_order,self.num_directions_per_point, return_deriv=return_deriv)
-        K_ss = gddegp_utils.rbf_kernel(
+            X_test, X_test, rays_test, rays_test, derivative_locations_test,derivative_locations_test,self.n_order, return_deriv=return_deriv)
+        K_ss = gddegp_utils.rbf_kernel_predictions(
             diff_x_test_x_test, length_scales, self.n_order,
             self.kernel_func,
             self.flattened_der_indices,
+            self.derivative_locations,
+            derivative_locations_test,
+            # self.der_indices_tr,
             # self.der_ind_order,
             # self.der_map,
-            return_deriv=return_deriv)
+            return_deriv=return_deriv,
+            calc_cov=calc_cov)
 
         # v = solve(L, K_s)
         if cho_solve_failed:
@@ -222,4 +250,6 @@ class gddegp:
         else:
             f_var = np.diag(np.abs(f_cov))
 
-        return f_mean, f_var
+        # Reshape to (num_derivs, n), multiply by A, then flatten back
+        reshaped_var = f_var.reshape(num_derivs, n)
+        return reshaped_mean, reshaped_var

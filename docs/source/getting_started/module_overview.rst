@@ -165,8 +165,6 @@ Examples:
       [1, 3, 5, 7, 9]   # d²f/dx² at odd indices
   ]
 
-**Note:** If ``derivative_locations`` is ``None`` or not provided, all derivatives are assumed to be available at all training points.
-.. _normalize_argument:
 
 **normalize**  
 Controls whether training inputs and outputs are **normalized** before model fitting.  

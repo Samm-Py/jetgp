@@ -218,7 +218,7 @@ class KernelFactory:
     # Anisotropic Kernel Implementations (MAC Mod 2)
     # -------------------------------------------------------------------
     @profile
-    def se_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    def se_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
         Anisotropic Squared Exponential (SE) kernel.
 
@@ -226,7 +226,6 @@ class KernelFactory:
         ----------
         differences_by_dim : list of ndarray
         length_scales : list
-        index : int, optional
 
         Returns
         -------
@@ -301,7 +300,7 @@ class KernelFactory:
     #                      ** 2 for i in range(self.dim))
     #     return (10 ** sigma_f) ** 2 * (1 + sqdist / (2 * alpha)) ** (-alpha)
 
-    def rq_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    def rq_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
         Anisotropic Rational Quadratic (RQ) kernel using in-place operations.
 
@@ -309,7 +308,6 @@ class KernelFactory:
         ----------
         differences_by_dim : list of ndarray
         length_scales : list
-        index : int, optional
 
         Returns
         -------
@@ -363,7 +361,7 @@ class KernelFactory:
     #     return (10 ** sigma_f) ** 2 * oti.exp(-2 * sqdist)
 
     # @profile
-    def sine_exp_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    def sine_exp_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
         Anisotropic Sine-Exponential kernel using in-place operations.
 
@@ -373,7 +371,6 @@ class KernelFactory:
         ----------
         differences_by_dim : list of ndarray
         length_scales : list
-        index : int, optional
 
         Returns
         -------
@@ -428,7 +425,7 @@ class KernelFactory:
 
         return tmp1
 
-    def matern_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    def matern_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
         Anisotropic Matérn kernel (half-integer ν).
         """
@@ -437,7 +434,7 @@ class KernelFactory:
         sqdist = oti.sqrt(
             sum((ell[i] * (differences_by_dim[i] + 1e-16)) ** 2 for i in range(self.dim)))
         return (10 ** sigma_f) ** 2 * self.matern_kernel_prebuild(sqdist)
-    def SI_kernel_anisotropic(self, differences_by_dim, length_scales, index=-1):
+    def SI_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
         Anisotropic Matérn kernel (half-integer ν).
         """
@@ -452,7 +449,7 @@ class KernelFactory:
     # Isotropic Kernel Implementations
     # -------------------------------------------------------------------
 
-    def se_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
+    def se_kernel_isotropic(self, differences_by_dim, length_scales):
         """
         Isotropic Squared Exponential (SE) kernel.
         """
@@ -487,7 +484,7 @@ class KernelFactory:
         # return ( (10 ** sigma_f) ** 2 ) * oti.exp(sqdist)
         return tmp2
 
-    def rq_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
+    def rq_kernel_isotropic(self, differences_by_dim, length_scales):
         """
         Isotropic Rational Quadratic (RQ) kernel.
         """
@@ -527,7 +524,7 @@ class KernelFactory:
 
         return tmp2
 
-    def sine_exp_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
+    def sine_exp_kernel_isotropic(self, differences_by_dim, length_scales):
         """
         Isotropic Sine-Exponential kernel.
         """
@@ -576,7 +573,7 @@ class KernelFactory:
 
         return tmp1
 
-    def matern_kernel_isotropic(self, differences_by_dim, length_scales, index=-1):
+    def matern_kernel_isotropic(self, differences_by_dim, length_scales):
         """
         Isotropic Matérn kernel (half-integer ν).
         """

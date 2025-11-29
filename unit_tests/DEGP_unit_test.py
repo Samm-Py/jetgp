@@ -45,13 +45,19 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
             [[[1, 2]], [[2, 2]]]   # second-order derivatives
         ]
         
+        cls.derivative_locations = []
+        for i in range(len(cls.der_indices)):
+            for j in range(len(cls.der_indices[i])):
+                cls.derivative_locations.append([i for i in range(len(cls.X_train ))])
+        
         # Initialize model
         cls.model = degp(
             cls.X_train, 
             cls.y_train, 
             n_order=2, 
             n_bases=2,
-            der_indices=cls.der_indices, 
+            der_indices=cls.der_indices,
+            derivative_locations=cls.derivative_locations,
             normalize=True,
             kernel="SineExp", 
             kernel_type="isotropic"

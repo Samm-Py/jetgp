@@ -126,7 +126,7 @@ def rbf_kernel(
     """
     # --- 1. Initial Setup and Efficient Derivative Extraction ---
     dh = coti.get_dHelp()
-    phi = kernel_func(differences, length_scales, index)
+    phi = kernel_func(differences, length_scales)
 
     # Extract ALL derivative components into a single flat array (highly efficient)
     phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
@@ -289,14 +289,13 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     weights_matrix : ndarray of shape (n_test, n_train)
         Interpolation weights for each test point.
     """
-    index = [-1]
     
     # Compute K matrix (training covariance) - same for all test points
-    K = kernel_func(diffs_by_dim, length_scales, index).real
+    K = kernel_func(diffs_by_dim, length_scales).real
     n_train = K.shape[0]
     
     # Compute r vectors (test-train covariances) for all test points at once
-    r_all = kernel_func(diffs_test, length_scales, index).real  # shape: (n_test, n_train)
+    r_all = kernel_func(diffs_test, length_scales).real  # shape: (n_test, n_train)
     n_test = r_all.shape[0]
     
     # Build augmented system matrix M (same for all test points)

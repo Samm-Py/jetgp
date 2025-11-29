@@ -1,17 +1,17 @@
 Full DDEGP
 ==========
 
-.. automodule:: full_ddegp.ddegp
+.. automodule:: jetgp.full_ddegp.ddegp
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: full_ddegp.ddegp_utils
+.. automodule:: jetgp.full_ddegp.ddegp_utils
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: full_ddegp.optimizer
+.. automodule:: jetgp.full_ddegp.optimizer
     :members:
     :undoc-members:
     :show-inheritance:

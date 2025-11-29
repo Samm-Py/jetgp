@@ -129,8 +129,14 @@ This example demonstrates DEGP on the 2D function :math:`f(x_1, x_2) = \sin(x_1)
               y_deriv_yy.reshape(-1,1)]
 
    # Specify derivative structure
-   der_indices = [[[[1,1]], [[2,1]]],  # First-order
-                  [[[1,2]], [[2,2]]]]  # Second-order
+   der_indices = [[[[1,1]], [[2,1]]],  # First-order: df/dx1, df/dx2
+                  [[[1,2]], [[2,2]]]]  # Second-order: d²f/dx1², d²f/dx2²
+
+   # Specify derivative locations: all derivatives at all training points
+   derivative_locations = []
+   for i in range(len(der_indices)):
+       for j in range(len(der_indices[i])):
+           derivative_locations.append([k for k in range(len(X_train))])
 
    print("Initializing DEGP model...")
 
@@ -138,7 +144,9 @@ This example demonstrates DEGP on the 2D function :math:`f(x_1, x_2) = \sin(x_1)
 
    # Initialize and optimize
    model = degp(X_train, y_train, n_order=2, n_bases=2,
-                der_indices=der_indices, normalize=True,
+                der_indices=der_indices,
+                derivative_locations=derivative_locations,
+                normalize=True,
                 kernel="SE", kernel_type="anisotropic")
 
    print("Optimizing hyperparameters...")
@@ -181,6 +189,9 @@ This example demonstrates WDEGP on the 1D function :math:`f(x) = \frac{\sin(10\p
 using two submodels with alternating training points. Each submodel has access to function values and
 first and second-order derivatives.
 
+**Key feature:** Indices do NOT need to be contiguous. Submodels can use arbitrary, non-contiguous 
+index sets to specify which training points have which derivatives.
+
 **Example code:**
 
 .. code-block:: python
@@ -204,36 +215,48 @@ first and second-order derivatives.
               (20*np.pi*np.cos(10*np.pi*x))/(2*x**2) + \
               np.sin(10*np.pi*x)/(x**3) + 12*(x-1)**2
 
-   # Generate training points
+   # Generate training points (NO reordering needed!)
    X_train = np.linspace(0.5, 2.5, 10).reshape(-1, 1)
 
-   # Partition into two submodels (alternating points)
+   # Partition into two submodels with ALTERNATING (non-contiguous) indices
+   # Submodel 1: points at indices 0, 2, 4, 6, 8
+   # Submodel 2: points at indices 1, 3, 5, 7, 9
    submodel1_indices = [0, 2, 4, 6, 8]
    submodel2_indices = [1, 3, 5, 7, 9]
 
-   # Reorder for contiguous indexing
-   X_train = np.vstack([X_all[submodel1_indices], 
-                        X_all[submodel2_indices]])
+   # Function values at ALL training points
    y_vals = f_fun(X_train.flatten()).reshape(-1, 1)
 
-   print("Training data prepared with 2 submodels (5 points each)")
+   print("Training data prepared with non-contiguous indices")
 
 .. code-block:: python
 
-   # Compute derivatives for each submodel
-   d1_sm1 = np.array([[f1_fun(X_train[i,0])] for i in range(5)])
-   d2_sm1 = np.array([[f2_fun(X_train[i,0])] for i in range(5)])
-   d1_sm2 = np.array([[f1_fun(X_train[i,0])] for i in range(5,10)])
-   d2_sm2 = np.array([[f2_fun(X_train[i,0])] for i in range(5,10)])
+   # Compute derivatives for each submodel at their specific indices
+   d1_sm1 = np.array([[f1_fun(X_train[i, 0])] for i in submodel1_indices])
+   d2_sm1 = np.array([[f2_fun(X_train[i, 0])] for i in submodel1_indices])
+   d1_sm2 = np.array([[f1_fun(X_train[i, 0])] for i in submodel2_indices])
+   d2_sm2 = np.array([[f2_fun(X_train[i, 0])] for i in submodel2_indices])
 
    # Package submodel data
+   # submodel_data[i] = [y_values, deriv1_values, deriv2_values, ...]
    submodel_data = [
        [y_vals, d1_sm1, d2_sm1],  # Submodel 1
        [y_vals, d1_sm2, d2_sm2]   # Submodel 2
    ]
 
-   submodel_indices = [[[0,1,2,3,4],[0,1,2,3,4]], [[5,6,7,8,9],[5,6,7,8,9]]]
-   derivative_specs = [[[[[1,1]]], [[[1,2]]]], [[[[1,1]]], [[[1,2]]]]]
+   # submodel_indices[i] = [indices_for_deriv1, indices_for_deriv2, ...]
+   # These are the TRAINING POINT INDICES where each derivative exists
+   # Note: Non-contiguous indices are fully supported!
+   submodel_indices = [
+       [submodel1_indices, submodel1_indices],  # Submodel 1: both derivs at same points
+       [submodel2_indices, submodel2_indices]   # Submodel 2: both derivs at same points
+   ]
+
+   # derivative_specs[i] = derivative specifications for submodel i
+   derivative_specs = [
+       [[[[1, 1]]], [[[1, 2]]]],  # Submodel 1: 1st and 2nd order in dim 1
+       [[[[1, 1]]], [[[1, 2]]]]   # Submodel 2: 1st and 2nd order in dim 1
+   ]
 
    print("Initializing WDEGP model...")
 
@@ -241,7 +264,7 @@ first and second-order derivatives.
 
    # Initialize and optimize
    model = wdegp(X_train, submodel_data, n_order=2, n_bases=1,
-                 index=submodel_indices,
+                 derivative_locations=submodel_indices,
                  der_indices=derivative_specs,
                  normalize=True, kernel="SE", 
                  kernel_type="anisotropic")
@@ -255,26 +278,24 @@ first and second-order derivatives.
 
 .. code-block:: python
 
-   # Predict
+   # Predict with submodel outputs
    X_test = np.linspace(0.5, 2.5, 250).reshape(-1, 1)
    y_pred, y_cov, submodel_preds, submodel_covs = model.predict(
        X_test, params, calc_cov=True, return_submodels=True
    )
 
-   # Predict individual submodels
+   # Extract individual submodel predictions
    y_pred_sm1 = submodel_preds[0].flatten()
    y_cov_sm1  = submodel_covs[0].flatten()
-
    y_pred_sm2 = submodel_preds[1].flatten()
    y_cov_sm2  = submodel_covs[1].flatten()
 
-   # Compute true function
+   # Compute error
    y_true = f_fun(X_test.flatten())
    abs_error = np.abs(y_true.flatten() - y_pred.flatten())
 
    print(f"Mean absolute error: {np.mean(abs_error):.6f}")
    print(f"Max absolute error: {np.max(abs_error):.6f}")
-   print(f"Predictions complete for {len(X_test)} test points")
 
 .. figure:: ./_static/wdegp_sin_example.png
    :alt: WDEGP 1D example visualization
@@ -287,13 +308,16 @@ first and second-order derivatives.
    Center: Submodel 2 trained with the complementary partition of derivative
    information. Right: Global model combining information from both submodels,
    where all training points have associated derivative observations.
-   The shaded regions represent 95\% confidence intervals.
+   The shaded regions represent 95% confidence intervals.
 
 
 DDEGP: Directional Derivative-Enhanced Gaussian Process
 --------------------------------------------------------
 
 This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + x_2^2` using two global directional derivative directions applied at all training points. Unlike DEGP which uses coordinate-aligned derivatives, DDEGP allows arbitrary directional derivatives specified by ray vectors.
+
+**Key feature:** DDEGP uses the SAME ray directions at all (or a subset of) training points. 
+The ``derivative_locations`` parameter specifies which points have which rays.
 
 **Example code:**
 
@@ -312,7 +336,7 @@ This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + 
 
 .. code-block:: python
 
-   # Define two global directional derivative directions
+   # Define two GLOBAL directional derivative directions
    rays = np.array([
        [1.0, 0.5],   # x-components
        [0.0, 0.5]    # y-components  
@@ -322,7 +346,15 @@ This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + 
    for i in range(rays.shape[1]):
        rays[:, i] = rays[:, i] / np.linalg.norm(rays[:, i])
    
-   # Compute directional derivatives: grad(f) · ray
+   # derivative_locations: which points have which rays
+   # Here both rays at all 10 training points
+   num_pts = len(X_train)
+   derivative_locations = [
+       list(range(num_pts)),  # Ray 1 at all points
+       list(range(num_pts))   # Ray 2 at all points
+   ]
+   
+   # Compute directional derivatives: grad(f) · ray = 2*X · ray
    dy_dray1 = np.sum(2*X_train * rays[:,0].reshape(1,-1), axis=1)
    dy_dray2 = np.sum(2*X_train * rays[:,1].reshape(1,-1), axis=1)
    
@@ -339,7 +371,9 @@ This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + 
 
    # Initialize and optimize
    model = ddegp(X_train, Y_train, n_order=1,
-                 der_indices=der_indices, rays=rays,
+                 der_indices=der_indices, 
+                 derivative_locations=derivative_locations,
+                 rays=rays,
                  normalize=True, kernel="SE", 
                  kernel_type="anisotropic")
    
@@ -354,11 +388,13 @@ This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + 
    x_test = np.linspace(-1, 1, 50)
    X1, X2 = np.meshgrid(x_test, x_test)
    X_test = np.column_stack([X1.flatten(), X2.flatten()])
-   y_pred = model.predict(X_test, params, calc_cov=False)
+   
+   y_pred_full = model.predict(X_test, params, calc_cov=False, return_deriv=False)
+   y_pred = y_pred_full[0, :]  # Row 0: function values
    
    # Compute true function and error
    y_true = np.sum(X_test**2, axis=1)
-   abs_error = np.abs(y_true - y_pred.flatten())
+   abs_error = np.abs(y_true - y_pred)
    
    print(f"Mean absolute error: {np.mean(abs_error):.6f}")
    print(f"Max absolute error: {np.max(abs_error):.6f}")
@@ -370,10 +406,14 @@ This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + 
 
    GP prediction (left), true function (center), and absolute error (right) for :math:`f(x_1, x_2) = x_1^2 + x_2^2` using two global directional derivatives (shown as red and blue arrows) at ten randomly-placed training points. The directional rays are the same at all training locations, enabling efficient computation while capturing non-axis-aligned function behavior.
 
-   GDDEGP: Generalized Directional Derivative-Enhanced Gaussian Process
+
+GDDEGP: Generalized Directional Derivative-Enhanced Gaussian Process
 ---------------------------------------------------------------------
 
 This example demonstrates GDDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + x_2^2` using point-specific directional derivatives. Unlike DDEGP which uses the same global directions everywhere, GDDEGP allows different directional derivatives at each training point. Here, we use gradient-aligned and perpendicular directions that adapt to each location.
+
+**Key feature:** GDDEGP uses UNIQUE ray directions at each point. The ``rays_list`` parameter 
+contains arrays where each column corresponds to a specific point in ``derivative_locations``.
 
 **Example code:**
 
@@ -391,34 +431,58 @@ This example demonstrates GDDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 +
 
 .. code-block:: python
 
-   # Create gradient and perpendicular directions for each point
+   # Create POINT-WISE gradient and perpendicular directions for each point
    n_points = len(X_train)
-   rays_array = [np.zeros((2, n_points)), np.zeros((2, n_points))]
+   
+   # derivative_locations: all points have both directions
+   derivative_locations = [
+       list(range(n_points)),  # Direction 1 at all points
+       list(range(n_points))   # Direction 2 at all points
+   ]
+   
+   # Build rays_list: one array per direction
+   # rays_list[i][:, j] is the ray for point derivative_locations[i][j]
+   rays_dir1_list = []
+   rays_dir2_list = []
    
    for i in range(n_points):
        # Gradient direction: [2x, 2y]
        gradient = 2 * X_train[i]
        grad_norm = np.linalg.norm(gradient)
        
-       # Direction 1: normalized gradient
-       rays_array[0][:, i] = gradient / grad_norm
+       if grad_norm < 1e-10:
+           ray1 = np.array([1.0, 0.0])
+           ray2 = np.array([0.0, 1.0])
+       else:
+           # Direction 1: normalized gradient
+           ray1 = gradient / grad_norm
+           # Direction 2: perpendicular (rotate 90 degrees)
+           ray2 = np.array([-ray1[1], ray1[0]])
        
-       # Direction 2: perpendicular (rotate 90 degrees)
-       rays_array[1][0, i] = -rays_array[0][1, i]
-       rays_array[1][1, i] = rays_array[0][0, i]
+       rays_dir1_list.append(ray1)
+       rays_dir2_list.append(ray2)
+   
+   rays_list = [
+       np.column_stack(rays_dir1_list),  # Shape: (2, n_points)
+       np.column_stack(rays_dir2_list)   # Shape: (2, n_points)
+   ]
    
    print("Created point-specific gradient and perpendicular directions")
 
 .. code-block:: python
 
    # Compute directional derivatives
-   dy_dray1 = np.array([np.dot(2*X_train[i], rays_array[0][:,i])
+   dy_dray1 = np.array([np.dot(2*X_train[i], rays_list[0][:,i])
                         for i in range(n_points)])
-   dy_dray2 = np.array([np.dot(2*X_train[i], rays_array[1][:,i])
+   dy_dray2 = np.array([np.dot(2*X_train[i], rays_list[1][:,i])
                         for i in range(n_points)])
    
-   y_train = [y_vals.reshape(-1,1), dy_dray1.reshape(-1,1),
+   y_train = [y_vals.reshape(-1,1), 
+              dy_dray1.reshape(-1,1),
               dy_dray2.reshape(-1,1)]
+   
+   # der_indices: two first-order directional derivatives
+   der_indices = [[[[1,1]], [[2,1]]]]
    
    print("Directional derivatives computed")
 
@@ -426,8 +490,9 @@ This example demonstrates GDDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 +
 
    # Initialize and optimize
    model = gddegp(X_train, y_train, n_order=1,
-                  rays_array=rays_array,
-                  der_indices=[[[[1,1]], [[2,1]]]],
+                  rays_list=rays_list,
+                  derivative_locations=derivative_locations,
+                  der_indices=der_indices,
                   normalize=True, kernel="SE",
                   kernel_type="anisotropic")
    
@@ -438,21 +503,41 @@ This example demonstrates GDDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 +
 
 .. code-block:: python
 
-   # Predict on grid
+   # Predict on grid (no rays needed for function-only prediction)
    x_test = np.linspace(-1, 1, 50)
    X1, X2 = np.meshgrid(x_test, x_test)
    X_test = np.column_stack([X1.flatten(), X2.flatten()])
    
-   # Dummy rays for prediction (not used for function values)
-   dummy_rays = [np.ones((2, len(X_test))), np.ones((2, len(X_test)))]
-   y_pred = model.predict(X_test, dummy_rays, params, return_deriv=False)
+   y_pred_full = model.predict(X_test, params, calc_cov=False, return_deriv=False)
+   y_pred = y_pred_full[0, :]  # Row 0: function values
    
    # Compute true function and error
    y_true = np.sum(X_test**2, axis=1)
-   abs_error = np.abs(y_true - y_pred.flatten())
+   abs_error = np.abs(y_true - y_pred)
    
    print(f"Mean absolute error: {np.mean(abs_error):.6f}")
    print(f"Max absolute error: {np.max(abs_error):.6f}")
+
+.. code-block:: python
+
+   # Verify derivative interpolation at training points
+   y_pred_deriv = model.predict(
+       X_train, params,
+       rays_predict=rays_list,
+       calc_cov=False,
+       return_deriv=True
+   )
+   
+   # Output shape: [3, n_points]
+   # Row 0: function values
+   # Row 1: Direction 1 (gradient) derivatives
+   # Row 2: Direction 2 (perpendicular) derivatives
+   
+   dir1_errors = np.abs(y_pred_deriv[1, :] - dy_dray1)
+   dir2_errors = np.abs(y_pred_deriv[2, :] - dy_dray2)
+   
+   print(f"Direction 1 max interp error: {dir1_errors.max():.2e}")
+   print(f"Direction 2 max interp error: {dir2_errors.max():.2e}")
 
 .. figure:: ./_static/gddegp_quadratic.png
    :alt: GDDEGP 2D example visualization
@@ -460,6 +545,10 @@ This example demonstrates GDDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 +
    :width: 100%
 
    GP prediction (left), true function (center), and absolute error (right) for :math:`f(x_1, x_2) = x_1^2 + x_2^2` using point-specific directional derivatives. At each training point (red circles), two orthogonal directional derivatives are used: one aligned with the local gradient (red arrows pointing radially outward) and one perpendicular to it (blue arrows tangential to level curves). Unlike DDEGP where all arrows would be parallel, GDDEGP adapts the derivative directions to local function behavior.
+
+
+
+
 
 WDDEGP: Weighted Directional Derivative-Enhanced Gaussian Process
 ------------------------------------------------------------------

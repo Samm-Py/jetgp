@@ -36,14 +36,150 @@ The following parameters appear across most or all JetGP modules:
   - **Type:** ``int``
   - **Description:** Number of input variables (same as ``X_train.shape[1]``).
 
-**der_indices**
-  Derivative component specification.
+
+**der_indices**  
+Specifies which derivatives are included in the model.  
+This argument is a **nested list**, where each sublist contains all derivative components of a particular order.  
+Each derivative component is itself a list specifying the variable indices and derivative order.  
+Examples:
+
+**1D function**  
+::
   
-  - **Type:** ``list`` (nested)
-  - **Description:** Defines which derivatives are included, using the same format as described
-    in the :ref:`Common Arguments <common_arguments>` section. Each sublist corresponds to
-    derivatives of a particular order, with individual components specified as lists of
-    variable indices and orders.
+  der_indices = [[[[1, 1]]]]        # first-order derivative
+  der_indices = [[[[1, 1]], [[1, 2]]]]  # first- and second-order derivatives
+
+**2D function** – all derivatives up to second order  
+::
+  
+  der_indices = [
+      [ [[1, 1]], [[2, 1]] ],                      # first-order derivatives
+      [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ]    # second-order derivatives
+  ]
+
+**2D function** – all derivatives up to third order  
+::
+  
+  der_indices = [
+      [ [[1, 1]], [[2, 1]] ],                                        # first-order
+      [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ],                     # second-order
+      [ [[1, 3]], [[1, 2], [2, 1]], [[1, 1], [2, 2]], [[2, 3]] ]    # third-order
+  ]
+
+------------------------------------------------------------
+
+**derivative_locations**  
+Specifies which training points have each derivative defined in ``der_indices``.  
+This argument is a **list of lists**, where each sublist contains the training point indices 
+for the corresponding derivative. The structure must match ``der_indices`` exactly—one entry 
+per derivative. Indices can be **non-contiguous** (e.g., ``[0, 2, 5, 7]`` is valid).
+
+For **weighted models** (WDEGP, WDDEGP), an additional outer list is added for submodels:
+``derivative_locations[submodel_idx][deriv_idx] = [list of point indices]``.
+
+Examples:
+
+**DEGP – 1D function, first-order derivative at subset of points**  
+::
+
+  der_indices = [[[[1, 1]]]]
+  derivative_locations = [[2, 3, 4, 5]]  # 1 derivative → 1 entry
+
+**DEGP – 1D function, first and second-order at different locations**  
+::
+
+  der_indices = [[[[1, 1]], [[1, 2]]]]
+  derivative_locations = [
+      [0, 1, 2, 3, 4, 5],  # df/dx at all 6 points
+      [2, 3, 4]            # d²f/dx² at middle 3 points only
+  ]
+
+**DEGP – 2D function, different coverage per derivative**  
+::
+
+  der_indices = [
+      [ [[1, 1]], [[2, 1]] ],                      # 2 first-order derivatives
+      [ [[1, 2]], [[1, 1], [2, 1]], [[2, 2]] ]    # 3 second-order derivatives
+  ]
+  derivative_locations = [
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],  # ∂f/∂x₁ at all 9 points
+      [0, 1, 2, 3, 4, 5, 6, 7, 8],  # ∂f/∂x₂ at all 9 points
+      [4, 5, 7, 8],                  # ∂²f/∂x₁² at interior only
+      [4, 5, 7, 8],                  # ∂²f/∂x₁∂x₂ at interior only
+      [4, 5, 7, 8]                   # ∂²f/∂x₂² at interior only
+  ]
+
+**WDEGP – 2 submodels with different derivative coverage**  
+::
+
+  # Submodel 0: boundary points with 1st order only
+  # Submodel 1: interior points with 1st and 2nd order
+  derivative_specs = [
+      [
+          [[[1, 1]], [[2, 1]]]   # Submodel 0: 1st order derivatives
+      ],
+      [
+          [[[1, 1]], [[2, 1]]],                    # Submodel 1: 1st order
+          [[[1, 2]], [[1,1],[2,1]], [[2, 2]]]      # Submodel 1: 2nd order
+      ]
+  ]
+  derivative_locations = [
+      # Submodel 0: 1 derivative type
+      [
+          [0, 1, 2, 3, 4, 5, 6, 7]   # 1st order at boundary points
+      ],
+      # Submodel 1: 2 derivative types
+      [
+          [8, 9, 10, 11, 12],        # 1st order at interior points
+          [8, 9, 10, 11, 12]         # 2nd order at interior points
+      ]
+  ]
+
+**WDEGP – single submodel, heterogeneous derivative coverage**  
+::
+
+  # Boundary: 1st order only, Interior: 1st and 2nd order
+  derivative_specs = [
+      [
+          [[[1, 1]], [[2, 1]]],  # 1st order derivatives
+          [[[1, 2]], [[2, 2]]]   # 2nd order derivatives
+      ]
+  ]
+  derivative_locations = [
+      [
+          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  # 1st order at all points
+          [8, 9, 10, 11, 12]                            # 2nd order at interior only
+      ]
+  ]
+
+.. note::
+
+   When WDEGP is configured with a single submodel, it reduces to the standard DEGP case.
+   The only structural difference is the additional outer list for the submodel dimension.
+   For example, these configurations are functionally equivalent:
+   
+   **DEGP:**
+   ::
+   
+     derivative_locations = [
+         [0, 1, 2, 3, 4],  # df/dx1
+         [0, 1, 2, 3, 4]   # df/dx2
+     ]
+   
+   **WDEGP (single submodel):**
+   ::
+   
+     derivative_locations = [
+         [                     # Submodel 0
+             [0, 1, 2, 3, 4],  # df/dx1
+             [0, 1, 2, 3, 4]   # df/dx2
+         ]
+     ]
+   
+   In single-submodel mode, WDEGP also supports ``return_deriv=True`` for derivative 
+   predictions, just like DEGP.
+
+
 
 **normalize**
   Enable data normalization.
@@ -90,6 +226,7 @@ Module-Specific Initialization
         n_order,
         n_bases,
         der_indices,
+        derivative_locations=derivative_locations,
         normalize=True,
         kernel="SE",
         kernel_type="anisotropic"
@@ -101,26 +238,63 @@ Module-Specific Initialization
   Training observations for function and derivatives.
   
   - **Type:** ``list`` of ``numpy.ndarray``
-  - **Description:** Ordered list of training data arrays. The first element contains function values,
-    and subsequent elements contain derivative observations. The order must match ``der_indices``.
-  - **Example structure:**
+  - **Description:** Ordered list of training data arrays. The first element contains function values
+    at all training points, and subsequent elements contain derivative observations. The order of
+    derivative arrays must match ``der_indices``. When using ``derivative_locations``, each
+    derivative array length must match the corresponding entry in ``derivative_locations``.
+  - **Example structure (all derivatives at all points):**
   
     .. code-block:: python
     
         y_train_list = [
             y_vals,      # shape: (num_training_points,)
-            dy_dx1,      # first-order derivatives
-            dy_dx2,
-            d2y_dx1dx1,  # second-order derivatives
-            d2y_dx1dx2,
-            d2y_dx2dx2
+            dy_dx1,      # shape: (num_training_points,)
+            dy_dx2,      # shape: (num_training_points,)
+        ]
+
+  - **Example structure (derivatives at subset of points):**
+  
+    .. code-block:: python
+    
+        # derivative_locations = [[2, 3, 4, 5], [2, 3, 4, 5]]
+        y_train_list = [
+            y_vals,      # shape: (num_training_points,) - all 6 points
+            dy_dx1,      # shape: (4,) - only at points 2, 3, 4, 5
+            dy_dx2,      # shape: (4,) - only at points 2, 3, 4, 5
+        ]
+
+**derivative_locations**
+  Training point indices for each derivative.
+  
+  - **Type:** ``list`` of ``list`` of ``int``
+  - **Description:** Specifies which training points have each derivative defined in ``der_indices``.
+    The structure must match ``der_indices`` exactly—one entry per derivative. Indices can be
+    non-contiguous (e.g., ``[0, 2, 5, 7]`` is valid).
+  - **Example (1D, first-order derivative at subset of points):**
+  
+    .. code-block:: python
+    
+        der_indices = [[[[1, 1]]]]
+        derivative_locations = [[2, 3, 4, 5]]  # df/dx at points 2, 3, 4, 5 only
+
+  - **Example (2D, different coverage per derivative):**
+  
+    .. code-block:: python
+    
+        der_indices = [[ [[1, 1]], [[2, 1]] ]]
+        derivative_locations = [
+            [0, 1, 2, 3, 4, 5, 6, 7, 8],  # ∂f/∂x₁ at all 9 points
+            [4, 5, 7, 8]                   # ∂f/∂x₂ at interior 4 points only
         ]
 
 **Usage Notes:**
 
-- DEGP incorporates all specified derivatives at all training points.
-- Each array in ``y_train_list`` must have length ``num_training_points``.
-- The correspondence between ``y_train_list`` and ``der_indices`` must be exact.
+- DEGP incorporates specified derivatives at the training points defined by ``derivative_locations``.
+- The first element of ``y_train_list`` (function values) always has length ``num_training_points``.
+- Each subsequent array in ``y_train_list`` must have length matching the corresponding entry
+  in ``derivative_locations``.
+- The correspondence between ``y_train_list``, ``der_indices``, and ``derivative_locations`` must be exact.
+------------------------------------------------------------
 
 ------------------------------------------------------------
 

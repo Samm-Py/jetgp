@@ -102,7 +102,10 @@ class TestGlobalDirectionalBranin(unittest.TestCase):
 
         cls.y_train_list = [y_func] + directional_derivs
         cls.der_indices = [[[[1, 1]], [[2, 1]], [[3, 1]]]]
-
+        cls.derivative_locations = []
+        for i in range(len(cls.der_indices)):
+            for j in range(len(cls.der_indices[i])):
+                cls.derivative_locations.append([i for i in range(len(cls.X_train ))])
         # --- Step 4: Initialize and train model ---
         cls.model = ddegp(
             cls.X_train,
@@ -110,6 +113,7 @@ class TestGlobalDirectionalBranin(unittest.TestCase):
             n_order=cls.n_order,
             der_indices=cls.der_indices,
             rays=cls.rays,
+            derivative_locations=cls.derivative_locations,
             normalize=cls.normalize_data,
             kernel=cls.kernel,
             kernel_type=cls.kernel_type,
@@ -173,9 +177,8 @@ class TestGlobalDirectionalBranin(unittest.TestCase):
         )
 
         # Partition prediction vector: f + 3 rays
-        n = self.num_training_pts
-        y_pred_func = y_pred_all[:n]
-        y_pred_rays = [y_pred_all[n * (i + 1): n * (i + 2)]
+        y_pred_func = y_pred_all[0,:]
+        y_pred_rays = [y_pred_all[(i + 1), :]
                        for i in range(self.num_rays)]
 
         # Analytic values
@@ -232,7 +235,7 @@ class TestGlobalDirectionalBranin(unittest.TestCase):
         )
         
         n = self.num_training_pts
-        y_pred_rays = [y_pred_all[n * (i + 1): n * (i + 2)]
+        y_pred_rays = [y_pred_all[(i + 1), : ]
                        for i in range(self.num_rays)]
         y_true_rays = self.y_train_list[1:]
         

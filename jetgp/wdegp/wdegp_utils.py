@@ -45,7 +45,7 @@ from line_profiler import profile
 #     return differences_by_dim
 
 
-def differences_by_dim_func(X1, X2, n_order, return_deriv=True, index=-1):
+def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
     """
     Compute pairwise differences between two input arrays X1 and X2 for each dimension,
     embedding hypercomplex units along each dimension for automatic differentiation.
@@ -533,14 +533,13 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     weights_matrix : ndarray of shape (n_test, n_train)
         Interpolation weights for each test point.
     """
-    index = [-1]
     
     # Compute K matrix (training covariance) - same for all test points
-    K = kernel_func(diffs_by_dim, length_scales, index).real
+    K = kernel_func(diffs_by_dim, length_scales).real
     n_train = K.shape[0]
     
     # Compute r vectors (test-train covariances) for all test points at once
-    r_all = kernel_func(diffs_test, length_scales, index).real  # shape: (n_test, n_train)
+    r_all = kernel_func(diffs_test, length_scales).real  # shape: (n_test, n_train)
     n_test = r_all.shape[0]
     
     # Build augmented system matrix M (same for all test points)

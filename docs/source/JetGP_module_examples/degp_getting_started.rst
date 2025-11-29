@@ -58,16 +58,24 @@ Here, we define three training points and compute their function values and firs
 
 ---
 
-Step 3: Define derivative indices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. jupyter-execute::
 
    der_indices = [[[[1, 1]]]]
+   
+   # derivative_locations must be provided - one entry per derivative
+   derivative_locations = []
+   for i in range(len(der_indices)):
+      for j in range(len(der_indices[i])):
+            derivative_locations.append([k for k in range(len(X_train))])
+   
    print("der_indices:", der_indices)
+   print("derivative_locations:", derivative_locations)
 
 **Explanation:**  
-``der_indices`` tells the DEGP model which derivatives to include. In 1D, the first order derivative is labeled as ``[[1,1]]``.
+``der_indices`` tells the DEGP model which derivatives to include. In 1D, the first order derivative is labeled as ``[[1,1]]``. ``derivative_locations`` specifies which training points have each derivative—here, all points have the first derivative.
 
 ---
 
@@ -77,7 +85,9 @@ Step 4: Initialize DEGP model
 .. jupyter-execute::
 
    model = degp(X_train, y_train, n_order=1, n_bases=1,
-                der_indices=der_indices, normalize=True,
+                der_indices=der_indices,
+                derivative_locations=derivative_locations,
+                normalize=True,
                 kernel="SE", kernel_type="anisotropic")
 
    print("DEGP model initialized.")
@@ -115,8 +125,11 @@ Step 6: Validate predictions at training points
 .. jupyter-execute::
 
    y_train_pred = model.predict(X_train, params, calc_cov=False, return_deriv=True)
-   y_func_pred = y_train_pred[:len(X_train)]
-   y_deriv_pred = y_train_pred[len(X_train):]
+   
+   # Output shape is [n_derivatives + 1, n_points]
+   # Row 0: function values, Row 1: first derivative
+   y_func_pred = y_train_pred[0, :]
+   y_deriv_pred = y_train_pred[1, :]
 
    abs_error_func = np.abs(y_func_pred.flatten() - y_func.flatten())
    abs_error_deriv = np.abs(y_deriv_pred.flatten() - y_deriv1.flatten())
@@ -125,7 +138,7 @@ Step 6: Validate predictions at training points
    print("Absolute error (derivative) at training points:", abs_error_deriv)
 
 **Explanation:**  
-We first check predictions at training points to ensure that the DEGP model exactly interpolates function values and derivatives, as expected for noiseless training data.
+We first check predictions at training points to ensure that the DEGP model exactly interpolates function values and derivatives, as expected for noiseless training data. The output has shape ``[n_derivatives + 1, n_points]`` where row 0 contains function predictions and subsequent rows contain derivative predictions.
 
 ---
 
@@ -137,8 +150,9 @@ Step 7: Visualize predictions
    X_test = np.linspace(0, 1, 100).reshape(-1, 1)
    y_test_pred = model.predict(X_test, params, calc_cov=False, return_deriv=True)
 
-   y_func_test = y_test_pred[:len(X_test)]
-   y_deriv_test = y_test_pred[len(X_test):]
+   # Row 0: function, Row 1: first derivative
+   y_func_test = y_test_pred[0, :]
+   y_deriv_test = y_test_pred[1, :]
 
    plt.figure(figsize=(12,5))
 
@@ -207,17 +221,24 @@ The second derivative is included in the training data. DEGP can now enforce bot
 
 ---
 
-Step 2: Define derivative indices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 2: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. jupyter-execute::
 
    der_indices = [[[[1, 1]], [[1, 2]]]]
+   
+   # All derivatives at all training points
+   derivative_locations = []
+   for i in range(len(der_indices)):
+      for j in range(len(der_indices[i])):
+            derivative_locations.append([k for k in range(len(X_train))])
+   
    print("der_indices:", der_indices)
+   print("derivative_locations:", derivative_locations)
 
 **Explanation:**  
-The first order derivative is labeled ``[[1,1]]`` and the second order derivative ``[[1,2]]``. This labeling maps derivatives to the structure used internally by DEGP.
-
+The first order derivative is labeled ``[[1,1]]`` and the second order derivative ``[[1,2]]``. ``derivative_locations`` specifies that both derivatives are available at all training points.
 ---
 
 Step 3: Initialize DEGP model for second-order derivatives
@@ -226,7 +247,9 @@ Step 3: Initialize DEGP model for second-order derivatives
 .. jupyter-execute::
 
    model = degp(X_train, y_train, n_order=2, n_bases=1,
-                der_indices=der_indices, normalize=True,
+                der_indices=der_indices,
+                derivative_locations=derivative_locations,
+                normalize=True,
                 kernel="SE", kernel_type="anisotropic")
 
    print("DEGP model (2nd order) initialized.")
@@ -263,10 +286,11 @@ Step 5: Validate predictions at training points
 
    y_train_pred = model.predict(X_train, params, calc_cov=False, return_deriv=True)
 
-   n_train = len(X_train)
-   y_func_pred = y_train_pred[:n_train]
-   y_deriv1_pred = y_train_pred[n_train:2*n_train]
-   y_deriv2_pred = y_train_pred[2*n_train:]
+   # Output shape is [n_derivatives + 1, n_points]
+   # Row 0: function, Row 1: 1st derivative, Row 2: 2nd derivative
+   y_func_pred = y_train_pred[0, :]
+   y_deriv1_pred = y_train_pred[1, :]
+   y_deriv2_pred = y_train_pred[2, :]
 
    abs_error_func = np.abs(y_func_pred.flatten() - y_func.flatten())
    abs_error_deriv1 = np.abs(y_deriv1_pred.flatten() - y_deriv1.flatten())
@@ -289,10 +313,10 @@ Step 6: Visualize predictions
    X_test = np.linspace(0, 1, 100).reshape(-1, 1)
    y_test_pred = model.predict(X_test, params, calc_cov=False, return_deriv=True)
 
-   n_test = len(X_test)
-   y_func_test = y_test_pred[:n_test]
-   y_deriv1_test = y_test_pred[n_test:2*n_test]
-   y_deriv2_test = y_test_pred[2*n_test:]
+   # Row 0: function, Row 1: 1st derivative, Row 2: 2nd derivative
+   y_func_test = y_test_pred[0, :]
+   y_deriv1_test = y_test_pred[1, :]
+   y_deriv2_test = y_test_pred[2, :]
 
    plt.figure(figsize=(18,5))
 
@@ -390,16 +414,24 @@ We define a 3×3 2D grid. Function values and first derivatives in both dimensio
 
 ---
 
-Step 3: Define derivative indices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. jupyter-execute::
 
    der_indices = [[[[1, 1]], [[2, 1]]]]
+   
+   # All derivatives at all training points
+   derivative_locations = []
+   for i in range(len(der_indices)):
+      for j in range(len(der_indices[i])):
+            derivative_locations.append([k for k in range(len(X_train))])
+   
    print("der_indices:", der_indices)
+   print("derivative_locations:", derivative_locations)
 
 **Explanation:**  
-The derivative indices specify first derivatives with respect to :math:`x` (``[[1,1]]``) and :math:`y` (``[[2,1]]``).
+The derivative indices specify first derivatives with respect to :math:`x` (``[[1,1]]``) and :math:`y` (``[[2,1]]``). ``derivative_locations`` indicates both partial derivatives are available at all 9 training points.
 
 ---
 
@@ -409,7 +441,9 @@ Step 4: Initialize DEGP model
 .. jupyter-execute::
 
    model = degp(X_train, y_train, n_order=1, n_bases=2,
-                der_indices=der_indices, normalize=True,
+                der_indices=der_indices,
+                derivative_locations=derivative_locations,
+                normalize=True,
                 kernel="SE", kernel_type="anisotropic")
 
    print("2D DEGP model initialized.")
@@ -445,10 +479,11 @@ Step 6: Validate predictions at training points
 
    y_train_pred = model.predict(X_train, params, calc_cov=False, return_deriv=True)
 
-   n_train = len(X_train)
-   y_func_pred = y_train_pred[:n_train]
-   y_deriv_x_pred = y_train_pred[n_train:2*n_train]
-   y_deriv_y_pred = y_train_pred[2*n_train:]
+   # Output shape is [n_derivatives + 1, n_points]
+   # Row 0: function, Row 1: df/dx, Row 2: df/dy
+   y_func_pred = y_train_pred[0, :]
+   y_deriv_x_pred = y_train_pred[1, :]
+   y_deriv_y_pred = y_train_pred[2, :]
 
    print("Predictions at training points (function):", y_func_pred)
    print("Predictions at training points (deriv x):", y_deriv_x_pred)
@@ -488,11 +523,11 @@ Step 8: Generate test predictions
    X_test = np.column_stack([X1_test.flatten(), X2_test.flatten()])
 
    y_test_pred = model.predict(X_test, params, calc_cov=False, return_deriv=True)
-   n_test = len(X_test)
 
-   y_func_test = y_test_pred[:n_test].reshape(50,50)
-   y_deriv_x_test = y_test_pred[n_test:2*n_test].reshape(50,50)
-   y_deriv_y_test = y_test_pred[2*n_test:].reshape(50,50)
+   # Row 0: function, Row 1: df/dx, Row 2: df/dy
+   y_func_test = y_test_pred[0, :].reshape(50, 50)
+   y_deriv_x_test = y_test_pred[1, :].reshape(50, 50)
+   y_deriv_y_test = y_test_pred[2, :].reshape(50, 50)
 
 **Explanation:**  
 A dense 50×50 test grid is created for visualization purposes.
@@ -609,8 +644,8 @@ This dataset includes function values, first derivatives, and second-order main 
 
 ---
 
-Step 3: Define derivative indices
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 3: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. jupyter-execute::
 
@@ -618,10 +653,18 @@ Step 3: Define derivative indices
        [ [[1, 1]], [[2, 1]] ],  # first-order derivatives
        [ [[1, 2]], [[2, 2]] ]   # second-order derivatives
    ]
+   
+   # All derivatives at all training points
+   derivative_locations = []
+   for i in range(len(der_indices)):
+      for j in range(len(der_indices[i])):
+            derivative_locations.append([k for k in range(len(X_train))])
+   
    print("der_indices:", der_indices)
+   print("derivative_locations:", derivative_locations)
 
 **Explanation:**  
-The derivative indices specify both first-order and second-order partial derivatives with respect to :math:`x` and :math:`y`.
+The derivative indices specify both first-order and second-order partial derivatives with respect to :math:`x` and :math:`y`. ``derivative_locations`` indicates all 4 derivative types are available at all 9 training points.
 
 ---
 
@@ -631,7 +674,9 @@ Step 4: Initialize DEGP model
 .. jupyter-execute::
 
    model = degp(X_train, y_train, n_order=2, n_bases=2,
-                der_indices=der_indices, normalize=True,
+                der_indices=der_indices,
+                derivative_locations=derivative_locations,
+                normalize=True,
                 kernel="SE", kernel_type="anisotropic")
 
    print("2D DEGP model with second-order derivatives initialized.")
@@ -668,16 +713,13 @@ Step 6: Validate predictions at training points
 
    y_train_pred = model.predict(X_train, params, calc_cov=False, return_deriv=True)
 
-   n_train = len(X_train)
-
-   # First-order
-   y_func_pred    = y_train_pred[:n_train]
-   y_deriv_x_pred = y_train_pred[n_train:2*n_train]
-   y_deriv_y_pred = y_train_pred[2*n_train:3*n_train]
-
-   # Second-order main derivatives
-   y_deriv_xx_pred = y_train_pred[3*n_train:4*n_train]
-   y_deriv_yy_pred = y_train_pred[4*n_train:5*n_train]
+   # Output shape is [n_derivatives + 1, n_points]
+   # Row 0: function, Row 1: df/dx, Row 2: df/dy, Row 3: d²f/dx², Row 4: d²f/dy²
+   y_func_pred = y_train_pred[0, :]
+   y_deriv_x_pred = y_train_pred[1, :]
+   y_deriv_y_pred = y_train_pred[2, :]
+   y_deriv_xx_pred = y_train_pred[3, :]
+   y_deriv_yy_pred = y_train_pred[4, :]
 
 **Explanation:**  
 Predictions are organized by derivative order and type.
@@ -721,13 +763,13 @@ Step 8: Generate test predictions
    X_test = np.column_stack([X1_test.flatten(), X2_test.flatten()])
 
    y_test_pred = model.predict(X_test, params, calc_cov=False, return_deriv=True)
-   n_test = len(X_test)
 
-   y_func_test = y_test_pred[:n_test].reshape(50,50)
-   y_deriv_x_test = y_test_pred[n_test:2*n_test].reshape(50,50)
-   y_deriv_y_test = y_test_pred[2*n_test:3*n_test].reshape(50,50)
-   y_deriv_xx_test = y_test_pred[3*n_test:4*n_test].reshape(50,50)
-   y_deriv_yy_test = y_test_pred[4*n_test:5*n_test].reshape(50,50)
+   # Row 0: function, Row 1: df/dx, Row 2: df/dy, Row 3: d²f/dx², Row 4: d²f/dy²
+   y_func_test = y_test_pred[0, :].reshape(50, 50)
+   y_deriv_x_test = y_test_pred[1, :].reshape(50, 50)
+   y_deriv_y_test = y_test_pred[2, :].reshape(50, 50)
+   y_deriv_xx_test = y_test_pred[3, :].reshape(50, 50)
+   y_deriv_yy_test = y_test_pred[4, :].reshape(50, 50)
 
 **Explanation:**  
 All predictions (function and derivatives) are computed and reshaped for visualization.
@@ -795,3 +837,360 @@ This example demonstrates **2D second-order DEGP**. By incorporating both first 
 - Better extrapolation behavior
 - Improved gradient predictions for optimization applications
 - Reduced uncertainty in high-curvature regions
+
+---
+
+Example 5: 1D Heterogeneous Derivative Coverage
+------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates how to use **different derivative orders at different training points** using the ``derivative_locations`` parameter. This is useful when:
+
+- Higher-order derivatives are expensive to compute and should only be used where needed
+- Derivative information is only available at certain locations (e.g., from sensors or simulations)
+- You want to concentrate derivative information in regions of high curvature or importance
+
+We learn :math:`f(x) = \sin(2x) + 0.5\cos(5x)` with:
+
+- **All points**: Function values
+- **All points**: First-order derivatives
+- **Interior points only**: Second-order derivatives (curvature information where it matters most)
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   import numpy as np
+   from jetgp.full_degp.degp import degp
+   import matplotlib.pyplot as plt
+
+   print("Modules imported successfully.")
+
+---
+
+Step 2: Define training data with heterogeneous derivative coverage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Define training points
+   X_train = np.linspace(0, 2, 7).reshape(-1, 1)
+   n_train = len(X_train)
+   
+   # Identify boundary and interior points
+   boundary_indices = [0, n_train - 1]  # First and last points
+   interior_indices = list(range(1, n_train - 1))  # Middle points
+   all_indices = list(range(n_train))
+   
+   print(f"Total training points: {n_train}")
+   print(f"Boundary indices: {boundary_indices}")
+   print(f"Interior indices: {interior_indices}")
+
+   # Define the true function and its derivatives
+   def f(x):
+       return np.sin(2*x) + 0.5*np.cos(5*x)
+   
+   def df(x):
+       return 2*np.cos(2*x) - 2.5*np.sin(5*x)
+   
+   def d2f(x):
+       return -4*np.sin(2*x) - 12.5*np.cos(5*x)
+
+   # Compute training data
+   y_func = f(X_train)
+   y_deriv1 = df(X_train)
+   y_deriv2_interior = d2f(X_train[interior_indices])  # Only at interior points!
+
+   # Build y_train list
+   # Note: y_deriv2 only has len(interior_indices) entries, not n_train
+   y_train = [y_func, y_deriv1, y_deriv2_interior]
+
+   print(f"\nTraining data shapes:")
+   print(f"  Function values: {y_func.shape} (all {n_train} points)")
+   print(f"  1st derivatives: {y_deriv1.shape} (all {n_train} points)")
+   print(f"  2nd derivatives: {y_deriv2_interior.shape} (only {len(interior_indices)} interior points)")
+
+**Explanation:**  
+The key insight here is that ``y_deriv2_interior`` has fewer entries than ``y_func`` and ``y_deriv1``. 
+The second derivative is only computed at interior points where curvature information is most valuable.
+
+---
+
+Step 3: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Derivative specification: 1st and 2nd order derivatives
+   der_indices = [[[[1, 1]], [[1, 2]]]]
+   
+   # Derivative locations: specify which points have each derivative
+   derivative_locations = [
+       all_indices,       # 1st derivative (df/dx) at ALL points
+       interior_indices   # 2nd derivative (d²f/dx²) at INTERIOR points only
+   ]
+   
+   print("der_indices:", der_indices)
+   print("derivative_locations:", derivative_locations)
+
+**Explanation:**  
+The ``derivative_locations`` list has one entry per derivative in ``der_indices``:
+
+- First entry: indices where first derivative is available (all 7 points)
+- Second entry: indices where second derivative is available (5 interior points)
+
+This structure must match the ``y_train`` list exactly.
+
+---
+
+Step 4: Initialize DEGP model with derivative_locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   model = degp(
+       X_train, 
+       y_train, 
+       n_order=2, 
+       n_bases=1,
+       der_indices=der_indices,
+       derivative_locations=derivative_locations,  # Key parameter!
+       normalize=True,
+       kernel="SE", 
+       kernel_type="anisotropic"
+   )
+
+   print("DEGP model with heterogeneous derivative coverage initialized.")
+
+**Explanation:**  
+The ``derivative_locations`` parameter tells DEGP exactly which training points have each type of derivative information.
+
+---
+
+Step 5: Optimize hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   params = model.optimize_hyperparameters(
+       optimizer='pso',
+       pop_size=100,
+       n_generations=15,
+       local_opt_every=15,
+       debug=False
+   )
+   print("Optimized hyperparameters:", params)
+
+---
+
+Step 6: Validate predictions at training points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Predict with return_deriv=True to get derivative predictions
+   y_train_pred = model.predict(X_train, params, calc_cov=False, return_deriv=True)
+
+   # Output shape is [n_derivatives + 1, n_points]
+   # Row 0: function (n_train points)
+   # Row 1: 1st derivative (n_train points)
+   # Row 2: 2nd derivative (len(interior_indices) points)
+   y_func_pred = y_train_pred[0, :]
+   y_deriv1_pred = y_train_pred[1, :]
+   y_deriv2_pred = y_train_pred[2, interior_indices]
+
+   # Compute errors
+   abs_error_func = np.abs(y_func_pred.flatten() - y_func.flatten())
+   abs_error_d1 = np.abs(y_deriv1_pred.flatten() - y_deriv1.flatten())
+   abs_error_d2 = np.abs(y_deriv2_pred.flatten() - y_deriv2_interior.flatten())
+
+   print("Absolute error (function) at all training points:")
+   print(f"  {abs_error_func}")
+   print("\nAbsolute error (1st derivative) at all training points:")
+   print(f"  {abs_error_d1}")
+   print("\nAbsolute error (2nd derivative) at interior points only:")
+   print(f"  {abs_error_d2}")
+
+**Explanation:**  
+The prediction output structure matches the training data structure:
+
+- Row 0: Function values at all points
+- Row 1: 1st derivatives at all points  
+- Row 2: 2nd derivatives only at interior points (matching ``derivative_locations``)
+
+---
+
+Step 7: Visualize predictions and derivative coverage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Generate test points
+   X_test = np.linspace(0, 2, 200).reshape(-1, 1)
+   y_test_pred = model.predict(X_test, params, calc_cov=False, return_deriv=True)
+   
+   n_test = len(X_test)
+   
+   # Row 0: function, Row 1: 1st derivative, Row 2: 2nd derivative
+   y_func_test = y_test_pred[0, :]
+   y_d1_test = y_test_pred[1, :]
+   y_d2_test = y_test_pred[2, :]
+
+   # True values for comparison
+   y_true = f(X_test)
+   dy_true = df(X_test)
+   d2y_true = d2f(X_test)
+
+   # Create figure
+   fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+
+   # --- Plot 1: Function ---
+   ax1 = axes[0, 0]
+   ax1.plot(X_test, y_true, 'b-', linewidth=2, label='True f(x)')
+   ax1.plot(X_test, y_func_test, 'r--', linewidth=2, label='GP prediction')
+   ax1.scatter(X_train[boundary_indices].flatten(), y_func[boundary_indices].flatten(), 
+               c='orange', s=150, marker='s', zorder=5, edgecolors='black',
+               label='Boundary (f, df only)')
+   ax1.scatter(X_train[interior_indices].flatten(), y_func[interior_indices].flatten(), 
+               c='green', s=150, marker='o', zorder=5, edgecolors='black',
+               label='Interior (f, df, d²f)')
+   ax1.set_xlabel('x', fontsize=12)
+   ax1.set_ylabel('f(x)', fontsize=12)
+   ax1.set_title('Function Prediction', fontsize=14)
+   ax1.legend(loc='best')
+   ax1.grid(True, alpha=0.3)
+
+   # --- Plot 2: First Derivative ---
+   ax2 = axes[0, 1]
+   ax2.plot(X_test, dy_true, 'b-', linewidth=2, label="True f'(x)")
+   ax2.plot(X_test, y_d1_test, 'r--', linewidth=2, label='GP prediction')
+   ax2.scatter(X_train[boundary_indices].flatten(), y_deriv1[boundary_indices].flatten(), 
+               c='orange', s=150, marker='s', zorder=5, edgecolors='black')
+   ax2.scatter(X_train[interior_indices].flatten(), y_deriv1[interior_indices].flatten(), 
+               c='green', s=150, marker='o', zorder=5, edgecolors='black')
+   ax2.set_xlabel('x', fontsize=12)
+   ax2.set_ylabel("f'(x)", fontsize=12)
+   ax2.set_title('First Derivative Prediction', fontsize=14)
+   ax2.legend(loc='best')
+   ax2.grid(True, alpha=0.3)
+
+   # --- Plot 3: Second Derivative ---
+   ax3 = axes[1, 0]
+   ax3.plot(X_test, d2y_true, 'b-', linewidth=2, label="True f''(x)")
+   ax3.plot(X_test, y_d2_test, 'r--', linewidth=2, label='GP prediction')
+   # Only interior points have 2nd derivative training data
+   ax3.scatter(X_train[interior_indices].flatten(), d2f(X_train[interior_indices]).flatten(), 
+               c='green', s=150, marker='o', zorder=5, edgecolors='black',
+               label='Interior (has d²f)')
+   # Mark boundary points without 2nd derivative
+   ax3.axvline(x=X_train[0, 0], color='orange', linestyle=':', alpha=0.7)
+   ax3.axvline(x=X_train[-1, 0], color='orange', linestyle=':', alpha=0.7, 
+               label='Boundary (no d²f)')
+   ax3.set_xlabel('x', fontsize=12)
+   ax3.set_ylabel("f''(x)", fontsize=12)
+   ax3.set_title('Second Derivative Prediction', fontsize=14)
+   ax3.legend(loc='best')
+   ax3.grid(True, alpha=0.3)
+
+   # --- Plot 4: Derivative Coverage Visualization ---
+   ax4 = axes[1, 1]
+   ax4.axis('off')
+   
+   coverage_text = """
+   Derivative Coverage Summary
+   ===========================
+   
+   Training Points: 7 total
+   
+   Point Type    | f(x) | df/dx | d²f/dx²
+   --------------|------|-------|--------
+   Boundary (2)  |  ✓   |   ✓   |   ✗
+   Interior (5)  |  ✓   |   ✓   |   ✓
+   
+   derivative_locations structure:
+   
+     der_indices = [[[[1, 1]], [[1, 2]]]]
+     
+     derivative_locations = [
+         [0, 1, 2, 3, 4, 5, 6],  # df/dx at all
+         [1, 2, 3, 4, 5]         # d²f/dx² interior only
+     ]
+   
+   Benefits:
+   • Reduced computational cost (fewer 2nd derivatives)
+   • Curvature info concentrated where needed
+   • Boundary regions rely on function + slope only
+   """
+   
+   ax4.text(0.05, 0.95, coverage_text, transform=ax4.transAxes,
+            fontsize=11, verticalalignment='top', fontfamily='monospace',
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+
+   plt.tight_layout()
+   plt.show()
+
+**Explanation:**  
+The visualization shows:
+
+- **Orange squares**: Boundary points with only function values and first derivatives
+- **Green circles**: Interior points with full derivative coverage (1st and 2nd order)
+- The GP successfully interpolates all training data and provides smooth predictions
+
+---
+
+Step 8: Compare errors at boundary vs interior
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Evaluate prediction accuracy in different regions
+   boundary_test_mask = (X_test.flatten() < 0.3) | (X_test.flatten() > 1.7)
+   interior_test_mask = ~boundary_test_mask
+
+   func_error_boundary = np.mean(np.abs(y_func_test[boundary_test_mask].flatten() - 
+                                         y_true[boundary_test_mask].flatten()))
+   func_error_interior = np.mean(np.abs(y_func_test[interior_test_mask].flatten() - 
+                                         y_true[interior_test_mask].flatten()))
+
+   d2_error_boundary = np.mean(np.abs(y_d2_test[boundary_test_mask].flatten() - 
+                                       d2y_true[boundary_test_mask].flatten()))
+   d2_error_interior = np.mean(np.abs(y_d2_test[interior_test_mask].flatten() - 
+                                       d2y_true[interior_test_mask].flatten()))
+
+   print("Mean Absolute Error Comparison:")
+   print(f"\nFunction prediction:")
+   print(f"  Boundary region: {func_error_boundary:.6f}")
+   print(f"  Interior region: {func_error_interior:.6f}")
+   print(f"\nSecond derivative prediction:")
+   print(f"  Boundary region: {d2_error_boundary:.6f}")
+   print(f"  Interior region: {d2_error_interior:.6f}")
+
+**Explanation:**  
+This comparison shows that even without second-order derivative information at the boundaries, 
+the GP can still make reasonable predictions by leveraging the curvature information from 
+nearby interior points.
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **heterogeneous derivative coverage** in DEGP using ``derivative_locations``. Key takeaways:
+
+- **Flexible derivative specification**: Different training points can have different derivative orders
+- **Matching structure**: ``y_train``, ``der_indices``, and ``derivative_locations`` must be consistent
+- **Cost reduction**: Compute expensive higher-order derivatives only where they provide the most value
+- **Practical applications**:
+  - Sensor data with varying derivative availability
+  - Concentrated derivative information in regions of interest
+  - Balancing accuracy vs computational cost
+
+**When to use heterogeneous derivative coverage:**
+
+- Higher-order derivatives are expensive to compute
+- Derivative data comes from multiple sources with different capabilities
+- You want to focus derivative information in high-curvature or high-importance regions
+- Boundary conditions provide limited derivative information
