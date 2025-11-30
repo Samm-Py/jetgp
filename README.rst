@@ -751,6 +751,6 @@ This example uses point-wise directional derivatives with gradient-aligned rays.
    )
 
 .. figure:: ./_static/example6_wdegp_gddegp.png
-:alt: WDEGP 2D example visualization with GDDEGP submodels
-:align: center
-:width: 100%
+   :alt: WDEGP 2D example visualization with GDDEGP submodels
+   :align: center
+   :width: 100%
