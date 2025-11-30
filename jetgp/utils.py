@@ -393,7 +393,7 @@ def transform_cov(cov, sigma_y, sigmas_x, der_indices, X_test):
     return y_var_normalized
 
 
-def transform_cov_directrional(cov, sigma_y, sigmas_x, der_indices, X_test):
+def transform_cov_directional(cov, sigma_y, sigmas_x, der_indices, X_test):
     """
     Rescale the diagonal of a covariance matrix for function values and directional derivatives.
 

@@ -401,10 +401,16 @@ class wdegp:
         sigma_n = length_scales[-1]
         n_test = X_test.shape[0]
         n_train = self.x_train.shape[0]
-
+        
+        if rays_predict is None and self.submodel_type == 'gddegp' and return_deriv:
+            raise Exception('Must provide rays at which predictions will be made!')
+        
         # Normalize test inputs
         if self.normalize:
             X_test_norm = utils.normalize_x_data_test(X_test, self.sigmas_x, self.mus_x)
+            if rays_predict is not None:
+                rays_predict = utils.normalize_directions_2(
+                    self.sigmas_x, rays_predict)
         else:
             X_test_norm = X_test
         
@@ -488,7 +494,8 @@ class wdegp:
             
             # Compute predictive mean
             if self.submodel_type == 'gddegp':
-                f_mean = K_s @ alpha
+                K_s = K_s.T
+                f_mean = K_s.T @ alpha
             else:
                 f_mean = K_s.T @ alpha
             f_mean = f_mean.reshape(-1, 1)
@@ -496,10 +503,15 @@ class wdegp:
             # Denormalize predictions
             if self.normalize:
                 if return_deriv:
-                    f_mean = utils.transform_predictions(
-                        f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
-                        self.flattened_der_indices[i], X_test
-                    )
+                    if self.submodel_type == 'gddegp' or 'ddegp':
+                        f_mean =utils.transform_predictions_directional(
+                           f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
+                           self.flattened_der_indices[i], X_test)
+                    else:
+                        f_mean = utils.transform_predictions(
+                            f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
+                            self.flattened_der_indices[i], X_test
+                        )
                 else:
                     f_mean = self.mu_y + f_mean * self.sigma_y
 
@@ -633,7 +645,12 @@ class wdegp:
         )
         
         phi_test_test = self.kernel_func(diffs_test_test, ell)
-        phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        bases = phi_test_test.get_active_bases()
+        if len(bases) == 0:
+            n_bases = 0
+        else:
+            n_bases = bases[-1]
+        phi_exp_test_test = phi_test_test.get_all_derivs( n_bases, 2 * self.n_order)
         
         deriv_locs_test = [list(range(len(X_test)))] * len(self.derivative_locations[submodel_idx]) if return_deriv else None
         
@@ -641,29 +658,29 @@ class wdegp:
             phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,
             self.flattened_der_indices[submodel_idx], self.powers[submodel_idx],
             return_deriv=return_deriv,
-            index= deriv_locs_i,
+            index= deriv_locs_test,
             calc_cov=True
         )
         
         n_test = len(X_test)
         
         if cho_solve_failed:
-            if return_deriv:
                 f_cov = K_ss - K_s.T @ np.linalg.solve(K, K_s)
-            else:
-                f_cov = K_ss[:n_test, :n_test] - K_s[:, :n_test].T @ np.linalg.solve(K, K_s[:, :n_test])
+
         else:
             v = solve_triangular(L, K_s, lower=low)
-            if return_deriv:
-                f_cov = K_ss - v.T @ v
-            else:
-                f_cov = K_ss[:n_test, :n_test] - v[:, :n_test].T @ v[:, :n_test]
-        
+            f_cov = K_ss - v.T @ v
+
         if self.normalize:
-            f_var = utils.transform_cov(
-                f_cov, self.sigma_y, self.sigmas_x,
-                self.flattened_der_indices[submodel_idx], X_test
-            )
+            if self.submodel_type == 'gddegp' or 'ddegp':
+                f_var = utils.transform_cov_directional(
+                    f_cov, self.sigma_y, self.sigmas_x,
+                    self.flattened_der_indices[submodel_idx], X_test)
+            else:
+                f_var = utils.transform_cov(
+                    f_cov, self.sigma_y, self.sigmas_x,
+                    self.flattened_der_indices[submodel_idx], X_test
+                )
         else:
             f_var = np.diag(np.abs(f_cov))
         
@@ -677,22 +694,21 @@ class wdegp:
                 X_test, X_test, self.n_order, return_deriv=return_deriv
             )
         elif self.submodel_type == 'ddegp':
-            from jetgp.full_ddegp import ddegp_utils
+            from jetgp.full_ddegp import wddegp_utils
             deriv_locs = [list(range(len(X_test)))] * self.rays.shape[1] if return_deriv else None
-            return ddegp_utils.differences_by_dim_func(
+            return wddegp_utils.differences_by_dim_func(
                 X_test, X_test,
-                self.rays, self.rays,
-                deriv_locs, deriv_locs,
+                self.rays, 
                 self.n_order,
                 return_deriv=return_deriv
             )
         elif self.submodel_type == 'gddegp':
-            from jetgp.full_gddegp import gddegp_utils
+            from jetgp.full_gddegp import wgddegp_utils
             # For test-test, use rays_predict if provided
             rays_test = rays_predict if return_deriv else None
             n_dirs = len(self.global_rays) if rays_test is None else len(rays_test)
             deriv_locs = [list(range(len(X_test)))] * n_dirs if return_deriv else None
-            return gddegp_utils.differences_by_dim_func(
+            return wgddegp_utils.differences_by_dim_func(
                 X_test, X_test,
                 rays_test, rays_test,
                 deriv_locs, deriv_locs,

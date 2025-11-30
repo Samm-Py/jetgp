@@ -662,6 +662,8 @@ def rbf_kernel_predictions(
     - Rows = test points
     - Cols = training points
     """
+    if calc_cov and not return_deriv:
+        return phi.real
     dh = coti.get_dHelp()
     
     # 1. Evaluate the kernel once to get the hypercomplex result
@@ -697,7 +699,7 @@ def rbf_kernel_predictions(
     # Output rows = test side (transposed from phi cols)
     n_rows_func = n_test
     if return_deriv:
-        derivative_locations_test = [i for i in range(n_test)]
+        derivative_locations_test =  [list(range(n_test))] *  n_deriv_types
         n_rows_derivs = sum(len(locs) for locs in derivative_locations_test)
     else:
         n_rows_derivs = 0
@@ -864,3 +866,33 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     weights_matrix = solution[:n_train, :].T  # shape: (n_test, n_train)
     
     return weights_matrix
+
+def to_tuple(item):
+    if isinstance(item, list):
+        return tuple(to_tuple(x) for x in item)
+    return item
+
+def find_common_derivatives(all_indices):
+    """Find derivative indices common to all submodels."""
+    sets = [set(to_tuple(elem) for elem in idx_list) for idx_list in all_indices]
+    return sets[0].intersection(*sets[1:])
+
+def extract_common_predictions(predictions, indices, common_tuples, include_fvals=True):
+    """
+    Extract rows corresponding to common derivatives.
+    
+    predictions: shape (num_ders, num_funcs) where row 0 is f_vals
+    indices: list of derivative indices for this submodel
+    common_tuples: set of common derivative indices (as tuples)
+    """
+    offset = 1 if include_fvals else 0
+    extract_rows = [0] if include_fvals else []
+    
+    # Build a lookup: tuple -> row index
+    idx_to_row = {to_tuple(idx): i + offset for i, idx in enumerate(indices)}
+    
+    # Extract rows in a consistent order (sorted by the tuple for reproducibility)
+    for common_idx in sorted(common_tuples):
+        extract_rows.append(idx_to_row[common_idx])
+    
+    return predictions[extract_rows]

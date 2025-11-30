@@ -136,8 +136,11 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
         )
 
         cls.params = cls.model.optimize_hyperparameters(
-            optimizer="cobyla",
-            n_restart_optimizer=20
+            optimizer='pso',
+            pop_size=100,
+            n_generations=15,
+            local_opt_every=15,
+            debug=True
         )
         # --- Predict at training points ---
         cls.y_pred_train_full, _ = cls.model.predict(

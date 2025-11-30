@@ -383,6 +383,8 @@ def rbf_kernel_predictions(
         Full RBF kernel matrix with mixed function and derivative entries.
     """
     # --- 1. Initial Setup and Efficient Derivative Extraction ---
+    if calc_cov and not return_deriv:
+        return phi.real
     dh = coti.get_dHelp()
     # Create maps to translate derivative specifications to flat indices
     # --- 2. Determine Block Sizes and Pre-allocate Matrix ---

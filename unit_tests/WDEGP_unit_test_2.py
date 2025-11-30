@@ -225,7 +225,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             
         
             
-            f_plus = self.model.predict(x_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True)
+            f_plus = self.model.predict(x_point.reshape(1, -1), self.params, calc_cov=False, return_submodels=False, return_deriv=True)
             
             fd_deriv_x1 = f_plus[1,0]
             analytic_deriv_x1 = self.submodel_data[1][1][local_idx, 0]
@@ -291,7 +291,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             X_minus[0, 0] -= h
             
              
-            f_plus = self.model.predict(x_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True)
+            f_plus = self.model.predict(x_point.reshape(1, -1), self.params, calc_cov=False, return_submodels=False, return_deriv=True)
             
             fd_deriv_x1 = f_plus[1,0]
             analytic_deriv_x1 = self.submodel_data[2][1][local_idx, 0]
