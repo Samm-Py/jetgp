@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for jetgp/full_gddegp/gddegp_utils.py: 91%</title>
+    <title>Coverage for jetgp/full_gddegp/gddegp_utils.py: 85%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>jetgp/full_gddegp/gddegp_utils.py</b>:
-            <span class="pc_cov">91%</span>
+            <span class="pc_cov">85%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -54,9 +54,9 @@
             </div>
         </aside>
         <h2>
-            <span class="text">233 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">211<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">22<span class="text"> missing</span></button>
+            <span class="text">249 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">212<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">37<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_26708bb638d75ec6_optimizer_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-11-28 23:33 -0600
+            created at 2025-11-30 01:33 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -904,6 +904,59 @@
     <p class="run"><span class="n"><a id="t822" href="#t822">822</a></span><span class="t">            <span class="nam">K</span><span class="op">[</span><span class="nam">row_start</span><span class="op">:</span><span class="nam">row_end</span><span class="op">,</span> <span class="nam">col_start</span><span class="op">:</span><span class="nam">col_end</span><span class="op">]</span> <span class="op">=</span> <span class="nam">submatrix</span><span class="op">.</span><span class="nam">T</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t823" href="#t823">823</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t824" href="#t824">824</a></span><span class="t">    <span class="key">return</span> <span class="nam">K</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t825" href="#t825">825</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t826" href="#t826">826</a></span><span class="t"><span class="key">def</span> <span class="nam">determine_weights</span><span class="op">(</span><span class="nam">diffs_by_dim</span><span class="op">,</span> <span class="nam">diffs_test</span><span class="op">,</span> <span class="nam">length_scales</span><span class="op">,</span> <span class="nam">kernel_func</span><span class="op">,</span> <span class="nam">sigma_n</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t827" href="#t827">827</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t828" href="#t828">828</a></span><span class="t"><span class="str">    Vectorized version: compute interpolation weights for multiple test points at once.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t829" href="#t829">829</a></span><span class="t"><span class="str">    </span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t830" href="#t830">830</a></span><span class="t"><span class="str">    Parameters</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t831" href="#t831">831</a></span><span class="t"><span class="str">    ----------</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t832" href="#t832">832</a></span><span class="t"><span class="str">    diffs_by_dim : list of ndarray</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t833" href="#t833">833</a></span><span class="t"><span class="str">        Pairwise differences between training points (by dimension).</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t834" href="#t834">834</a></span><span class="t"><span class="str">    diffs_test : list of ndarray</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t835" href="#t835">835</a></span><span class="t"><span class="str">        Pairwise differences between test points and training points (by dimension).</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t836" href="#t836">836</a></span><span class="t"><span class="str">        Shape: each array is (n_test, n_train) or similar batch dimension.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t837" href="#t837">837</a></span><span class="t"><span class="str">    length_scales : array-like</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t838" href="#t838">838</a></span><span class="t"><span class="str">        Kernel hyperparameters.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t839" href="#t839">839</a></span><span class="t"><span class="str">    kernel_func : callable</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t840" href="#t840">840</a></span><span class="t"><span class="str">        Kernel function.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t841" href="#t841">841</a></span><span class="t"><span class="str">    sigma_n : float</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t842" href="#t842">842</a></span><span class="t"><span class="str">        Noise parameter (if needed).</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t843" href="#t843">843</a></span><span class="t"><span class="str">    </span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t844" href="#t844">844</a></span><span class="t"><span class="str">    Returns</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t845" href="#t845">845</a></span><span class="t"><span class="str">    -------</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t846" href="#t846">846</a></span><span class="t"><span class="str">    weights_matrix : ndarray of shape (n_test, n_train)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t847" href="#t847">847</a></span><span class="t"><span class="str">        Interpolation weights for each test point.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t848" href="#t848">848</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t849" href="#t849">849</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t850" href="#t850">850</a></span><span class="t">    <span class="com"># Compute K matrix (training covariance) - same for all test points</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t851" href="#t851">851</a></span><span class="t">    <span class="nam">K</span> <span class="op">=</span> <span class="nam">kernel_func</span><span class="op">(</span><span class="nam">diffs_by_dim</span><span class="op">,</span> <span class="nam">length_scales</span><span class="op">)</span><span class="op">.</span><span class="nam">real</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t852" href="#t852">852</a></span><span class="t">    <span class="nam">n_train</span> <span class="op">=</span> <span class="nam">K</span><span class="op">.</span><span class="nam">shape</span><span class="op">[</span><span class="num">0</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t853" href="#t853">853</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t854" href="#t854">854</a></span><span class="t">    <span class="com"># Compute r vectors (test-train covariances) for all test points at once</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t855" href="#t855">855</a></span><span class="t">    <span class="nam">r_all</span> <span class="op">=</span> <span class="nam">kernel_func</span><span class="op">(</span><span class="nam">diffs_test</span><span class="op">,</span> <span class="nam">length_scales</span><span class="op">)</span><span class="op">.</span><span class="nam">real</span>  <span class="com"># shape: (n_test, n_train)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t856" href="#t856">856</a></span><span class="t">    <span class="nam">n_test</span> <span class="op">=</span> <span class="nam">r_all</span><span class="op">.</span><span class="nam">shape</span><span class="op">[</span><span class="num">0</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t857" href="#t857">857</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t858" href="#t858">858</a></span><span class="t">    <span class="com"># Build augmented system matrix M (same for all test points)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t859" href="#t859">859</a></span><span class="t">    <span class="nam">M</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">zeros</span><span class="op">(</span><span class="op">(</span><span class="nam">n_train</span> <span class="op">+</span> <span class="num">1</span><span class="op">,</span> <span class="nam">n_train</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t860" href="#t860">860</a></span><span class="t">    <span class="nam">M</span><span class="op">[</span><span class="op">:</span><span class="nam">n_train</span><span class="op">,</span> <span class="op">:</span><span class="nam">n_train</span><span class="op">]</span> <span class="op">=</span> <span class="nam">K</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t861" href="#t861">861</a></span><span class="t">    <span class="nam">M</span><span class="op">[</span><span class="op">:</span><span class="nam">n_train</span><span class="op">,</span> <span class="nam">n_train</span><span class="op">]</span> <span class="op">=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t862" href="#t862">862</a></span><span class="t">    <span class="nam">M</span><span class="op">[</span><span class="nam">n_train</span><span class="op">,</span> <span class="op">:</span><span class="nam">n_train</span><span class="op">]</span> <span class="op">=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t863" href="#t863">863</a></span><span class="t">    <span class="nam">M</span><span class="op">[</span><span class="nam">n_train</span><span class="op">,</span> <span class="nam">n_train</span><span class="op">]</span> <span class="op">=</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t864" href="#t864">864</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t865" href="#t865">865</a></span><span class="t">    <span class="com"># Build augmented RHS for all test points</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t866" href="#t866">866</a></span><span class="t">    <span class="nam">r_augmented</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">zeros</span><span class="op">(</span><span class="op">(</span><span class="nam">n_test</span><span class="op">,</span> <span class="nam">n_train</span> <span class="op">+</span> <span class="num">1</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t867" href="#t867">867</a></span><span class="t">    <span class="nam">r_augmented</span><span class="op">[</span><span class="op">:</span><span class="op">,</span> <span class="op">:</span><span class="nam">n_train</span><span class="op">]</span> <span class="op">=</span> <span class="nam">r_all</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t868" href="#t868">868</a></span><span class="t">    <span class="nam">r_augmented</span><span class="op">[</span><span class="op">:</span><span class="op">,</span> <span class="nam">n_train</span><span class="op">]</span> <span class="op">=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t869" href="#t869">869</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t870" href="#t870">870</a></span><span class="t">    <span class="com"># Solve for all test points at once: M @ solution.T = r_augmented.T</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t871" href="#t871">871</a></span><span class="t">    <span class="com"># solution.T has shape (n_train+1, n_test)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t872" href="#t872">872</a></span><span class="t">    <span class="nam">solution</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">linalg</span><span class="op">.</span><span class="nam">solve</span><span class="op">(</span><span class="nam">M</span><span class="op">,</span> <span class="nam">r_augmented</span><span class="op">.</span><span class="nam">T</span><span class="op">)</span>  <span class="com"># shape: (n_train+1, n_test)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t873" href="#t873">873</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t874" href="#t874">874</a></span><span class="t">    <span class="com"># Extract weights (exclude Lagrange multiplier)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t875" href="#t875">875</a></span><span class="t">    <span class="nam">weights_matrix</span> <span class="op">=</span> <span class="nam">solution</span><span class="op">[</span><span class="op">:</span><span class="nam">n_train</span><span class="op">,</span> <span class="op">:</span><span class="op">]</span><span class="op">.</span><span class="nam">T</span>  <span class="com"># shape: (n_test, n_train)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t876" href="#t876">876</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t877" href="#t877">877</a></span><span class="t">    <span class="key">return</span> <span class="nam">weights_matrix</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -913,7 +966,7 @@
             <a class="nav" href="z_26708bb638d75ec6_optimizer_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-11-28 23:33 -0600
+            created at 2025-11-30 01:33 -0600
         </p>
     </div>
 </footer>

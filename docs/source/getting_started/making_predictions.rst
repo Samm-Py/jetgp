@@ -210,161 +210,7 @@ Standard interface with full support for function and derivative predictions.
 
 ----
 
-**2. WDEGP (Weighted DEGP)**
-
-Weighted models combine predictions from multiple submodels and provide additional 
-diagnostics for each submodel. Derivative predictions are supported with some restrictions
-(see below).
-
-**Standard prediction:**
-
-::
-
-    y_pred, y_cov = gp.predict(
-        X_test, params, calc_cov=True
-    )
-
-**Returns:**
-
-- ``y_pred`` : array, shape ``(n_test,)``  
-  Weighted combination of all submodel predictions
-  
-- ``y_cov`` : array, shape ``(n_test,)`` (if ``calc_cov=True``)  
-  Predictive variance from weighted model
-
-**With derivative predictions:**
-
-::
-
-    y_pred, y_cov = gp.predict(
-        X_test, params, calc_cov=True, return_deriv=True
-    )
-
-**Additional arguments:**
-
-- ``return_deriv`` – Boolean flag to include derivative predictions (default: ``False``)
-
-**Returns when return_deriv=True:**
-
-- ``y_pred`` : array, shape ``(n_shared_derivs + 1, n_test)``  
-  Row-wise predictions: row 0 is function values, subsequent rows are derivatives.
-  Only includes derivatives that are shared across all submodels (see restrictions below).
-  
-- ``y_cov`` : array, shape ``(n_shared_derivs + 1, n_test)`` (if ``calc_cov=True``)  
-  Row-wise predictive variances corresponding to ``y_pred``
-
-**With submodel outputs:**
-
-::
-
-    y_pred, y_cov, submodel_vals, submodel_cov = gp.predict(
-        X_test, params, calc_cov=True, return_submodels=True
-    )
-
-**Additional arguments:**
-
-- ``return_submodels`` – Boolean flag to return individual submodel predictions (default: ``False``)
-
-**Additional returns when return_submodels=True:**
-
-- ``submodel_vals`` : array, shape ``(n_submodels, n_test)``  
-  Predictions from each individual submodel
-  
-- ``submodel_cov`` : array, shape ``(n_submodels, n_test)`` (if ``calc_cov=True``)  
-  Predictive variances from each individual submodel
-
-**Derivative Prediction Restrictions:**
-
-Derivative predictions in WDEGP have the following limitations:
-
-1. **Shared derivatives only (multi-submodel case):**  
-   For weighted predictions across multiple submodels, derivatives can only be predicted if 
-   they appear in **all** submodels.
-   
-   ::
-   
-       # Example: Two submodels
-       # Submodel 1 has derivatives: [[[1,1]]]              (∂f/∂x only)
-       # Submodel 2 has derivatives: [[[1,1]], [[1,2]]]    (∂f/∂x and ∂²f/∂x²)
-       
-       # Global predictions can ONLY be made for [[1,1]] (∂f/∂x)
-       # [[1,2]] (∂²f/∂x²) is not shared, so it's excluded from weighted predictions
-
-2. **Training derivatives only (single submodel case):**  
-   Predictions can only be made for derivatives that were explicitly included in training.
-   
-   ::
-   
-       # Example: Single submodel with [[1,1]]
-       # Can predict: f(x) and ∂f/∂x
-       # Cannot predict: ∂²f/∂x² (not used in training)
-
-3. **Point-level availability:**  
-   As long as **at least one training point** includes a specific derivative, that derivative
-   can be predicted anywhere in the input space via the GP.
-   
-   ::
-   
-       # Example: 10 training points
-       # Only points [0, 2, 5] have ∂f/∂x information (via derivative_locations)
-       # GP can still predict ∂f/∂x at any test point
-
-4. **Alternative for unavailable derivatives:**  
-   If a desired derivative was not used in training, you can approximate it using finite 
-   differences on the GP function predictions:
-   
-   ::
-   
-       # Approximate ∂²f/∂x² using finite differences
-       h = 1e-5
-       X_test_plus = X_test + h
-       X_test_minus = X_test - h
-       
-       f_plus, _ = gp.predict(X_test_plus, params)
-       f_center, _ = gp.predict(X_test, params)
-       f_minus, _ = gp.predict(X_test_minus, params)
-       
-       d2f_dx2_approx = (f_plus - 2*f_center + f_minus) / (h**2)
-
-**Use case for return_submodels:**
-
-Examining individual submodel predictions is useful for:
-
-- **Visualization:** Understanding how different derivative subsets contribute to final predictions
-- **Diagnostics:** Identifying if certain submodels dominate or perform poorly
-- **Analysis:** Studying sensitivity to different derivative information
-
-**Example:**
-
-::
-
-    # Get weighted prediction and individual submodel contributions
-    y_pred, y_var, submodel_preds, submodel_vars = gp.predict(
-        X_test, params, calc_cov=True, return_submodels=True
-    )
-    
-    # Visualize submodel contributions
-    import matplotlib.pyplot as plt
-    plt.figure(figsize=(10, 6))
-    for i in range(submodel_preds.shape[0]):
-        plt.plot(X_test, submodel_preds[i], alpha=0.3, label=f'Submodel {i+1}')
-    plt.plot(X_test, y_pred, 'k-', linewidth=2, label='Weighted prediction')
-    plt.legend()
-    plt.show()
-    
-    # Get derivative predictions (shared derivatives only)
-    y_with_derivs, cov_with_derivs = gp.predict(
-        X_test, params, calc_cov=True, return_deriv=True
-    )
-    
-    # Extract function and derivative values by row
-    func_pred = y_with_derivs[0, :]      # f(x)
-    deriv1_pred = y_with_derivs[1, :]    # First derivative (if shared)
-    deriv2_pred = y_with_derivs[2, :]    # Second derivative (if shared)
-
-----
-
-**3. DDEGP (Directional Derivative-Enhanced GP)**
+**2. DDEGP (Directional Derivative-Enhanced GP)**
 
 Uses directional derivatives along **global directions** (same direction at all training points).
 
@@ -397,7 +243,7 @@ Uses directional derivatives along **global directions** (same direction at all 
 - ``y_pred`` : array, shape ``(num_derivs + 1, n_test)``  
   Row-wise predictions including function values and directional derivatives.
   Row 0 contains function predictions, subsequent rows contain directional 
-  derivative predictions for each order specified in ``der_indices``.
+  derivative predictions for each direction/order specified in ``der_indices``.
   
 - ``y_var`` : array, shape ``(num_derivs + 1, n_test)`` (if ``calc_cov=True``)  
   Predictive variance for each prediction component
@@ -407,45 +253,78 @@ same global directions used during training.
 
 ----
 
-**4. GDDEGP (Generalized Directional Derivative-Enhanced GP)**
+**3. GDDEGP (Generalized Directional Derivative-Enhanced GP)**
 
 Allows **point-specific directional derivatives** (different directions at each training point).
 
-**Signature:**
+**Function predictions only:**
 
 ::
 
     y_pred, y_var = gp.predict(
-        X_test,params, calc_cov=True, return_deriv=False
+        X_test, params, calc_cov=True, return_deriv=False
     )
 
+**Returns:**
 
-
-- ``y_pred`` : array, shape ``(n_test,)`` when ``return_deriv=False``  
+- ``y_pred`` : array, shape ``(n_test,)``  
   Predicted function values
   
 - ``y_var`` : array, shape ``(n_test,)`` (if ``calc_cov=True``)  
   Predictive variance
 
-**With derivative predictions:**
+**With derivative predictions (requires rays_predict):**
+
+When ``return_deriv=True``, you must provide ``rays_predict`` specifying the directional 
+vectors at each test point:
 
 ::
 
     y_pred, y_var = gp.predict(
-        X_test,  params, rays_predict = rays_pred, calc_cov=True, return_deriv=True
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True
     )
+
+**Additional argument:**
+
+- ``rays_predict`` : list of arrays  
+  Required when ``return_deriv=True``. A list of 2D arrays specifying directional 
+  vectors at each test point. Structure: ``rays_predict[direction_idx]`` has shape 
+  ``(d, n_test)`` where column ``j`` is the direction vector for test point ``j``.
 
 **Returns:**
 
 - ``y_pred`` : array, shape ``(num_derivs + 1, n_test)``  
   Row-wise predictions including function values and directional derivatives 
-  along the directions specified in ``rays_pred``
+  along the directions specified in ``rays_predict``
   
 - ``y_var`` : array, shape ``(num_derivs + 1, n_test)`` (if ``calc_cov=True``)  
   Predictive variance for each prediction component
 
-When ``return_deriv=True``, returns predictions for directional derivatives along 
-the directions specified in ``rays_pred``.
+**Flexibility of GDDEGP Predictions:**
+
+A key advantage of GDDEGP is that you can predict directional derivatives in **any direction** 
+at test points, not just the directions used during training. The only restriction is that the 
+**derivative order** must have been included in training.
+
+::
+
+    # Training used gradient-aligned directions
+    # But predictions can use ANY direction:
+    
+    # Predict along x-axis
+    rays_x = np.array([[1.0] * n_test, [0.0] * n_test])
+    y_pred_x, _ = gp.predict(X_test, params, rays_predict=[rays_x], return_deriv=True)
+    
+    # Predict along y-axis  
+    rays_y = np.array([[0.0] * n_test, [1.0] * n_test])
+    y_pred_y, _ = gp.predict(X_test, params, rays_predict=[rays_y], return_deriv=True)
+    
+    # Predict along 45° diagonal
+    rays_diag = np.array([[0.707] * n_test, [0.707] * n_test])
+    y_pred_diag, _ = gp.predict(X_test, params, rays_predict=[rays_diag], return_deriv=True)
 
 **Example:**
 
@@ -455,42 +334,315 @@ the directions specified in ``rays_pred``.
     
     # Define test points
     X_test = np.array([[0.5, 0.5], [1.0, 1.0], [1.5, 1.5]])
+    n_test = len(X_test)
     
     # Define directional vectors for predictions at each test point
-    rays_pred = [np.array([
-        [1.0, 0.0],       # Direction at first test point
-        [0.0, 1.0],       # Direction at second test point
-        [0.707, 0.707]    # Direction at third test point (normalized)
-    ])]
+    # rays_predict[direction_idx] has shape (d, n_test)
+    rays_dir1 = np.array([
+        [1.0, 0.707, 0.0],      # x-components for 3 test points
+        [0.0, 0.707, 1.0]       # y-components for 3 test points
+    ])  # Shape: (2, 3)
     
-    # Make predictions (rays_pred required even with return_deriv=False)
+    rays_predict = [rays_dir1]  # List with one direction
+    
+    # Function predictions only (no rays_predict needed)
     y_pred, y_var = gp.predict(
-        X_test, params, rays_predict = rays_pred, calc_cov=True, return_deriv=False
+        X_test, params, calc_cov=True, return_deriv=False
     )
+    
+    # Function + derivative predictions (rays_predict required)
+    y_pred, y_var = gp.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True
+    )
+    
+    # Extract components
+    func_pred = y_pred[0, :]      # Function values
+    deriv1_pred = y_pred[1, :]    # Directional derivative along rays_dir1
 
-
-**5. WDDEGP (Weighted Directional Derivative-Enhanced GP)**
-
-Combines weighted submodel framework with directional derivatives.
-
-**Signature** (similar to GDDEGP but with submodel options):
+**Example with multiple directions:**
 
 ::
 
+    # Two directional derivatives at each test point
+    rays_dir1 = np.zeros((2, n_test))  # Gradient direction
+    rays_dir2 = np.zeros((2, n_test))  # Perpendicular direction
+    
+    for i in range(n_test):
+        grad = 2 * X_test[i]  # For f = x² + y²
+        grad_norm = np.linalg.norm(grad)
+        rays_dir1[:, i] = grad / grad_norm
+        rays_dir2[:, i] = [-rays_dir1[1, i], rays_dir1[0, i]]
+    
+    rays_predict = [rays_dir1, rays_dir2]
+    
     y_pred, y_var = gp.predict(
-        X_test, rays_pred, params, calc_cov=True, return_submodels=False
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True
     )
+    
+    func_pred = y_pred[0, :]      # Function values
+    deriv1_pred = y_pred[1, :]    # Derivative along gradient
+    deriv2_pred = y_pred[2, :]    # Derivative perpendicular to gradient
+
+----
+
+**4. WDEGP (Weighted Derivative-Enhanced GP)**
+
+Weighted models combine predictions from multiple submodels and provide additional 
+diagnostics for each submodel. WDEGP supports three submodel types via the 
+``submodel_type`` parameter: ``'degp'``, ``'ddegp'``, or ``'gddegp'``.
+
+**Standard prediction:**
+
+::
+
+    y_pred, y_cov = gp.predict(
+        X_test, params, calc_cov=True
+    )
+
+**Returns:**
+
+- ``y_pred`` : array, shape ``(n_test,)``  
+  Weighted combination of all submodel predictions
+  
+- ``y_cov`` : array, shape ``(n_test,)`` (if ``calc_cov=True``)  
+  Predictive variance from weighted model
+
+**With derivative predictions:**
+
+::
+
+    y_pred, y_cov = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True
+    )
+
+**Returns when return_deriv=True:**
+
+- ``y_pred`` : array, shape ``(n_shared_derivs + 1, n_test)``  
+  Row-wise predictions: row 0 is function values, subsequent rows are derivatives.
+  Only includes derivatives that are shared across all submodels (see restrictions below).
+  
+- ``y_cov`` : array, shape ``(n_shared_derivs + 1, n_test)`` (if ``calc_cov=True``)  
+  Row-wise predictive variances corresponding to ``y_pred``
 
 **With submodel outputs:**
 
 ::
 
-    y_pred, y_var, submodel_vals, submodel_cov = gp.predict(
-        X_test, rays_pred, params, calc_cov=True, return_submodels=True
+    y_pred, y_cov, submodel_vals, submodel_cov = gp.predict(
+        X_test, params, calc_cov=True, return_submodels=True
     )
 
-Similar to WDEGP, setting ``return_submodels=True`` provides individual submodel predictions 
-for diagnostic and visualization purposes.
+**Additional arguments:**
+
+- ``return_submodels`` – Boolean flag to return individual submodel predictions (default: ``False``)
+
+**Additional returns when return_submodels=True:**
+
+- ``submodel_vals`` : list of arrays  
+  Predictions from each individual submodel
+  
+- ``submodel_cov`` : list of arrays (if ``calc_cov=True``)  
+  Predictive variances from each individual submodel
+
+**WDEGP with GDDEGP Submodels (rays_predict required for derivatives):**
+
+When using ``submodel_type='gddegp'`` and ``return_deriv=True``, you must provide
+``rays_predict`` specifying directional vectors at each test point:
+
+::
+
+    # WDEGP with GDDEGP submodels - derivative predictions
+    y_pred, y_cov = gp.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True
+    )
+
+The ``rays_predict`` structure is the same as for standalone GDDEGP:
+``rays_predict[direction_idx]`` has shape ``(d, n_test)``.
+
+**Example with GDDEGP submodels:**
+
+::
+
+    # Build rays_predict for all test points
+    rays_dir1 = np.zeros((2, n_test))
+    rays_dir2 = np.zeros((2, n_test))
+    
+    for i in range(n_test):
+        grad = 2 * X_test[i]
+        grad_norm = np.linalg.norm(grad)
+        if grad_norm > 1e-10:
+            rays_dir1[:, i] = grad / grad_norm
+            rays_dir2[:, i] = [-rays_dir1[1, i], rays_dir1[0, i]]
+        else:
+            rays_dir1[:, i] = [1, 0]
+            rays_dir2[:, i] = [0, 1]
+    
+    rays_predict = [rays_dir1, rays_dir2]
+    
+    # Predict with derivatives
+    y_pred, y_cov = gp.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True
+    )
+
+**Derivative Prediction Restrictions:**
+
+Derivative predictions in WDEGP have different restrictions depending on the submodel type.
+
+**For DEGP and DDEGP submodels (direction-specific):**
+
+Derivatives can only be predicted if they appear in **all** submodels, because predictions 
+are tied to specific coordinate directions (DEGP) or global ray directions (DDEGP).
+
+::
+
+    # Example: Two DEGP submodels
+    # Submodel 1 has derivatives: [[[1,1]]]              (∂f/∂x only)
+    # Submodel 2 has derivatives: [[[1,1]], [[2,1]]]    (∂f/∂x and ∂f/∂y)
+    
+    # Global predictions can ONLY be made for [[1,1]] (∂f/∂x)
+    # [[2,1]] (∂f/∂y) is not shared, so it's excluded from weighted predictions
+
+**For GDDEGP submodels (order-specific):**
+
+WDEGP with GDDEGP submodels is a special case. Since you can specify **any direction** 
+via ``rays_predict``, the restriction is on **derivative order**, not direction.
+
+::
+
+    # Example: Two GDDEGP submodels
+    # Submodel 1 trains on: 1st-order directional derivatives only
+    # Submodel 2 trains on: 1st-order AND 2nd-order directional derivatives
+    
+    # Shared order: 1st-order only
+    # You can predict 1st-order directional derivatives in ANY direction
+    # You CANNOT predict 2nd-order derivatives (not shared across all submodels)
+
+This means WDEGP with GDDEGP submodels offers maximum flexibility for derivative predictions:
+
+- **Direction flexibility:** Predict directional derivatives along any direction you choose
+- **Order restriction:** Only derivative orders present in ALL submodels can be predicted
+
+::
+
+    # Training used different gradient-aligned directions in each submodel
+    # But at prediction time, you can use completely different directions:
+    
+    # Predict 1st-order derivatives along coordinate axes
+    rays_x = np.array([[1.0] * n_test, [0.0] * n_test])
+    rays_y = np.array([[0.0] * n_test, [1.0] * n_test])
+    
+    y_pred, _ = gp.predict(
+        X_test, params,
+        rays_predict=[rays_x, rays_y],  # Any directions work!
+        return_deriv=True
+    )
+    
+    # This works because 1st-order is shared across submodels
+    # The specific directions don't need to match training
+
+**Additional restrictions (all submodel types):**
+
+1. **Training derivatives only:**  
+   Predictions can only be made for derivative orders that were explicitly included in training.
+   
+   ::
+   
+       # Example: Single submodel with 1st-order derivatives
+       # Can predict: f(x) and 1st-order derivatives
+       # Cannot predict: 2nd-order derivatives (not used in training)
+
+2. **Point-level availability:**  
+   As long as **at least one training point** includes a specific derivative order, that order
+   can be predicted anywhere in the input space via the GP.
+   
+   ::
+   
+       # Example: 10 training points
+       # Only points [0, 2, 5] have 1st-order derivative information
+       # GP can still predict 1st-order derivatives at any test point
+
+3. **Alternative for unavailable derivatives:**  
+   If a desired derivative order was not used in training, you can approximate it using finite 
+   differences on the GP function predictions:
+   
+   ::
+   
+       # Approximate 2nd-order derivative using finite differences
+       h = 1e-5
+       X_test_plus = X_test + h
+       X_test_minus = X_test - h
+       
+       f_plus = gp.predict(X_test_plus, params, calc_cov=False)
+       f_center = gp.predict(X_test, params, calc_cov=False)
+       f_minus = gp.predict(X_test_minus, params, calc_cov=False)
+       
+       d2f_approx = (f_plus - 2*f_center + f_minus) / (h**2)
+
+**Summary of WDEGP Derivative Restrictions:**
+
+.. list-table:: WDEGP derivative prediction restrictions by submodel type
+   :header-rows: 1
+   :widths: 20 40 40
+
+   * - Submodel Type
+     - Restriction Type
+     - What Can Be Predicted
+   * - ``'degp'``
+     - Direction-specific
+     - Only coordinate derivatives (∂f/∂xᵢ) shared by all submodels
+   * - ``'ddegp'``
+     - Direction-specific
+     - Only global ray directions shared by all submodels
+   * - ``'gddegp'``
+     - Order-specific
+     - Any direction, but only orders shared by all submodels
+
+**Use case for return_submodels:**
+
+Examining individual submodel predictions is useful for:
+
+- **Visualization:** Understanding how different derivative subsets contribute to final predictions
+- **Diagnostics:** Identifying if certain submodels dominate or perform poorly
+- **Analysis:** Studying sensitivity to different derivative information
+
+**Example:**
+
+::
+
+    # Get weighted prediction and individual submodel contributions
+    y_pred, y_var, submodel_preds, submodel_vars = gp.predict(
+        X_test, params, calc_cov=True, return_submodels=True
+    )
+    
+    # Visualize submodel contributions
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(10, 6))
+    for i, sm_pred in enumerate(submodel_preds):
+        plt.plot(X_test, sm_pred.flatten(), alpha=0.3, label=f'Submodel {i+1}')
+    plt.plot(X_test, y_pred.flatten(), 'k-', linewidth=2, label='Weighted prediction')
+    plt.legend()
+    plt.show()
+    
+    # Get derivative predictions (shared derivatives/orders only)
+    y_with_derivs, cov_with_derivs = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True
+    )
+    
+    # Extract function and derivative values by row
+    func_pred = y_with_derivs[0, :]      # f(x)
+    deriv1_pred = y_with_derivs[1, :]    # First derivative (if shared)
 
 ------------------------------------------------------------
 
@@ -630,20 +782,35 @@ Can occur when normalization is disabled and data scales vary widely.
 - Reduce training set size if feasible (consider sparse GP methods)
 - Disable derivative predictions if not required (``return_deriv=False``)
 
-**Issue 5: GDDEGP requires rays_pred but I only want function predictions**
+**Issue 5: GDDEGP derivative predictions require rays_predict**
+
+When using GDDEGP with ``return_deriv=True``, you must provide ``rays_predict``.
 
 **Solution:**
 
-- ``rays_pred`` must always be provided for GDDEGP, even when ``return_deriv=False``
-- Provide arbitrary directional vectors if derivative predictions are not needed:
-  
-  ::
-  
-      # Dummy rays (e.g., unit vectors in first dimension)
-      rays_pred = np.zeros((X_test.shape[0], X_test.shape[1]))
-      rays_pred[:, 0] = 1.0
-      
-      y_pred = gp.predict(X_test, rays_pred, params, calc_cov=False, return_deriv=False)
+::
+
+    # Define directional vectors at each test point
+    # rays_predict[direction_idx] has shape (d, n_test)
+    rays_dir1 = np.zeros((d, n_test))
+    # ... populate with appropriate directions ...
+    
+    rays_predict = [rays_dir1]  # Add more if multiple directions
+    
+    y_pred, y_var = gp.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True
+    )
+
+**Note:** ``rays_predict`` is only required when ``return_deriv=True``. For function-only 
+predictions, simply omit it:
+
+::
+
+    # Function predictions only - no rays_predict needed
+    y_pred, y_var = gp.predict(X_test, params, calc_cov=True, return_deriv=False)
 
 **Issue 6: Understanding the row-wise derivative output format**
 
@@ -662,6 +829,39 @@ When ``return_deriv=True``, predictions are returned with shape ``(num_derivs + 
       deriv1_pred = y_pred[1, :]   # First derivative component
       deriv2_pred = y_pred[2, :]   # Second derivative component
       # And so on for each derivative component
+
+**Issue 7: WDEGP derivative predictions missing some derivatives**
+
+For DEGP/DDEGP submodels, WDEGP can only predict derivatives that are **shared across all submodels**.
+For GDDEGP submodels, WDEGP can only predict derivative **orders** shared across all submodels.
+
+**Solution:**
+
+- For DEGP/DDEGP: Check that all submodels include the desired derivative in their ``der_indices``
+- For GDDEGP: Check that all submodels include the desired derivative order
+- If a derivative/order is only in some submodels, it cannot be predicted globally
+- Consider restructuring submodels to share common derivatives or orders
+
+**Issue 8: WDEGP with GDDEGP - can I predict in different directions than training?**
+
+Yes! This is a key advantage of GDDEGP submodels.
+
+**Solution:**
+
+::
+
+    # Training used gradient-aligned directions, but you can predict ANY direction:
+    
+    # Predict along x-axis (even if training never used this direction)
+    rays_x = np.array([[1.0] * n_test, [0.0] * n_test])
+    
+    y_pred, _ = gp.predict(
+        X_test, params,
+        rays_predict=[rays_x],
+        return_deriv=True
+    )
+    
+    # Works as long as the derivative ORDER was used in training
 
 ------------------------------------------------------------
 
@@ -729,13 +929,21 @@ Best Practices
        # Each derivative component (rows 1, 2, ...)
        deriv_i = y_pred[i + 1, :]
 
-10. **For GDDEGP**, always normalize directional vectors:
+10. **For GDDEGP/WDEGP-GDDEGP with derivative predictions**, always normalize directional vectors:
     
     ::
     
-        rays_pred = rays_pred / np.linalg.norm(rays_pred, axis=1, keepdims=True)
+        for i in range(n_test):
+            rays_dir1[:, i] = rays_dir1[:, i] / np.linalg.norm(rays_dir1[:, i])
 
-11. **Profile prediction performance** for large-scale applications and optimize accordingly
+11. **Leverage GDDEGP flexibility** - predict directional derivatives in any direction:
+    
+    ::
+    
+        # Don't feel constrained to training directions
+        # Use whatever directions are most meaningful for your analysis
+
+12. **Profile prediction performance** for large-scale applications and optimize accordingly
 
 ------------------------------------------------------------
 
@@ -770,6 +978,24 @@ JetGP provides a flexible and powerful prediction interface across all model var
 - Row 2: Second derivative component
 - ... (following order in ``der_indices``)
 
+**Model-Specific Notes:**
+
++----------------+-------------------------------------------+------------------------------+
+| Model          | ``rays_predict`` Required                 | Derivative Restriction       |
++================+===========================================+==============================+
+| DEGP           | N/A                                       | Specific coordinates         |
++----------------+-------------------------------------------+------------------------------+
+| DDEGP          | N/A (uses global ``rays`` from training)  | Specific global directions   |
++----------------+-------------------------------------------+------------------------------+
+| GDDEGP         | Only when ``return_deriv=True``           | Any direction, trained order |
++----------------+-------------------------------------------+------------------------------+
+| WDEGP (DEGP)   | N/A                                       | Shared coordinates only      |
++----------------+-------------------------------------------+------------------------------+
+| WDEGP (DDEGP)  | N/A                                       | Shared directions only       |
++----------------+-------------------------------------------+------------------------------+
+| WDEGP (GDDEGP) | Only when ``return_deriv=True``           | Any direction, shared order  |
++----------------+-------------------------------------------+------------------------------+
+
 **Best Practices:**
 
 1. Always use ``normalize=True`` during model initialization
@@ -778,8 +1004,9 @@ JetGP provides a flexible and powerful prediction interface across all model var
 4. Visualize predictions with confidence intervals
 5. Extract derivative components using row indexing when ``return_deriv=True``
 6. Use ``return_submodels=True`` for weighted models to diagnose performance
-7. Normalize directional vectors in GDDEGP/WDDEGP
-8. Batch large prediction sets for memory efficiency
+7. Normalize directional vectors in GDDEGP when using ``rays_predict``
+8. Leverage GDDEGP/WDEGP-GDDEGP flexibility to predict in any direction
+9. Batch large prediction sets for memory efficiency
 
 **Typical Workflow:**
 

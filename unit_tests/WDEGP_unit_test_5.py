@@ -91,6 +91,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             [cls.rays_dir1_sm2, cls.rays_dir2_sm2]   # SM2 rays
         ]
         
+        
+        #TODO fix this!
         # rays_predict for prediction at all training points
         cls.rays_predict = [cls.rays_dir1_all, cls.rays_dir2_all]
         

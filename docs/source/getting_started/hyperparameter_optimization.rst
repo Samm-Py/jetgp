@@ -15,7 +15,7 @@ population-based metaheuristics, allowing users to choose the most appropriate a
 Basic Usage
 -----------
 
-After initializing a GP model (e.g., ``degp``, ``wdegp``, ``ddegp``, etc.), 
+After initializing a GP model (DEGP, DDEGP, GDDEGP, or WDEGP), 
 hyperparameters are optimized by calling the ``optimize_hyperparameters()`` method:
 
 **Example:**
@@ -37,6 +37,65 @@ hyperparameters are optimized by calling the ``optimize_hyperparameters()`` meth
 The method returns the optimized hyperparameters, which are automatically stored within the model
 and used for subsequent predictions.
 
+For model initialization details, see :doc:`initialization`.
+
+------------------------------------------------------------
+
+What is Optimized
+-----------------
+
+The hyperparameters optimized depend on the kernel and kernel type selected during model initialization.
+
+**Common hyperparameters:**
+
+- **Signal variance** (:math:`\sigma_f^2`): Controls the overall magnitude of function variation.
+  Larger values indicate greater function amplitude.
+
+- **Length scale(s)** (:math:`\ell` or :math:`\ell_j`): Controls how quickly correlation decays with distance.
+  Smaller length scales allow the model to capture more rapid variation.
+  
+  - *Isotropic kernels*: Single :math:`\ell` shared across all input dimensions
+  - *Anisotropic kernels*: Separate :math:`\ell_j` for each input dimension, allowing different 
+    correlation structures along different axes
+
+- **Noise variance** (:math:`\sigma_n^2`): Models observation noise or measurement uncertainty.
+  Set to a small value (or fixed) for noise-free simulations.
+
+**Kernel-specific hyperparameters:**
+
+- **Rational Quadratic (RQ)**: Shape parameter :math:`\alpha` controlling the mixture of length scales
+- **Matern**: Smoothness parameter :math:`\nu` (typically fixed via ``smoothness_parameter``)
+- **SineExp**: Period parameters :math:`p_j` for periodic structure
+
+**Number of hyperparameters:**
+
+.. list-table:: Hyperparameter count by kernel configuration
+   :header-rows: 1
+   :widths: 30 35 35
+
+   * - Kernel
+     - Isotropic
+     - Anisotropic
+   * - SE (RBF)
+     - 3 (:math:`\sigma_f^2, \ell, \sigma_n^2`)
+     - :math:`2 + d` (:math:`\sigma_f^2, \ell_1, \ldots, \ell_d, \sigma_n^2`)
+   * - RQ
+     - 4 (:math:`\sigma_f^2, \ell, \alpha, \sigma_n^2`)
+     - :math:`3 + d`
+   * - Matern
+     - 3 (ν typically fixed)
+     - :math:`2 + d`
+   * - SineExp
+     - :math:`3 + d` (includes periods)
+     - :math:`2 + 2d`
+
+where :math:`d` is the input dimension (``n_bases``).
+
+.. note::
+   For **WDEGP** models, hyperparameters are **shared across all submodels**.
+   The optimization maximizes the combined log marginal likelihood, ensuring
+   consistent covariance structure across the weighted ensemble.
+
 ------------------------------------------------------------
 
 Common Arguments
@@ -56,9 +115,9 @@ Available options:
 Number of random restarts for the optimization procedure.  
 Multiple restarts help avoid local optima by initializing the search from different starting points.
 
-- **For gradient-based methods** (``lbfgs``, ``powell``, ``cobyla``): Each restart begins from a 
-  randomly sampled initial hyperparameter configuration (unless ``x0`` is provided for the first restart). 
-  The best result across all restarts is returned.
+- **For gradient-based and derivative-free methods** (``lbfgs``, ``powell``, ``cobyla``): Each restart 
+  begins from a randomly sampled initial hyperparameter configuration (unless ``x0`` is provided for 
+  the first restart). The best result across all restarts is returned.
 - **For population-based methods** (``pso``, ``jade``): This parameter is **ignored**. These methods 
   perform a single optimization run using their population-based search strategy, which inherently 
   explores multiple regions of the search space.
@@ -66,7 +125,7 @@ Multiple restarts help avoid local optima by initializing the search from differ
 **Default:** ``10``
 
 **x0** (optional)  
-Initial guess for hyperparameters, used only for gradient-based methods (``lbfgs``, ``powell``, ``cobyla``).  
+Initial guess for hyperparameters, used only for restart-based methods (``lbfgs``, ``powell``, ``cobyla``).  
 If provided, the first optimization run starts from this point, while subsequent restarts use random initialization.  
 Population-based methods (``pso``, ``jade``) use ``initial_positions`` instead.
 
@@ -87,7 +146,7 @@ A population-based metaheuristic that simulates social behavior of particles sea
 Each particle represents a candidate solution that moves through the search space, influenced by 
 its own best position and the global best position found by the swarm.
 
-Unlike gradient-based methods, PSO performs a **single optimization run** without restarts, 
+Unlike restart-based methods, PSO performs a **single optimization run** without restarts, 
 as the population naturally explores multiple regions simultaneously.
 
 **Recommended for:**  
@@ -352,6 +411,47 @@ and avoid local optima.
 
 ------------------------------------------------------------
 
+Diagnosing Optimization Quality
+-------------------------------
+
+Successful hyperparameter optimization is critical for accurate GP predictions.
+Here are signs to look for when evaluating optimization results.
+
+**Signs of successful optimization:**
+
+- Consistent log-likelihood values across multiple restarts (for restart-based methods)
+- Log-likelihood stabilizes before reaching maximum iterations (for population-based methods)
+- Predictions show reasonable uncertainty (not too wide or too narrow)
+- Length scales are within a reasonable range relative to the data spread
+- Hyperparameters do not hit bounds
+
+**Signs of potential issues:**
+
+- Very different log-likelihood values across restarts (indicates multiple local optima)
+- Hyperparameters frequently hitting bounds (may need to adjust bound settings)
+- Very large length scales (:math:`\ell \gg` data range): Model is underfitting, treating data as nearly constant
+- Very small length scales (:math:`\ell \ll` typical point spacing): Model may be overfitting or capturing noise
+- Very small noise variance with noisy data: Model may be interpolating noise
+- Optimization fails to converge within iteration limits
+
+**Troubleshooting strategies:**
+
+1. **Multiple local optima:** Increase ``n_restart_optimizer`` for restart-based methods,
+   or switch to population-based methods (``pso``, ``jade``)
+
+2. **Slow convergence:** For population-based methods, increase ``n_generations`` or ``pop_size``.
+   Enable hybrid refinement with ``local_opt_every=15-25``
+
+3. **Hitting bounds:** Check if data is properly normalized (``normalize=True``).
+   Consider if the kernel choice is appropriate for the problem
+
+4. **Unreasonable length scales:** Verify data scaling and consider using ``normalize=True``.
+   Check if the number of training points is sufficient
+
+5. **Poor predictions despite convergence:** Try a different kernel or kernel type.
+   Consider whether derivative information is helping or introducing numerical issues
+
+------------------------------------------------------------
 
 Notes
 -----
@@ -360,7 +460,12 @@ Notes
 - Hyperparameter bounds are typically set automatically based on the data scale and problem characteristics.
 - The optimization is performed in the normalized space when ``normalize=True``, 
   with hyperparameters automatically transformed back to the original scale.
-- **Gradient-based methods** (``lbfgs``, ``powell``, ``cobyla``): 
+- **Gradient-based methods** (``lbfgs``): 
+  - Use gradients for efficient convergence on smooth surfaces
+  - Use multiple restarts controlled by ``n_restart_optimizer``
+  - First restart uses ``x0`` if provided; subsequent restarts use random initialization
+- **Derivative-free methods** (``powell``, ``cobyla``): 
+  - Do not require gradient information
   - Use multiple restarts controlled by ``n_restart_optimizer``
   - First restart uses ``x0`` if provided; subsequent restarts use random initialization
 - **Population-based methods** (``pso``, ``jade``): 
@@ -387,10 +492,14 @@ with different optimizers while maintaining consistent model behavior.
 
 **Key distinctions:**
 
-- Gradient-based methods use **multiple restarts** to explore different starting points
-- Population-based methods use **single runs** with inherent parallel exploration
+- Gradient-based methods (``lbfgs``) use gradients for efficient local convergence
+- Derivative-free methods (``powell``, ``cobyla``) work without gradient information
+- Both gradient-based and derivative-free methods use **multiple restarts** to explore different starting points
+- Population-based methods (``pso``, ``jade``) use **single runs** with inherent parallel exploration
 - The ``local_opt_every`` parameter in PSO and JADE enables **hybrid optimization**, 
   combining global exploration with gradient-based local refinement for improved performance
 
 For most applications, starting with ``lbfgs`` and falling back to hybrid ``pso`` or ``jade`` 
 for difficult cases provides a robust and efficient optimization strategy.
+
+For making predictions with optimized parameters, see :doc:`predictions`.

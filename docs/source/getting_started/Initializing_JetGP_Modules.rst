@@ -27,7 +27,7 @@ The following parameters appear across most or all JetGP modules:
   
   - **Type:** ``int``
   - **Description:** Specifies the highest-order derivatives included in the model.
-    For weighted models (WDEGP, WDDEGP), different submodels may use different derivative orders,
+    For weighted models (WDEGP), different submodels may use different derivative orders,
     but ``n_order`` represents the maximum across all submodels.
 
 **n_bases**
@@ -74,7 +74,7 @@ This argument is a **list of lists**, where each sublist contains the training p
 for the corresponding derivative. The structure must match ``der_indices`` exactly—one entry 
 per derivative. Indices can be **non-contiguous** (e.g., ``[0, 2, 5, 7]`` is valid).
 
-For **weighted models** (WDEGP, WDDEGP), an additional outer list is added for submodels:
+For **weighted models** (WDEGP), an additional outer list is added for submodels:
 ``derivative_locations[submodel_idx][deriv_idx] = [list of point indices]``.
 
 Examples:
@@ -112,43 +112,55 @@ Examples:
 **WDEGP – 2 submodels with different derivative coverage**  
 ::
 
-  # Submodel 0: boundary points with 1st order only
-  # Submodel 1: interior points with 1st and 2nd order
-  derivative_specs = [
-      [
-          [[[1, 1]], [[2, 1]]]   # Submodel 0: 1st order derivatives
-      ],
-      [
-          [[[1, 1]], [[2, 1]]],                    # Submodel 1: 1st order
-          [[[1, 2]], [[1,1],[2,1]], [[2, 2]]]      # Submodel 1: 2nd order
-      ]
+  # Submodel 0: even-indexed points
+  # Submodel 1: odd-indexed points
+  # IMPORTANT: Derivative locations must be DISJOINT across submodels!
+  
+  der_indices = [
+      [[[[1, 1]], [[2, 1]]]],   # Submodel 0: 1st order derivatives
+      [[[[1, 1]], [[2, 1]]]]    # Submodel 1: 1st order derivatives
   ]
+  
   derivative_locations = [
-      # Submodel 0: 1 derivative type
+      # Submodel 0: derivatives at even indices
       [
-          [0, 1, 2, 3, 4, 5, 6, 7]   # 1st order at boundary points
+          [0, 2, 4, 6, 8],   # ∂f/∂x₁ at even points
+          [0, 2, 4, 6, 8]    # ∂f/∂x₂ at even points
       ],
-      # Submodel 1: 2 derivative types
+      # Submodel 1: derivatives at odd indices (DISJOINT from Submodel 0)
       [
-          [8, 9, 10, 11, 12],        # 1st order at interior points
-          [8, 9, 10, 11, 12]         # 2nd order at interior points
+          [1, 3, 5, 7, 9],   # ∂f/∂x₁ at odd points
+          [1, 3, 5, 7, 9]    # ∂f/∂x₂ at odd points
       ]
   ]
 
-**WDEGP – single submodel, heterogeneous derivative coverage**  
+**WDEGP – submodels with different derivative orders**  
 ::
 
-  # Boundary: 1st order only, Interior: 1st and 2nd order
-  derivative_specs = [
-      [
-          [[[1, 1]], [[2, 1]]],  # 1st order derivatives
-          [[[1, 2]], [[2, 2]]]   # 2nd order derivatives
-      ]
+  # Submodel 0: boundary points with 1st order only
+  # Submodel 1: interior points with 1st and 2nd order
+  # IMPORTANT: Derivative locations must be DISJOINT across submodels!
+  
+  der_indices = [
+      # Submodel 0: 1st order only
+      [[[[1, 1]], [[2, 1]]]],
+      # Submodel 1: 1st and 2nd order
+      [[[[1, 1]], [[2, 1]]], [[[1, 2]], [[1,1],[2,1]], [[2, 2]]]]
   ]
+  
   derivative_locations = [
+      # Submodel 0: boundary points
       [
-          [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],  # 1st order at all points
-          [8, 9, 10, 11, 12]                            # 2nd order at interior only
+          [0, 1, 2, 6, 7, 8],   # 1st order at boundary
+          [0, 1, 2, 6, 7, 8]
+      ],
+      # Submodel 1: interior points (DISJOINT from Submodel 0)
+      [
+          [3, 4, 5],            # 1st order at interior
+          [3, 4, 5],
+          [3, 4, 5],            # 2nd order at interior
+          [3, 4, 5],
+          [3, 4, 5]
       ]
   ]
 
@@ -222,7 +234,7 @@ Module-Specific Initialization
     
     gp = degp(
         X_train,
-        y_train_list,
+        y_train,
         n_order,
         n_bases,
         der_indices,
@@ -234,7 +246,7 @@ Module-Specific Initialization
 
 **Module-Specific Parameters:**
 
-**y_train_list**
+**y_train**
   Training observations for function and derivatives.
   
   - **Type:** ``list`` of ``numpy.ndarray``
@@ -246,10 +258,10 @@ Module-Specific Initialization
   
     .. code-block:: python
     
-        y_train_list = [
-            y_vals,      # shape: (num_training_points,)
-            dy_dx1,      # shape: (num_training_points,)
-            dy_dx2,      # shape: (num_training_points,)
+        y_train = [
+            y_vals.reshape(-1, 1),      # shape: (num_training_points, 1)
+            dy_dx1.reshape(-1, 1),      # shape: (num_training_points, 1)
+            dy_dx2.reshape(-1, 1),      # shape: (num_training_points, 1)
         ]
 
   - **Example structure (derivatives at subset of points):**
@@ -257,10 +269,10 @@ Module-Specific Initialization
     .. code-block:: python
     
         # derivative_locations = [[2, 3, 4, 5], [2, 3, 4, 5]]
-        y_train_list = [
-            y_vals,      # shape: (num_training_points,) - all 6 points
-            dy_dx1,      # shape: (4,) - only at points 2, 3, 4, 5
-            dy_dx2,      # shape: (4,) - only at points 2, 3, 4, 5
+        y_train = [
+            y_vals.reshape(-1, 1),                      # shape: (6, 1) - all points
+            dy_dx1[derivative_locations[0]].reshape(-1, 1),  # shape: (4, 1) - points 2,3,4,5
+            dy_dx2[derivative_locations[1]].reshape(-1, 1),  # shape: (4, 1) - points 2,3,4,5
         ]
 
 **derivative_locations**
@@ -290,145 +302,14 @@ Module-Specific Initialization
 **Usage Notes:**
 
 - DEGP incorporates specified derivatives at the training points defined by ``derivative_locations``.
-- The first element of ``y_train_list`` (function values) always has length ``num_training_points``.
-- Each subsequent array in ``y_train_list`` must have length matching the corresponding entry
+- The first element of ``y_train`` (function values) always has length ``num_training_points``.
+- Each subsequent array in ``y_train`` must have length matching the corresponding entry
   in ``derivative_locations``.
-- The correspondence between ``y_train_list``, ``der_indices``, and ``derivative_locations`` must be exact.
-------------------------------------------------------------
+- The correspondence between ``y_train``, ``der_indices``, and ``derivative_locations`` must be exact.
 
 ------------------------------------------------------------
 
-2. WDEGP (Weighted Derivative-Enhanced Gaussian Process)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**Location:** ``wdegp/wdegp.py``
-
-**Signature:**
-
-.. code-block:: python
-
-    from jetgp.wdegp.wdegp import wdegp
-    
-    gp = wdegp(
-        X_train,
-        submodel_data,
-        n_order,
-        n_bases,
-        derivative_locations,
-        derivative_specifications,
-        normalize=True,
-        kernel="SE",
-        kernel_type="anisotropic"
-    )
-
-**Module-Specific Parameters:**
-
-**submodel_data**
-  Training data for each submodel.
-  
-  - **Type:** ``list`` of ``list`` of ``numpy.ndarray``
-  - **Description:** Outer list contains one entry per submodel. Each submodel entry is itself
-    a list of arrays (function values followed by derivatives) similar to ``y_train_list`` in DEGP.
-    **Important:** All submodels share the same function values array (i.e., ``y_vals_sub1 = y_vals_sub2 = ... = y_vals_subn``),
-    but may have different derivative observations depending on ``derivative_specifications``.
-  - **Example:**
-  
-    .. code-block:: python
-    
-        # All submodels use the same function values
-        y_vals = np.random.randn(num_points)
-        
-        submodel_data = [
-            [y_vals, dy_dx1_sub1, dy_dx2_sub1, ...],  # Submodel 1 data
-            [y_vals, dy_dx1_sub2, dy_dx2_sub2, ...],  # Submodel 2 data
-            ...
-        ]
-
-**derivative_locations**
-  Training point assignments for submodels.
-  
-  - **Type:** ``list`` of ``list`` of ``list`` of ``int``
-  - **Description:** Specifies which training point(s) are associated with each derivative type
-    for each submodel. The structure is nested three levels deep:
-    
-    - Outermost list: one entry per submodel
-    - Middle list: one entry per derivative type in that submodel
-    - Inner list: indices of training points that have this derivative type
-    
-    Indices correspond to rows in ``X_train`` and can be non-contiguous (e.g., ``[0, 2, 4]`` is valid).
-    
-  - **Example:**
-  
-    .. code-block:: python
-    
-        # Example 1: Simple case with contiguous indices
-        submodel_indices = [
-            [[0, 1, 2], [3, 4, 5]],      # Submodel 1: deriv1 at points 0-2, deriv2 at points 3-5
-            [[6, 7, 8], [9, 10, 11]]     # Submodel 2: deriv1 at points 6-8, deriv2 at points 9-11
-        ]
-        
-        # Example 2: Non-contiguous indices (now supported!)
-        submodel_indices = [
-            [[0, 2, 4], [1, 3, 5]],      # Submodel 1: alternating point assignments
-            [[6, 8, 10], [7, 9, 11]]     # Submodel 2: alternating point assignments
-        ]
-        
-        # Example 3: Different numbers of points per derivative type
-        submodel_indices = [
-            [[0, 1, 2, 3], [5, 7, 9]],   # Submodel 1: 4 points for deriv1, 3 for deriv2
-            [[10, 11], [12, 13, 14, 15]] # Submodel 2: 2 points for deriv1, 4 for deriv2
-        ]
-
-**derivative_specifications**
-  Derivative components for each submodel.
-  
-  - **Type:** ``list`` of ``list`` of ``list`` of ``list`` of ``int``
-  - **Description:** Specifies which derivatives each submodel incorporates. The structure is nested:
-    
-    - Outermost list: one entry per submodel
-    - Middle list: one entry per derivative type in that submodel  
-    - Inner list: derivative specifications for that type (can include multiple derivatives)
-    - Innermost: ``[[dim, order]]`` for pure derivatives or ``[[dim1, order1], [dim2, order2]]`` for mixed
-    
-  - **Notation:** 
-    - ``[[dim, order]]`` = derivative of order ``order`` w.r.t. dimension ``dim``
-    - ``[[dim1, order1], [dim2, order2]]`` = mixed derivative (e.g., ∂²f/∂x₁∂x₂)
-    
-  - **Example:**
-  
-    .. code-block:: python
-    
-        # 2D example: Submodel 0 with 1st order only, Submodel 1 with 1st and 2nd order
-        derivative_specs = [
-            # Submodel 0: only 1st order derivatives
-            [
-                [[[1, 1]], [[2, 1]]]   # ∂f/∂x₁ and ∂f/∂x₂
-            ],
-            # Submodel 1: 1st and 2nd order derivatives  
-            [
-                [[[1, 1]], [[2, 1]]],                    # 1st order: ∂f/∂x₁, ∂f/∂x₂
-                [[[1, 2]], [[1,1],[2,1]], [[2, 2]]]      # 2nd order: ∂²f/∂x₁², ∂²f/∂x₁∂x₂, ∂²f/∂x₂²
-            ]
-        ]
-        
-        # Matching submodel_indices structure:
-        submodel_indices = [
-            [boundary_indices],                    # Submodel 0: 1 derivative type
-            [interior_indices, interior_indices]   # Submodel 1: 2 derivative types
-        ]
-        
-
-**Usage Notes:**
-
-- WDEGP partitions training data into submodels to reduce computational cost.
-- **All submodels share the same function values** but may incorporate different derivative information.
-- Each submodel uses derivatives only at its designated subset of training points.
-- Indices in ``submodel_indices`` can be non-contiguous, allowing flexible assignment of training points.
-- Predictions are combined via weighted averaging across submodels.
-
-------------------------------------------------------------
-
-3. DDEGP (Directional Derivative-Enhanced Gaussian Process)
+2. DDEGP (Directional Derivative-Enhanced Gaussian Process)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Location:** ``full_ddegp/ddegp.py``
@@ -441,7 +322,7 @@ Module-Specific Initialization
     
     gp = ddegp(
         X_train,
-        Y_train,
+        y_train,
         n_order,
         der_indices,
         derivative_locations,
@@ -453,14 +334,14 @@ Module-Specific Initialization
 
 **Module-Specific Parameters:**
 
-**Y_train**
+**y_train**
   Training observations for function and directional derivatives.
   
   - **Type:** ``list`` of ``numpy.ndarray``
-  - **Description:** Same format as ``y_train_list`` in DEGP. Contains function values
+  - **Description:** Same format as ``y_train`` in DEGP. Contains function values
     followed by directional derivative observations. Order must match ``der_indices``.
-  - **Shape correspondence:** ``Y_train[0]`` has shape ``(n_train, 1)`` for function values.
-    ``Y_train[i+1]`` has shape ``(len(derivative_locations[i]), 1)`` for direction ``i``.
+  - **Shape correspondence:** ``y_train[0]`` has shape ``(n_train, 1)`` for function values.
+    ``y_train[i+1]`` has shape ``(len(derivative_locations[i]), 1)`` for direction ``i``.
 
 **rays**
   Global directional derivative directions.
@@ -492,7 +373,7 @@ Module-Specific Initialization
     direction's derivative is available. Indices do NOT need to be contiguous.
   - **Length:** Must match the number of directions (columns in ``rays``).
   - **Correspondence:** ``derivative_locations[i]`` specifies which points have direction ``i``,
-    and ``Y_train[i+1]`` must have length ``len(derivative_locations[i])``.
+    and ``y_train[i+1]`` must have length ``len(derivative_locations[i])``.
   - **Example:**
   
     .. code-block:: python
@@ -507,11 +388,11 @@ Module-Specific Initialization
             [5, 6, 7, 8, 9]                   # Direction 2
         ]
         
-        # Y_train shapes:
-        # Y_train[0]: (10, 1) - function values at all points
-        # Y_train[1]: (10, 1) - direction 0 derivatives
-        # Y_train[2]: (5, 1)  - direction 1 derivatives
-        # Y_train[3]: (5, 1)  - direction 2 derivatives
+        # y_train shapes:
+        # y_train[0]: (10, 1) - function values at all points
+        # y_train[1]: (10, 1) - direction 0 derivatives
+        # y_train[2]: (5, 1)  - direction 1 derivatives
+        # y_train[3]: (5, 1)  - direction 2 derivatives
 
 **Usage Notes:**
 
@@ -526,7 +407,7 @@ Module-Specific Initialization
 
 ------------------------------------------------------------
 
-4. GDDEGP (Generalized Directional Derivative-Enhanced Gaussian Process)
+3. GDDEGP (Generalized Directional Derivative-Enhanced Gaussian Process)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Location:** ``full_gddegp/gddegp.py``
@@ -539,10 +420,9 @@ Module-Specific Initialization
     
     gp = gddegp(
         X_train,
-        y_train_list,
+        y_train,
         n_order,
         rays_list,
-        der_indices,
         derivative_locations,
         der_indices,
         normalize=True,
@@ -552,14 +432,14 @@ Module-Specific Initialization
 
 **Module-Specific Parameters:**
 
-**y_train_list**
+**y_train**
   Training observations for function and directional derivatives.
   
   - **Type:** ``list`` of ``numpy.ndarray``
   - **Description:** Same format as in DEGP. Contains function values followed by
     directional derivative observations in order matching ``der_indices``.
-  - **Shape correspondence:** ``y_train_list[0]`` has shape ``(n_train, 1)`` for function values.
-    ``y_train_list[i+1]`` has shape ``(len(derivative_locations[i]), 1)`` for direction ``i``.
+  - **Shape correspondence:** ``y_train[0]`` has shape ``(n_train, 1)`` for function values.
+    ``y_train[i+1]`` has shape ``(len(derivative_locations[i]), 1)`` for direction ``i``.
 
 **rays_list**
   Point-specific directional derivative directions.
@@ -609,7 +489,7 @@ Module-Specific Initialization
     
     - ``derivative_locations[i][j]`` is the training point index
     - ``rays_list[i][:, j]`` is the ray vector for that point
-    - ``y_train_list[i+1][j]`` is the derivative value at that point
+    - ``y_train[i+1][j]`` is the derivative value at that point
     
   - **Example:**
   
@@ -627,10 +507,10 @@ Module-Specific Initialization
         # rays_list[0]: (2, 6) - unique ray at each of 6 interior points
         # rays_list[1]: (2, 6) - unique ray at each of 6 interior points
         
-        # y_train_list shapes:
-        # y_train_list[0]: (12, 1) - function values at all points
-        # y_train_list[1]: (6, 1)  - direction 1 derivatives at interior points
-        # y_train_list[2]: (6, 1)  - direction 2 derivatives at interior points
+        # y_train shapes:
+        # y_train[0]: (12, 1) - function values at all points
+        # y_train[1]: (6, 1)  - direction 1 derivatives at interior points
+        # y_train[2]: (6, 1)  - direction 2 derivatives at interior points
 
   - **Mixed coverage example** (different points have different directions):
   
@@ -656,30 +536,41 @@ Module-Specific Initialization
 - **Key difference from DDEGP:** In DDEGP, ``rays.shape = (d, n_directions)`` and all points share 
   the same rays. In GDDEGP, ``rays_list[i].shape = (d, len(derivative_locations[i]))`` with unique 
   rays per point.
+- **Prediction flexibility:** A key advantage of GDDEGP is that predictions can be made along 
+  **any direction** via ``rays_predict``—not just the directions used during training. The only 
+  restriction is that the derivative **order** must have been included in training.
 - This formulation is useful when local sensitivity varies across the input space, such as 
   gradient-aligned directions or adaptive directional sampling.
 
 ------------------------------------------------------------
 
-5. WDDEGP (Weighted Directional Derivative-Enhanced Gaussian Process)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+4. WDEGP (Weighted Derivative-Enhanced Gaussian Process)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Location:** ``wddegp/wddegp.py``
+**Location:** ``wdegp/wdegp.py``
+
+WDEGP is a **unified framework** that supports three submodel types via the ``submodel_type`` parameter:
+
+- ``'degp'`` – Coordinate-aligned partial derivatives (default)
+- ``'ddegp'`` – Global directional derivatives
+- ``'gddegp'`` – Point-wise directional derivatives
 
 **Signature:**
 
 .. code-block:: python
 
-    from jetgp.wddegp.wddegp import wddegp
+    from jetgp.wdegp.wdegp import wdegp
     
-    gp = wddegp(
+    gp = wdegp(
         X_train,
-        y_train_data,
+        y_train,
         n_order,
         n_bases,
-        submodel_indices,
+        derivative_locations,
         der_indices,
-        rays_data,
+        submodel_type='degp',  # 'degp', 'ddegp', or 'gddegp'
+        rays=None,             # Required if submodel_type='ddegp'
+        rays_list=None,        # Required if submodel_type='gddegp'
         normalize=True,
         kernel="SE",
         kernel_type="anisotropic"
@@ -687,44 +578,245 @@ Module-Specific Initialization
 
 **Module-Specific Parameters:**
 
-**y_train_data**
+**y_train**
   Training data for each submodel.
   
   - **Type:** ``list`` of ``list`` of ``numpy.ndarray``
-  - **Description:** Similar to ``submodel_data`` in WDEGP. Outer list has one entry per submodel,
-    each containing function values and directional derivative observations.
-
-**submodel_indices**
-  Training point assignments for submodels.
-  
-  - **Type:** ``list`` of ``list`` of ``int``
-  - **Description:** Same as in WDEGP. Specifies which training points are associated with each submodel.
-
-**rays_data**
-  Directional derivative directions for each submodel.
-  
-  - **Type:** ``list`` of ``numpy.ndarray``
-  - **Description:** Each element specifies the global directions used by one submodel.
-    Shape of each array is ``(dimension, rays_per_point)``.
-    Unlike GDDEGP, directions are global within each submodel but **can vary across submodels**.
-    **Direction vectors should be normalized to unit length (norm = 1) for proper interpretation.**
-  - **Example for 3 submodels in 2D:**
+  - **Description:** Outer list contains one entry per submodel. Each submodel entry is itself
+    a list of arrays (function values followed by derivatives) similar to ``y_train`` in DEGP.
+    **Important:** All submodels share the same function values array.
+  - **Example:**
   
     .. code-block:: python
     
-        rays_data = [
-            np.array([[1.0, 0.0], [0.0, 1.0]]),      # Submodel 1: axis-aligned
-            np.array([[0.707, 0.707], [-0.707, 0.707]]),  # Submodel 2: diagonal (normalized)
-            np.array([[1.0], [0.0]])                 # Submodel 3: single direction
+        # All submodels use the same function values
+        y_vals = f(X_train).reshape(-1, 1)  # shape: (n_train, 1)
+        
+        # Derivatives at submodel-specific points
+        dy_sm1 = df(X_train[sm1_indices]).reshape(-1, 1)
+        dy_sm2 = df(X_train[sm2_indices]).reshape(-1, 1)
+        
+        y_train = [
+            [y_vals, dy_sm1],  # Submodel 1 data
+            [y_vals, dy_sm2],  # Submodel 2 data
         ]
+
+**derivative_locations**
+  Training point assignments for submodels.
+  
+  - **Type:** ``list`` of ``list`` of ``list`` of ``int``
+  - **Description:** Specifies which training point(s) are associated with each derivative type
+    for each submodel. The structure is nested three levels deep:
+    
+    - Outermost list: one entry per submodel
+    - Middle list: one entry per derivative type in that submodel
+    - Inner list: indices of training points that have this derivative type
+    
+    Indices correspond to rows in ``X_train`` and can be non-contiguous.
+
+.. warning::
+   **Derivative locations must be DISJOINT across submodels.**
+   
+   Each training point's derivatives can only belong to **one** submodel.
+   Overlapping derivative locations will cause incorrect covariance computations.
+   
+   **Valid (disjoint):**
+   
+   .. code-block:: python
+   
+       derivative_locations = [
+           [[0, 2, 4, 6, 8], [0, 2, 4, 6, 8]],  # Submodel 1: even indices
+           [[1, 3, 5, 7, 9], [1, 3, 5, 7, 9]]   # Submodel 2: odd indices
+       ]
+   
+   **Invalid (overlapping):**
+   
+   .. code-block:: python
+   
+       derivative_locations = [
+           [[0, 1, 2, 3, 4], [0, 1, 2, 3, 4]],  # Submodel 1
+           [[3, 4, 5, 6, 7], [3, 4, 5, 6, 7]]   # Submodel 2: indices 3, 4 overlap!
+       ]
+
+**der_indices**
+  Derivative components for each submodel.
+  
+  - **Type:** ``list`` of (nested derivative specification lists)
+  - **Description:** Specifies which derivatives each submodel incorporates. The structure is:
+    
+    - Outermost list: one entry per submodel
+    - Each submodel entry follows the standard ``der_indices`` format
+    
+  - **Example (both submodels have same derivatives):**
+  
+    .. code-block:: python
+    
+        der_indices = [
+            [[[[1, 1]], [[2, 1]]]],   # Submodel 1: 1st order in both dims
+            [[[[1, 1]], [[2, 1]]]]    # Submodel 2: 1st order in both dims
+        ]
+  
+  - **Example (submodels with different derivative orders):**
+  
+    .. code-block:: python
+    
+        der_indices = [
+            # Submodel 1: 1st order only
+            [[[[1, 1]], [[2, 1]]]],
+            # Submodel 2: 1st and 2nd order
+            [[[[1, 1]], [[2, 1]]], [[[1, 2]], [[1,1],[2,1]], [[2, 2]]]]
+        ]
+
+**submodel_type**
+  Specifies the type of GP model used for each submodel.
+  
+  - **Type:** ``str``
+  - **Options:** ``'degp'`` (default), ``'ddegp'``, ``'gddegp'``
+  - **Description:** 
+    
+    - ``'degp'`` – Coordinate-aligned partial derivatives
+    - ``'ddegp'`` – Global directional derivatives (requires ``rays``)
+    - ``'gddegp'`` – Point-wise directional derivatives (requires ``rays_list``)
+
+**rays**
+  Global directional vectors (required if ``submodel_type='ddegp'``).
+  
+  - **Type:** ``numpy.ndarray``
+  - **Shape:** ``(d, n_directions)``
+  - **Description:** Global directional vectors shared by all submodels. Same format as in DDEGP.
+  - **Example:**
+  
+    .. code-block:: python
+    
+        # 2D problem with 2 global directions (x-axis and y-axis)
+        rays = np.array([
+            [1.0, 0.0],   # x-components
+            [0.0, 1.0]    # y-components
+        ])
+
+**rays_list**
+  Point-wise directional vectors (required if ``submodel_type='gddegp'``).
+  
+  - **Type:** ``list`` of ``list`` of ``numpy.ndarray``
+  - **Description:** Point-wise directional vectors for each submodel. Structure:
+    ``rays_list[submodel_idx][direction_idx]`` has shape ``(d, n_points_in_submodel_with_direction)``.
+  - **Example:**
+  
+    .. code-block:: python
+    
+        # Build rays for each submodel
+        rays_list = [
+            [rays_dir1_sm1, rays_dir2_sm1],  # Submodel 1 rays
+            [rays_dir1_sm2, rays_dir2_sm2]   # Submodel 2 rays
+        ]
+        
+        # rays_dir1_sm1.shape = (d, len(derivative_locations[0][0]))
+        # rays_dir2_sm1.shape = (d, len(derivative_locations[0][1]))
+
+**Complete Example (DEGP Submodels):**
+
+.. code-block:: python
+
+    from jetgp.wdegp.wdegp import wdegp
+    import numpy as np
+    
+    # 10 training points, alternating submodel assignment
+    X_train = np.linspace(0.5, 2.5, 10).reshape(-1, 1)
+    
+    sm1_indices = [0, 2, 4, 6, 8]  # Even indices → Submodel 1
+    sm2_indices = [1, 3, 5, 7, 9]  # Odd indices → Submodel 2
+    
+    # Function and derivative values
+    y_vals = f(X_train).reshape(-1, 1)
+    dy_sm1 = df(X_train[sm1_indices]).reshape(-1, 1)
+    dy_sm2 = df(X_train[sm2_indices]).reshape(-1, 1)
+    
+    # WDEGP data structure
+    y_train = [
+        [y_vals, dy_sm1],  # Submodel 1
+        [y_vals, dy_sm2]   # Submodel 2
+    ]
+    
+    der_indices = [
+        [[[[1, 1]]]],  # Submodel 1: first-order derivative
+        [[[[1, 1]]]]   # Submodel 2: first-order derivative
+    ]
+    
+    derivative_locations = [
+        [sm1_indices],  # Submodel 1 derivative locations
+        [sm2_indices]   # Submodel 2 derivative locations (DISJOINT!)
+    ]
+    
+    model = wdegp(
+        X_train, y_train, n_order=1, n_bases=1,
+        derivative_locations=derivative_locations,
+        der_indices=der_indices,
+        submodel_type='degp',
+        normalize=True, kernel="SE", kernel_type="anisotropic"
+    )
+
+**Complete Example (GDDEGP Submodels):**
+
+.. code-block:: python
+
+    from jetgp.wdegp.wdegp import wdegp
+    import numpy as np
+    
+    # Partition by distance from origin
+    distances = np.linalg.norm(X_train, axis=1)
+    median_dist = np.median(distances)
+    sm1_indices = [i for i in range(len(X_train)) if distances[i] < median_dist]
+    sm2_indices = [i for i in range(len(X_train)) if distances[i] >= median_dist]
+    
+    # Build point-wise rays for each submodel
+    def build_rays(indices):
+        n = len(indices)
+        rays_dir1 = np.zeros((2, n))
+        rays_dir2 = np.zeros((2, n))
+        for j, idx in enumerate(indices):
+            grad = 2 * X_train[idx]  # Gradient of f = x² + y²
+            grad_norm = np.linalg.norm(grad)
+            if grad_norm > 1e-10:
+                rays_dir1[:, j] = grad / grad_norm
+                rays_dir2[:, j] = [-rays_dir1[1, j], rays_dir1[0, j]]
+            else:
+                rays_dir1[:, j] = [1, 0]
+                rays_dir2[:, j] = [0, 1]
+        return rays_dir1, rays_dir2
+    
+    rays_dir1_sm1, rays_dir2_sm1 = build_rays(sm1_indices)
+    rays_dir1_sm2, rays_dir2_sm2 = build_rays(sm2_indices)
+    
+    # rays_list[submodel_idx][direction_idx] = (d, n_points_in_submodel)
+    rays_list = [
+        [rays_dir1_sm1, rays_dir2_sm1],  # Submodel 1 rays
+        [rays_dir1_sm2, rays_dir2_sm2]   # Submodel 2 rays
+    ]
+    
+    model = wdegp(
+        X_train, y_train, n_order=1, n_bases=2,
+        derivative_locations=derivative_locations,
+        der_indices=der_indices,
+        submodel_type='gddegp',
+        rays_list=rays_list,
+        normalize=True, kernel="SE", kernel_type="anisotropic"
+    )
 
 **Usage Notes:**
 
-- WDDEGP combines the weighted submodel framework (WDEGP) with directional derivatives (DDEGP).
-- Each submodel uses global directional derivatives, but different submodels can use different directions.
-- **Direction vectors should be normalized to unit length** for proper interpretation of directional derivatives.
-- This enables localized directional sensitivity while maintaining computational efficiency.
-- Particularly useful when different regions of input space have different dominant sensitivity directions.
+- WDEGP partitions training data into submodels to reduce computational cost.
+- **All submodels share the same function values** but may incorporate different derivative information.
+- **Derivative locations must be DISJOINT across submodels** — each point's derivatives belong to exactly one submodel.
+- Predictions are combined via weighted averaging across submodels.
+- Use ``submodel_type`` to select the derivative type:
+  
+  - ``'degp'`` for coordinate-aligned partial derivatives
+  - ``'ddegp'`` for global directional derivatives (same directions at all points)
+  - ``'gddegp'`` for point-wise directional derivatives (unique directions per point)
+
+- **Prediction flexibility with GDDEGP submodels:** When ``submodel_type='gddegp'``, you can predict 
+  directional derivatives along **any direction** via ``rays_predict``—the restriction is on derivative 
+  **order**, not direction. Only orders present in all submodels can be predicted.
 
 ------------------------------------------------------------
 
@@ -734,40 +826,43 @@ Best Practices
 1. **Always enable normalization** (``normalize=True``) when using derivative information
    to ensure numerical stability.
 
-2. **Match data order to derivative indices**: The order of arrays in ``y_train_list``,
-   ``Y_train``, or ``submodel_data`` must exactly correspond to the structure defined
-   in ``der_indices``.
+2. **Match data order to derivative indices**: The order of arrays in ``y_train``
+   must exactly correspond to the structure defined in ``der_indices``.
 
 3. **Choose appropriate smoothness**: When using the Matern kernel with derivative-enhanced GPs,
    set ``smoothness_parameter ≥ 2 × n_order`` to ensure the kernel is sufficiently smooth.
 
-4. **Submodel design**: For WDEGP and WDDEGP, balance the number of submodels against
-   computational cost. More submodels reduce individual matrix sizes but increase
-   the overhead of combining predictions. **Remember:** Submodel indices must be contiguous,
-   so reorder your training data appropriately before initialization.
+4. **WDEGP submodel design**: 
+   
+   - Balance the number of submodels against computational cost
+   - **Ensure derivative locations are DISJOINT across submodels**
+   - Choose ``submodel_type`` based on your derivative data structure
 
-5. **Direction vector scaling**: Direction vectors in ``rays``, ``rays_array``, and ``rays_data``
+5. **Direction vector normalization**: Direction vectors in ``rays`` and ``rays_list``
    **should be normalized to unit length (norm = 1)** for proper interpretation of directional derivatives.
-   Normalization ensures consistent scaling and meaningful comparison of sensitivities across different directions.
 
 6. **Anisotropic kernels**: Use ``kernel_type="anisotropic"`` when input dimensions
    have different characteristic length scales or when derivative information reveals
    directional dependencies.
+
+7. **Leverage GDDEGP prediction flexibility**: When using GDDEGP or WDEGP with GDDEGP submodels,
+   you can predict directional derivatives along any direction—not limited to training directions.
 
 ------------------------------------------------------------
 
 Summary
 -------
 
-JetGP provides five module variants for incorporating derivative information into
+JetGP provides four module variants for incorporating derivative information into
 Gaussian Process models:
 
-- **DEGP**: Full derivative information at all points
-- **WDEGP**: Weighted submodels with flexible derivative specifications
-- **DDEGP**: Global directional derivatives
-- **GDDEGP**: Point-specific directional derivatives
-- **WDDEGP**: Weighted submodels with directional derivatives
+- **DEGP**: Coordinate-aligned partial derivatives at flexible point locations
+- **DDEGP**: Global directional derivatives (same directions at all points)
+- **GDDEGP**: Point-specific directional derivatives with prediction flexibility
+- **WDEGP**: Unified weighted submodel framework supporting all three derivative types
 
 Each module follows a consistent initialization pattern while accommodating different
 use cases for derivative-enhanced modeling. Choose the module based on your data
 availability, computational constraints, and the spatial characteristics of your problem.
+
+For detailed information on making predictions with these models, see :doc:`predictions`.

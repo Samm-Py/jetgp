@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for jetgp/utils.py: 55%</title>
+    <title>Coverage for jetgp/utils.py: 52%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>jetgp/utils.py</b>:
-            <span class="pc_cov">55%</span>
+            <span class="pc_cov">52%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -55,8 +55,8 @@
         </aside>
         <h2>
             <span class="text">657 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">361<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">296<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">344<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">313<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_bfc9531b75b5e358___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-11-28 14:32 -0600
+            created at 2025-11-30 01:41 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -475,7 +475,7 @@
     <p class="run"><span class="n"><a id="t393" href="#t393">393</a></span><span class="t">    <span class="key">return</span> <span class="nam">y_var_normalized</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t394" href="#t394">394</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t395" href="#t395">395</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t"><span class="key">def</span> <span class="nam">transform_cov_directrional</span><span class="op">(</span><span class="nam">cov</span><span class="op">,</span> <span class="nam">sigma_y</span><span class="op">,</span> <span class="nam">sigmas_x</span><span class="op">,</span> <span class="nam">der_indices</span><span class="op">,</span> <span class="nam">X_test</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t"><span class="key">def</span> <span class="nam">transform_cov_directional</span><span class="op">(</span><span class="nam">cov</span><span class="op">,</span> <span class="nam">sigma_y</span><span class="op">,</span> <span class="nam">sigmas_x</span><span class="op">,</span> <span class="nam">der_indices</span><span class="op">,</span> <span class="nam">X_test</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t397" href="#t397">397</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t398" href="#t398">398</a></span><span class="t"><span class="str">    Rescale the diagonal of a covariance matrix for function values and directional derivatives.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t399" href="#t399">399</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -1012,27 +1012,27 @@
     <p class="pln"><span class="n"><a id="t930" href="#t930">930</a></span><span class="t"><span class="str">    [array of shape (6, 6), array of shape (9, 9)]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t931" href="#t931">931</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t932" href="#t932">932</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t933" href="#t933">933</a></span><span class="t">    <span class="nam">sub_model_matricies</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t934" href="#t934">934</a></span><span class="t">    <span class="key">for</span> <span class="nam">i</span><span class="op">,</span> <span class="nam">idx</span> <span class="key">in</span> <span class="nam">enumerate</span><span class="op">(</span><span class="nam">index</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t935" href="#t935">935</a></span><span class="t">        <span class="nam">values</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">diag</span><span class="op">(</span><span class="nam">sigma_data</span><span class="op">[</span><span class="op">:</span><span class="nam">num_points</span><span class="op">,</span> <span class="op">:</span><span class="nam">num_points</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t936" href="#t936">936</a></span><span class="t">        <span class="key">for</span> <span class="nam">j</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">der_indices</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t937" href="#t937">937</a></span><span class="t">            <span class="key">for</span> <span class="nam">k</span><span class="op">,</span> <span class="nam">item</span> <span class="key">in</span> <span class="nam">enumerate</span><span class="op">(</span><span class="nam">base_der_indices</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t938" href="#t938">938</a></span><span class="t">                <span class="key">if</span> <span class="nam">item</span> <span class="op">==</span> <span class="nam">der_indices</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t939" href="#t939">939</a></span><span class="t">                    <span class="nam">scale_factor</span> <span class="op">=</span> <span class="nam">k</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t940" href="#t940">940</a></span><span class="t">                    <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t933" href="#t933">933</a></span><span class="t">    <span class="nam">sub_model_matricies</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t934" href="#t934">934</a></span><span class="t">    <span class="key">for</span> <span class="nam">i</span><span class="op">,</span> <span class="nam">idx</span> <span class="key">in</span> <span class="nam">enumerate</span><span class="op">(</span><span class="nam">index</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t935" href="#t935">935</a></span><span class="t">        <span class="nam">values</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">diag</span><span class="op">(</span><span class="nam">sigma_data</span><span class="op">[</span><span class="op">:</span><span class="nam">num_points</span><span class="op">,</span> <span class="op">:</span><span class="nam">num_points</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t936" href="#t936">936</a></span><span class="t">        <span class="key">for</span> <span class="nam">j</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">der_indices</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t937" href="#t937">937</a></span><span class="t">            <span class="key">for</span> <span class="nam">k</span><span class="op">,</span> <span class="nam">item</span> <span class="key">in</span> <span class="nam">enumerate</span><span class="op">(</span><span class="nam">base_der_indices</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t938" href="#t938">938</a></span><span class="t">                <span class="key">if</span> <span class="nam">item</span> <span class="op">==</span> <span class="nam">der_indices</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t939" href="#t939">939</a></span><span class="t">                    <span class="nam">scale_factor</span> <span class="op">=</span> <span class="nam">k</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t940" href="#t940">940</a></span><span class="t">                    <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t941" href="#t941">941</a></span><span class="t">                <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t942" href="#t942">942</a></span><span class="t">                    <span class="nam">scale_factor</span> <span class="op">=</span> <span class="op">-</span><span class="num">1</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t943" href="#t943">943</a></span><span class="t">                    <span class="key">continue</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t942" href="#t942">942</a></span><span class="t">                    <span class="nam">scale_factor</span> <span class="op">=</span> <span class="op">-</span><span class="num">1</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t943" href="#t943">943</a></span><span class="t">                    <span class="key">continue</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t944" href="#t944">944</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t945" href="#t945">945</a></span><span class="t">            <span class="key">if</span> <span class="nam">scale_factor</span> <span class="op">==</span> <span class="op">-</span><span class="num">1</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t945" href="#t945">945</a></span><span class="t">            <span class="key">if</span> <span class="nam">scale_factor</span> <span class="op">==</span> <span class="op">-</span><span class="num">1</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t946" href="#t946">946</a></span><span class="t">                <span class="key">raise</span> <span class="nam">Exception</span><span class="op">(</span><span class="str">'Unknown Error'</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t947" href="#t947">947</a></span><span class="t">            <span class="nam">scale_factor</span> <span class="op">=</span> <span class="nam">k</span> <span class="op">+</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t948" href="#t948">948</a></span><span class="t">            <span class="nam">indices</span> <span class="op">=</span> <span class="op">(</span><span class="nam">scale_factor</span><span class="op">*</span><span class="nam">num_points</span><span class="op">)</span><span class="op">+</span><span class="nam">np</span><span class="op">.</span><span class="nam">array</span><span class="op">(</span><span class="nam">idx</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t949" href="#t949">949</a></span><span class="t">            <span class="nam">values</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">concatenate</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t947" href="#t947">947</a></span><span class="t">            <span class="nam">scale_factor</span> <span class="op">=</span> <span class="nam">k</span> <span class="op">+</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t948" href="#t948">948</a></span><span class="t">            <span class="nam">indices</span> <span class="op">=</span> <span class="op">(</span><span class="nam">scale_factor</span><span class="op">*</span><span class="nam">num_points</span><span class="op">)</span><span class="op">+</span><span class="nam">np</span><span class="op">.</span><span class="nam">array</span><span class="op">(</span><span class="nam">idx</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t949" href="#t949">949</a></span><span class="t">            <span class="nam">values</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">concatenate</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t950" href="#t950">950</a></span><span class="t">                <span class="op">(</span><span class="nam">values</span><span class="op">,</span> <span class="nam">sigma_data</span><span class="op">[</span><span class="nam">indices</span><span class="op">[</span><span class="num">0</span><span class="op">:</span><span class="op">]</span><span class="op">,</span> <span class="nam">indices</span><span class="op">[</span><span class="num">0</span><span class="op">:</span><span class="op">]</span><span class="op">]</span><span class="op">.</span><span class="nam">flatten</span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t951" href="#t951">951</a></span><span class="t">        <span class="nam">sub_model_matricies</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">diag</span><span class="op">(</span><span class="nam">values</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t951" href="#t951">951</a></span><span class="t">        <span class="nam">sub_model_matricies</span><span class="op">.</span><span class="nam">append</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">diag</span><span class="op">(</span><span class="nam">values</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t952" href="#t952">952</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t953" href="#t953">953</a></span><span class="t">    <span class="key">return</span> <span class="nam">sub_model_matricies</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t953" href="#t953">953</a></span><span class="t">    <span class="key">return</span> <span class="nam">sub_model_matricies</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t954" href="#t954">954</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t955" href="#t955">955</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t956" href="#t956">956</a></span><span class="t"><span class="key">def</span> <span class="nam">matern_kernel_builder</span><span class="op">(</span><span class="nam">nu</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -1172,7 +1172,7 @@
     <p class="run"><span class="n"><a id="t1090" href="#t1090">1090</a></span><span class="t">        <span class="nam">current_f</span> <span class="op">=</span> <span class="nam">func</span><span class="op">(</span><span class="nam">result</span><span class="op">.</span><span class="nam">x</span><span class="op">,</span> <span class="op">*</span><span class="nam">args</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1091" href="#t1091">1091</a></span><span class="t">        <span class="key">return</span> <span class="nam">RecoveredResult</span><span class="op">(</span><span class="nam">result</span><span class="op">.</span><span class="nam">x</span><span class="op">,</span> <span class="nam">current_f</span><span class="op">,</span> <span class="str">f"Recovered from abnormal termination: {result.message}"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1092" href="#t1092">1092</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t1093" href="#t1093">1093</a></span><span class="t">        <span class="key">return</span> <span class="nam">result</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t1093" href="#t1093">1093</a></span><span class="t">        <span class="key">return</span> <span class="nam">result</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1094" href="#t1094">1094</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1095" href="#t1095">1095</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1096" href="#t1096">1096</a></span><span class="t"><span class="key">def</span> <span class="nam">should_accept_local_result</span><span class="op">(</span><span class="nam">local_res</span><span class="op">,</span> <span class="nam">current_best_f</span><span class="op">,</span> <span class="nam">is_feasible</span><span class="op">,</span> <span class="nam">debug</span><span class="op">=</span><span class="key">False</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -2265,7 +2265,7 @@
             <a class="nav" href="z_bfc9531b75b5e358___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-11-28 14:32 -0600
+            created at 2025-11-30 01:41 -0600
         </p>
     </div>
 </footer>

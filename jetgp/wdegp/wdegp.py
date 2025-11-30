@@ -503,7 +503,7 @@ class wdegp:
             # Denormalize predictions
             if self.normalize:
                 if return_deriv:
-                    if self.submodel_type == 'gddegp' or 'ddegp':
+                    if self.submodel_type == 'gddegp' or self.submodel_type == 'ddegp':
                         f_mean =utils.transform_predictions_directional(
                            f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
                            self.flattened_der_indices[i], X_test)

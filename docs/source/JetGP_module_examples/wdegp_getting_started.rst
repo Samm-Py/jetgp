@@ -1580,3 +1580,842 @@ This example demonstrates the limitations of ``return_deriv=True``:
 2. **Finite differences fallback**: When derivatives aren't shared, use finite differences
 3. **Individual submodel access**: Use ``return_submodels=True`` to verify each submodel's derivatives separately
 4. **Design consideration**: If you need direct derivative predictions, ensure all submodels use the same derivative types
+
+
+
+Example 6: WDEGP with DDEGP Submodels (Global Directional Derivatives)
+----------------------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates **WDEGP with DDEGP submodels**, where all submodels share the same 
+global directional derivative directions. This is useful when:
+
+- Sensitivity along specific global directions (e.g., diagonal axes, wind direction) is known
+- All training points share the same set of directions
+- Computational efficiency is needed for directional derivative data
+
+The ``submodel_type='ddegp'`` setting uses **global rays** shared across all submodels.
+Derivative predictions are restricted to the global ray directions.
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   import numpy as np
+   import matplotlib.pyplot as plt
+   from jetgp.wdegp.wdegp import wdegp
+   import jetgp.utils as utils
+
+---
+
+Step 2: Define the 2D test function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   def f_2d(X):
+       """2D test function: f(x,y) = sin(πx)cos(πy) + 0.5*x*y"""
+       return np.sin(np.pi * X[:, 0]) * np.cos(np.pi * X[:, 1]) + 0.5 * X[:, 0] * X[:, 1]
+   
+   def grad_f_2d(X):
+       """Gradient of f: [∂f/∂x, ∂f/∂y]"""
+       dfdx = np.pi * np.cos(np.pi * X[:, 0]) * np.cos(np.pi * X[:, 1]) + 0.5 * X[:, 1]
+       dfdy = -np.pi * np.sin(np.pi * X[:, 0]) * np.sin(np.pi * X[:, 1]) + 0.5 * X[:, 0]
+       return np.column_stack([dfdx, dfdy])
+   
+   def directional_deriv(X, ray):
+       """Compute directional derivative along ray direction: ∇f · ray"""
+       grad = grad_f_2d(X)
+       return grad @ ray
+
+**Explanation:**  
+This function combines an oscillatory component (sin·cos) with a bilinear term (x·y), 
+creating interesting directional sensitivities that vary across the domain.
+
+---
+
+Step 3: Set experiment parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   n_bases = 2      # 2D problem
+   n_order = 1      # First-order directional derivatives
+   num_points = 25  # 5x5 grid
+   
+   np.random.seed(42)
+   
+   # Create training grid
+   x1 = np.linspace(-1, 1, 5)
+   x2 = np.linspace(-1, 1, 5)
+   X1, X2 = np.meshgrid(x1, x2)
+   X_train = np.column_stack([X1.ravel(), X2.ravel()])
+   
+   print(f"Training points shape: {X_train.shape}")
+   print(f"Number of training points: {num_points}")
+
+---
+
+Step 4: Define global directional rays at ±45°
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Global rays at 45° and -45° from x-axis
+   # These diagonal directions capture sensitivity along the domain's diagonals
+   angle_1 = np.pi / 4    # 45 degrees
+   angle_2 = -np.pi / 4   # -45 degrees
+   
+   # Shape: (n_bases, n_directions) = (2, 2)
+   rays = np.array([
+       [np.cos(angle_1), np.cos(angle_2)],   # x-components
+       [np.sin(angle_1), np.sin(angle_2)]    # y-components
+   ])
+   
+   print("Global rays (shared by all submodels):")
+   print(f"  Ray 0 (+45°): [{rays[0, 0]:.4f}, {rays[1, 0]:.4f}]")
+   print(f"  Ray 1 (-45°): [{rays[0, 1]:.4f}, {rays[1, 1]:.4f}]")
+   print(f"\nRay norms: {np.linalg.norm(rays[:, 0]):.4f}, {np.linalg.norm(rays[:, 1]):.4f}")
+
+**Explanation:**  
+In DDEGP, all training points share the same directional vectors. Here we use diagonal 
+directions at ±45°, which capture sensitivity along the domain's diagonals rather than 
+the coordinate axes. This is useful when the function has significant variation along 
+diagonal directions.
+
+---
+
+Step 5: Define submodel structure with disjoint indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Partition points by distance from origin: inner vs outer
+   distances = np.linalg.norm(X_train, axis=1)
+   median_dist = np.median(distances)
+   
+   sm1_indices = [i for i in range(num_points) if distances[i] <= median_dist]  # Inner points
+   sm2_indices = [i for i in range(num_points) if distances[i] > median_dist]   # Outer points
+   
+   print(f"Submodel 1 indices (inner, dist ≤ {median_dist:.2f}): {sm1_indices}")
+   print(f"  Points: {len(sm1_indices)}")
+   print(f"Submodel 2 indices (outer, dist > {median_dist:.2f}): {sm2_indices}")
+   print(f"  Points: {len(sm2_indices)}")
+   
+   # Verify disjoint
+   assert len(set(sm1_indices) & set(sm2_indices)) == 0, "Indices must be disjoint!"
+   print("\n✓ Indices are disjoint across submodels")
+   
+   # Derivative locations: both directional derivatives at each submodel's points
+   # Structure: derivative_locations[submodel_idx][direction_idx] = point indices
+   derivative_locations = [
+       [sm1_indices, sm1_indices],  # Submodel 1: both rays at inner points
+       [sm2_indices, sm2_indices]   # Submodel 2: both rays at outer points
+   ]
+   
+   # Both submodels use the same derivative specifications (1st order directional)
+   der_indices = [
+       [[[[1, 1]]], [[[2, 1]]]],   # Submodel 1: 1st order along ray 0, 1st order along ray 1
+       [[[[1, 1]]], [[[2, 1]]]]    # Submodel 2: same structure
+   ]
+   
+   print(f"\nderivative_locations structure:")
+   print(f"  Submodel 1: ray 0 at {len(sm1_indices)} pts, ray 1 at {len(sm1_indices)} pts")
+   print(f"  Submodel 2: ray 0 at {len(sm2_indices)} pts, ray 1 at {len(sm2_indices)} pts")
+
+**Explanation:**  
+We partition training points by distance from the origin: inner points go to Submodel 1, 
+outer points go to Submodel 2. This creates a radial partitioning that's natural for 
+many physical problems. The derivative locations must be **disjoint** across submodels.
+
+---
+
+Step 6: Compute function values and directional derivatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Function values at ALL training points (shared by both submodels)
+   y_function_values = f_2d(X_train).reshape(-1, 1)
+   
+   # Compute directional derivatives along each ray
+   ray_0 = rays[:, 0]  # +45° direction
+   ray_1 = rays[:, 1]  # -45° direction
+   
+   # Submodel 1: directional derivatives at inner points
+   X_sm1 = X_train[sm1_indices]
+   dd_ray0_sm1 = directional_deriv(X_sm1, ray_0).reshape(-1, 1)
+   dd_ray1_sm1 = directional_deriv(X_sm1, ray_1).reshape(-1, 1)
+   
+   # Submodel 2: directional derivatives at outer points
+   X_sm2 = X_train[sm2_indices]
+   dd_ray0_sm2 = directional_deriv(X_sm2, ray_0).reshape(-1, 1)
+   dd_ray1_sm2 = directional_deriv(X_sm2, ray_1).reshape(-1, 1)
+   
+   # Package data for WDEGP
+   # Structure: y_train[submodel_idx] = [func_vals, deriv_ray0, deriv_ray1, ...]
+   y_train = [
+       [y_function_values, dd_ray0_sm1, dd_ray1_sm1],  # Submodel 1
+       [y_function_values, dd_ray0_sm2, dd_ray1_sm2]   # Submodel 2
+   ]
+   
+   print("Data structure:")
+   print(f"  Function values: {y_function_values.shape} (shared)")
+   print(f"  Submodel 1 derivs: ray0 {dd_ray0_sm1.shape}, ray1 {dd_ray1_sm1.shape}")
+   print(f"  Submodel 2 derivs: ray0 {dd_ray0_sm2.shape}, ray1 {dd_ray1_sm2.shape}")
+
+---
+
+Step 7: Build WDEGP with DDEGP submodels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   gp_model = wdegp(
+       X_train,
+       y_train,
+       n_order,
+       n_bases,
+       der_indices,
+       derivative_locations=derivative_locations,
+       submodel_type='ddegp',    # Use DDEGP submodels
+       rays=rays,                 # Global rays shared by all submodels
+       normalize=True,
+       kernel="SE",
+       kernel_type="anisotropic"
+   )
+   
+   print("WDEGP model created with DDEGP submodels")
+   print(f"  submodel_type: 'ddegp'")
+   print(f"  rays shape: {rays.shape}")
+
+---
+
+Step 8: Optimize hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   params = gp_model.optimize_hyperparameters(
+       optimizer='lbfgs',
+       n_restart_optimizer=5,
+       debug=False
+   )
+   print("Optimized hyperparameters:", params)
+
+---
+
+Step 9: Evaluate model performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Create test grid
+   x1_test = np.linspace(-1, 1, 50)
+   x2_test = np.linspace(-1, 1, 50)
+   X1_test, X2_test = np.meshgrid(x1_test, x2_test)
+   X_test = np.column_stack([X1_test.ravel(), X2_test.ravel()])
+   
+   # Predict
+   y_pred, y_cov = gp_model.predict(X_test, params, calc_cov=True)
+   y_true = f_2d(X_test)
+   
+   # Compute error
+   nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_true.min())
+   max_error = np.max(np.abs(y_true - y_pred.flatten()))
+   
+   print(f"NRMSE: {nrmse:.6f}")
+   print(f"Max absolute error: {max_error:.6e}")
+
+---
+
+Step 10: Verify interpolation at training points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Verify function value interpolation
+   y_pred_train = gp_model.predict(X_train, params, calc_cov=False)
+   
+   print("=" * 70)
+   print("Function value interpolation verification:")
+   print("=" * 70)
+   
+   max_func_error = np.max(np.abs(y_pred_train.flatten() - y_function_values.flatten()))
+   print(f"Max function interpolation error: {max_func_error:.2e}")
+   
+   # Verify directional derivative interpolation using return_deriv=True
+   # This works because both submodels share the same der_indices
+   y_pred_with_derivs = gp_model.predict(X_train, params, calc_cov=False, return_deriv=True)
+   
+   print(f"\nPrediction shape with return_deriv=True: {y_pred_with_derivs.shape}")
+   print("  Row 0: function values")
+   print("  Row 1: directional derivative along ray 0 (+45°)")
+   print("  Row 2: directional derivative along ray 1 (-45°)")
+   
+   # Compute analytic directional derivatives at all training points
+   dd_ray0_all = directional_deriv(X_train, ray_0)
+   dd_ray1_all = directional_deriv(X_train, ray_1)
+   
+   pred_dd0 = y_pred_with_derivs[1, :]
+   pred_dd1 = y_pred_with_derivs[2, :]
+   
+   print("\n" + "=" * 70)
+   print("Directional derivative interpolation verification:")
+   print("=" * 70)
+   
+   print(f"\nRay 0 (+45°) derivatives:")
+   print(f"  Max error: {np.max(np.abs(pred_dd0 - dd_ray0_all)):.2e}")
+   
+   print(f"\nRay 1 (-45°) derivatives:")
+   print(f"  Max error: {np.max(np.abs(pred_dd1 - dd_ray1_all)):.2e}")
+   
+   # Show details for a few points
+   print("\nDetailed verification (first 5 points):")
+   for i in range(5):
+       submodel = "SM1 (inner)" if i in sm1_indices else "SM2 (outer)"
+       print(f"  Point {i} ({submodel}):")
+       print(f"    Ray 0: Pred={pred_dd0[i]:.6f}, Analytic={dd_ray0_all[i]:.6f}, Error={abs(pred_dd0[i] - dd_ray0_all[i]):.2e}")
+       print(f"    Ray 1: Pred={pred_dd1[i]:.6f}, Analytic={dd_ray1_all[i]:.6f}, Error={abs(pred_dd1[i] - dd_ray1_all[i]):.2e}")
+
+---
+
+Step 11: Visualize results
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+   
+   # Reshape for plotting
+   y_true_grid = y_true.reshape(50, 50)
+   y_pred_grid = y_pred.reshape(50, 50)
+   error_grid = np.abs(y_true_grid - y_pred_grid)
+   
+   # True function
+   im0 = axes[0].contourf(X1_test, X2_test, y_true_grid, levels=30, cmap='viridis')
+   axes[0].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+                   c='red', s=80, marker='o', label='SM1 (inner)', edgecolors='white')
+   axes[0].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
+                   c='blue', s=80, marker='s', label='SM2 (outer)', edgecolors='white')
+   
+   # Add ray direction arrows at center
+   arrow_scale = 0.4
+   axes[0].annotate('', xy=(arrow_scale*ray_0[0], arrow_scale*ray_0[1]), xytext=(0, 0),
+                    arrowprops=dict(arrowstyle='->', color='yellow', lw=2))
+   axes[0].annotate('', xy=(arrow_scale*ray_1[0], arrow_scale*ray_1[1]), xytext=(0, 0),
+                    arrowprops=dict(arrowstyle='->', color='cyan', lw=2))
+   axes[0].text(0.3, 0.35, '+45°', color='yellow', fontsize=10, fontweight='bold')
+   axes[0].text(0.3, -0.35, '-45°', color='cyan', fontsize=10, fontweight='bold')
+   
+   axes[0].set_title('True Function with Training Points')
+   axes[0].set_xlabel('x')
+   axes[0].set_ylabel('y')
+   axes[0].legend(loc='upper left', fontsize=8)
+   plt.colorbar(im0, ax=axes[0])
+   
+   # GP prediction
+   im1 = axes[1].contourf(X1_test, X2_test, y_pred_grid, levels=30, cmap='viridis')
+   axes[1].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+                   c='red', s=80, marker='o', edgecolors='white')
+   axes[1].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
+                   c='blue', s=80, marker='s', edgecolors='white')
+   axes[1].set_title('WDEGP-DDEGP Prediction')
+   axes[1].set_xlabel('x')
+   axes[1].set_ylabel('y')
+   plt.colorbar(im1, ax=axes[1])
+   
+   # Error
+   im2 = axes[2].contourf(X1_test, X2_test, error_grid, levels=30, cmap='hot')
+   axes[2].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+                   c='cyan', s=80, marker='o', edgecolors='white')
+   axes[2].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
+                   c='cyan', s=80, marker='s', edgecolors='white')
+   axes[2].set_title('Absolute Error')
+   axes[2].set_xlabel('x')
+   axes[2].set_ylabel('y')
+   plt.colorbar(im2, ax=axes[2], format='%.1e')
+   
+   plt.tight_layout()
+   plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **WDEGP with DDEGP submodels** using global directional derivatives:
+
+**Key takeaways:**
+
+1. **Global rays**: All submodels share the same directional vectors (±45° in this example)
+2. **submodel_type='ddegp'**: Enables global directional derivative framework
+3. **Disjoint indices**: Derivative locations must be disjoint across submodels
+4. **return_deriv=True**: Available because submodels share the same derivative specifications
+5. **Prediction restriction**: Derivative predictions are limited to the global ray directions
+
+
+Example 7: WDEGP with GDDEGP Submodels (Point-Wise Directional Derivatives)
+---------------------------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates **WDEGP with GDDEGP submodels**, where each training point can have 
+its own unique directional derivative directions. This is the most flexible configuration, useful when:
+
+- Local sensitivity directions vary across the domain (e.g., gradient-aligned directions)
+- Different regions have different dominant sensitivity directions
+- Adaptive or physics-informed direction selection is used
+
+The ``submodel_type='gddegp'`` setting uses **point-wise rays** that can differ at each training point.
+A key advantage is **prediction flexibility**: you can predict directional derivatives along **any direction** 
+at test points—the restriction is on derivative **order**, not direction.
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   import numpy as np
+   import matplotlib.pyplot as plt
+   from jetgp.wdegp.wdegp import wdegp
+   import jetgp.utils as utils
+
+---
+
+Step 2: Define the 2D test function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   def f_2d(X):
+       """2D Rosenbrock-like function: f(x,y) = (1-x)² + 10(y-x²)²"""
+       return (1 - X[:, 0])**2 + 10 * (X[:, 1] - X[:, 0]**2)**2
+   
+   def grad_f_2d(X):
+       """Gradient of f: [∂f/∂x, ∂f/∂y]"""
+       dfdx = -2 * (1 - X[:, 0]) - 40 * X[:, 0] * (X[:, 1] - X[:, 0]**2)
+       dfdy = 20 * (X[:, 1] - X[:, 0]**2)
+       return np.column_stack([dfdx, dfdy])
+   
+   def directional_deriv(X, rays):
+       """
+       Compute directional derivatives along point-specific rays.
+       X: (n, 2) array of points
+       rays: (2, n) array where rays[:, i] is the direction at point i
+       Returns: (n,) array of directional derivatives
+       """
+       grad = grad_f_2d(X)
+       # Element-wise dot product: sum over dimension axis
+       return np.sum(grad * rays.T, axis=1)
+
+**Explanation:**  
+The Rosenbrock function has a curved valley with spatially-varying gradients, making it 
+ideal for demonstrating point-wise directional derivatives. The gradient direction changes 
+significantly across the domain.
+
+---
+
+Step 3: Set experiment parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   n_bases = 2      # 2D problem
+   n_order = 1      # First-order directional derivatives
+   num_points = 25  # 5x5 grid
+   
+   np.random.seed(42)
+   
+   # Create training grid in a region around the Rosenbrock minimum
+   x1 = np.linspace(-1.5, 1.5, 5)
+   x2 = np.linspace(-0.5, 2.0, 5)
+   X1, X2 = np.meshgrid(x1, x2)
+   X_train = np.column_stack([X1.ravel(), X2.ravel()])
+   
+   print(f"Training points shape: {X_train.shape}")
+   print(f"Number of training points: {num_points}")
+
+---
+
+Step 4: Build point-wise rays (gradient-aligned + perpendicular)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   def build_pointwise_rays(X):
+       """
+       Build point-wise directional rays:
+       - Ray 1: gradient direction (normalized)
+       - Ray 2: perpendicular to gradient (90° rotation)
+       
+       Returns rays_list structure for GDDEGP.
+       """
+       n = len(X)
+       grad = grad_f_2d(X)
+       
+       rays_dir1 = np.zeros((2, n))  # Gradient direction
+       rays_dir2 = np.zeros((2, n))  # Perpendicular direction
+       
+       for i in range(n):
+           grad_norm = np.linalg.norm(grad[i])
+           if grad_norm > 1e-10:
+               # Normalized gradient direction
+               rays_dir1[:, i] = grad[i] / grad_norm
+               # Perpendicular (90° counterclockwise rotation)
+               rays_dir2[:, i] = np.array([-rays_dir1[1, i], rays_dir1[0, i]])
+           else:
+               # Default to coordinate directions if gradient is zero
+               rays_dir1[:, i] = np.array([1.0, 0.0])
+               rays_dir2[:, i] = np.array([0.0, 1.0])
+       
+       return rays_dir1, rays_dir2
+   
+   # Build rays for all training points
+   rays_dir1_all, rays_dir2_all = build_pointwise_rays(X_train)
+   
+   print("Point-wise rays constructed:")
+   print(f"  rays_dir1 shape: {rays_dir1_all.shape} (gradient-aligned)")
+   print(f"  rays_dir2 shape: {rays_dir2_all.shape} (perpendicular)")
+   
+   # Show a few example rays
+   print("\nExample rays at first 3 points:")
+   for i in range(3):
+       print(f"  Point {i} at ({X_train[i, 0]:.2f}, {X_train[i, 1]:.2f}):")
+       print(f"    Ray 1 (grad): [{rays_dir1_all[0, i]:.4f}, {rays_dir1_all[1, i]:.4f}]")
+       print(f"    Ray 2 (perp): [{rays_dir2_all[0, i]:.4f}, {rays_dir2_all[1, i]:.4f}]")
+
+**Explanation:**  
+For GDDEGP, each training point has its own directional vectors. Here we use:
+
+- **Ray 1**: Gradient direction (normalized) - captures maximum sensitivity
+- **Ray 2**: Perpendicular to gradient - captures minimum sensitivity
+
+This gradient-aligned approach is common in physics-informed surrogate modeling.
+
+---
+
+Step 5: Define submodel structure with disjoint indices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Partition points by function value: low vs high
+   f_vals = f_2d(X_train)
+   median_f = np.median(f_vals)
+   
+   sm1_indices = [i for i in range(num_points) if f_vals[i] <= median_f]  # Low f values (near valley)
+   sm2_indices = [i for i in range(num_points) if f_vals[i] > median_f]   # High f values (away from valley)
+   
+   print(f"Submodel 1 indices (f ≤ {median_f:.2f}, near valley): {sm1_indices}")
+   print(f"  Points: {len(sm1_indices)}")
+   print(f"Submodel 2 indices (f > {median_f:.2f}, away from valley): {sm2_indices}")
+   print(f"  Points: {len(sm2_indices)}")
+   
+   # Verify disjoint
+   assert len(set(sm1_indices) & set(sm2_indices)) == 0, "Indices must be disjoint!"
+   print("\n✓ Indices are disjoint across submodels")
+   
+   # Derivative locations for WDEGP
+   # Structure: derivative_locations[submodel_idx][direction_idx] = point indices
+   derivative_locations = [
+       [sm1_indices, sm1_indices],  # Submodel 1: both rays at its points
+       [sm2_indices, sm2_indices]   # Submodel 2: both rays at its points
+   ]
+   
+   # Derivative indices (same for both submodels - 1st order directional)
+   der_indices = [
+       [[[[1, 1]]], [[[2, 1]]]],   # Submodel 1: 1st order along each ray
+       [[[[1, 1]]], [[[2, 1]]]]    # Submodel 2: 1st order along each ray
+   ]
+
+---
+
+Step 6: Build rays_list for WDEGP-GDDEGP
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # For WDEGP with GDDEGP submodels, rays_list has structure:
+   # rays_list[submodel_idx][direction_idx] = (n_bases, n_points_in_submodel)
+   
+   # Extract rays for each submodel's points
+   rays_dir1_sm1 = rays_dir1_all[:, sm1_indices]
+   rays_dir2_sm1 = rays_dir2_all[:, sm1_indices]
+   
+   rays_dir1_sm2 = rays_dir1_all[:, sm2_indices]
+   rays_dir2_sm2 = rays_dir2_all[:, sm2_indices]
+   
+   rays_list = [
+       [rays_dir1_sm1, rays_dir2_sm1],  # Submodel 1 rays
+       [rays_dir1_sm2, rays_dir2_sm2]   # Submodel 2 rays
+   ]
+   
+   print("rays_list structure for WDEGP-GDDEGP:")
+   print(f"  Submodel 1:")
+   print(f"    Ray dir 1: {rays_list[0][0].shape}")
+   print(f"    Ray dir 2: {rays_list[0][1].shape}")
+   print(f"  Submodel 2:")
+   print(f"    Ray dir 1: {rays_list[1][0].shape}")
+   print(f"    Ray dir 2: {rays_list[1][1].shape}")
+
+---
+
+Step 7: Compute function values and directional derivatives
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Function values at ALL training points (shared)
+   y_function_values = f_2d(X_train).reshape(-1, 1)
+   
+   # Submodel 1: directional derivatives at its points
+   X_sm1 = X_train[sm1_indices]
+   dd_dir1_sm1 = directional_deriv(X_sm1, rays_dir1_sm1).reshape(-1, 1)
+   dd_dir2_sm1 = directional_deriv(X_sm1, rays_dir2_sm1).reshape(-1, 1)
+   
+   # Submodel 2: directional derivatives at its points
+   X_sm2 = X_train[sm2_indices]
+   dd_dir1_sm2 = directional_deriv(X_sm2, rays_dir1_sm2).reshape(-1, 1)
+   dd_dir2_sm2 = directional_deriv(X_sm2, rays_dir2_sm2).reshape(-1, 1)
+   
+   # Package data for WDEGP
+   y_train = [
+       [y_function_values, dd_dir1_sm1, dd_dir2_sm1],  # Submodel 1
+       [y_function_values, dd_dir1_sm2, dd_dir2_sm2]   # Submodel 2
+   ]
+   
+   print("Data structure:")
+   print(f"  Function values: {y_function_values.shape} (shared)")
+   print(f"  Submodel 1 derivs: dir1 {dd_dir1_sm1.shape}, dir2 {dd_dir2_sm1.shape}")
+   print(f"  Submodel 2 derivs: dir1 {dd_dir1_sm2.shape}, dir2 {dd_dir2_sm2.shape}")
+
+---
+
+Step 8: Build WDEGP with GDDEGP submodels
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   gp_model = wdegp(
+       X_train,
+       y_train,
+       n_order,
+       n_bases,
+       der_indices,
+       derivative_locations=derivative_locations,
+       submodel_type='gddegp',    # Use GDDEGP submodels
+       rays_list=rays_list,       # Point-wise rays for each submodel
+       normalize=True,
+       kernel="SE",
+       kernel_type="anisotropic"
+   )
+   
+   print("WDEGP model created with GDDEGP submodels")
+   print(f"  submodel_type: 'gddegp'")
+   print(f"  Number of submodels: 2")
+
+---
+
+Step 9: Optimize hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   params = gp_model.optimize_hyperparameters(
+       optimizer='pso',
+       pop_size=200,
+       n_generations=15,
+       local_opt_every=15,
+       debug=False
+   )
+   print("Optimized hyperparameters:", params)
+
+---
+
+Step 10: Evaluate model performance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Create test grid
+   x1_test = np.linspace(-1.5, 1.5, 50)
+   x2_test = np.linspace(-0.5, 2.0, 50)
+   X1_test, X2_test = np.meshgrid(x1_test, x2_test)
+   X_test = np.column_stack([X1_test.ravel(), X2_test.ravel()])
+   
+   # Predict
+   y_pred, y_cov = gp_model.predict(X_test, params, calc_cov=True)
+   y_true = f_2d(X_test)
+   
+   # Compute error
+   nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_true.min())
+   max_error = np.max(np.abs(y_true - y_pred.flatten()))
+   
+   print(f"NRMSE: {nrmse:.6f}")
+   print(f"Max absolute error: {max_error:.6e}")
+
+---
+
+Step 11: Demonstrate GDDEGP prediction flexibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   print("=" * 70)
+   print("GDDEGP Prediction Flexibility Demonstration")
+   print("=" * 70)
+   print("\nKey advantage: Can predict directional derivatives along ANY direction")
+   print("at test points, not just the directions used during training!")
+   print("\nRestriction: Only derivative ORDERS trained on can be predicted.")
+   
+   # Pick a few test points
+   test_points = np.array([
+       [0.0, 0.5],
+       [0.5, 1.0],
+       [-0.5, 0.5]
+   ])
+   n_test = len(test_points)
+   
+   # Define NEW directions at test points (not the training directions!)
+   # Let's predict along coordinate axes
+   rays_x = np.tile([1.0, 0.0], (n_test, 1)).T  # x-direction at all test points
+   rays_y = np.tile([0.0, 1.0], (n_test, 1)).T  # y-direction at all test points
+   rays_predict = [rays_x, rays_y]
+   
+   print(f"\nTest points: {test_points}")
+   print(f"Predicting along coordinate axes (NEW directions, not used in training):")
+   print(f"  rays_predict[0] (x-dir): shape {rays_predict[0].shape}")
+   print(f"  rays_predict[1] (y-dir): shape {rays_predict[1].shape}")
+   
+   # Predict with new directions
+   y_pred_derivs = gp_model.predict(
+       test_points, params,
+       calc_cov=False,
+       return_deriv=True,
+       rays_predict=rays_predict
+   )
+   
+   print(f"\nPrediction shape: {y_pred_derivs.shape}")
+   print("  Row 0: function values")
+   print("  Row 1: ∂f/∂x (x-direction derivative)")
+   print("  Row 2: ∂f/∂y (y-direction derivative)")
+   
+   # Compare with analytic partial derivatives
+   grad_test = grad_f_2d(test_points)
+   
+   print("\nComparison with analytic partial derivatives:")
+   print("-" * 70)
+   for i in range(n_test):
+       print(f"Point ({test_points[i, 0]:.2f}, {test_points[i, 1]:.2f}):")
+       print(f"  ∂f/∂x: Predicted={y_pred_derivs[1, i]:.4f}, Analytic={grad_test[i, 0]:.4f}")
+       print(f"  ∂f/∂y: Predicted={y_pred_derivs[2, i]:.4f}, Analytic={grad_test[i, 1]:.4f}")
+   
+   print("\n" + "=" * 70)
+   print("Note: Training used gradient-aligned directions, but we predicted")
+   print("      along coordinate axes! This flexibility is unique to GDDEGP.")
+   print("=" * 70)
+
+**Explanation:**  
+This demonstrates the key advantage of GDDEGP submodels: you can predict directional derivatives 
+along **any direction** at test points, even though training used different directions 
+(gradient-aligned in this case). The restriction is only on derivative **order**—you can only 
+predict orders that were included in training.
+
+---
+
+Step 12: Visualize results with point-wise rays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+   
+   # Reshape for plotting
+   y_true_grid = y_true.reshape(50, 50)
+   y_pred_grid = y_pred.reshape(50, 50)
+   error_grid = np.abs(y_true_grid - y_pred_grid)
+   
+   # True function with training points and rays
+   im0 = axes[0].contourf(X1_test, X2_test, y_true_grid, levels=30, cmap='viridis')
+   
+   # Plot training points colored by submodel
+   axes[0].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+                   c='red', s=80, marker='o', label='SM1 (near valley)', edgecolors='white', zorder=5)
+   axes[0].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
+                   c='blue', s=80, marker='s', label='SM2 (away from valley)', edgecolors='white', zorder=5)
+   
+   # Draw gradient direction rays at a subset of points
+   arrow_scale = 0.2
+   for i in range(0, num_points):  # Every 3rd point
+       color = 'red' if i in sm1_indices else 'blue'
+       axes[0].annotate('', 
+                        xy=(X_train[i, 0] + arrow_scale*rays_dir1_all[0, i], 
+                            X_train[i, 1] + arrow_scale*rays_dir1_all[1, i]),
+                        xytext=(X_train[i, 0], X_train[i, 1]),
+                        arrowprops=dict(arrowstyle='->', color='yellow', lw=1.5),
+                        annotation_clip=True)
+   
+   axes[0].set_title('True Function with Point-Wise Rays')
+   axes[0].set_xlabel('x')
+   axes[0].set_ylabel('y')
+   axes[0].legend(loc='upper right', fontsize=8)
+   axes[0].set_xlim(-1.5, 1.5)
+   axes[0].set_ylim(-0.5, 2.0)
+   plt.colorbar(im0, ax=axes[0])
+   
+   # GP prediction
+   im1 = axes[1].contourf(X1_test, X2_test, y_pred_grid, levels=30, cmap='viridis')
+   axes[1].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+                   c='red', s=80, marker='o', edgecolors='white', zorder=5)
+   axes[1].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
+                   c='blue', s=80, marker='s', edgecolors='white', zorder=5)
+   axes[1].set_title('WDEGP-GDDEGP Prediction')
+   axes[1].set_xlabel('x')
+   axes[1].set_ylabel('y')
+   axes[1].set_xlim(-1.5, 1.5)
+   axes[1].set_ylim(-0.5, 2.0)
+   plt.colorbar(im1, ax=axes[1])
+   
+   # Error
+   im2 = axes[2].contourf(X1_test, X2_test, error_grid, levels=30, cmap='hot')
+   axes[2].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+                   c='cyan', s=80, marker='o', edgecolors='white', zorder=5)
+   axes[2].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
+                   c='cyan', s=80, marker='s', edgecolors='white', zorder=5)
+   axes[2].set_title('Absolute Error')
+   axes[2].set_xlabel('x')
+   axes[2].set_ylabel('y')
+   axes[2].set_xlim(-1.5, 1.5)
+   axes[2].set_ylim(-0.5, 2.0)
+   plt.colorbar(im2, ax=axes[2], format='%.1e')
+   
+   plt.tight_layout()
+   plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **WDEGP with GDDEGP submodels** using point-wise directional derivatives:
+
+**Key takeaways:**
+
+1. **Point-wise rays**: Each training point has its own directional vectors (gradient-aligned here)
+2. **submodel_type='gddegp'**: Enables point-wise directional derivative framework
+3. **rays_list structure**: ``rays_list[submodel_idx][direction_idx]`` with shape ``(d, n_points_in_submodel)``
+4. **Prediction flexibility**: Can predict directional derivatives along **ANY direction** at test points
+5. **Order restriction**: Only derivative orders present in training can be predicted
+6. **Physics-informed**: Gradient-aligned directions naturally capture maximum local sensitivity
+
+**When to use WDEGP-GDDEGP:**
+
+- Local sensitivity directions vary across the domain
+- You need maximum flexibility in derivative predictions
+- Physics-informed direction selection is beneficial
+- Adaptive sampling strategies determine local directions
