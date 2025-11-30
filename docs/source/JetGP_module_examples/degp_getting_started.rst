@@ -1194,3 +1194,4 @@ This example demonstrates **heterogeneous derivative coverage** in DEGP using ``
 - Derivative data comes from multiple sources with different capabilities
 - You want to focus derivative information in high-curvature or high-importance regions
 - Boundary conditions provide limited derivative information
+

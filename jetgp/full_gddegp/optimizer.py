@@ -40,7 +40,10 @@ class Optimizer:
         
         ell = x0[:-1]
         sigma_n = x0[-1]
-        
+        # ell[0] = 0
+        # ell[1] = 0
+        # ell[2] = 0
+        # sigma_n = -16
         
 
         # Compute kernel matrix with current hyperparameters

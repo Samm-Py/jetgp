@@ -1,20 +1,22 @@
 import numpy as np
 from scipy.linalg import cho_solve, cho_factor
-from jetgp.wdegp import wdegp_utils as utils
 from line_profiler import profile
 import jetgp.utils as gen_utils
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
+
 
 class Optimizer:
     """
     Optimizer class for fitting the hyperparameters of a weighted derivative-enhanced GP model (wDEGP)
     by minimizing the negative log marginal likelihood (NLL).
 
+    Supports DEGP, DDEGP, and GDDEGP modes.
+
     Attributes
     ----------
     model : object
         Instance of a weighted derivative-enhanced GP model (wDEGP) with attributes:
-        x_train, y_train, n_order, n_bases, der_indices, index, bounds, etc.
+        x_train, y_train, n_order, n_bases, der_indices, index, bounds, submodel_type, etc.
     """
 
     def __init__(self, model):
@@ -26,6 +28,27 @@ class Optimizer:
             and other model-specific structures required for kernel computation.
         """
         self.model = model
+        
+        # Import the appropriate utils module based on submodel_type
+        self._setup_utils()
+
+    def _setup_utils(self):
+        """Set up the correct utils module based on submodel_type."""
+        submodel_type = getattr(self.model, 'submodel_type', 'degp')
+        
+        if submodel_type == 'degp':
+            from jetgp.wdegp import wdegp_utils
+            self.utils = wdegp_utils
+        elif submodel_type == 'ddegp':
+            from jetgp.full_ddegp import wddegp_utils
+            self.utils = wddegp_utils
+        elif submodel_type == 'gddegp':
+            from jetgp.full_gddegp import wgddegp_utils
+            self.utils = wgddegp_utils
+        else:
+            # Default to degp
+            from jetgp.wdegp import wdegp_utils
+            self.utils = wdegp_utils
 
     @profile
     def negative_log_marginal_likelihood(
@@ -58,7 +81,7 @@ class Optimizer:
         der_indices : list
             Multi-index derivative information.
         index : list of lists
-            Indices partitioning the training data into submodels.
+            Indices partitioning the training data into submodels (derivative_locations).
 
         Returns
         -------
@@ -68,22 +91,48 @@ class Optimizer:
         ell = x0[:-1]
         sigma_n = x0[-1]
         llhood = 0
-
+        # ell[0] = 0
+        # ell[1] = 0
+        # ell[2] = 0
+        # sigma_n = -16
         diffs = self.model.differences_by_dim
         phi = self.model.kernel_func(diffs, ell)
-
+        n_bases = phi.get_active_bases()[-1]
+        
         # Extract ALL derivative components into a single flat array (highly efficient)
         phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
+        
+        submodel_type = getattr(self.model, 'submodel_type', 'degp')
+        
         for i in range(len(index)):
             y_train_sub = y_train[i]
-            der_indices_sub = self.model.flattened_der_indicies[i]
+            der_indices_sub = self.model.flattened_der_indices[i]
             powers = self.model.powers[i]
             idx = index[i]
 
-            K = utils.rbf_kernel(
-                phi, phi_exp, n_order, n_bases,
-                der_indices_sub, powers, index=idx
-            )
+            # Build kernel matrix using the appropriate function based on submodel_type
+            if submodel_type == 'degp':
+                K = self.utils.rbf_kernel(
+                    phi, phi_exp, n_order, n_bases,
+                    der_indices_sub, powers, index=idx
+                )
+            elif submodel_type == 'ddegp':
+                K = self.utils.rbf_kernel(
+                    phi, phi_exp, n_order, n_bases,
+                    der_indices_sub, powers, index=idx
+                )
+            elif submodel_type == 'gddegp':
+                K = self.utils.rbf_kernel(
+                    phi, phi_exp, n_order, n_bases,
+                    der_indices_sub, powers, index=idx
+                )
+            else:
+                # Default to degp
+                K = self.utils.rbf_kernel(
+                    phi, phi_exp, n_order, n_bases,
+                    der_indices_sub, powers, index=idx
+                )
+            
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
             # K += self.model.sigma_data[i]**2
 
@@ -94,7 +143,7 @@ class Optimizer:
                     y_train_sub
                 )
 
-                data_fit = 0.5 * np.dot(y_train_sub, alpha)
+                data_fit = 0.5 * np.dot(y_train_sub.flatten(), alpha.flatten())
                 log_det = np.sum(np.log(np.diag(L)))
                 const = 0.5 * len(y_train_sub) * np.log(2 * np.pi)
 
@@ -121,27 +170,27 @@ class Optimizer:
         return self.negative_log_marginal_likelihood(
             x0,
             self.model.x_train,
-            self.model.y_train,
+            self.model.y_train_normalized,
             self.model.n_order,
             self.model.n_bases,
             self.model.der_indices,
-            self.model.index,
+            self.model.derivative_locations,
         )
 
-    def optimize_hyperparameters(    self,
-    optimizer="pso",
-    **kwargs):
+    def optimize_hyperparameters(
+        self,
+        optimizer="pso",
+        **kwargs
+    ):
         """
-        Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).
+        Optimize the DEGP model hyperparameters using the specified optimizer.
 
         Parameters:
         ----------
-        n_restart_optimizer : int, default=20
-            Maximum number of iterations for PSO.
-        swarm_size : int, default=20
-            Number of particles in the swarm.
-        verbose : bool, default=True
-            Controls verbosity of PSO output.
+        optimizer : str or callable, default="pso"
+            Name of optimizer or callable. Available: 'pso', 'lbfgs', 'jade', etc.
+        **kwargs : dict
+            Additional arguments passed to the optimizer.
 
         Returns:
         -------
@@ -166,6 +215,5 @@ class Optimizer:
 
         self.model.opt_x0 = best_x
         self.model.opt_nll = best_val
-
 
         return best_x

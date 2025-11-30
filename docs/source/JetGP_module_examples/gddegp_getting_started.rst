@@ -672,7 +672,9 @@ Step 5: Generate training data with multiple rays per point
     # Define your function symbolically (you'll need to adapt this to your actual function)
     # For example, if true_function is f(x,y) = x^2 + y^2:
     # f_sym = x_sym**2 + y_sym**2
-
+    x_sym, y_sym = sp.symbols('x y')
+    a, b, c, r, s, t = 1.0, 5.1/(4*sp.pi**2), 5.0/sp.pi, 6.0, 10.0, 1.0/(8*sp.pi)
+    f_sym = a * (y_sym - b*x_sym**2 + c*x_sym - r)**2 + s*(1 - t)*sp.cos(x_sym) + s
     # Compute symbolic gradient
     grad_f = [sp.diff(f_sym, x_sym), sp.diff(f_sym, y_sym)]
 

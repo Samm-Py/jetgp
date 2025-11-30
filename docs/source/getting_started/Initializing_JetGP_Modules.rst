@@ -314,7 +314,7 @@ Module-Specific Initialization
         submodel_data,
         n_order,
         n_bases,
-        submodel_indices,
+        derivative_locations,
         derivative_specifications,
         normalize=True,
         kernel="SE",
@@ -344,7 +344,7 @@ Module-Specific Initialization
             ...
         ]
 
-**submodel_indices**
+**derivative_locations**
   Training point assignments for submodels.
   
   - **Type:** ``list`` of ``list`` of ``list`` of ``int``
@@ -444,6 +444,7 @@ Module-Specific Initialization
         Y_train,
         n_order,
         der_indices,
+        derivative_locations,
         rays,
         normalize=True,
         kernel="SE",
@@ -458,14 +459,16 @@ Module-Specific Initialization
   - **Type:** ``list`` of ``numpy.ndarray``
   - **Description:** Same format as ``y_train_list`` in DEGP. Contains function values
     followed by directional derivative observations. Order must match ``der_indices``.
+  - **Shape correspondence:** ``Y_train[0]`` has shape ``(n_train, 1)`` for function values.
+    ``Y_train[i+1]`` has shape ``(len(derivative_locations[i]), 1)`` for direction ``i``.
 
 **rays**
   Global directional derivative directions.
   
   - **Type:** ``numpy.ndarray``
-  - **Shape:** ``(dimension, rays_per_point)``
+  - **Shape:** ``(dimension, n_directions)``
   - **Description:** Defines the direction vectors along which derivatives are evaluated.
-    All training points share the same directional information (global directions).
+    All training points that have a given direction share the same ray vector (global directions).
     **Direction vectors should be normalized to unit length (norm = 1) for proper interpretation.**
   - **Example for 2D problem with 3 directions:**
   
@@ -480,11 +483,46 @@ Module-Specific Initialization
         for i in range(rays.shape[1]):
             rays[:, i] = rays[:, i] / np.linalg.norm(rays[:, i])
 
+**derivative_locations**
+  Specifies which training points have which directional derivatives.
+  
+  - **Type:** ``list`` of ``list`` of ``int``, or ``None``
+  - **Default:** ``None`` (all directions at all training points)
+  - **Description:** Each inner list contains the training point indices where that 
+    direction's derivative is available. Indices do NOT need to be contiguous.
+  - **Length:** Must match the number of directions (columns in ``rays``).
+  - **Correspondence:** ``derivative_locations[i]`` specifies which points have direction ``i``,
+    and ``Y_train[i+1]`` must have length ``len(derivative_locations[i])``.
+  - **Example:**
+  
+    .. code-block:: python
+    
+        # 10 training points, 3 directional derivatives
+        # Direction 0: at all points
+        # Direction 1: at points 0-4 only
+        # Direction 2: at points 5-9 only
+        derivative_locations = [
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],  # Direction 0
+            [0, 1, 2, 3, 4],                  # Direction 1
+            [5, 6, 7, 8, 9]                   # Direction 2
+        ]
+        
+        # Y_train shapes:
+        # Y_train[0]: (10, 1) - function values at all points
+        # Y_train[1]: (10, 1) - direction 0 derivatives
+        # Y_train[2]: (5, 1)  - direction 1 derivatives
+        # Y_train[3]: (5, 1)  - direction 2 derivatives
+
 **Usage Notes:**
 
-- DDEGP uses **global** directional derivatives: all training points use the same direction vectors.
+- DDEGP uses **global** directional derivatives: the ray vectors are the same at all points 
+  that have a given direction.
 - **Direction vectors should be normalized to unit length** for proper interpretation of directional derivatives.
-- This approach is suited for problems with known global sensitivity directions.
+- Use ``derivative_locations`` for **selective coverage**: different points can have different 
+  subsets of the available directions.
+- When ``derivative_locations=None``, all directions are assumed to be available at all training points.
+- This approach is suited for problems with known global sensitivity directions, such as 
+  fixed sensor orientations or wind directions.
 
 ------------------------------------------------------------
 
@@ -503,7 +541,9 @@ Module-Specific Initialization
         X_train,
         y_train_list,
         n_order,
-        rays_array,
+        rays_list,
+        der_indices,
+        derivative_locations,
         der_indices,
         normalize=True,
         kernel="SE",
@@ -518,40 +558,106 @@ Module-Specific Initialization
   - **Type:** ``list`` of ``numpy.ndarray``
   - **Description:** Same format as in DEGP. Contains function values followed by
     directional derivative observations in order matching ``der_indices``.
+  - **Shape correspondence:** ``y_train_list[0]`` has shape ``(n_train, 1)`` for function values.
+    ``y_train_list[i+1]`` has shape ``(len(derivative_locations[i]), 1)`` for direction ``i``.
 
-**rays_array**
+**rays_list**
   Point-specific directional derivative directions.
   
   - **Type:** ``list`` of ``numpy.ndarray``
-  - **Description:** A list where each element is an array of shape ``(dimension, num_training_points)``.
-    The length of the list specifies how many directional derivatives are used per point.
-    Unlike DDEGP, each training point can have **different** direction vectors.
+  - **Length:** Number of directional derivative types (must match length of ``derivative_locations``)
+  - **Description:** Each element ``rays_list[i]`` is an array of shape 
+    ``(dimension, len(derivative_locations[i]))``. Unlike DDEGP where all points share the same 
+    ray vectors, GDDEGP allows each training point to have **unique** direction vectors.
     **Direction vectors should be normalized to unit length (norm = 1) for proper interpretation.**
-  - **Example for 2D problem, 10 training points, 2 directions per point:**
+  - **Correspondence:** ``rays_list[i][:, j]`` is the ray vector for training point 
+    ``derivative_locations[i][j]``.
+  - **Example for 2D problem, 12 training points, 2 directions at interior points only:**
   
     .. code-block:: python
     
-        rays_array = [
-            np.random.randn(2, 10),  # First directional derivative at each point
-            np.random.randn(2, 10)   # Second directional derivative at each point
+        # Suppose interior_indices = [2, 3, 5, 7, 8, 10] (6 interior points)
+        interior_indices = [2, 3, 5, 7, 8, 10]
+        n_interior = len(interior_indices)
+        
+        # Build point-specific rays (e.g., gradient-aligned and perpendicular)
+        rays_dir1 = np.zeros((2, n_interior))  # Direction 1 at interior points
+        rays_dir2 = np.zeros((2, n_interior))  # Direction 2 at interior points
+        
+        for j, idx in enumerate(interior_indices):
+            # Compute gradient direction at this point
+            gradient = compute_gradient(X_train[idx])
+            grad_norm = np.linalg.norm(gradient)
+            
+            # Direction 1: normalized gradient
+            rays_dir1[:, j] = gradient / grad_norm
+            
+            # Direction 2: perpendicular (90° rotation in 2D)
+            rays_dir2[:, j] = np.array([-rays_dir1[1, j], rays_dir1[0, j]])
+        
+        rays_list = [rays_dir1, rays_dir2]
+
+**derivative_locations**
+  Specifies which training points have which directional derivatives.
+  
+  - **Type:** ``list`` of ``list`` of ``int``
+  - **Description:** Each inner list contains the training point indices where that 
+    direction's derivative is available. Indices do NOT need to be contiguous.
+    Different directions can have different point sets.
+  - **Length:** Must match the length of ``rays_list``.
+  - **Correspondence:** 
+    
+    - ``derivative_locations[i][j]`` is the training point index
+    - ``rays_list[i][:, j]`` is the ray vector for that point
+    - ``y_train_list[i+1][j]`` is the derivative value at that point
+    
+  - **Example:**
+  
+    .. code-block:: python
+    
+        # 12 training points total
+        # Direction 1 (gradient): at interior points [2, 3, 5, 7, 8, 10]
+        # Direction 2 (perpendicular): at same interior points
+        derivative_locations = [
+            [2, 3, 5, 7, 8, 10],  # Direction 1
+            [2, 3, 5, 7, 8, 10]   # Direction 2
         ]
         
-        # Normalize each direction vector to unit length
-        for ray_set in rays_array:
-            for i in range(ray_set.shape[1]):
-                ray_set[:, i] = ray_set[:, i] / np.linalg.norm(ray_set[:, i])
+        # rays_list shapes:
+        # rays_list[0]: (2, 6) - unique ray at each of 6 interior points
+        # rays_list[1]: (2, 6) - unique ray at each of 6 interior points
         
-        # Note: wrapped in list when passed to gddegp
-        gp = gddegp(X_train, y_train_list, n_order, 
-                    rays_array=[rays_array], ...)
+        # y_train_list shapes:
+        # y_train_list[0]: (12, 1) - function values at all points
+        # y_train_list[1]: (6, 1)  - direction 1 derivatives at interior points
+        # y_train_list[2]: (6, 1)  - direction 2 derivatives at interior points
+
+  - **Mixed coverage example** (different points have different directions):
+  
+    .. code-block:: python
+    
+        # Direction 1: at points [0, 1, 2, 3, 4]
+        # Direction 2: at points [3, 4, 5, 6, 7]
+        # Points 3, 4 have BOTH directions
+        derivative_locations = [
+            [0, 1, 2, 3, 4],  # Direction 1
+            [3, 4, 5, 6, 7]   # Direction 2
+        ]
+        
+        # rays_list[0]: (d, 5) - rays for points 0, 1, 2, 3, 4
+        # rays_list[1]: (d, 5) - rays for points 3, 4, 5, 6, 7
 
 **Usage Notes:**
 
-- GDDEGP allows **spatially varying** directional derivatives.
-- Each training point can encode different sensitivity directions.
+- GDDEGP allows **spatially varying** directional derivatives: each point can have unique ray directions.
 - **Direction vectors should be normalized to unit length** for proper interpretation of directional derivatives.
-- The ``rays_array`` parameter is passed as ``[rays_array]`` (wrapped in a list) in the initialization.
-- This formulation is useful when local sensitivity varies across the input space.
+- Use ``derivative_locations`` to specify **selective coverage**: not all points need derivatives, 
+  and different points can have different subsets of directions.
+- **Key difference from DDEGP:** In DDEGP, ``rays.shape = (d, n_directions)`` and all points share 
+  the same rays. In GDDEGP, ``rays_list[i].shape = (d, len(derivative_locations[i]))`` with unique 
+  rays per point.
+- This formulation is useful when local sensitivity varies across the input space, such as 
+  gradient-aligned directions or adaptive directional sampling.
 
 ------------------------------------------------------------
 

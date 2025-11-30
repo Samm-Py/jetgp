@@ -411,23 +411,15 @@ same global directions used during training.
 
 Allows **point-specific directional derivatives** (different directions at each training point).
 
-**Critical difference:** Requires ``rays_pred`` argument specifying prediction directions.
-
 **Signature:**
 
 ::
 
     y_pred, y_var = gp.predict(
-        X_test, rays_pred, params, calc_cov=True, return_deriv=False
+        X_test,params, calc_cov=True, return_deriv=False
     )
 
-**Additional required argument:**
 
-- ``rays_pred`` : array, shape ``(n_test, n_dims)`` or ``(n_test, n_rays, n_dims)``  
-  Directional vectors for derivative predictions at test locations.  
-  **Must be provided even if return_deriv=False.**
-
-**Returns:**
 
 - ``y_pred`` : array, shape ``(n_test,)`` when ``return_deriv=False``  
   Predicted function values
@@ -440,7 +432,7 @@ Allows **point-specific directional derivatives** (different directions at each 
 ::
 
     y_pred, y_var = gp.predict(
-        X_test, rays_pred, params, calc_cov=True, return_deriv=True
+        X_test,  params, rays_predict = rays_pred, calc_cov=True, return_deriv=True
     )
 
 **Returns:**
@@ -465,24 +457,17 @@ the directions specified in ``rays_pred``.
     X_test = np.array([[0.5, 0.5], [1.0, 1.0], [1.5, 1.5]])
     
     # Define directional vectors for predictions at each test point
-    rays_pred = np.array([
+    rays_pred = [np.array([
         [1.0, 0.0],       # Direction at first test point
         [0.0, 1.0],       # Direction at second test point
         [0.707, 0.707]    # Direction at third test point (normalized)
-    ])
+    ])]
     
     # Make predictions (rays_pred required even with return_deriv=False)
     y_pred, y_var = gp.predict(
-        X_test, rays_pred, params, calc_cov=True, return_deriv=False
+        X_test, params, rays_predict = rays_pred, calc_cov=True, return_deriv=False
     )
 
-**Important notes:**
-
-- ``rays_pred`` must be provided even when ``return_deriv=False``
-- Directional vectors in ``rays_pred`` should be normalized (unit length)
-- Each test point can have different directional vectors
-
-----
 
 **5. WDDEGP (Weighted Directional Derivative-Enhanced GP)**
 

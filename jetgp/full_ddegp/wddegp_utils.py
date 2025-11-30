@@ -48,7 +48,7 @@ from line_profiler import profile
 #     return differences_by_dim
 
 
-def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
+def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True):
     """
     Compute dimension-wise pairwise differences between X1 and X2,
     including hypercomplex perturbations in the directions specified by `rays`.
@@ -317,15 +317,13 @@ def transform_der_indices(der_indices, der_map):
 
 
 def rbf_kernel(
-    differences,
-    length_scales,
+        phi,
+    phi_exp,
     n_order,
     n_bases,
-    kernel_func,
     der_indices,
-    index,
     powers,
-    return_deriv=True
+    index = -1
 ):
     """
     Assembles the full DD-GP covariance matrix using an efficient, pre-computed
@@ -365,42 +363,20 @@ def rbf_kernel(
     K : ndarray
         Full kernel matrix with function values and derivative blocks.
     """
-    # Get the pyoti derivative helper for multiplying derivative indices
+    # --- 1. Initial Setup and Efficient Derivative Extraction ---
     dh = coti.get_dHelp()
-    
-    # 1. Evaluate the kernel once to get the hypercomplex result
-    phi = kernel_func(differences, length_scales)
+    # Create maps to translate derivative specifications to flat indices
+    der_map = deriv_map(n_bases, 2 * n_order)
+    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+
+    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
-    
-    if n_order == 0:
-        return phi.real
-    
-    # 2. Extract derivative components based on return_deriv
-    if not return_deriv:
-        phi_exp = phi.get_all_derivs(n_bases, n_order)
-        der_map = deriv_map(n_bases, n_order)
-    else:
-        phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
-        der_map = deriv_map(n_bases, 2 * n_order)
-    
-    # 3. Create maps to translate derivative specifications to flat indices
-    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
-    
-    # =========================================================================
-    # CASE 2: Non-contiguous indices (new behavior) - index is provided
-    # =========================================================================
-    
-    # Calculate total size based on indices for each derivative type
+    n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
     n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
     total_rows = n_rows_func + n_pts_with_derivs_rows
-    
-    if not return_deriv:
-        total_cols = n_cols_func
-    else:
-        n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
-        total_cols = n_cols_func + n_pts_with_derivs_cols
-    
+    total_cols = n_cols_func + n_pts_with_derivs_cols
+
     K = np.zeros((total_rows, total_cols))
     base_shape = (n_rows_func, n_cols_func)
     
@@ -423,8 +399,6 @@ def rbf_kernel(
         K[row_offset: row_offset + n_pts_this_order, :n_cols_func] = content_sliced * ((-1) ** powers[0])
         row_offset += n_pts_this_order
     
-    if not return_deriv:
-        return K
     
     # First Block-Row: Function-Derivative (K_fd)
     col_offset = n_cols_func
@@ -474,17 +448,17 @@ def rbf_kernel(
 
 
 def rbf_kernel_predictions(
-    differences,
-    length_scales,
+        phi,
+    phi_exp,
     n_order,
     n_bases,
-    kernel_func,
     der_indices,
-    index,  # Training point indices per derivative type
     powers,
-    return_deriv=False,
+    return_deriv,
+    index = -1,
     calc_cov=False
 ):
+
     """
     Constructs the RBF kernel matrix for predictions with directional derivative entries.
     
@@ -525,7 +499,6 @@ def rbf_kernel_predictions(
     dh = coti.get_dHelp()
     
     # 1. Evaluate the kernel once to get the hypercomplex result
-    phi = kernel_func(differences, length_scales)
     n_rows_func, n_cols_func = phi.shape  # (N_test, N_train)
     n_deriv_types = len(der_indices)
     

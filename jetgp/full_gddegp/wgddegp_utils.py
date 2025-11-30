@@ -382,8 +382,15 @@ def transform_der_indices(der_indices, der_map):
 # import coti
 # from some_module import deriv_map
 @profile
-def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func, 
-               der_indices, derivative_locations=None, return_deriv=True):
+def rbf_kernel(
+       phi,
+   phi_exp,
+   n_order,
+   n_bases,
+   der_indices,
+   powers,
+   index = -1
+        ):
     """
     Assembles the full GDDEGP covariance matrix with support for selective
     derivative coverage via derivative_locations.
@@ -436,47 +443,28 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func,
 
     # --- VALIDATION AND SETUP ---
     
-    highest_order = max_orders_per_dim
+    highest_order = n_order
     # 1. Evaluate the kernel once (full n x n matrix)
-    phi = kernel_func(differences, length_scales)
-    n_bases = len(phi.get_active_bases())
+    n_bases = phi.get_active_bases()[-1]
     assert n_bases % 2 == 0, "n_bases must be an even number."
     PHIrows, PHIcols = phi.shape
     total_derivs = len(der_indices)
 
-    # Handle n_order = 0 case (no derivatives)
-    if max_orders_per_dim == 0:
-        return phi.real
-
-    # Validate derivative_locations
-    assert len(derivative_locations) == total_derivs, \
-        f"derivative_locations length ({len(derivative_locations)}) must match number of derivatives ({total_derivs})"
-
+   
     # --- COMPUTE OUTPUT MATRIX DIMENSIONS ---
     # Row dimension: n_points (function) + sum of derivative location lengths
-    n_deriv_rows = sum(len(locs) for locs in derivative_locations)
+    n_deriv_rows = sum(len(locs) for locs in index)
+
+    # Full matrix with derivative columns too
+    n_deriv_cols = sum(len(locs) for locs in index)
+    n_output_rows = PHIrows + n_deriv_rows
+    n_output_cols = PHIcols + n_deriv_cols
     
-    if not return_deriv:
-        # Only function rows and derivative rows, but only function columns
-        n_output_rows = PHIrows + n_deriv_rows
-        n_output_cols = PHIcols
-        
-        phi_exp = phi.get_all_derivs(n_bases, highest_order)
-        der_map = deriv_map(n_bases, highest_order)
-        
-        row_iters = total_derivs + 1
-        col_iters = 1
-    else:
-        # Full matrix with derivative columns too
-        n_deriv_cols = sum(len(locs) for locs in derivative_locations)
-        n_output_rows = PHIrows + n_deriv_rows
-        n_output_cols = PHIcols + n_deriv_cols
-        
-        phi_exp = phi.get_all_derivs(n_bases, 2 * highest_order)
-        der_map = deriv_map(n_bases, 2 * highest_order)
-        
-        row_iters = total_derivs + 1
-        col_iters = total_derivs + 1
+    phi_exp = phi.get_all_derivs(n_bases, 2 * highest_order)
+    der_map = deriv_map(n_bases, 2 * highest_order)
+    
+    row_iters = total_derivs + 1
+    col_iters = total_derivs + 1
 
     # --- PRE-COMPUTE DERIVATIVE INDEX TRANSFORMATIONS ---
     der_indices_even = make_first_even(der_indices)
@@ -488,12 +476,12 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func,
     # Row offsets: [0, PHIrows, PHIrows + |l0|, PHIrows + |l0| + |l1|, ...]
     row_offsets = [0, PHIrows]
     for i in range(total_derivs):
-        row_offsets.append(row_offsets[-1] + len(derivative_locations[i]))
+        row_offsets.append(row_offsets[-1] + len(index[i]))
     
     # Column offsets (only needed if return_deriv=True)
     col_offsets = [0, PHIcols]
     for i in range(total_derivs):
-        col_offsets.append(col_offsets[-1] + len(derivative_locations[i]))
+        col_offsets.append(col_offsets[-1] + len(index[i]))
 
     # --- ALLOCATE OUTPUT MATRIX ---
     K = np.zeros((n_output_rows, n_output_cols))
@@ -510,7 +498,7 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func,
             elif i == 0 and j > 0:
                 # K_fd: Function rows (all), derivative j columns (at derivative_locations[j-1])
                 idx = der_indices_tr_even[j-1]
-                col_locs = derivative_locations[j-1]
+                col_locs = index[j-1]
                 col_start = col_offsets[j]
                 col_end = col_start + len(col_locs)
                 # Extract columns at specified locations
@@ -519,7 +507,7 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func,
             elif i > 0 and j == 0:
                 # K_df: Derivative i rows (at derivative_locations[i-1]), function columns (all)
                 idx = der_indices_tr_odd[i-1]
-                row_locs = derivative_locations[i-1]
+                row_locs = index[i-1]
                 row_start = row_offsets[i]
                 row_end = row_start + len(row_locs)
                 # Extract rows at specified locations
@@ -533,8 +521,8 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func,
                     imdir1[0], imdir1[1], imdir2[0], imdir2[1])
                 idx = der_map[new_ord][new_idx]
 
-                row_locs = derivative_locations[i-1]
-                col_locs = derivative_locations[j-1]
+                row_locs = index[i-1]
+                col_locs = index[j-1]
                 row_start = row_offsets[i]
                 row_end = row_start + len(row_locs)
                 col_start = col_offsets[j]
@@ -617,14 +605,14 @@ def rbf_kernel(differences, length_scales, max_orders_per_dim, kernel_func,
 #     return K
 
 def rbf_kernel_predictions(
-    differences,
-    length_scales,
+        phi,
+    phi_exp,
     n_order,
-    kernel_func,
+    n_bases,
     der_indices,
-    derivative_locations_train,  # Which training points have which derivative directions
-    derivative_locations_test=None,  # Which test points to predict derivatives at (if return_deriv)
-    return_deriv=False,
+    powers,
+    return_deriv,
+    index = -1,
     calc_cov=False
 ):
     """
@@ -677,7 +665,7 @@ def rbf_kernel_predictions(
     dh = coti.get_dHelp()
     
     # 1. Evaluate the kernel once to get the hypercomplex result
-    phi = kernel_func(differences, length_scales)
+
     n_train, n_test = phi.shape  # NOTE: rows=train (odd), cols=test (even)
     n_deriv_types = len(der_indices)
     n_bases =phi.get_active_bases()[-1]
@@ -709,6 +697,7 @@ def rbf_kernel_predictions(
     # Output rows = test side (transposed from phi cols)
     n_rows_func = n_test
     if return_deriv:
+        derivative_locations_test = [i for i in range(n_test)]
         n_rows_derivs = sum(len(locs) for locs in derivative_locations_test)
     else:
         n_rows_derivs = 0
@@ -716,7 +705,7 @@ def rbf_kernel_predictions(
     
     # Output cols = training side (transposed from phi rows)
     n_cols_func = n_train
-    n_cols_derivs = sum(len(locs) for locs in derivative_locations_train)
+    n_cols_derivs = sum(len(locs) for locs in index)
     total_cols = n_cols_func + n_cols_derivs
     
     # --- COMPUTE BLOCK OFFSETS ---
@@ -729,7 +718,7 @@ def rbf_kernel_predictions(
     # Column offsets (training side): [0, n_train, n_train + |l0_tr|, ...]
     col_offsets = [0, n_train]
     for i in range(n_deriv_types):
-        col_offsets.append(col_offsets[-1] + len(derivative_locations_train[i]))
+        col_offsets.append(col_offsets[-1] + len(index[i]))
     
     # --- ALLOCATE OUTPUT MATRIX ---
     K = np.zeros((total_rows, total_cols))
@@ -750,7 +739,7 @@ def rbf_kernel_predictions(
     # Training is in rows of phi (odd tags) → use der_indices_odd
     # =========================================================================
     for j in range(n_deriv_types):
-        train_locs = derivative_locations_train[j]
+        train_locs = index[j]
         col_start = col_offsets[j + 1]
         col_end = col_start + len(train_locs)
         
@@ -798,7 +787,7 @@ def rbf_kernel_predictions(
         row_end = row_start + len(test_locs)
         
         for j in range(n_deriv_types):
-            train_locs = derivative_locations_train[j]
+            train_locs = index[j]
             col_start = col_offsets[j + 1]
             col_end = col_start + len(train_locs)
             

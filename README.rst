@@ -316,7 +316,7 @@ DDEGP: Directional Derivative-Enhanced Gaussian Process
 
 This example demonstrates DDEGP on the 2D function :math:`f(x_1, x_2) = x_1^2 + x_2^2` using two global directional derivative directions applied at all training points. Unlike DEGP which uses coordinate-aligned derivatives, DDEGP allows arbitrary directional derivatives specified by ray vectors.
 
-**Key feature:** DDEGP uses the SAME ray directions at all (or a subset of) training points. 
+**Key feature:** DDEGP uses a global set ray directions at all (or a subset of) training points. 
 The ``derivative_locations`` parameter specifies which points have which rays.
 
 **Example code:**
