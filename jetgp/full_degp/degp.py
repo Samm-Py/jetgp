@@ -55,9 +55,12 @@ class degp:
         kernel_type="anisotropic",
         smoothness_parameter=None
     ):
-        if derivative_locations is None:
+        if n_order > 0 and derivative_locations is None:
             raise Exception('Must provide derivative locations!')
-
+        
+        if der_indices is None and n_order == 0:
+            der_indices = []
+            derivative_locations = []
         self.n_order = n_order
         self.n_bases = n_bases
         self.dim = x_train.shape[1]
@@ -93,14 +96,14 @@ class degp:
             self.y_train = utils.reshape_y_train(y_train)
 
         # Compute differences for the kernel
-        if kernel == 'SI':
-            self.differences_by_dim = degp_utils.differences_by_dim_func_SI(
-                self.x_train, self.x_train, n_order
-            )
-        else:
-            self.differences_by_dim = degp_utils.differences_by_dim_func(
-                self.x_train, self.x_train, n_order
-            )
+        # if kernel == 'SI':
+        #     self.differences_by_dim = degp_utils.differences_by_dim_func_SI(
+        #         self.x_train, self.x_train, n_order
+        #     )
+        # else:
+        self.differences_by_dim = degp_utils.differences_by_dim_func(
+            self.x_train, self.x_train, n_order
+        )
 
         # Initialize noise matrix
         self.sigma_data = (
@@ -207,14 +210,14 @@ class degp:
             X_test = utils.normalize_x_data_test(X_test, self.sigmas_x, self.mus_x)
 
         # Compute train-test differences
-        if self.kernel == 'SI':
-            diff_x_test_x_train = degp_utils.differences_by_dim_func_SI(
-                self.x_train, X_test, self.n_order, return_deriv=return_deriv
-            )
-        else:
-            diff_x_test_x_train = degp_utils.differences_by_dim_func(
-                self.x_train, X_test, self.n_order, return_deriv=return_deriv
-            )
+        # if self.kernel == 'SI':
+        #     diff_x_test_x_train = degp_utils.differences_by_dim_func_SI(
+        #         self.x_train, X_test, self.n_order, return_deriv=return_deriv
+        #     )
+        # else:
+        diff_x_test_x_train = degp_utils.differences_by_dim_func(
+            self.x_train, X_test, self.n_order, return_deriv=return_deriv
+        )
 
         # Compute train-test kernel
         phi_train_test = self.kernel_func(diff_x_test_x_train, length_scales)
@@ -255,14 +258,14 @@ class degp:
             return reshaped_mean
 
         # Compute test-test differences
-        if self.kernel == 'SI':
-            diff_x_test_x_test = degp_utils.differences_by_dim_func_SI(
-                X_test, X_test, self.n_order, return_deriv=return_deriv
-            )
-        else:
-            diff_x_test_x_test = degp_utils.differences_by_dim_func(
-                X_test, X_test, self.n_order, return_deriv=return_deriv
-            )
+        # if self.kernel == 'SI':
+        #     diff_x_test_x_test = degp_utils.differences_by_dim_func_SI(
+        #         X_test, X_test, self.n_order, return_deriv=return_deriv
+        #     )
+        # else:
+        diff_x_test_x_test = degp_utils.differences_by_dim_func(
+            X_test, X_test, self.n_order, return_deriv=return_deriv
+        )
 
         # Compute test-test kernel
         phi_test_test = self.kernel_func(diff_x_test_x_test, length_scales)

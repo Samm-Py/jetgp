@@ -545,10 +545,8 @@ def rbf_kernel_predictions(
         # First Block-Column: Derivative-Function (K_df)
         row_offset = n_rows_func
         for i in range(n_deriv_types):
-            if calc_cov:
-                row_indices = index_2
-            else:
-                row_indices = index[i]
+
+            row_indices = index[i]
             n_pts_row = len(row_indices)
             
             flat_idx = der_indices_tr[i]

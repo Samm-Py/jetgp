@@ -42,7 +42,10 @@ class Optimizer:
         llhood = 0
         diffs = self.model.differences_by_dim
         phi = self.model.kernel_func(diffs, ell)
-        n_bases = phi.get_active_bases()[-1]
+        if self.model.n_order == 0:
+            n_bases = 0
+        else:
+            n_bases = phi.get_active_bases()[-1]
         
         # Extract ALL derivative components into a single flat array (highly efficient)
         phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)

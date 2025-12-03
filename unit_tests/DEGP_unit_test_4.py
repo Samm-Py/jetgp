@@ -114,7 +114,113 @@ class TestDEGP2DMixedDerivatives(unittest.TestCase):
                         "∂²f/∂x² should have shape (3, 1)")
         self.assertEqual(self.y_train[4].shape, (3, 1),
                         "∂²f/∂y² should have shape (3, 1)")
-    
+    def test_predict_without_derivatives(self):
+        """Test prediction with return_deriv=False returns only function values."""
+        # Predict without derivatives
+        y_pred_no_deriv, cov = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=True,
+            return_deriv=False
+        )
+        
+        # Should only have function values (1 row or just a 1D/2D array)
+        # Check shape - expecting either (n_points,) or (1, n_points) or (n_points, 1)
+        print(f"\nreturn_deriv=False output shape: {y_pred_no_deriv.shape}")
+        
+        # Flatten for comparison
+        y_func_pred = y_pred_no_deriv.flatten()
+        
+        # Should still have predictions at all 9 points
+        self.assertEqual(len(y_func_pred), 9,
+                        f"Expected 9 function predictions, got {len(y_func_pred)}")
+        
+        # Function interpolation should still be accurate
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error with return_deriv=False: {max_error}")
+        
+        print(f"Function-only prediction max error: {max_error:.2e}")   
+    def test_zero_order_function_only(self):
+        """Test DEGP with n_order=0 (no derivatives, equivalent to standard GP)."""
+        # Only function values - no derivatives at all
+        y_train_func_only = [self.y_func_all.reshape(-1, 1)]
+        
+        # Initialize model with n_order=0
+        model_zero = degp(
+            self.X_train,
+            y_train_func_only,
+            n_order=0,
+            n_bases=2,
+            der_indices=None,  # No derivatives
+            derivative_locations=None,
+            normalize=True,
+            kernel="SineExp",
+            kernel_type="isotropic"
+        )
+        
+        # Optimize hyperparameters
+        params_zero = model_zero.optimize_hyperparameters(
+            optimizer='pso',
+            pop_size=50,
+            n_generations=10,
+            local_opt_every=10,
+            debug=False
+        )
+        
+        # Predict with return_deriv=False (no derivatives to return anyway)
+        y_pred, cov = model_zero.predict(
+            self.X_train,
+            params_zero,
+            calc_cov=True,
+            return_deriv=False
+        )
+        
+        print(f"\nn_order=0 prediction shape: {y_pred.shape}")
+        
+        # Check function interpolation
+        y_func_pred = y_pred.flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Zero-order (standard GP) interpolation error: {max_error}")
+        
+        print(f"Zero-order GP max interpolation error: {max_error:.2e}")
+        
+        # Verify model attributes for zero-order case
+        self.assertEqual(model_zero.n_order, 0, "n_order should be 0")
+        self.assertIsNone(model_zero.powers_predict, 
+                         "powers_predict should be None for zero-order")
+    def test_predict_without_derivatives_without_cov(self):
+            """Test prediction with return_deriv=False returns only function values."""
+            # Predict without derivatives
+            y_pred_no_deriv = self.model.predict(
+                self.X_train,
+                self.params,
+                calc_cov=False,
+                return_deriv=False
+            )
+            
+            # Should only have function values (1 row or just a 1D/2D array)
+            # Check shape - expecting either (n_points,) or (1, n_points) or (n_points, 1)
+            print(f"\nreturn_deriv=False output shape: {y_pred_no_deriv.shape}")
+            
+            # Flatten for comparison
+            y_func_pred = y_pred_no_deriv.flatten()
+            
+            # Should still have predictions at all 9 points
+            self.assertEqual(len(y_func_pred), 9,
+                            f"Expected 9 function predictions, got {len(y_func_pred)}")
+            
+            # Function interpolation should still be accurate
+            abs_error = np.abs(y_func_pred - self.y_func_all)
+            max_error = np.max(abs_error)
+            
+            self.assertLess(max_error, 1e-6,
+                           f"Function interpolation error with return_deriv=False: {max_error}")
     def test_derivative_locations_structure(self):
         """Test that derivative_locations correctly specifies coverage."""
         self.assertEqual(len(self.derivative_locations), 4,

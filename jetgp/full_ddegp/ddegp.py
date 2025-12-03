@@ -45,7 +45,7 @@ class ddegp:
                  derivative_locations=None, normalize=True, sigma_data=None, 
                  kernel="SE", kernel_type="anisotropic", smoothness_parameter=None):
         
-        if derivative_locations is None:
+        if derivative_locations is None and n_order > 0:
             raise Exception('Must provide derivative locations!')
         
         self.x_train = x_train

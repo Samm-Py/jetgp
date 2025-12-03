@@ -64,38 +64,38 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
     return differences_by_dim
 
 
-def differences_by_dim_func_SI(X1, X2, n_order, return_deriv=True, index=-1):
-    """
-    Compute pairwise differences for sine-exponential kernel (periodic).
-    """
-    n1, d = X1.shape
-    n2, d = X2.shape
+# def differences_by_dim_func_SI(X1, X2, n_order, return_deriv=True, index=-1):
+#     """
+#     Compute pairwise differences for sine-exponential kernel (periodic).
+#     """
+#     n1, d = X1.shape
+#     n2, d = X2.shape
 
-    differences_by_dim = []
+#     differences_by_dim = []
 
-    if n_order == 0:
-        for k in range(d):
-            diffs_k = np.zeros((n1, n2))
-            diffs_k[:, :] = (
-                X1[:, k].reshape(-1, 1) - X2[:, k].reshape(1, -1)
-            ) % 1
-            differences_by_dim.append(oti.array(diffs_k))
-    elif not return_deriv:
-        for k in range(d):
-            diffs_k = np.zeros((n1, n2))
-            diffs_k[:, :] = (
-                X1[:, k].reshape(-1, 1) - X2[:, k].reshape(1, -1)
-            ) % 1
-            differences_by_dim.append(oti.array(diffs_k) + oti.e(1, order=n_order))
-    else:
-        for k in range(d):
-            diffs_k = np.zeros((n1, n2))
-            diffs_k[:, :] = (
-                X1[:, k].reshape(-1, 1) - X2[:, k].reshape(1, -1)
-            ) % 1
-            differences_by_dim.append(oti.array(diffs_k) + oti.e(k + 1, order=2 * n_order))
+#     if n_order == 0:
+#         for k in range(d):
+#             diffs_k = np.zeros((n1, n2))
+#             diffs_k[:, :] = (
+#                 X1[:, k].reshape(-1, 1) - X2[:, k].reshape(1, -1)
+#             ) % 1
+#             differences_by_dim.append(oti.array(diffs_k))
+#     elif not return_deriv:
+#         for k in range(d):
+#             diffs_k = np.zeros((n1, n2))
+#             diffs_k[:, :] = (
+#                 X1[:, k].reshape(-1, 1) - X2[:, k].reshape(1, -1)
+#             ) % 1
+#             differences_by_dim.append(oti.array(diffs_k) + oti.e(1, order=n_order))
+#     else:
+#         for k in range(d):
+#             diffs_k = np.zeros((n1, n2))
+#             diffs_k[:, :] = (
+#                 X1[:, k].reshape(-1, 1) - X2[:, k].reshape(1, -1)
+#             ) % 1
+#             differences_by_dim.append(oti.array(diffs_k) + oti.e(k + 1, order=2 * n_order))
 
-    return differences_by_dim
+#     return differences_by_dim
 
 
 @profile
@@ -151,7 +151,7 @@ def rbf_kernel(
     # =========================================================================
     # CASE 1: Uniform blocks (original behavior) - index is None
     # =========================================================================
-    if index is None:
+    if len(index) == 0:
        
         K = np.zeros((n_rows_func * (n_deriv_types + 1), n_cols_func * (n_deriv_types + 1)))
         outer_loop_index = n_deriv_types + 1
@@ -161,19 +161,9 @@ def rbf_kernel(
             for i in range(n_deriv_types + 1):
                 Klocal = K[i * n_rows_func: (i + 1) * n_rows_func,
                            j * n_cols_func: (j + 1) * n_cols_func]
-
                 if j == 0 and i == 0:
                     Klocal[:, :] = phi_exp[0] * signj
-                elif j > 0 and i == 0:
-                    Klocal[:, :] = signj * phi_exp[der_indices_tr[j - 1]]
-                elif j == 0 and i > 0:
-                    Klocal[:, :] = phi_exp[der_indices_tr[i - 1]]
-                else:
-                    imdir1 = der_ind_order[j - 1]
-                    imdir2 = der_ind_order[i - 1]
-                    idx, ord = dh.mult_dir(imdir1[0], imdir1[1], imdir2[0], imdir2[1])
-                    idx = der_map[ord][idx]
-                    Klocal[:, :] = signj * phi_exp[idx]
+                
 
         return K
 
@@ -339,10 +329,8 @@ def rbf_kernel_predictions(
         # First Block-Column: Derivative-Function (K_df)
         row_offset = n_rows_func
         for i in range(n_deriv_types):
-            if calc_cov:
-                row_indices = index_2
-            else:
-                row_indices = index[i]
+
+            row_indices = index[i]
             n_pts_row = len(row_indices)
 
             flat_idx = der_indices_tr[i]
