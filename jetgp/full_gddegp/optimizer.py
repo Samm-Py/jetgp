@@ -6,61 +6,54 @@ from scipy.linalg import cho_solve, cho_factor
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
 
 class Optimizer:
-    def __init__(self, model):
-        """
-        Initialize the optimizer with a DEGP model instance.
+    """
+    Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
+    by minimizing the negative log marginal likelihood (NLL).
 
-        Parameters:
-        ----------
-        model : object
-            An instance of a derivative-enhanced Gaussian process (DEGP) model.
-        """
+    Parameters
+    ----------
+    model : object
+        An instance of a model (e.g., ddegp) containing the necessary training data
+        and kernel configuration.
+    """
+
+    def __init__(self, model):
         self.model = model
 
     def negative_log_marginal_likelihood(self, x0):
         """
-        Compute the Negative Log Marginal Likelihood (NLL) for the DEGP model.
+        Compute the negative log marginal likelihood (NLL) of the model.
 
-        The NLL formula:
-        NLL = 0.5 * y^T (K^-1) y + 0.5 * log|K| + 0.5 * N * log(2 * pi)
+        NLL = 0.5 * y^T K^-1 y + 0.5 * log|K| + 0.5 * N * log(2π)
 
-        Parameters:
+        Parameters
         ----------
         x0 : ndarray
-            Hyperparameters, where:
-            - x0[:-1] are the length scales (ell).
-            - x0[-1] is the log noise standard deviation (sigma_n).
+            Vector of log-scaled hyperparameters (length scales and noise).
 
-        Returns:
+        Returns
         -------
         float
-            The computed NLL value. Returns a large value (1e6) if Cholesky fails.
+            Value of the negative log marginal likelihood.
         """
-        
-        
         ell = x0[:-1]
         sigma_n = x0[-1]
-        # ell[0] = 0
-        # ell[1] = 0
-        # ell[2] = 0
-        # sigma_n = -16
+        llhood = 0
+        diffs = self.model.differences_by_dim
+        phi = self.model.kernel_func(diffs, ell)
+        n_bases = phi.get_active_bases()[-1]
         
-
-        # Compute kernel matrix with current hyperparameters
+        # Extract ALL derivative components into a single flat array (highly efficient)
+        phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
         K = utils.rbf_kernel(
-            self.model.differences_by_dim,
-            ell,
+            phi,
+            phi_exp,
             self.model.n_order,
-            self.model.kernel_func,
+            n_bases,
             self.model.flattened_der_indices,
-            derivative_locations=self.model.derivative_locations
-            # self.model.der_indices_tr,
-            # self.model.der_ind_order,
-            # self.model.der_map,
+            index = self.model.derivative_locations,
         )
-
-        # Add noise terms
-        K += (10**sigma_n)**2 * np.eye(K.shape[0])
+        K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
         K += self.model.sigma_data**2
 
         try:
@@ -81,17 +74,17 @@ class Optimizer:
 
     def nll_wrapper(self, x0):
         """
-        Wrapper for the negative log marginal likelihood function.
+        Wrapper function to compute NLL for optimizer.
 
-        Parameters:
+        Parameters
         ----------
         x0 : ndarray
-            Hyperparameters.
+            Hyperparameter vector.
 
-        Returns:
+        Returns
         -------
         float
-            The NLL value.
+            NLL evaluated at x0.
         """
         return self.negative_log_marginal_likelihood(x0)
 

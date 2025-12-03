@@ -5,7 +5,6 @@ from jetgp.kernel_funcs.kernel_funcs import KernelFactory
 from jetgp.full_ddegp.optimizer import Optimizer
 from jetgp.full_ddegp import ddegp_utils
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
-from numpy.linalg import cholesky, solve
 
 
 class ddegp:
@@ -28,6 +27,8 @@ class ddegp:
         Derivative multi-indices corresponding to each derivative term.
     rays : ndarray
         Array of shape (d, n_rays), where each column is a direction vector.
+    derivative_locations : list of lists
+        Which training points have which derivatives.
     normalize : bool, default=True
         Whether to normalize inputs and outputs.
     sigma_data : float or array-like, optional
@@ -36,10 +37,13 @@ class ddegp:
         Kernel type ('SE', 'RQ', 'Matern', etc.).
     kernel_type : str, default='anisotropic'
         Kernel anisotropy ('anisotropic' or 'isotropic').
+    smoothness_parameter : float, optional
+        Smoothness parameter for Matern kernel.
     """
 
-    def __init__(self, x_train, y_train, n_order, der_indices, rays,derivative_locations = None,
-                 normalize=True, sigma_data=None, kernel="SE", kernel_type="anisotropic", smoothness_parameter = None):
+    def __init__(self, x_train, y_train, n_order, der_indices, rays, 
+                 derivative_locations=None, normalize=True, sigma_data=None, 
+                 kernel="SE", kernel_type="anisotropic", smoothness_parameter=None):
         
         if derivative_locations is None:
             raise Exception('Must provide derivative locations!')
@@ -57,36 +61,38 @@ class ddegp:
         self.normalize = normalize
         self.derivative_locations = derivative_locations
 
-        indices = der_indices
-        self.flattened_der_indicies = utils.flatten_der_indices(indices)
+        self.flattened_der_indices = utils.flatten_der_indices(der_indices)
 
         if normalize:
-            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = utils.normalize_y_data_directional(
-                x_train, y_train, sigma_data, self.flattened_der_indicies)
+            self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = \
+                utils.normalize_y_data_directional(
+                    x_train, y_train, sigma_data, self.flattened_der_indices)
             self.rays = utils.normalize_directions(self.sigmas_x, self.rays)
             self.x_train = utils.normalize_x_data_train(x_train)
         else:
             self.x_train = x_train
             self.y_train = utils.reshape_y_train(y_train)
 
-        self.powers = utils.build_companion_array(
-            self.n_rays, n_order, der_indices)
+        self.powers = utils.build_companion_array(self.n_rays, n_order, der_indices)
         self.differences_by_dim = ddegp_utils.differences_by_dim_func(
             self.x_train, self.x_train, self.rays, n_order)
 
         self.sigma_data = (
             np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
-            if sigma_data is None else 10*np.diag(sigma_data))
+            if sigma_data is None else 10 * np.diag(sigma_data)
+        )
 
         self.kernel_factory = KernelFactory(
             dim=self.dim,
             normalize=self.normalize,
             n_order=self.n_order,
-            differences_by_dim=self.differences_by_dim, 
-            smoothness_parameter = smoothness_parameter)
+            differences_by_dim=self.differences_by_dim,
+            smoothness_parameter=smoothness_parameter
+        )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
-            kernel_type=self.kernel_type)
+            kernel_type=self.kernel_type
+        )
         self.bounds = self.kernel_factory.bounds
         self.optimizer = Optimizer(self)
 
@@ -97,7 +103,7 @@ class ddegp:
         """
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
 
-    def predict(self, X_test, params, calc_cov=False, return_deriv=False):
+    def predict(self, X_test, params, calc_cov=False, return_deriv=False, derivs_to_predict=None):
         """
         Predict posterior mean and optional variance at test points.
 
@@ -111,6 +117,8 @@ class ddegp:
             Whether to compute predictive variance.
         return_deriv : bool, default=False
             Whether to return derivative predictions.
+        derivs_to_predict : list, optional
+            Specific derivatives to predict. Must be subset of training derivatives.
 
         Returns
         -------
@@ -122,86 +130,131 @@ class ddegp:
         length_scales = params[:-1]
         sigma_n = params[-1]
 
-        K = ddegp_utils.rbf_kernel(
-            self.differences_by_dim, length_scales, self.n_order, self.n_rays,
-            self.kernel_func, self.flattened_der_indicies, self.derivative_locations, self.powers)
-        K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
-        K += self.sigma_data**2
+        # Set up derivative prediction configuration
+        if return_deriv:
+            if derivs_to_predict is not None:
+                invalid_derivs = [d for d in derivs_to_predict if d not in self.flattened_der_indices]
+                if invalid_derivs:
+                    raise ValueError(
+                        f"The following derivative indices are not in the training set: {invalid_derivs}. "
+                        f"Valid derivative indices are: {self.flattened_der_indices}"
+                    )
+                common_derivs = derivs_to_predict
+            else:
+                common_derivs = self.flattened_der_indices
+                print(
+                    f"Note: derivs_to_predict is None. Predictions will include all derivatives "
+                    f"used in training: {self.flattened_der_indices}"
+                )
+            self.powers_predict = utils.build_companion_array_predict(
+                self.n_rays, self.n_order, common_derivs)
+        else:
+            common_derivs = []
+            self.powers_predict = None
 
+        # Build training kernel matrix
+        phi_train = self.kernel_func(self.differences_by_dim, length_scales)
+        self.n_bases_rays = phi_train.get_active_bases()[-1]
+        phi_exp_train = phi_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+
+        K = ddegp_utils.rbf_kernel(
+            phi_train, phi_exp_train, self.n_order, self.n_bases_rays,
+            self.flattened_der_indices, self.powers,
+            index=self.derivative_locations
+        )
+        K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
+        K += self.sigma_data ** 2
+
+        # Solve linear system
         try:
             cho_solve_failed = False
             L, low = cho_factor(K, lower=True)
-            # L = cholesky(K)
-            # low = True
-            alpha = cho_solve(
-                (L, low),
-                self.y_train
-            )
+            alpha = cho_solve((L, low), self.y_train)
         except:
             cho_solve_failed = True
             alpha = np.linalg.solve(K, self.y_train)
-            print(
-                'Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
-            # If Cholesky fails, fall back to standard solve
+            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
 
+        # Normalize test inputs
         if self.normalize:
-            X_test = utils.normalize_x_data_test(
-                X_test, self.sigmas_x, self.mus_x)
+            X_test = utils.normalize_x_data_test(X_test, self.sigmas_x, self.mus_x)
 
+        # Compute train-test differences and kernel
         diff_x_test_x_train = ddegp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.rays, self.n_order)
+            self.x_train, X_test, self.rays, self.n_order, return_deriv=return_deriv)
+        
+        phi_train_test = self.kernel_func(diff_x_test_x_train, length_scales)
+        if return_deriv:
+            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+        else:
+            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
+
         K_s = ddegp_utils.rbf_kernel_predictions(
-            diff_x_test_x_train, length_scales, self.n_order, self.n_rays,
-            self.kernel_func, self.flattened_der_indicies, self.derivative_locations, self.powers, return_deriv=return_deriv, calc_cov=calc_cov)
+            phi_train_test, phi_exp_train_test, self.n_order, self.n_bases_rays,
+            self.flattened_der_indices, self.powers,
+            return_deriv=return_deriv,
+            index=self.derivative_locations,
+            common_derivs=common_derivs,
+            powers_predict=self.powers_predict
+        )
 
-        f_mean = K_s.T @ alpha 
+        f_mean = K_s.T @ alpha
 
+        # Denormalize predictions
         if self.normalize:
             if return_deriv:
                 f_mean = utils.transform_predictions_directional(
                     f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
-                    self.flattened_der_indicies, X_test)
+                    common_derivs, X_test)
             else:
                 f_mean = self.mu_y + f_mean * self.sigma_y
-        f_mean = f_mean.reshape(-1,1)
+
+        # Reshape predictions
+        f_mean = f_mean.reshape(-1, 1)
         n = X_test.shape[0]
         m = f_mean.shape[0]
         num_derivs = m // n
-        # Reshape to (num_derivs, n), multiply by A, then flatten back
         reshaped_mean = f_mean.reshape(num_derivs, n)
+
         if not calc_cov:
             return reshaped_mean
 
+        # Compute test-test differences and kernel for covariance
         diff_x_test_x_test = ddegp_utils.differences_by_dim_func(
-            X_test, X_test, self.rays, self.n_order)
-        K_ss = ddegp_utils.rbf_kernel_predictions(
-            diff_x_test_x_test, length_scales, self.n_order, self.n_rays,
-            self.kernel_func, self.flattened_der_indicies,self.derivative_locations, self.powers, return_deriv=return_deriv, calc_cov=calc_cov)
+            X_test, X_test, self.rays, self.n_order, return_deriv=return_deriv)
+        
+        phi_test_test = self.kernel_func(diff_x_test_x_test, length_scales)
+        bases = phi_test_test.get_active_bases()
+        n_bases = bases[-1] if len(bases) > 0 else 0
+        phi_exp_test_test = phi_test_test.get_all_derivs(n_bases, 2 * self.n_order)
 
+        K_ss = ddegp_utils.rbf_kernel_predictions(
+            phi_test_test, phi_exp_test_test, self.n_order, n_bases,
+            self.flattened_der_indices, self.powers,
+            return_deriv=return_deriv,
+            index=self.derivative_locations,
+            common_derivs=common_derivs,
+            calc_cov=True,
+            powers_predict=self.powers_predict
+        )
+
+        # Compute predictive covariance
         if cho_solve_failed:
-            f_cov = (
-                K_ss - K_s.T @ np.linalg.inv(K) @ K_s
-                if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] - K_s[:, :len(X_test)].T @ np.linalg.inv(K) @ K_s[:, :len(X_test)]
-            )
+            f_cov = K_ss - K_s.T @ np.linalg.inv(K) @ K_s
         else:
             v = solve_triangular(L, K_s, lower=low)
+            f_cov = K_ss - v.T @ v
 
-            f_cov = (
-                K_ss - v.T @ v
-                if return_deriv
-                else K_ss[:len(X_test), :len(X_test)] - v[:, :len(X_test)].T @ v[:, :len(X_test)]
-            )
-
+        # Transform covariance
         if self.normalize:
             if return_deriv:
                 f_var = utils.transform_cov_directional(
                     f_cov, self.sigma_y, self.sigmas_x,
-                    self.flattened_der_indicies, X_test)
+                    self.flattened_der_indices, X_test)
             else:
-                f_var = self.sigma_y**2 * np.diag(np.abs(f_cov))
+                f_var = self.sigma_y ** 2 * np.diag(np.abs(f_cov))
         else:
             f_var = np.diag(np.abs(f_cov))
-        # Reshape to (num_derivs, n), multiply by A, then flatten back
+
         reshaped_var = f_var.reshape(num_derivs, n)
         return reshaped_mean, reshaped_var

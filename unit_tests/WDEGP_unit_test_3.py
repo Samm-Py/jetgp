@@ -104,8 +104,9 @@ class TestSparseWDEGP1D(unittest.TestCase):
             
             # Get prediction with derivatives
             # f_mean is 1D: [f, df/dx, d2f/dx2]
+            derivs_to_predict = [[[1,1]]]
             f_mean = self.gp_model.predict(
-                X_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True
+                X_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True, derivs_to_predict=derivs_to_predict
             )
             
             # Extract first derivative
@@ -129,12 +130,13 @@ class TestSparseWDEGP1D(unittest.TestCase):
             
             # Get prediction with derivatives
             # f_mean is 1D: [f, df/dx, d2f/dx2]
+            derivs_to_predict = [[[1,2]]]
             f_mean = self.gp_model.predict(
-                X_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True
+                X_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True, derivs_to_predict=derivs_to_predict
             )
             
             # Extract second derivative
-            predicted_second_deriv = f_mean[2,:].flatten()
+            predicted_second_deriv = f_mean[1,:].flatten()
             analytic_second_deriv = self.d2_all[:, 0].flatten()
             
             error = abs(predicted_second_deriv - analytic_second_deriv)
@@ -196,8 +198,9 @@ class TestSparseWDEGP1D(unittest.TestCase):
             X_point = self.X_train[train_idx[0]].reshape(-1, 1)
             
             # Get prediction with derivatives
+            derivs_to_predict = [ [[1,1]], [[1,2]] ]
             f_mean = self.gp_model.predict(
-                X_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True
+                X_point, self.params, calc_cov=False, return_submodels=False, return_deriv=True, derivs_to_predict=derivs_to_predict
             )
             
             # Extract derivatives from 1D array: [f, df/dx, d2f/dx2]

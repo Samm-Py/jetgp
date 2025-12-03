@@ -40,15 +40,21 @@ class Optimizer:
         """
         ell = x0[:-1]
         sigma_n = x0[-1]
+        llhood = 0
+        diffs = self.model.differences_by_dim
+        phi = self.model.kernel_func(diffs, ell)
+        n_bases = phi.get_active_bases()[-1]
+        
+        # Extract ALL derivative components into a single flat array (highly efficient)
+        phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
         K = utils.rbf_kernel(
-            self.model.differences_by_dim,
-            ell,
+            phi,
+            phi_exp,
             self.model.n_order,
-            self.model.n_rays,
-            self.model.kernel_func,
-            self.model.flattened_der_indicies,
+            n_bases,
+            self.model.flattened_der_indices,
+            self.model.powers,
             self.model.derivative_locations,
-            self.model.powers
         )
         K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
         K += self.model.sigma_data**2

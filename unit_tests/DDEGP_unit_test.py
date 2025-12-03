@@ -172,8 +172,9 @@ class TestGlobalDirectionalBranin(unittest.TestCase):
 
     def test_directional_derivative_interpolation(self):
         """Verify interpolation of directional derivatives along each global ray."""
+        derivs_to_predict = [[[1,1]], [[2,1]], [[3,1]]]
         y_pred_all = self.model.predict(
-            self.X_train, self.params, calc_cov=False, return_deriv=True
+            self.X_train, self.params, calc_cov=False, return_deriv=True, derivs_to_predict=derivs_to_predict
         )
 
         # Partition prediction vector: f + 3 rays

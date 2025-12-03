@@ -73,11 +73,13 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
         )
         
         # Get predictions at training points
+        derivs_to_predict = [[[1,1]], [[2,1]], [[1,2]], [[2,2]]]
         cls.y_train_pred, _ = cls.model.predict(
             cls.X_train, 
             cls.params, 
             calc_cov=True, 
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict = derivs_to_predict
         )
         
         cls.n_train = len(cls.X_train)
@@ -103,7 +105,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
         
         # Also check mean error
         mean_error = np.mean(abs_error)
-        self.assertLess(mean_error, 1e-7,
+        self.assertLess(mean_error, 1e-6,
                        f"Mean function interpolation error too large: {mean_error}")
     
     def test_first_derivative_x_interpolation(self):

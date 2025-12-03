@@ -115,11 +115,13 @@ class TestWDEGPWithDDEGPSubmodels(unittest.TestCase):
         )
         
         # Get predictions at training points
+        derivs_to_predict = [[[1,1]], [[2,1]]]
         cls.y_train_pred, _ = cls.model.predict(
             cls.X_train,
             cls.params,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict = derivs_to_predict
         )
     
     def test_submodels_are_disjoint(self):

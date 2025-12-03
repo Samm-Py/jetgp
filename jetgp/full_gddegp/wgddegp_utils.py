@@ -613,7 +613,9 @@ def rbf_kernel_predictions(
     powers,
     return_deriv,
     index = -1,
-    calc_cov=False
+    common_derivs = None,
+    calc_cov=False,
+    powers_predict = None
 ):
     """
     Constructs the RBF kernel matrix for predictions with selective derivative coverage.
@@ -670,7 +672,8 @@ def rbf_kernel_predictions(
 
     n_train, n_test = phi.shape  # NOTE: rows=train (odd), cols=test (even)
     n_deriv_types = len(der_indices)
-    n_bases =phi.get_active_bases()[-1]
+    # n_bases =phi.get_active_bases()[-1]
+    n_deriv_types_pred = len(common_derivs )
     
     # Handle n_order = 0 case (no derivatives)
     if n_order == 0:
@@ -699,22 +702,29 @@ def rbf_kernel_predictions(
     # Output rows = test side (transposed from phi cols)
     n_rows_func = n_test
     if return_deriv:
-        derivative_locations_test =  [list(range(n_test))] *  n_deriv_types
+        derivative_locations_test =  [list(range(n_test))] *  n_deriv_types_pred
         n_rows_derivs = sum(len(locs) for locs in derivative_locations_test)
     else:
         n_rows_derivs = 0
     total_rows = n_rows_func + n_rows_derivs
     
     # Output cols = training side (transposed from phi rows)
-    n_cols_func = n_train
-    n_cols_derivs = sum(len(locs) for locs in index)
-    total_cols = n_cols_func + n_cols_derivs
+    
+    if return_deriv and calc_cov:
+        n_cols_func = n_train
+        n_deriv_types = n_deriv_types_pred 
+        n_cols_derivs = sum(len(locs) for locs in derivative_locations_test)
+        total_cols = n_cols_func + n_cols_derivs
+    else:
+        n_cols_func = n_train
+        n_cols_derivs = sum(len(locs) for locs in index)
+        total_cols = n_cols_func + n_cols_derivs
     
     # --- COMPUTE BLOCK OFFSETS ---
     # Row offsets (test side): [0, n_test, n_test + |l0_te|, ...]
     row_offsets = [0, n_test]
     if return_deriv:
-        for i in range(n_deriv_types):
+        for i in range(n_deriv_types_pred):
             row_offsets.append(row_offsets[-1] + len(derivative_locations_test[i]))
     
     # Column offsets (training side): [0, n_train, n_train + |l0_tr|, ...]
@@ -764,13 +774,15 @@ def rbf_kernel_predictions(
     # Test is in cols of phi (even tags) → use der_indices_even
     # =========================================================================
     der_indices_tr_even, der_ind_order_even = transform_der_indices(der_indices_even, der_map)
-    for i in range(n_deriv_types):
+    der_indices_even_pred = make_first_even(common_derivs)  # For test (cols of phi)
+    der_indices_tr_even_pred, der_ind_order_even_pred = transform_der_indices(der_indices_even_pred, der_map)
+    for i in range(n_deriv_types_pred):
         test_locs = derivative_locations_test[i]
         row_start = row_offsets[i + 1]
         row_end = row_start + len(test_locs)
         
         # Test derivatives use EVEN indices (cols of phi)
-        flat_idx = der_indices_tr_even[i]
+        flat_idx = der_indices_tr_even_pred[i]
         content_full = phi_exp[flat_idx].reshape(base_shape)
         
         # Extract test columns at derivative locations, then transpose
@@ -783,7 +795,7 @@ def rbf_kernel_predictions(
     # Output rows: test derivatives (even) at derivative_locations_test
     # Output cols: training derivatives (odd) at derivative_locations_train
     # =========================================================================
-    for i in range(n_deriv_types):
+    for i in range(n_deriv_types_pred):
         test_locs = derivative_locations_test[i]
         row_start = row_offsets[i + 1]
         row_end = row_start + len(test_locs)
@@ -797,7 +809,7 @@ def rbf_kernel_predictions(
             # - Training (cols of output K, rows of phi) → ODD
             # - Test (rows of output K, cols of phi) → EVEN
             imdir_train = der_ind_order_odd[j]   # Training uses odd
-            imdir_test = der_ind_order_even[i]   # Test uses even
+            imdir_test = der_ind_order_even_pred[i]   # Test uses even
             new_idx, new_ord = dh.mult_dir(
                 imdir_train[0], imdir_train[1], 
                 imdir_test[0], imdir_test[1]
@@ -866,6 +878,11 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     weights_matrix = solution[:n_train, :].T  # shape: (n_test, n_train)
     
     return weights_matrix
+
+def to_list(x):
+    if isinstance(x, tuple):
+        return [to_list(i) for i in x]
+    return x
 
 def to_tuple(item):
     if isinstance(item, list):

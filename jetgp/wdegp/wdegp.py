@@ -363,7 +363,8 @@ class wdegp:
         calc_cov=False, 
         return_deriv=False,
         return_submodels=False,
-        rays_predict=None
+        rays_predict=None,
+        derivs_to_predict = None
     ):
         """
         Compute posterior predictive mean and (optionally) covariance at test points.
@@ -419,6 +420,25 @@ class wdegp:
         # Find common derivatives across submodels for weighted combination
         if return_deriv:
             common = gp_utils.find_common_derivatives(self.flattened_der_indices)
+            common_derivs =  [gp_utils.to_list(d) for d in common]
+            if derivs_to_predict is None and return_deriv:
+                print('Making predictions for all derivatives that are common amoung submodels')
+            else:
+                derivs_to_predict_tuples = {gp_utils.to_tuple(d) for d in derivs_to_predict}
+                # Check if any requested derivatives are not in common
+                invalid_derivs = derivs_to_predict_tuples - common  # Set differenced
+                if invalid_derivs:
+                    raise ValueError(
+                        f"The following derivatives are not available for prediction: {invalid_derivs}. "
+                        f"Valid derivatives are: {common}"
+                    )
+                common = common & derivs_to_predict_tuples  # Set intersection
+                common_derivs = [gp_utils.to_list(d) for d in common]
+            self.powers_predict = utils.build_companion_array_predict(
+                self.n_bases, self.n_order, common_derivs)
+        else:
+            common_derivs = []
+            self.powers_predict = None
 
         y_val = 0
         y_var = 0
@@ -451,8 +471,8 @@ class wdegp:
             
             # Compute kernel on train-train
             phi_train_train = self.kernel_func(diffs_train_train, ell)
-            n_bases = phi_train_train.get_active_bases()[-1]
-            phi_exp_train_train = phi_train_train.get_all_derivs(n_bases, 2 * self.n_order)
+            self.n_bases_rays = phi_train_train.get_active_bases()[-1]
+            phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
             
             # Build training kernel matrix
             K = gp_utils.rbf_kernel(
@@ -479,17 +499,19 @@ class wdegp:
 
             # Compute train-test kernel
             phi_train_test = self.kernel_func(diffs_train_test, ell)
-            n_bases = phi_train_test.get_active_bases()[-1]
+            #n_bases = phi_train_test.get_active_bases()[-1]
             if return_deriv:
-                phi_exp_train_test = phi_train_test.get_all_derivs(n_bases, 2 * self.n_order)
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
             else:
-                phi_exp_train_test = phi_train_test.get_all_derivs(n_bases, self.n_order)
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
             
             K_s = gp_utils.rbf_kernel_predictions(
-                phi_train_test, phi_exp_train_test, self.n_order, self.n_bases,
+                phi_train_test, phi_exp_train_test, self.n_order, self.n_bases_rays,
                 self.flattened_der_indices[i], self.powers[i],
                 return_deriv=return_deriv, 
-                index=deriv_locs_i
+                index=deriv_locs_i,
+                common_derivs = common_derivs,
+                powers_predict = self.powers_predict
             )
             
             # Compute predictive mean
@@ -506,11 +528,11 @@ class wdegp:
                     if self.submodel_type == 'gddegp' or self.submodel_type == 'ddegp':
                         f_mean =utils.transform_predictions_directional(
                            f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
-                           self.flattened_der_indices[i], X_test)
+                           common_derivs, X_test)
                     else:
                         f_mean = utils.transform_predictions(
                             f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
-                            self.flattened_der_indices[i], X_test
+                            common_derivs, X_test
                         )
                 else:
                     f_mean = self.mu_y + f_mean * self.sigma_y
@@ -533,10 +555,10 @@ class wdegp:
                 for idx in unique_indices:
                     weight += weights_matrix[:, idx]
                 
-                if return_deriv:
-                    reshaped = gp_utils.extract_common_predictions(
-                        reshaped, self.flattened_der_indices[i], common
-                    )
+                # if return_deriv:
+                #     reshaped = gp_utils.extract_common_predictions(
+                #         reshaped, self.flattened_der_indices[i], common
+                #     )
                 
                 if return_submodels:
                     submodel_vals.append(reshaped.copy())
@@ -551,17 +573,17 @@ class wdegp:
             # Compute covariance if requested
             if calc_cov:
                 f_var = self._compute_predictive_variance(
-                    X_test_norm,deriv_locs_i, ell, i, K, K_s, L if not cho_solve_failed else None,
+                    X_test_norm,deriv_locs_i,common_derivs,self.powers_predict, ell, i, K, K_s, L if not cho_solve_failed else None,
                     low if not cho_solve_failed else None, cho_solve_failed,
                     return_deriv, rays_predict
                 )
                 
                 if self.num_submodels > 1:
                     f_var_reshaped = f_var.reshape(num_derivs, n)
-                    if return_deriv:
-                        f_var_reshaped = gp_utils.extract_common_predictions(
-                            f_var_reshaped, self.flattened_der_indices[i], common
-                        )
+                    # if return_deriv:
+                    #     f_var_reshaped = gp_utils.extract_common_predictions(
+                    #         f_var_reshaped, self.flattened_der_indices[i], common
+                    #     )
                     if return_submodels:
                         submodel_cov.append(f_var_reshaped.copy())
                     f_var_reshaped = f_var_reshaped * weight
@@ -633,7 +655,7 @@ class wdegp:
             )
 
     def _compute_predictive_variance(
-        self, X_test,deriv_locs_i, ell, submodel_idx, K, K_s, L, low, cho_solve_failed,
+        self, X_test,deriv_locs_i,common_derivs,powers_predict, ell, submodel_idx, K, K_s, L, low, cho_solve_failed,
         return_deriv, rays_predict
     ):
         """Compute predictive variance for a submodel."""
@@ -655,11 +677,13 @@ class wdegp:
         deriv_locs_test = [list(range(len(X_test)))] * len(self.derivative_locations[submodel_idx]) if return_deriv else None
         
         K_ss = gp_utils.rbf_kernel_predictions(
-            phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,
+            phi_test_test, phi_exp_test_test, self.n_order, self.n_bases_rays,
             self.flattened_der_indices[submodel_idx], self.powers[submodel_idx],
             return_deriv=return_deriv,
             index= deriv_locs_test,
-            calc_cov=True
+            common_derivs = common_derivs,
+            calc_cov=True,
+            powers_predict=powers_predict
         )
         
         n_test = len(X_test)

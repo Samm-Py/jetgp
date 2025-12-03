@@ -317,15 +317,13 @@ def transform_der_indices(der_indices, der_map):
 
 
 def rbf_kernel(
-    differences,
-    length_scales,
+        phi,
+    phi_exp,
     n_order,
     n_bases,
-    kernel_func,
     der_indices,
-    index,
     powers,
-    return_deriv=True
+    index = -1
 ):
     """
     Assembles the full DD-GP covariance matrix using an efficient, pre-computed
@@ -365,42 +363,20 @@ def rbf_kernel(
     K : ndarray
         Full kernel matrix with function values and derivative blocks.
     """
-    # Get the pyoti derivative helper for multiplying derivative indices
+    # --- 1. Initial Setup and Efficient Derivative Extraction ---
     dh = coti.get_dHelp()
-    
-    # 1. Evaluate the kernel once to get the hypercomplex result
-    phi = kernel_func(differences, length_scales)
+    # Create maps to translate derivative specifications to flat indices
+    der_map = deriv_map(n_bases, 2 * n_order)
+    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+
+    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
-    
-    if n_order == 0:
-        return phi.real
-    
-    # 2. Extract derivative components based on return_deriv
-    if not return_deriv:
-        phi_exp = phi.get_all_derivs(n_bases, n_order)
-        der_map = deriv_map(n_bases, n_order)
-    else:
-        phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
-        der_map = deriv_map(n_bases, 2 * n_order)
-    
-    # 3. Create maps to translate derivative specifications to flat indices
-    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
-    
-    # =========================================================================
-    # CASE 2: Non-contiguous indices (new behavior) - index is provided
-    # =========================================================================
-    
-    # Calculate total size based on indices for each derivative type
+    n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
     n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
     total_rows = n_rows_func + n_pts_with_derivs_rows
-    
-    if not return_deriv:
-        total_cols = n_cols_func
-    else:
-        n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
-        total_cols = n_cols_func + n_pts_with_derivs_cols
-    
+    total_cols = n_cols_func + n_pts_with_derivs_cols
+
     K = np.zeros((total_rows, total_cols))
     base_shape = (n_rows_func, n_cols_func)
     
@@ -423,8 +399,6 @@ def rbf_kernel(
         K[row_offset: row_offset + n_pts_this_order, :n_cols_func] = content_sliced * ((-1) ** powers[0])
         row_offset += n_pts_this_order
     
-    if not return_deriv:
-        return K
     
     # First Block-Row: Function-Derivative (K_fd)
     col_offset = n_cols_func
@@ -473,17 +447,19 @@ def rbf_kernel(
     return K
 
 
+
 def rbf_kernel_predictions(
-    differences,
-    length_scales,
+    phi,
+    phi_exp,
     n_order,
     n_bases,
-    kernel_func,
     der_indices,
-    index,  # Training point indices per derivative type
     powers,
-    return_deriv=False,
-    calc_cov=False
+    return_deriv,
+    index=-1,
+    common_derivs=None,
+    calc_cov=False,
+    powers_predict=None
 ):
     """
     Constructs the RBF kernel matrix for predictions with directional derivative entries.
@@ -494,202 +470,155 @@ def rbf_kernel_predictions(
 
     Parameters
     ----------
-    differences : ndarray of shape (N_test, N_train, D)
-        Pairwise differences between test and training points.
-    length_scales : ndarray of shape (D,)
-        Length scales for each input dimension (ARD).
+    phi : ndarray
+        Base kernel matrix between test and training points.
+    phi_exp : ndarray
+        Expanded derivative array from phi.get_all_derivs().
     n_order : int
         Maximum derivative order.
     n_bases : int
-        Number of input dimensions.
-    kernel_func : callable
-        Function that computes the base RBF kernel and its derivatives.
+        Number of input dimensions (rays).
     der_indices : list
-        Derivative specifications.
+        Derivative specifications for training data.
     powers : list of int
         Sign powers for each derivative type.
     index : list of lists
         Training point indices for each derivative type.
-    direction_index : int, optional (default=-1)
-        Index for selecting directional kernels or subspaces.
-    return_deriv : bool, optional (default=False)
+    common_derivs : list
+        Common derivative indices to predict (intersection of training and requested).
+    return_deriv : bool
         If True, predict derivatives at ALL test points.
     calc_cov : bool, optional (default=False)
         If True, computing covariance (use all indices for rows).
+    powers_predict : list of int, optional
+        Sign powers for prediction derivatives.
 
     Returns
     -------
     K : ndarray
         Prediction kernel matrix.
     """
-    dh = coti.get_dHelp()
+    import pyoti.core as coti
     
-    # 1. Evaluate the kernel once to get the hypercomplex result
-    phi = kernel_func(differences, length_scales)
-    n_rows_func, n_cols_func = phi.shape  # (N_test, N_train)
-    n_deriv_types = len(der_indices)
-    
-    if n_order == 0:
+    # --- 1. Initial Setup ---
+    if calc_cov and not return_deriv:
         return phi.real
     
-    # 2. Extract derivative components based on return_deriv
-    if not return_deriv:
-        phi_exp = phi.get_all_derivs(n_bases, n_order)
-        der_map = deriv_map(n_bases, n_order)
-    else:
-        phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
-        der_map = deriv_map(n_bases, 2 * n_order)
+    dh = coti.get_dHelp()
     
-    # 3. Create maps to translate derivative specifications to flat indices
-    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
+    n_rows_func, n_cols_func = phi.shape
+    n_deriv_types = len(der_indices)
+    n_deriv_types_pred = len(common_derivs)
     
-    # --- Determine column indices (training points) ---
-    # When return_deriv=True, we need K_fd blocks which use ALL test columns
     if return_deriv:
-        col_indices_all = list(range(n_cols_func))  # All test points for columns
-        n_pts_with_derivs_cols = n_deriv_types * n_cols_func
+        der_map = deriv_map(n_bases, 2 * n_order)
+        index_2 = [i for i in range(phi_exp.shape[-1])]
+        if calc_cov:
+            index = [i for i in range(phi_exp.shape[-1])]
+            n_deriv_types = n_deriv_types_pred
+            n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
+        else:
+            n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
     else:
-        n_pts_with_derivs_cols = 0
-    
-    # --- Determine row indices (test/prediction points) ---
-    if calc_cov:
-        # Covariance: use all indices for all derivative types
-        row_indices_per_type = [list(range(n_rows_func)) for _ in range(n_deriv_types)]
-        n_pts_with_derivs_rows = n_deriv_types * n_rows_func
-    else:
-        # Non-contiguous: different indices per derivative type
-        row_indices_per_type = index
+        der_map = deriv_map(n_bases, n_order)
+        index_2 = []
         n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
-    
-    # --- Pre-allocate matrix ---
-    total_rows = n_rows_func + n_pts_with_derivs_rows
-    total_cols = n_cols_func + n_pts_with_derivs_cols
+
+    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+    der_indices_tr_pred, der_ind_order_pred = transform_der_indices(common_derivs, der_map)
+    n_pts_with_derivs_cols = n_deriv_types_pred * len([i for i in range(n_cols_func) if i in index_2])
+
+    total_rows = n_rows_func + n_pts_with_derivs_rows 
+    total_cols = n_cols_func + n_pts_with_derivs_cols 
+
     K = np.zeros((total_rows, total_cols))
-    
     base_shape = (n_rows_func, n_cols_func)
-    
-    # =========================================================================
+
+    # --- 3. Fill the Matrix Block by Block ---
+
     # Block (0,0): Function-Function (K_ff)
-    # =========================================================================
     content_full = phi_exp[0].reshape(base_shape)
     K[:n_rows_func, :n_cols_func] = content_full * ((-1) ** powers[0])
     
-    # =========================================================================
-    # First Block-Column: Derivative-Function (K_df)
-    # Rows = derivative predictions, Cols = function training values
-    # =========================================================================
-    row_offset = n_rows_func
-    for i in range(n_deriv_types):
-        row_indices = row_indices_per_type[i]
-        n_pts_row = len(row_indices)
-        
-        flat_idx = der_indices_tr[i]
-        content_full = phi_exp[flat_idx].reshape(base_shape)
-        
-        # Slice rows at training point indices
-        content_sliced = content_full[row_indices, :]
-        
-        K[row_offset: row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
-        row_offset += n_pts_row
-    
     if not return_deriv:
+        # First Block-Column: Derivative-Function (K_df)
+        row_offset = n_rows_func
+        for i in range(n_deriv_types):
+            if calc_cov:
+                row_indices = index_2
+            else:
+                row_indices = index[i]
+            n_pts_row = len(row_indices)
+            
+            flat_idx = der_indices_tr[i]
+            content_full = phi_exp[flat_idx].reshape(base_shape)
+            content_sliced = content_full[row_indices, :]
+            
+            K[row_offset:row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+            row_offset += n_pts_row
         return K
     
-    # =========================================================================
-    # First Block-Row: Function-Derivative (K_fd)
-    # Rows = function predictions, Cols = derivative training values
-    # =========================================================================
-    col_offset = n_cols_func
-    for j in range(n_deriv_types):
-        n_pts_col = n_cols_func  # All test points
-        
-        flat_idx = der_indices_tr[j]
-        content_full = phi_exp[flat_idx].reshape(base_shape)
-        
-        # Use all columns (all test points)
-        K[:n_rows_func, col_offset: col_offset + n_pts_col] = content_full * ((-1) ** powers[j + 1])
-        col_offset += n_pts_col
+    # --- return_deriv=True case ---
     
-    # =========================================================================
-    # Inner Blocks: Derivative-Derivative (K_dd)
-    # =========================================================================
+    # First Block-Row: Function-Derivative (K_fd)
+    col_offset = n_cols_func
+    for j in range(n_deriv_types_pred):
+        col_indices = index_2
+        n_pts_col = len(col_indices)
+        
+        flat_idx = der_indices_tr_pred[j]
+        content_full = phi_exp[flat_idx].reshape(base_shape)
+        content_sliced = content_full[:, col_indices]
+
+        K[:n_rows_func, col_offset:col_offset + n_pts_col] = content_sliced * ((-1) ** powers_predict[j + 1])
+        col_offset += n_pts_col
+
+    # First Block-Column: Derivative-Function (K_df)
     row_offset = n_rows_func
     for i in range(n_deriv_types):
-        row_indices = row_indices_per_type[i]
+        if calc_cov:
+            row_indices = index
+            flat_idx = der_indices_tr_pred[i]
+        else:
+            row_indices = index[i]
+            flat_idx = der_indices_tr[i]
+        n_pts_row = len(row_indices)
+        
+        content_full = phi_exp[flat_idx].reshape(base_shape)
+        content_sliced = content_full[row_indices, :]
+
+        K[row_offset:row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+        row_offset += n_pts_row
+
+    # Inner Blocks: Derivative-Derivative (K_dd)
+    row_offset = n_rows_func
+    for i in range(n_deriv_types):
+        if calc_cov:
+            row_indices = index
+        else:
+            row_indices = index[i]
         n_pts_row = len(row_indices)
         
         col_offset = n_cols_func
-        for j in range(n_deriv_types):
-            n_pts_col = n_cols_func  # All test points for columns
+        for j in range(n_deriv_types_pred):
+            col_indices = index_2
+            n_pts_col = len(col_indices)
             
             # Multiply derivative indices to find correct flat index
-            imdir1 = der_ind_order[j]
+            imdir1 = der_ind_order_pred[j]
             imdir2 = der_ind_order[i]
             new_idx, new_ord = dh.mult_dir(imdir1[0], imdir1[1], imdir2[0], imdir2[1])
             flat_idx = der_map[new_ord][new_idx]
-            
+
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            
-            # Slice rows at training indices, use all columns
-            content_sliced = content_full[row_indices, :]
-            
-            K[row_offset: row_offset + n_pts_row,
-              col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+            content_sliced = content_full[np.ix_(row_indices, col_indices)]
+
+            K[row_offset:row_offset + n_pts_row, 
+              col_offset:col_offset + n_pts_col] = content_sliced * ((-1) ** powers_predict[j + 1])
             col_offset += n_pts_col
-        
         row_offset += n_pts_row
-    
+
     return K
 
-def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigma_n):
-    """
-    Vectorized version: compute interpolation weights for multiple test points at once.
-    
-    Parameters
-    ----------
-    diffs_by_dim : list of ndarray
-        Pairwise differences between training points (by dimension).
-    diffs_test : list of ndarray
-        Pairwise differences between test points and training points (by dimension).
-        Shape: each array is (n_test, n_train) or similar batch dimension.
-    length_scales : array-like
-        Kernel hyperparameters.
-    kernel_func : callable
-        Kernel function.
-    sigma_n : float
-        Noise parameter (if needed).
-    
-    Returns
-    -------
-    weights_matrix : ndarray of shape (n_test, n_train)
-        Interpolation weights for each test point.
-    """
-    
-    # Compute K matrix (training covariance) - same for all test points
-    K = kernel_func(diffs_by_dim, length_scales).real
-    n_train = K.shape[0]
-    
-    # Compute r vectors (test-train covariances) for all test points at once
-    r_all = kernel_func(diffs_test, length_scales).real  # shape: (n_test, n_train)
-    n_test = r_all.shape[0]
-    
-    # Build augmented system matrix M (same for all test points)
-    M = np.zeros((n_train + 1, n_train + 1))
-    M[:n_train, :n_train] = K
-    M[:n_train, n_train] = 1
-    M[n_train, :n_train] = 1
-    M[n_train, n_train] = 0
-    
-    # Build augmented RHS for all test points
-    r_augmented = np.zeros((n_test, n_train + 1))
-    r_augmented[:, :n_train] = r_all
-    r_augmented[:, n_train] = 1
-    
-    # Solve for all test points at once: M @ solution.T = r_augmented.T
-    # solution.T has shape (n_train+1, n_test)
-    solution = np.linalg.solve(M, r_augmented.T)  # shape: (n_train+1, n_test)
-    
-    # Extract weights (exclude Lagrange multiplier)
-    weights_matrix = solution[:n_train, :].T  # shape: (n_test, n_train)
-    
-    return weights_matrix
+

@@ -143,8 +143,9 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
             debug=True
         )
         # --- Predict at training points ---
+        derivs_to_predict = [[[1,1]]]
         cls.y_pred_train_full, _ = cls.model.predict(
-            cls.X_train, cls.params, rays_predict = [cls.rays_array], calc_cov=True, return_deriv=True
+            cls.X_train, cls.params, rays_predict = [cls.rays_array], calc_cov=True, return_deriv=True, derivs_to_predict = derivs_to_predict
         )
         cls.N = cls.num_training_pts
 

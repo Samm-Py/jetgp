@@ -366,7 +366,9 @@ def rbf_kernel_predictions(
     powers,
     return_deriv,
     index=-1,
-    calc_cov = False
+    common_derivs = None,
+    calc_cov = False,
+    powers_predict = None
 ):
     """
     Constructs the RBF kernel matrix with derivative entries using an
@@ -390,11 +392,13 @@ def rbf_kernel_predictions(
     # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
+    n_deriv_types_pred = len(common_derivs)
     if return_deriv:
         der_map = deriv_map(n_bases, 2 * n_order)
         index_2 = [i for i in range(phi_exp.shape[-1])]
         if calc_cov:
             index = [i for i in range(phi_exp.shape[-1])]
+            n_deriv_types = n_deriv_types_pred
             n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
         else:
             n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
@@ -404,7 +408,8 @@ def rbf_kernel_predictions(
         n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
 
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
-    n_pts_with_derivs_cols = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
+    der_indices_tr_pred, der_ind_order_pred = transform_der_indices(common_derivs, der_map)
+    n_pts_with_derivs_cols = n_deriv_types_pred * len([i for i in range(n_cols_func) if i in index_2])
 
     total_rows = n_rows_func + n_pts_with_derivs_rows 
     total_cols = n_cols_func + n_pts_with_derivs_cols 
@@ -444,18 +449,18 @@ def rbf_kernel_predictions(
     else:
         # First Block-Row: Function-Derivative (K_fd)
         col_offset = n_cols_func
-        for j in range(n_deriv_types):
+        for j in range(n_deriv_types_pred):
             # Get column indices for this derivative order
             col_indices = index_2
             n_pts_col = len(col_indices)
             
-            flat_idx = der_indices_tr[j]
+            flat_idx = der_indices_tr_pred[j]
             content_full = phi_exp[flat_idx].reshape(base_shape)
             
             # Slice columns using non-contiguous indices
             content_sliced = content_full[:, col_indices]
     
-            K[:n_rows_func, col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+            K[:n_rows_func, col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers_predict[j + 1])
             col_offset += n_pts_col
     
         # First Block-Column: Derivative-Function (K_df)
@@ -464,11 +469,11 @@ def rbf_kernel_predictions(
             # Get row indices for this derivative order
             if calc_cov:
                 row_indices = index
+                flat_idx = der_indices_tr_pred[i]
             else:
                 row_indices =index[i]
+                flat_idx = der_indices_tr[i]
             n_pts_row = len(row_indices)
-            
-            flat_idx = der_indices_tr[i]
             content_full = phi_exp[flat_idx].reshape(base_shape)
             
             # Slice rows using non-contiguous indices
@@ -488,13 +493,13 @@ def rbf_kernel_predictions(
             n_pts_row = len(row_indices)
             
             col_offset = n_cols_func
-            for j in range(n_deriv_types):
+            for j in range(n_deriv_types_pred):
                 # Get column indices for this derivative order
                 col_indices = index_2
                 n_pts_col = len(col_indices)
                 
                 # Multiply the derivative indices to find the correct flat index
-                imdir1 = der_ind_order[j]
+                imdir1 = der_ind_order_pred[j]
                 imdir2 = der_ind_order[i]
                 new_idx, new_ord = dh.mult_dir(
                     imdir1[0], imdir1[1], imdir2[0], imdir2[1])
@@ -506,7 +511,7 @@ def rbf_kernel_predictions(
                 content_sliced = content_full[np.ix_(row_indices, col_indices)]
     
                 K[row_offset: row_offset + n_pts_row, 
-                  col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+                  col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers_predict[j + 1])
                 col_offset += n_pts_col
             row_offset += n_pts_row
     
@@ -569,6 +574,11 @@ def to_tuple(item):
     if isinstance(item, list):
         return tuple(to_tuple(x) for x in item)
     return item
+
+def to_list(x):
+    if isinstance(x, tuple):
+        return [to_list(i) for i in x]
+    return x
 
 def find_common_derivatives(all_indices):
     """Find derivative indices common to all submodels."""

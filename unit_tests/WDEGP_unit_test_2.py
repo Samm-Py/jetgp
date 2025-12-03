@@ -183,7 +183,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         X_corners = self.X_train[corners_idx]
         
         y_pred, submodel_vals = self.model.predict(
-            X_corners, self.params, calc_cov=False, return_submodels=True, return_deriv=True
+            X_corners, self.params, calc_cov=False, return_submodels=True, return_deriv=False
         )
         
         y_true = self.submodel_data[0][0][corners_idx].flatten()
@@ -224,8 +224,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             x_point = X_edges[local_idx]
             
         
-            
-            f_plus = self.model.predict(x_point.reshape(1, -1), self.params, calc_cov=False, return_submodels=False, return_deriv=True)
+            derivs_to_predict = [[[1,1]]]
+            f_plus, _ = self.model.predict(x_point.reshape(1, -1), self.params, calc_cov=True, return_submodels=False, return_deriv=True, derivs_to_predict=derivs_to_predict)
             
             fd_deriv_x1 = f_plus[1,0]
             analytic_deriv_x1 = self.submodel_data[1][1][local_idx, 0]
@@ -290,8 +290,8 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
             X_plus[0, 0] += h
             X_minus[0, 0] -= h
             
-             
-            f_plus = self.model.predict(x_point.reshape(1, -1), self.params, calc_cov=False, return_submodels=False, return_deriv=True)
+            derivs_to_predict = [[[1,1]]]
+            f_plus, _ = self.model.predict(x_point.reshape(1, -1), self.params, calc_cov=True, return_submodels=False, return_deriv=True, derivs_to_predict=derivs_to_predict)
             
             fd_deriv_x1 = f_plus[1,0]
             analytic_deriv_x1 = self.submodel_data[2][1][local_idx, 0]

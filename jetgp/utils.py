@@ -233,6 +233,48 @@ def build_companion_array(nvars, order, der_indices):
     companion_array = np.array(companion_list)
     return companion_array
 
+def build_companion_array_predict(nvars, order, der_indices):
+    """
+    Build a companion array that maps each derivative index to its corresponding order in the OTI basis.
+
+    The array represents the order of each component in the OTI (Order-Truncated Imaginary) number system:
+    - 0 for function values.
+    - Corresponding derivative order for each derivative term.
+
+    Parameters:
+    ----------
+    nvars : int
+        Number of variables (input dimensions).
+    order : int
+        Maximum derivative order considered.
+    der_indices : list of lists
+        Derivative indices in exponent form, where each sublist represents the derivative multi-index
+        for a specific derivative term.
+
+    Returns:
+    -------
+    companion_array : ndarray
+        A 1D array of length (1 + total derivatives), where:
+        - The first entry is 0 (function value).
+        - Each subsequent entry indicates the derivative order (e.g., 1 for first derivatives).
+
+    Example:
+    --------
+    >>> nvars = 2
+    >>> order = 2
+    >>> der_indices = [[[1, 1]], [[1, 2]], [[2, 1]]]
+    >>> build_companion_array(nvars, order, der_indices)
+    array([0, 1, 2, 1])
+    """
+    companion_list = [0]
+    for i in range(len(der_indices)):
+        for j in range(0, len(der_indices[i])):
+            companion_list.append(
+                compare_OTI_indices(nvars, order, [der_indices[i][j]]))
+
+    companion_array = np.array(companion_list)
+    return companion_array
+
 
 def compare_OTI_indices(nvars, order, term_check):
     """
