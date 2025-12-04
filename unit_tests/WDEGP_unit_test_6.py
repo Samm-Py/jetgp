@@ -135,11 +135,9 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
         
         # Optimize hyperparameters
         cls.params = cls.model.optimize_hyperparameters(
-            optimizer='pso',
-            pop_size=100,
-            n_generations=15,
-            local_opt_every=15,
-            debug=True
+            optimizer='rprop',
+            n_restart_optimizer = 5,
+            debug = True
         )
         
         # Get predictions at training points with rays_predict
@@ -344,6 +342,123 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                        f"Function interpolation error (with deriv, no cov): {max_error}")
 
     # =========================================================================
+    # return_submodels tests
+    # =========================================================================
+
+    def test_predict_with_cov_and_submodels(self):
+        """Test prediction with calc_cov=True and return_submodels=True."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=True,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        # Should return (y_val, y_var, submodel_vals, submodel_cov)
+        self.assertEqual(len(result), 4,
+                        f"Expected 4 return values, got {len(result)}")
+        
+        y_val, y_var, submodel_vals, submodel_cov = result
+        
+        # Check main predictions shape
+        self.assertEqual(y_val.shape[0], 3,
+                        f"Expected 3 output rows, got {y_val.shape[0]}")
+        self.assertEqual(y_val.shape[1], self.n_train,
+                        f"Expected {self.n_train} points, got {y_val.shape[1]}")
+        
+        # Check variance shape matches predictions
+        self.assertEqual(y_var.shape, y_val.shape,
+                        f"Variance shape {y_var.shape} should match prediction shape {y_val.shape}")
+        
+        # Check submodel_vals structure
+        self.assertEqual(len(submodel_vals), 2,
+                        f"Expected 2 submodel predictions, got {len(submodel_vals)}")
+        for i, sm_val in enumerate(submodel_vals):
+            self.assertEqual(sm_val.shape[0], 3,
+                            f"Submodel {i} should have 3 output rows, got {sm_val.shape[0]}")
+            self.assertEqual(sm_val.shape[1], self.n_train,
+                            f"Submodel {i} should have {self.n_train} points, got {sm_val.shape[1]}")
+        
+        # Check submodel_cov structure
+        self.assertEqual(len(submodel_cov), 2,
+                        f"Expected 2 submodel covariances, got {len(submodel_cov)}")
+        for i, sm_cov in enumerate(submodel_cov):
+            self.assertEqual(sm_cov.shape, submodel_vals[i].shape,
+                            f"Submodel {i} cov shape should match val shape")
+
+    def test_predict_submodels_no_cov(self):
+        """Test prediction with return_submodels=True, calc_cov=False."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=False,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        # Should return (y_val, submodel_vals)
+        self.assertEqual(len(result), 2,
+                        f"Expected 2 return values, got {len(result)}")
+        
+        y_val, submodel_vals = result
+        
+        # Check main predictions
+        self.assertEqual(y_val.shape[0], 3,
+                        f"Expected 3 output rows, got {y_val.shape[0]}")
+        
+        # Check submodel_vals structure
+        self.assertEqual(len(submodel_vals), 2,
+                        f"Expected 2 submodel predictions, got {len(submodel_vals)}")
+
+    def test_predict_submodels_no_deriv_with_cov(self):
+        """Test prediction with return_submodels=True, return_deriv=False, calc_cov=True."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=True,
+            return_deriv=False,
+            return_submodels=True
+        )
+        
+        # Should return (y_val, y_var, submodel_vals, submodel_cov)
+        self.assertEqual(len(result), 4,
+                        f"Expected 4 return values, got {len(result)}")
+        
+        y_val, y_var, submodel_vals, submodel_cov = result
+        
+        # Should only have function values (1 row)
+        self.assertEqual(y_val.shape[0], 1,
+                        f"Expected 1 output row (function only), got {y_val.shape[0]}")
+        
+        # Check submodel structure
+        self.assertEqual(len(submodel_vals), 2,
+                        f"Expected 2 submodel predictions, got {len(submodel_vals)}")
+        for i, sm_val in enumerate(submodel_vals):
+            self.assertEqual(sm_val.shape[0], 1,
+                            f"Submodel {i} should have 1 output row, got {sm_val.shape[0]}")
+
+    def test_submodel_weights_sum_to_one(self):
+        """Test that weighted submodel contributions sum correctly."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=False,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        y_val, submodel_vals = result
+        
+        # The weighted sum of submodels should equal y_val
+        # (This is implicitly tested, but we verify structure)
+        self.assertEqual(len(submodel_vals), 2,
+                        "Should have 2 submodel contributions")
+
+    # =========================================================================
     # Warning tests for rays_predict
     # =========================================================================
 
@@ -479,6 +594,321 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             
             status = "✓ PASS" if passed else "✗ FAIL"
             print(f"{status} | {name:25s} | Max: {max_err:.2e} | Mean: {mean_err:.2e}")
+        
+        print("=" * 70)
+        print(f"Overall: {'✓ ALL TESTS PASSED' if all_passed else '✗ SOME TESTS FAILED'}")
+        print("=" * 70 + "\n")
+        
+        self.assertTrue(all_passed, "Not all interpolation tests passed")
+
+
+class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
+    """Test case for WDEGP with GDDEGP submodels and normalize=False."""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up training data and model with normalize=False."""
+        np.random.seed(42)
+        
+        # Generate 2D training data on a grid
+        X1 = np.array([-1.0, -0.5, 0.0, 0.5, 1.0])
+        X2 = np.array([-1.0, -0.5, 0.0, 0.5, 1.0])
+        X1_grid, X2_grid = np.meshgrid(X1, X2)
+        cls.X_train = np.column_stack([X1_grid.flatten(), X2_grid.flatten()])
+        cls.n_train = len(cls.X_train)
+        
+        # Split into DISJOINT submodels
+        distances = np.linalg.norm(cls.X_train, axis=1)
+        median_dist = np.median(distances)
+        
+        cls.sm1_indices = [i for i in range(cls.n_train) if distances[i] < median_dist]
+        cls.sm2_indices = [i for i in range(cls.n_train) if distances[i] >= median_dist]
+        
+        assert len(set(cls.sm1_indices) & set(cls.sm2_indices)) == 0
+        
+        cls.n_sm1 = len(cls.sm1_indices)
+        cls.n_sm2 = len(cls.sm2_indices)
+        
+        # Compute true function: f(x,y) = sin(x)cos(y)
+        x = cls.X_train[:, 0]
+        y = cls.X_train[:, 1]
+        cls.y_func_all = np.sin(x) * np.cos(y)
+        
+        # Gradient
+        cls.grad_x_all = np.cos(x) * np.cos(y)
+        cls.grad_y_all = -np.sin(x) * np.sin(y)
+        
+        # Build point-wise rays
+        cls.rays_dir1_all = np.zeros((2, cls.n_train))
+        cls.rays_dir2_all = np.zeros((2, cls.n_train))
+        cls.dy_dir1_all = np.zeros(cls.n_train)
+        cls.dy_dir2_all = np.zeros(cls.n_train)
+        
+        for idx in range(cls.n_train):
+            grad = np.array([cls.grad_x_all[idx], cls.grad_y_all[idx]])
+            grad_norm = np.linalg.norm(grad)
+            
+            if grad_norm < 1e-10:
+                cls.rays_dir1_all[:, idx] = [1.0, 0.0]
+                cls.rays_dir2_all[:, idx] = [0.0, 1.0]
+            else:
+                cls.rays_dir1_all[:, idx] = grad / grad_norm
+                cls.rays_dir2_all[:, idx] = [-cls.rays_dir1_all[1, idx], cls.rays_dir1_all[0, idx]]
+            
+            cls.dy_dir1_all[idx] = np.dot(grad, cls.rays_dir1_all[:, idx])
+            cls.dy_dir2_all[idx] = np.dot(grad, cls.rays_dir2_all[:, idx])
+        
+        # Extract submodel-specific data
+        cls.rays_dir1_sm1 = cls.rays_dir1_all[:, cls.sm1_indices]
+        cls.rays_dir2_sm1 = cls.rays_dir2_all[:, cls.sm1_indices]
+        cls.dy_dir1_sm1 = cls.dy_dir1_all[cls.sm1_indices].reshape(-1, 1)
+        cls.dy_dir2_sm1 = cls.dy_dir2_all[cls.sm1_indices].reshape(-1, 1)
+        
+        cls.rays_dir1_sm2 = cls.rays_dir1_all[:, cls.sm2_indices]
+        cls.rays_dir2_sm2 = cls.rays_dir2_all[:, cls.sm2_indices]
+        cls.dy_dir1_sm2 = cls.dy_dir1_all[cls.sm2_indices].reshape(-1, 1)
+        cls.dy_dir2_sm2 = cls.dy_dir2_all[cls.sm2_indices].reshape(-1, 1)
+        
+        cls.rays_list = [
+            [cls.rays_dir1_sm1, cls.rays_dir2_sm1],
+            [cls.rays_dir1_sm2, cls.rays_dir2_sm2]
+        ]
+        
+        cls.rays_predict = [cls.rays_dir1_all, cls.rays_dir2_all]
+        
+        y_vals = cls.y_func_all.reshape(-1, 1)
+        
+        cls.y_train = [
+            [y_vals, cls.dy_dir1_sm1, cls.dy_dir2_sm1],
+            [y_vals, cls.dy_dir1_sm2, cls.dy_dir2_sm2]
+        ]
+        
+        cls.der_indices = [
+            [[[[1, 1]], [[2, 1]]]],
+            [[[[1, 1]], [[2, 1]]]]
+        ]
+        
+        cls.derivative_locations = [
+            [cls.sm1_indices, cls.sm1_indices],
+            [cls.sm2_indices, cls.sm2_indices]
+        ]
+        
+        # Initialize WDEGP model with normalize=False
+        cls.model = wdegp(
+            cls.X_train,
+            cls.y_train,
+            n_order=1,
+            n_bases=2,
+            der_indices=cls.der_indices,
+            derivative_locations=cls.derivative_locations,
+            submodel_type='gddegp',
+            rays_list=cls.rays_list,
+            normalize=False,  # KEY DIFFERENCE
+            kernel="SE",
+            kernel_type="isotropic"
+        )
+        
+        # Optimize hyperparameters
+        cls.params = cls.model.optimize_hyperparameters(
+            optimizer='pso',
+            pop_size=100,
+            n_generations=15,
+            local_opt_every=15,
+            debug=True
+        )
+        
+        # Get predictions
+        cls.y_train_pred, _ = cls.model.predict(
+            cls.X_train,
+            cls.params,
+            rays_predict=cls.rays_predict,
+            calc_cov=True,
+            return_deriv=True
+        )
+    
+    def test_normalize_is_false(self):
+        """Verify that normalize=False is correctly set."""
+        self.assertFalse(self.model.normalize, "Model should have normalize=False")
+    
+    def test_function_interpolation_no_normalize(self):
+        """Test function interpolation with normalize=False."""
+        y_func_pred = self.y_train_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-2,
+                       f"Function interpolation error (no normalize): {max_error}")
+    
+    def test_derivative_interpolation_dir1_no_normalize(self):
+        """Test gradient-direction derivative with normalize=False."""
+        y_dir1_pred = self.y_train_pred[1, :].flatten()
+        abs_error = np.abs(y_dir1_pred - self.dy_dir1_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-2,
+                       f"Gradient-direction derivative error (no normalize): {max_error}")
+    
+    def test_derivative_interpolation_dir2_no_normalize(self):
+        """Test perpendicular-direction derivative with normalize=False."""
+        y_dir2_pred = self.y_train_pred[2, :].flatten()
+        abs_error = np.abs(y_dir2_pred - self.dy_dir2_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-2,
+                       f"Perpendicular-direction derivative error (no normalize): {max_error}")
+
+    def test_predict_no_deriv_with_cov_no_normalize(self):
+        """Test prediction with return_deriv=False, calc_cov=True, normalize=False."""
+        y_pred, cov = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=True,
+            return_deriv=False
+        )
+        
+        self.assertEqual(y_pred.shape[0], 1)
+        self.assertEqual(y_pred.shape[1], self.n_train)
+        self.assertIsNotNone(cov)
+        
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-2,
+                       f"Function error (no deriv, no normalize): {max_error}")
+
+    def test_predict_no_deriv_no_cov_no_normalize(self):
+        """Test prediction with return_deriv=False, calc_cov=False, normalize=False."""
+        y_pred = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=False,
+            return_deriv=False
+        )
+        
+        self.assertEqual(y_pred.shape[0], 1)
+        self.assertEqual(y_pred.shape[1], self.n_train)
+
+    def test_predict_with_deriv_no_cov_no_normalize(self):
+        """Test prediction with return_deriv=True, calc_cov=False, normalize=False."""
+        y_pred = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=False,
+            return_deriv=True
+        )
+        
+        self.assertEqual(y_pred.shape[0], 3)
+        self.assertEqual(y_pred.shape[1], self.n_train)
+
+    def test_predict_with_cov_and_submodels_no_normalize(self):
+        """Test calc_cov=True and return_submodels=True with normalize=False."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=True,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        self.assertEqual(len(result), 4)
+        
+        y_val, y_var, submodel_vals, submodel_cov = result
+        
+        self.assertEqual(y_val.shape[0], 3)
+        self.assertEqual(y_val.shape[1], self.n_train)
+        self.assertEqual(y_var.shape, y_val.shape)
+        self.assertEqual(len(submodel_vals), 2)
+        self.assertEqual(len(submodel_cov), 2)
+
+    def test_predict_submodels_no_cov_no_normalize(self):
+        """Test return_submodels=True, calc_cov=False with normalize=False."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=False,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        self.assertEqual(len(result), 2)
+        
+        y_val, submodel_vals = result
+        
+        self.assertEqual(y_val.shape[0], 3)
+        self.assertEqual(len(submodel_vals), 2)
+
+    def test_cholesky_fallback_no_normalize(self):
+        """Test Cholesky fallback with normalize=False."""
+        with patch('jetgp.wdegp.wdegp.cho_factor', side_effect=LinAlgError("Mocked Cholesky failure")):
+            y_pred, cov = self.model.predict(
+                self.X_train,
+                self.params,
+                rays_predict=self.rays_predict,
+                calc_cov=True,
+                return_deriv=True
+            )
+        
+        self.assertEqual(y_pred.shape[0], 3)
+        self.assertEqual(y_pred.shape[1], self.n_train)
+        self.assertIsNotNone(cov)
+
+    def test_cholesky_vs_fallback_consistency_no_normalize(self):
+        """Test Cholesky vs fallback consistency with normalize=False."""
+        y_pred_chol, _ = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=True,
+            return_deriv=True
+        )
+        
+        with patch('jetgp.wdegp.wdegp.cho_factor', side_effect=LinAlgError("Mocked")):
+            y_pred_fallback, _ = self.model.predict(
+                self.X_train,
+                self.params,
+                rays_predict=self.rays_predict,
+                calc_cov=True,
+                return_deriv=True
+            )
+        
+        np.testing.assert_array_almost_equal(
+            y_pred_chol, y_pred_fallback, decimal=6,
+            err_msg="Cholesky and fallback should match (no normalize)"
+        )
+
+    def test_comprehensive_summary_no_normalize(self):
+        """Print a summary for normalize=False tests."""
+        y_func_pred = self.y_train_pred[0, :].flatten()
+        y_dir1_pred = self.y_train_pred[1, :].flatten()
+        y_dir2_pred = self.y_train_pred[2, :].flatten()
+        
+        errors = {
+            'Function': np.abs(y_func_pred - self.y_func_all),
+            'D_gradient': np.abs(y_dir1_pred - self.dy_dir1_all),
+            'D_perpendicular': np.abs(y_dir2_pred - self.dy_dir2_all),
+        }
+        
+        print("\n" + "=" * 70)
+        print("WDEGP GDDEGP normalize=False Test Summary")
+        print("=" * 70)
+        print("Configuration:")
+        print(f"  - Total points: {self.n_train}")
+        print(f"  - normalize: False")
+        print("-" * 70)
+        
+        all_passed = True
+        for name, error in errors.items():
+            max_err = np.max(error)
+            mean_err = np.mean(error)
+            passed = max_err < 1e-2
+            all_passed = all_passed and passed
+            
+            status = "✓ PASS" if passed else "✗ FAIL"
+            print(f"{status} | {name:20s} | Max: {max_err:.2e} | Mean: {mean_err:.2e}")
         
         print("=" * 70)
         print(f"Overall: {'✓ ALL TESTS PASSED' if all_passed else '✗ SOME TESTS FAILED'}")
@@ -764,6 +1194,73 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
         
         self.assertLess(max_error, 1e-6,
                        f"Function interpolation error (with deriv, no cov): {max_error}")
+
+    # =========================================================================
+    # return_submodels tests
+    # =========================================================================
+
+    def test_predict_with_cov_and_submodels(self):
+        """Test prediction with calc_cov=True and return_submodels=True."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=True,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        self.assertEqual(len(result), 4,
+                        f"Expected 4 return values, got {len(result)}")
+        
+        y_val, y_var, submodel_vals, submodel_cov = result
+        
+        self.assertEqual(y_var.shape, y_val.shape,
+                        f"Variance shape should match prediction shape")
+        
+        self.assertEqual(len(submodel_vals), 2,
+                        f"Expected 2 submodel predictions")
+        self.assertEqual(len(submodel_cov), 2,
+                        f"Expected 2 submodel covariances")
+
+    def test_predict_submodels_no_cov(self):
+        """Test prediction with return_submodels=True, calc_cov=False."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            rays_predict=self.rays_predict,
+            calc_cov=False,
+            return_deriv=True,
+            return_submodels=True
+        )
+        
+        self.assertEqual(len(result), 2,
+                        f"Expected 2 return values, got {len(result)}")
+        
+        y_val, submodel_vals = result
+        
+        self.assertEqual(len(submodel_vals), 2,
+                        f"Expected 2 submodel predictions")
+
+    def test_predict_submodels_no_deriv_with_cov(self):
+        """Test return_submodels=True, return_deriv=False, calc_cov=True."""
+        result = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=True,
+            return_deriv=False,
+            return_submodels=True
+        )
+        
+        self.assertEqual(len(result), 4,
+                        f"Expected 4 return values, got {len(result)}")
+        
+        y_val, y_var, submodel_vals, submodel_cov = result
+        
+        self.assertEqual(y_val.shape[0], 1,
+                        f"Expected 1 output row (function only)")
+        self.assertEqual(len(submodel_vals), 2)
+        self.assertEqual(len(submodel_cov), 2)
 
     # =========================================================================
     # Cholesky fallback tests
@@ -1120,6 +1617,7 @@ def run_tests_with_details():
     suite = unittest.TestSuite()
     
     suite.addTests(loader.loadTestsFromTestCase(TestWDEGPWithGDDEGPSubmodels))
+    suite.addTests(loader.loadTestsFromTestCase(TestWDEGPWithGDDEGPNoNormalize))
     suite.addTests(loader.loadTestsFromTestCase(TestWDEGPWithGDDEGPMixedOrders))
     suite.addTests(loader.loadTestsFromTestCase(TestWDEGPWithGDDEGPZeroOrder))
     

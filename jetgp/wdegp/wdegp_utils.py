@@ -431,10 +431,8 @@ def rbf_kernel_predictions(
         row_offset = n_rows_func
         for i in range(n_deriv_types):
             # Get row indices for this derivative order
-            if calc_cov:
-                row_indices = index_2
-            else:
-                row_indices = index[i]
+
+            row_indices = index[i]
             n_pts_row = len(row_indices)
             
             flat_idx = der_indices_tr[i]
@@ -585,22 +583,3 @@ def find_common_derivatives(all_indices):
     sets = [set(to_tuple(elem) for elem in idx_list) for idx_list in all_indices]
     return sets[0].intersection(*sets[1:])
 
-def extract_common_predictions(predictions, indices, common_tuples, include_fvals=True):
-    """
-    Extract rows corresponding to common derivatives.
-    
-    predictions: shape (num_ders, num_funcs) where row 0 is f_vals
-    indices: list of derivative indices for this submodel
-    common_tuples: set of common derivative indices (as tuples)
-    """
-    offset = 1 if include_fvals else 0
-    extract_rows = [0] if include_fvals else []
-    
-    # Build a lookup: tuple -> row index
-    idx_to_row = {to_tuple(idx): i + offset for i, idx in enumerate(indices)}
-    
-    # Extract rows in a consistent order (sorted by the tuple for reproducibility)
-    for common_idx in sorted(common_tuples):
-        extract_rows.append(idx_to_row[common_idx])
-    
-    return predictions[extract_rows]

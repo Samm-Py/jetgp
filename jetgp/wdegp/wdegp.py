@@ -118,7 +118,7 @@ class wdegp:
         if normalize:
             self._normalize_data()
         else:
-            self.y_train_normalized = [utils.reshape_y_train(y) for submodel in y_train for y in submodel]
+            self.y_train_normalized = [utils.reshape_y_train(submodel) for submodel in y_train]
             self.x_train_normalized = x_train
             
         # Precompute differences
@@ -355,7 +355,7 @@ class wdegp:
             Optimized hyperparameter vector.
         """
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
-
+    
     def predict(
         self, 
         X_test, 
@@ -364,11 +364,11 @@ class wdegp:
         return_deriv=False,
         return_submodels=False,
         rays_predict=None,
-        derivs_to_predict = None
+        derivs_to_predict=None
     ):
         """
         Compute posterior predictive mean and (optionally) covariance at test points.
-
+    
         Parameters
         ----------
         X_test : ndarray of shape (n_test, n_features)
@@ -384,7 +384,9 @@ class wdegp:
         rays_predict : list of ndarray, optional
             For 'gddegp' mode with return_deriv=True: rays at test points.
             rays_predict[dir_idx] has shape (d, n_test).
-
+        derivs_to_predict : list, optional
+            Specific derivatives to predict. If None, predicts all common derivatives.
+    
         Returns
         -------
         y_val : ndarray
@@ -396,6 +398,8 @@ class wdegp:
         submodel_cov : list of ndarrays, optional
             Submodel variances (only if calc_cov and return_submodels are True).
         """
+        import warnings
+        
         gp_utils = self._get_utils_module()
         
         ell = length_scales[:-1]
@@ -403,30 +407,120 @@ class wdegp:
         n_test = X_test.shape[0]
         n_train = self.x_train.shape[0]
         
-        if rays_predict is None and self.submodel_type == 'gddegp' and return_deriv:
-            raise Exception('Must provide rays at which predictions will be made!')
+        # =========================================================================
+        # Validation checks for rays_predict parameter
+        # =========================================================================
+        
+        # Check 1: Warning when rays_predict provided but return_deriv=False
+        if not return_deriv and rays_predict is not None:
+            warnings.warn(
+                "rays_predict provided but return_deriv=False. "
+                "The rays will be ignored.",
+                UserWarning
+            )
+        
+        # Check 2: Handle missing rays_predict for GDDEGP/DDEGP with return_deriv=True
+        if return_deriv and rays_predict is None:
+            if self.submodel_type == 'gddegp':
+                # Determine number of ray directions from training
+                n_rays = len(self.global_rays)
+                warnings.warn(
+                    f"No rays_predict provided for GDDEGP with return_deriv=True. "
+                    f"Using coordinate axes as default prediction rays ({n_rays} directions).",
+                    UserWarning
+                )
+                # Build default coordinate axis rays
+                rays_predict = []
+                for i in range(n_rays):
+                    axis_idx = i % self.n_bases
+                    ray_array = np.zeros((self.n_bases, n_test))
+                    ray_array[axis_idx, :] = 1.0
+                    rays_predict.append(ray_array)
+                    
+            elif self.submodel_type == 'ddegp':
+                # DDEGP uses global rays, no rays_predict needed
+                pass
+        
+        # Check 3: Validate rays_predict structure when provided and return_deriv=True
+        if return_deriv and rays_predict is not None:
+            if self.submodel_type == 'gddegp':
+                # Validate number of ray directions
+                n_expected_rays = len(self.global_rays)
+                if len(rays_predict) != n_expected_rays:
+                    raise ValueError(
+                        f"Number of prediction ray directions ({len(rays_predict)}) "
+                        f"does not match training ray directions ({n_expected_rays})"
+                    )
+                
+                # Validate each ray array
+                for i, ray_array in enumerate(rays_predict):
+                    if not isinstance(ray_array, np.ndarray):
+                        raise TypeError(
+                            f"rays_predict[{i}] must be a numpy ndarray, "
+                            f"got {type(ray_array).__name__}"
+                        )
+                    if ray_array.ndim != 2:
+                        raise ValueError(
+                            f"rays_predict[{i}] must be 2-dimensional, "
+                            f"got {ray_array.ndim} dimensions"
+                        )
+                    if ray_array.shape[0] != self.dim:
+                        raise ValueError(
+                            f"rays_predict[{i}] has {ray_array.shape[0]} rows, "
+                            f"expected {self.dim} (number of input dimensions)"
+                        )
+                    if ray_array.shape[1] != n_test:
+                        raise ValueError(
+                            f"rays_predict[{i}] has {ray_array.shape[1]} columns, "
+                            f"expected {n_test} (number of test points)"
+                        )
+                        
+            elif self.submodel_type == 'ddegp':
+                # For DDEGP, rays_predict should match global rays structure
+                if not isinstance(rays_predict, np.ndarray):
+                    raise TypeError(
+                        f"rays_predict for DDEGP must be a numpy ndarray, "
+                        f"got {type(rays_predict).__name__}"
+                    )
+                if rays_predict.shape[0] != self.dim:
+                    raise ValueError(
+                        f"rays_predict has {rays_predict.shape[0]} rows, "
+                        f"expected {self.dim} (number of input dimensions)"
+                    )
+                    
+            elif self.submodel_type == 'degp':
+                # DEGP doesn't use rays, warn if provided
+                warnings.warn(
+                    "rays_predict provided but submodel_type='degp' does not use rays. "
+                    "The rays will be ignored.",
+                    UserWarning
+                )
+        
+        # =========================================================================
+        # End of validation checks
+        # =========================================================================
         
         # Normalize test inputs
         if self.normalize:
             X_test_norm = utils.normalize_x_data_test(X_test, self.sigmas_x, self.mus_x)
-            if rays_predict is not None:
+            if rays_predict is not None and self.submodel_type == 'gddegp':
                 rays_predict = utils.normalize_directions_2(
                     self.sigmas_x, rays_predict)
         else:
             X_test_norm = X_test
         
         x_train = self.x_train_normalized if self.normalize else self.x_train
-
+    
         # Find common derivatives across submodels for weighted combination
         if return_deriv:
             common = gp_utils.find_common_derivatives(self.flattened_der_indices)
-            common_derivs =  [gp_utils.to_list(d) for d in common]
+            common_derivs = [gp_utils.to_list(d) for d in common]
             if derivs_to_predict is None and return_deriv:
-                print('Making predictions for all derivatives that are common amoung submodels')
+                print('Making predictions for all derivatives that are common among submodels')
             else:
                 derivs_to_predict_tuples = {gp_utils.to_tuple(d) for d in derivs_to_predict}
                 # Check if any requested derivatives are not in common
-                invalid_derivs = derivs_to_predict_tuples - common  # Set differenced
+                invalid_derivs = derivs_to_predict_tuples - common  # Set difference
                 if invalid_derivs:
                     raise ValueError(
                         f"The following derivatives are not available for prediction: {invalid_derivs}. "
@@ -439,12 +533,12 @@ class wdegp:
         else:
             common_derivs = []
             self.powers_predict = None
-
+    
         y_val = 0
         y_var = 0
         submodel_vals = []
         submodel_cov = []
-
+    
         # For multiple submodels, compute weights (using function-only differences)
         if self.num_submodels > 1:
             if self.submodel_type == 'degp':
@@ -461,7 +555,7 @@ class wdegp:
             weights_matrix = gp_utils.determine_weights(
                 diffs_train_for_weights, diffs_for_weights, ell, self.kernel_func, sigma_n
             )
-
+    
         # Loop over submodels
         for i in range(self.num_submodels):
             deriv_locs_i = self.derivative_locations[i]
@@ -471,7 +565,10 @@ class wdegp:
             
             # Compute kernel on train-train
             phi_train_train = self.kernel_func(diffs_train_train, ell)
-            self.n_bases_rays = phi_train_train.get_active_bases()[-1]
+            if self.n_order == 0:
+                self.n_bases_rays = 0
+            else:
+                self.n_bases_rays = phi_train_train.get_active_bases()[-1]
             phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
             
             # Build training kernel matrix
@@ -487,19 +584,18 @@ class wdegp:
                 cho_solve_failed = False
                 L, low = cho_factor(K, lower=True)
                 alpha = cho_solve((L, low), self.y_train_normalized[i])
-            except:
+            except Exception as e:
                 cho_solve_failed = True
                 alpha = np.linalg.solve(K, self.y_train_normalized[i])
                 print('Warning: Cholesky decomposition failed, using standard solve.')
-
+    
             # Compute train-test differences
             diffs_train_test = self._compute_train_test_differences(
                 x_train, X_test_norm, return_deriv, rays_predict
             )
-
+    
             # Compute train-test kernel
             phi_train_test = self.kernel_func(diffs_train_test, ell)
-            #n_bases = phi_train_test.get_active_bases()[-1]
             if return_deriv:
                 phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
             else:
@@ -510,8 +606,8 @@ class wdegp:
                 self.flattened_der_indices[i], self.powers[i],
                 return_deriv=return_deriv, 
                 index=deriv_locs_i,
-                common_derivs = common_derivs,
-                powers_predict = self.powers_predict
+                common_derivs=common_derivs,
+                powers_predict=self.powers_predict
             )
             
             # Compute predictive mean
@@ -526,7 +622,7 @@ class wdegp:
             if self.normalize:
                 if return_deriv:
                     if self.submodel_type == 'gddegp' or self.submodel_type == 'ddegp':
-                        f_mean =utils.transform_predictions_directional(
+                        f_mean = utils.transform_predictions_directional(
                            f_mean, self.mu_y, self.sigma_y, self.sigmas_x,
                            common_derivs, X_test)
                     else:
@@ -536,13 +632,16 @@ class wdegp:
                         )
                 else:
                     f_mean = self.mu_y + f_mean * self.sigma_y
-
+    
             # Reshape predictions
             n = X_test.shape[0]
             m = f_mean.shape[0]
             num_derivs = m // n
             reshaped = f_mean.reshape(num_derivs, n)
             
+            if self.n_order == 0 and not calc_cov:
+                return reshaped
+                
             # Apply weights for multiple submodels
             if self.num_submodels > 1:
                 # Compute weight for this submodel
@@ -555,42 +654,37 @@ class wdegp:
                 for idx in unique_indices:
                     weight += weights_matrix[:, idx]
                 
-                # if return_deriv:
-                #     reshaped = gp_utils.extract_common_predictions(
-                #         reshaped, self.flattened_der_indices[i], common
-                #     )
-                
                 if return_submodels:
                     submodel_vals.append(reshaped.copy())
                 
-                reshaped = reshaped * weight
+                reshaped_weighted = reshaped * weight
             else:
+                reshaped_weighted = reshaped
                 if return_submodels:
                     raise ValueError('Cannot return submodels for a single model')
             
-            y_val += reshaped
-
+            y_val += reshaped_weighted
+    
             # Compute covariance if requested
             if calc_cov:
                 f_var = self._compute_predictive_variance(
-                    X_test_norm,deriv_locs_i,common_derivs,self.powers_predict, ell, i, K, K_s, L if not cho_solve_failed else None,
+                    X_test_norm, deriv_locs_i, common_derivs, self.powers_predict, 
+                    ell, i, K, K_s, L if not cho_solve_failed else None,
                     low if not cho_solve_failed else None, cho_solve_failed,
                     return_deriv, rays_predict
                 )
                 
                 if self.num_submodels > 1:
                     f_var_reshaped = f_var.reshape(num_derivs, n)
-                    # if return_deriv:
-                    #     f_var_reshaped = gp_utils.extract_common_predictions(
-                    #         f_var_reshaped, self.flattened_der_indices[i], common
-                    #     )
+                    if self.n_order == 0:
+                        return reshaped, f_var_reshaped
                     if return_submodels:
                         submodel_cov.append(f_var_reshaped.copy())
                     f_var_reshaped = f_var_reshaped * weight
                     y_var += f_var_reshaped
                 else:
                     y_var = f_var.reshape(num_derivs, n)
-
+    
         # Return results
         if self.num_submodels == 1:
             if calc_cov:

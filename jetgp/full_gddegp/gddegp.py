@@ -4,7 +4,7 @@ from jetgp.kernel_funcs.kernel_funcs import KernelFactory
 from jetgp.full_gddegp.optimizer import Optimizer
 from jetgp.full_gddegp import gddegp_utils
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
-
+import warnings
 
 class gddegp:
     """
@@ -133,11 +133,72 @@ class gddegp:
         f_var : ndarray, optional
             Predictive variance vector (only if calc_cov=True).
         """
-        if return_deriv and rays_predict is None:
-            raise Exception('Cannot make derivative predictions without rays')
-        if not return_deriv and rays_predict is not None:
-            raise Exception("No need to pass prediction rays if return_deriv is False")
 
+        n_predict = X_test.shape[0]
+
+        # Handle missing rays_predict when derivatives are requested
+        if return_deriv and rays_predict is None:
+            n_rays = len(self.flattened_der_indices)
+            
+            warnings.warn(
+                f"No rays_predict provided for derivative predictions. "
+                f"Predictions will be made along coordinate axes: "
+                f"[1,0,0,...], [0,1,0,...], etc. for {n_rays} directional derivative(s).",
+                UserWarning
+            )
+            
+            # Construct coordinate axis rays for each entry in flattened_der_indices
+            # Each ray array has shape (n_bases, n_predict)
+            rays_predict = []
+            for i in range(n_rays):
+                # Cycle through coordinate axes if more rays than dimensions
+                axis_idx = i % self.n_bases
+                ray_array = np.zeros((self.n_bases, n_predict))
+                ray_array[axis_idx, :] = 1.0
+                rays_predict.append(ray_array)
+        
+        # Warn if rays provided but not needed
+        if not return_deriv and rays_predict is not None:
+            warnings.warn(
+                "rays_predict was provided but return_deriv=False. "
+                "The provided rays will be ignored.",
+                UserWarning
+            )
+    
+        # Validate rays_predict structure when predicting derivatives
+        if return_deriv and rays_predict is not None:
+            # Check number of rays doesn't exceed training rays
+            if len(self.rays_list) > 0 and len(rays_predict) > len(self.rays_list):
+                raise ValueError(
+                    f"Number of prediction rays ({len(rays_predict)}) exceeds the number of "
+                    f"training rays ({len(self.rays_list)}). rays_predict must have at most "
+                    f"{len(self.rays_list)} ray array(s)."
+                )
+            
+            # Check shape of each ray array
+            for i, ray_array in enumerate(rays_predict):
+                if not isinstance(ray_array, np.ndarray):
+                    raise TypeError(
+                        f"Ray array {i} must be a numpy ndarray, got {type(ray_array).__name__}."
+                    )
+                
+                if ray_array.ndim != 2:
+                    raise ValueError(
+                        f"Ray array {i} must be 2-dimensional, got {ray_array.ndim} dimensions."
+                    )
+                
+                if ray_array.shape[0] != self.dim:
+                    raise ValueError(
+                        f"Ray array {i} has {ray_array.shape[0]} rows, expected {self.n_bases} "
+                        f"(one per spatial dimension)."
+                    )
+                
+                if ray_array.shape[1] != n_predict:
+                    raise ValueError(
+                        f"Ray array {i} has {ray_array.shape[1]} columns, expected {n_predict} "
+                        f"(one per test point)."
+                    )
+    
         length_scales = params[:-1]
         sigma_n = params[-1]
 
@@ -162,7 +223,10 @@ class gddegp:
 
         # Build training kernel matrix
         phi_train = self.kernel_func(self.differences_by_dim, length_scales)
-        self.n_bases = phi_train.get_active_bases()[-1]
+        if self.n_order == 0:
+            self.n_bases = 0
+        else:
+            self.n_bases = phi_train.get_active_bases()[-1]
         phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
 
         # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
@@ -188,22 +252,18 @@ class gddegp:
 
         # Normalize test inputs and rays
         rays_test = rays_predict
+        
         if self.normalize:
             X_test = utils.normalize_x_data_test(X_test, self.sigmas_x, self.mus_x)
-            if rays_test is not None:
-                rays_test = utils.normalize_directions_2(self.sigmas_x, rays_test)
-                derivative_locations_test = [
-                    list(range(X_test.shape[0])) for _ in range(len(common_derivs))
-                ]
-            else:
-                derivative_locations_test = None
+
+        if not return_deriv:
+            rays_test = None
+            derivative_locations_test = None    
         else:
-            if rays_test is not None:
-                derivative_locations_test = [
-                    list(range(X_test.shape[0])) for _ in range(len(common_derivs))
-                ]
-            else:
-                derivative_locations_test = None
+            derivative_locations_test = [
+                list(range(X_test.shape[0])) for _ in range(len(common_derivs))]
+            if self.normalize:
+                rays_test = utils.normalize_directions_2(self.sigmas_x, rays_test)
 
         # Compute train-test differences
         diff_x_train_x_test = gddegp_utils.differences_by_dim_func(

@@ -172,18 +172,6 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     
     return differences_by_dim
 
-def make_der_indices(num_directions: int, max_order: int):
-    """
-    Build the list of derivative-index specs:
-        [[tag, order], â€¦]  for every order = 1..max_order
-                            and every tag  = 1..num_directions
-    """
-    der_indices = []
-    for order in range(1, max_order + 1):
-        for tag in range(1, num_directions + 1):
-            der_indices.append([[tag, order]])
-    return der_indices
-
 
 # def build_first_block_row(phi, max_order):
 #     """
@@ -445,7 +433,10 @@ def rbf_kernel(
     
     highest_order = n_order
     # 1. Evaluate the kernel once (full n x n matrix)
-    n_bases = phi.get_active_bases()[-1]
+    if n_order == 0:
+        n_bases = 0
+    else:
+        n_bases = phi.get_active_bases()[-1]
     assert n_bases % 2 == 0, "n_bases must be an even number."
     PHIrows, PHIcols = phi.shape
     total_derivs = len(der_indices)
@@ -894,22 +885,3 @@ def find_common_derivatives(all_indices):
     sets = [set(to_tuple(elem) for elem in idx_list) for idx_list in all_indices]
     return sets[0].intersection(*sets[1:])
 
-def extract_common_predictions(predictions, indices, common_tuples, include_fvals=True):
-    """
-    Extract rows corresponding to common derivatives.
-    
-    predictions: shape (num_ders, num_funcs) where row 0 is f_vals
-    indices: list of derivative indices for this submodel
-    common_tuples: set of common derivative indices (as tuples)
-    """
-    offset = 1 if include_fvals else 0
-    extract_rows = [0] if include_fvals else []
-    
-    # Build a lookup: tuple -> row index
-    idx_to_row = {to_tuple(idx): i + offset for i, idx in enumerate(indices)}
-    
-    # Extract rows in a consistent order (sorted by the tuple for reproducibility)
-    for common_idx in sorted(common_tuples):
-        extract_rows.append(idx_to_row[common_idx])
-    
-    return predictions[extract_rows]

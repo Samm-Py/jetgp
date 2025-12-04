@@ -1,9 +1,8 @@
 import numpy as np
-import torch
 
 def adam(func, lb, ub, **kwargs):
     """
-    ADAM optimizer using PyTorch's optimizer but NumPy-compatible functions.
+    ADAM optimizer - pure NumPy implementation for performance.
     Works with custom types like sparse matrices.
     """
     x0 = kwargs.pop("x0", None)
@@ -17,95 +16,89 @@ def adam(func, lb, ub, **kwargs):
     gtol = kwargs.pop("gtol", 1e-8)
     debug = kwargs.pop("debug", False)
     disp = kwargs.pop("disp", False)
-    
-    lb = np.array(lb)
-    ub = np.array(ub)
-    
-    def numerical_gradient(f, x, h=1e-8):
-        """Compute numerical gradient using central differences."""
-        grad = np.zeros_like(x)
-        for i in range(len(x)):
-            x_plus = x.copy()
-            x_minus = x.copy()
-            x_plus[i] += h
-            x_minus[i] -= h
-            
-            f_plus = f(x_plus)
-            f_minus = f(x_minus)
+
+    lb = np.asarray(lb, dtype=np.float64)
+    ub = np.asarray(ub, dtype=np.float64)
+    n_dim = len(lb)
+
+    def forward_gradient(f, x, f_x, h=1e-7):
+        """
+        Forward differences - reuses f(x) from current evaluation.
+        Only n function evaluations instead of 2n for central differences.
+        """
+        grad = np.empty(n_dim)
+        x_pert = x.copy()
+        for i in range(n_dim):
+            x_pert[i] += h
+            f_plus = f(x_pert)
             if isinstance(f_plus, tuple):
                 f_plus = f_plus[0]
-            if isinstance(f_minus, tuple):
-                f_minus = f_minus[0]
-                
-            grad[i] = (f_plus - f_minus) / (2 * h)
+            grad[i] = (f_plus - f_x) / h
+            x_pert[i] = x[i]  # Reset in-place
         return grad
-    
+
     best_x = None
     best_val = np.inf
-    
+
     for restart in range(num_restart_optimizer):
         # Initialize starting point
         if x0 is not None and restart == 0:
-            x = np.array(x0, dtype=float)
+            x = np.array(x0, dtype=np.float64)
         else:
             x = np.random.uniform(lb, ub)
-        
-        # Convert to torch tensor for optimizer
-        x_tensor = torch.tensor(x, dtype=torch.float64, requires_grad=False)
-        
-        # Create optimizer
-        optimizer = torch.optim.Adam([x_tensor], lr=learning_rate, 
-                                     betas=(beta1, beta2), eps=epsilon)
-        
+
+        # Adam state variables (pure NumPy)
+        m = np.zeros(n_dim)  # First moment estimate
+        v = np.zeros(n_dim)  # Second moment estimate
+
         prev_val = np.inf
-        
-        for t in range(maxiter):
-            # Evaluate function with NumPy array
-            x_np = x_tensor.detach().numpy()
-            
-            result = func(x_np)
+
+        for t in range(1, maxiter + 1):  # Start at 1 for bias correction
+            # Evaluate function
+            result = func(x)
             if isinstance(result, tuple):
                 f_val, grad = result[0], result[1]
             else:
                 f_val = result
-                grad = numerical_gradient(func, x_np)
-            
-            # Check convergence
-            if t > 0:
+                grad = forward_gradient(func, x, f_val)
+
+            # Convergence check
+            grad_norm = np.linalg.norm(grad)
+            if t > 1:
                 f_diff = abs(prev_val - f_val)
-                grad_norm = np.linalg.norm(grad)
-                
                 if f_diff < ftol and grad_norm < gtol:
                     if disp:
                         print(f"Converged at iteration {t}")
                     break
-            
+
             prev_val = f_val
-            
-            # Set gradient manually
-            optimizer.zero_grad()
-            x_tensor.grad = torch.tensor(grad, dtype=torch.float64)
-            
-            # Optimizer step
-            optimizer.step()
-            
-            # Project onto bounds
-            with torch.no_grad():
-                x_tensor.clamp_(torch.tensor(lb), torch.tensor(ub))
-            
+
+            # Adam update (pure NumPy implementation)
+            m = beta1 * m + (1.0 - beta1) * grad
+            v = beta2 * v + (1.0 - beta2) * (grad * grad)
+
+            # Bias-corrected estimates
+            m_hat = m / (1.0 - beta1 ** t)
+            v_hat = v / (1.0 - beta2 ** t)
+
+            # Parameter update
+            x = x - learning_rate * m_hat / (np.sqrt(v_hat) + epsilon)
+
+            # Project onto bounds (in-place)
+            np.clip(x, lb, ub, out=x)
+
             if disp and t % 100 == 0:
                 print(f"Iteration {t}: f(x) = {f_val:.6e}, ||grad|| = {grad_norm:.6e}")
-        
+
         # Final evaluation
-        x_final = x_tensor.detach().numpy()
-        result = func(x_final)
+        result = func(x)
         final_val = result[0] if isinstance(result, tuple) else result
-        
+
         if final_val < best_val:
             best_val = final_val
-            best_x = x_final.copy()
-        
+            best_x = x.copy()
+
         if debug:
-            print(f"[ADAM-Hybrid] Restart {restart+1}/{num_restart_optimizer} -> best_val={best_val}")
-    
+            print(f"[ADAM] Restart {restart+1}/{num_restart_optimizer} -> best_val={best_val}")
+
     return best_x, best_val

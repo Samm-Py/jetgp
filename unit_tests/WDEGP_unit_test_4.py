@@ -123,7 +123,90 @@ class TestWDEGPWithDDEGPSubmodels(unittest.TestCase):
             return_deriv=True,
             derivs_to_predict = derivs_to_predict
         )
-    
+    def test_predict_no_deriv_with_cov(self):
+        """Test prediction with return_deriv=False, calc_cov=True."""
+        y_pred, cov = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=True,
+            return_deriv=False
+        )
+        
+        # Should only return function values (no derivatives)
+        self.assertEqual(y_pred.shape[0], 1,
+                        f"Expected 1 output row (function only), got {y_pred.shape[0]}")
+        self.assertEqual(y_pred.shape[1], self.n_train,
+                        f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
+        
+        # Covariance should be returned and have correct shape
+        self.assertIsNotNone(cov, "Covariance should be returned when calc_cov=True")
+        self.assertEqual(cov.shape[1], self.n_train,
+                        f"Covariance should have {self.n_train} rows")
+        
+        # Function values should still be accurate
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error (no deriv): {max_error}")
+        
+        # Covariance at training points should be near zero (interpolation)
+        diag_var = cov
+        max_var = np.max(diag_var)
+        self.assertLess(max_var, 1e-10,
+                       f"Variance at training points should be ~0, got max: {max_var}")
+
+    def test_predict_no_deriv_no_cov(self):
+        """Test prediction with return_deriv=False, calc_cov=False."""
+        y_pred = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=False,
+            return_deriv=False
+        )
+        
+        # Should only return function values (no derivatives)
+        self.assertEqual(y_pred.shape[0], 1,
+                        f"Expected 1 output row (function only), got {y_pred.shape[0]}")
+        self.assertEqual(y_pred.shape[1], self.n_train,
+                        f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
+        
+        
+        # Function values should still be accurate
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error (no deriv, no cov): {max_error}")
+
+    def test_predict_with_deriv_no_cov(self):
+        """Test prediction with return_deriv=True, calc_cov=False."""
+        derivs_to_predict = [[[1,1]], [[2,1]]]
+        y_pred = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=False,
+            return_deriv=True,
+            derivs_to_predict=derivs_to_predict
+        )
+        
+        # Should return function + 2 derivative outputs
+        self.assertEqual(y_pred.shape[0], 3,
+                        f"Expected 3 output rows (func + 2 derivs), got {y_pred.shape[0]}")
+        self.assertEqual(y_pred.shape[1], self.n_train,
+                        f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
+        
+
+        
+        # Function values should be accurate
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error (with deriv, no cov): {max_error}")
     def test_submodels_are_disjoint(self):
         """Test that submodel derivative locations are disjoint."""
         overlap = set(self.sm1_indices) & set(self.sm2_indices)
@@ -374,7 +457,89 @@ class TestWDEGPWithDDEGPMixedOrders(unittest.TestCase):
         overlap = set(self.sm1_indices) & set(self.sm2_indices)
         self.assertEqual(len(overlap), 0,
                         f"Submodel indices must be disjoint, but found overlap: {overlap}")
-    
+    def test_predict_no_deriv_with_cov(self):
+        """Test prediction with return_deriv=False, calc_cov=True."""
+        y_pred, cov = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=True,
+            return_deriv=False
+        )
+        
+        # Should only return function values (no derivatives)
+        self.assertEqual(y_pred.shape[0], 1,
+                        f"Expected 1 output row (function only), got {y_pred.shape[0]}")
+        self.assertEqual(y_pred.shape[1], self.n_train,
+                        f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
+        
+        # Covariance should be returned and have correct shape
+        self.assertIsNotNone(cov, "Covariance should be returned when calc_cov=True")
+        self.assertEqual(cov.shape[1], self.n_train,
+                        f"Covariance should have {self.n_train} columns")
+        
+        # Function values should still be accurate
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error (no deriv): {max_error}")
+        
+        # Covariance at training points should be near zero (interpolation)
+        diag_var = cov
+        max_var = np.max(diag_var)
+        self.assertLess(max_var, 1e-10,
+                       f"Variance at training points should be ~0, got max: {max_var}")
+
+    def test_predict_no_deriv_no_cov(self):
+        """Test prediction with return_deriv=False, calc_cov=False."""
+        y_pred = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=False,
+            return_deriv=False
+        )
+        
+        # Should only return function values (no derivatives)
+        self.assertEqual(y_pred.shape[0], 1,
+                        f"Expected 1 output row (function only), got {y_pred.shape[0]}")
+        self.assertEqual(y_pred.shape[1], self.n_train,
+                        f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
+        
+
+        # Function values should still be accurate
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error (no deriv, no cov): {max_error}")
+
+    def test_predict_with_deriv_no_cov(self):
+        """Test prediction with return_deriv=True, calc_cov=False."""
+        derivs_to_predict = [[[1,1]], [[2,1]]]
+        y_pred = self.model.predict(
+            self.X_train,
+            self.params,
+            calc_cov=False,
+            return_deriv=True,
+            derivs_to_predict=derivs_to_predict
+        )
+        
+        # Should return function + 2 derivative outputs
+        self.assertEqual(y_pred.shape[0], 3,
+                        f"Expected 3 output rows (func + 2 derivs), got {y_pred.shape[0]}")
+        self.assertEqual(y_pred.shape[1], self.n_train,
+                        f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
+        
+
+        # Function values should be accurate
+        y_func_pred = y_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func_all)
+        max_error = np.max(abs_error)
+        
+        self.assertLess(max_error, 1e-6,
+                       f"Function interpolation error (with deriv, no cov): {max_error}")
     def test_submodel_coverage(self):
         """Test that submodels cover expected regions."""
         # SM1: outer points

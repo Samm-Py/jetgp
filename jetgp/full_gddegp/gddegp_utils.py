@@ -161,27 +161,27 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     return differences_by_dim
 
 
-def make_der_indices(num_directions: int, max_order: int):
-    """
-    Build the list of derivative-index specs.
+# def make_der_indices(num_directions: int, max_order: int):
+#     """
+#     Build the list of derivative-index specs.
 
-    Parameters
-    ----------
-    num_directions : int
-        Number of distinct directional tags.
-    max_order : int
-        Maximum derivative order.
+#     Parameters
+#     ----------
+#     num_directions : int
+#         Number of distinct directional tags.
+#     max_order : int
+#         Maximum derivative order.
 
-    Returns
-    -------
-    der_indices : list
-        List of [[tag, order], ...] for every order and tag.
-    """
-    der_indices = []
-    for order in range(1, max_order + 1):
-        for tag in range(1, num_directions + 1):
-            der_indices.append([[tag, order]])
-    return der_indices
+#     Returns
+#     -------
+#     der_indices : list
+#         List of [[tag, order], ...] for every order and tag.
+#     """
+#     der_indices = []
+#     for order in range(1, max_order + 1):
+#         for tag in range(1, num_directions + 1):
+#             der_indices.append([[tag, order]])
+#     return der_indices
 
 
 def deriv_map(nbases, order):
@@ -367,7 +367,7 @@ def rbf_kernel_predictions(
     """
     # Early return for covariance-only case
     if calc_cov and not return_deriv:
-        return phi.real
+        return phi.real.T
 
     dh = coti.get_dHelp()
 
@@ -479,56 +479,3 @@ def rbf_kernel_predictions(
 
 
 
-def to_tuple(x):
-    """Convert nested lists/arrays to tuples for comparison."""
-    if isinstance(x, (list, np.ndarray)):
-        return tuple(to_tuple(i) for i in x)
-    return x
-
-
-def to_list(x):
-    """Convert nested tuples to lists."""
-    if isinstance(x, tuple):
-        return [to_list(i) for i in x]
-    return x
-
-
-def find_common_derivatives(all_indices):
-    """Find derivative indices common to all submodels."""
-    if not all_indices:
-        return set()
-    sets = [set(to_tuple(elem) for elem in idx_list) for idx_list in all_indices]
-    return sets[0].intersection(*sets[1:])
-
-
-def extract_common_predictions(predictions, indices, common_tuples, include_fvals=True):
-    """
-    Extract rows corresponding to common derivatives.
-
-    Parameters
-    ----------
-    predictions : ndarray
-        Shape (num_ders, num_funcs) where row 0 is f_vals.
-    indices : list
-        Derivative indices for this submodel.
-    common_tuples : set
-        Common derivative indices (as tuples).
-    include_fvals : bool
-        Whether to include function values.
-
-    Returns
-    -------
-    ndarray
-        Extracted predictions for common derivatives.
-    """
-    offset = 1 if include_fvals else 0
-    extract_rows = [0] if include_fvals else []
-
-    # Build lookup: tuple -> row index
-    idx_to_row = {to_tuple(idx): i + offset for i, idx in enumerate(indices)}
-
-    # Extract rows in consistent order
-    for common_idx in sorted(common_tuples):
-        extract_rows.append(idx_to_row[common_idx])
-
-    return predictions[extract_rows]
