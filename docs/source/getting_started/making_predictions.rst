@@ -75,6 +75,31 @@ Boolean flag controlling whether derivative predictions are returned alongside f
 output is a 2D array where each row corresponds to a different output type (function values, 
 then derivatives in order). See model-specific sections below for details.
 
+**derivs_to_predict**  
+List specifying which derivatives to predict when ``return_deriv=True``.  
+Must be a subset of the derivatives used during training (as defined in ``der_indices``).
+
+- ``None`` → Predicts all derivatives from training (default behavior)
+- List of derivative specifications → Predicts only the specified derivatives
+
+**Default:** ``None``
+
+**Format:** Same nested list format as ``der_indices``, but flattened (no grouping by order required):
+
+::
+
+    # Predict only first-order partial derivatives
+    derivs_to_predict = [[[1, 1]], [[2, 1]]]
+    
+    # Predict first-order and one second-order derivative
+    derivs_to_predict = [[[1, 1]], [[2, 1]], [[1, 2]]]
+    
+    # Predict only mixed second-order derivative
+    derivs_to_predict = [[[1, 1], [2, 1]]]
+
+**Note:** The order of derivatives in ``derivs_to_predict`` determines the row order in the output.
+Derivatives are returned in the same order they appear in this list.
+
 ------------------------------------------------------------
 
 Return Values
@@ -179,6 +204,72 @@ For standard derivative-enhanced models, the return signature is:
     d2_dx1dx2 = y_pred[4, :]       # ∂²f/∂x₁∂x₂
     d2_dx2 = y_pred[5, :]          # ∂²f/∂x₂²
 
+**With derivs_to_predict (selective derivative predictions):**
+
+::
+
+    # Model trained with first and second-order derivatives in 2D
+    # der_indices = [
+    #     [[[1, 1]], [[2, 1]]],                      # 2 first-order
+    #     [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]    # 3 second-order
+    # ]
+    
+    # Predict only first-order derivatives
+    derivs_to_predict = [[[1, 1]], [[2, 1]]]
+    
+    y_pred, y_var = gp.predict(
+        X_test, params, 
+        calc_cov=True, 
+        return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
+
+**Returns:**
+
+- ``y_pred`` : array, shape ``(len(derivs_to_predict) + 1, n_test)``  
+  Row 0 contains function predictions, subsequent rows contain only the 
+  requested derivatives in the order specified.
+  
+- ``y_var`` : array, shape ``(len(derivs_to_predict) + 1, n_test)`` (if ``calc_cov=True``)
+
+**Example with selective derivatives:**
+
+::
+
+    X_test = np.random.rand(10, 2)
+    
+    # Full model has 5 derivatives, but we only want 2
+    derivs_to_predict = [[[1, 1]], [[2, 2]]]  # ∂f/∂x₁ and ∂²f/∂x₂²
+    
+    y_pred, y_var = gp.predict(
+        X_test, params, 
+        calc_cov=True, 
+        return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
+    
+    # y_pred.shape = (3, 10)  # (2 + 1) rows, not (5 + 1)
+    
+    func_pred = y_pred[0, :]     # Function values
+    d1_dx1 = y_pred[1, :]        # ∂f/∂x₁ (first in derivs_to_predict)
+    d2_dx2 = y_pred[2, :]        # ∂²f/∂x₂² (second in derivs_to_predict)
+
+**Reordering derivatives:**
+
+The output order matches ``derivs_to_predict``, not the original ``der_indices`` order:
+
+::
+
+    # Original training order: ∂f/∂x₁, ∂f/∂x₂, ∂²f/∂x₁², ...
+    
+    # Request in different order
+    derivs_to_predict = [[[2, 1]], [[1, 1]]]  # ∂f/∂x₂ first, then ∂f/∂x₁
+    
+    y_pred, _ = gp.predict(X_test, params, return_deriv=True, derivs_to_predict=derivs_to_predict)
+    
+    # y_pred[1, :] is now ∂f/∂x₂ (not ∂f/∂x₁)
+    # y_pred[2, :] is now ∂f/∂x₁ (not ∂f/∂x₂)
+
 ------------------------------------------------------------
 
 Model-Specific Prediction Interfaces
@@ -201,11 +292,19 @@ Standard interface with full support for function and derivative predictions.
     y_pred, y_var = gp.predict(
         X_test, params, calc_cov=True, return_deriv=True
     )
+    
+    # Selective derivative predictions
+    derivs_to_predict = [[[1, 1]]]  # Only ∂f/∂x₁
+    y_pred, y_var = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
 
 **Returned shapes:**
 
 - ``y_pred``: ``(n_test,)`` if ``return_deriv=False``
-- ``y_pred``: ``(num_derivs + 1, n_test)`` if ``return_deriv=True``
+- ``y_pred``: ``(num_derivs + 1, n_test)`` if ``return_deriv=True`` and ``derivs_to_predict=None``
+- ``y_pred``: ``(len(derivs_to_predict) + 1, n_test)`` if ``return_deriv=True`` with ``derivs_to_predict``
 - ``y_var``: matches ``y_pred`` shape when ``calc_cov=True``
 
 ----
@@ -250,6 +349,17 @@ Uses directional derivatives along **global directions** (same direction at all 
 
 When ``return_deriv=True``, predictions include directional derivatives along the 
 same global directions used during training.
+
+**With derivs_to_predict:**
+
+::
+
+    # Predict only specific directional derivatives
+    derivs_to_predict = [[[1, 1]]]  # Only first direction, first order
+    y_pred, y_var = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
 
 ----
 
@@ -302,6 +412,29 @@ vectors at each test point:
   
 - ``y_var`` : array, shape ``(num_derivs + 1, n_test)`` (if ``calc_cov=True``)  
   Predictive variance for each prediction component
+
+**With derivs_to_predict:**
+
+Selective derivative predictions work with ``rays_predict``. The number of directions 
+in ``rays_predict`` should match the number of unique direction indices referenced 
+in ``derivs_to_predict``:
+
+::
+
+    # Training used 2 directions with 1st and 2nd order derivatives
+    # der_indices = [[[[1,1]], [[2,1]]], [[[1,2]], [[2,2]]]]
+    
+    # Predict only 1st-order derivatives along both directions
+    derivs_to_predict = [[[1, 1]], [[2, 1]]]
+    
+    rays_predict = [rays_dir1, rays_dir2]  # Both directions needed
+    
+    y_pred, _ = gp.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
 
 **Flexibility of GDDEGP Predictions:**
 
@@ -429,6 +562,30 @@ diagnostics for each submodel. WDEGP supports three submodel types via the
   
 - ``y_cov`` : array, shape ``(n_shared_derivs + 1, n_test)`` (if ``calc_cov=True``)  
   Row-wise predictive variances corresponding to ``y_pred``
+
+**With derivs_to_predict:**
+
+For weighted models, ``derivs_to_predict`` must specify derivatives that are shared 
+across all submodels (for DEGP/DDEGP) or derivative orders shared across all submodels 
+(for GDDEGP):
+
+::
+
+    # WDEGP with two submodels
+    # Submodel 1 has: ∂f/∂x₁, ∂f/∂x₂
+    # Submodel 2 has: ∂f/∂x₁, ∂f/∂x₂, ∂²f/∂x₁²
+    # Shared: ∂f/∂x₁, ∂f/∂x₂
+    
+    # Valid: subset of shared derivatives
+    derivs_to_predict = [[[1, 1]]]  # Only ∂f/∂x₁
+    
+    y_pred, y_cov = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
+    
+    # Invalid: includes non-shared derivative
+    derivs_to_predict = [[[1, 1]], [[1, 2]]]  # ∂²f/∂x₁² not shared - will raise error
 
 **With submodel outputs:**
 
@@ -698,12 +855,14 @@ Prediction cost depends on:
 3. **Dimensionality** (n_dims): Affects kernel evaluations
 4. **Uncertainty computation** (calc_cov): Adds computational overhead
 5. **Derivative predictions** (return_deriv): Increases complexity
+6. **Number of derivatives** (derivs_to_predict): Fewer derivatives = faster computation
 
 **Approximate scaling:**
 
 - **Without variance:** O(n_train × n_test)
 - **With variance:** O(n_train² × n_test) due to matrix operations
 - **With derivatives:** Scales with number of derivative components
+- **With derivs_to_predict:** Scales with len(derivs_to_predict), not total training derivatives
 
 **Optimization tips:**
 
@@ -713,7 +872,18 @@ Prediction cost depends on:
    
        y_pred = gp.predict(X_test, params, calc_cov=False)
 
-2. **Batch predictions** instead of sequential calls:
+2. **Use derivs_to_predict** to compute only needed derivatives:
+   
+   ::
+   
+       # Instead of computing all derivatives
+       y_pred, _ = gp.predict(X_test, params, return_deriv=True)
+       
+       # Compute only what you need
+       derivs_to_predict = [[[1, 1]]]  # Just one derivative
+       y_pred, _ = gp.predict(X_test, params, return_deriv=True, derivs_to_predict=derivs_to_predict)
+
+3. **Batch predictions** instead of sequential calls:
    
    ::
    
@@ -724,7 +894,7 @@ Prediction cost depends on:
        for x in X_test_large:
            y = gp.predict(x.reshape(1, -1), params)
 
-3. **For large test sets**, consider splitting:
+4. **For large test sets**, consider splitting:
    
    ::
    
@@ -781,6 +951,7 @@ Can occur when normalization is disabled and data scales vary widely.
 - Disable uncertainty computation if not needed (``calc_cov=False``)
 - Reduce training set size if feasible (consider sparse GP methods)
 - Disable derivative predictions if not required (``return_deriv=False``)
+- Use ``derivs_to_predict`` to compute only the derivatives you need
 
 **Issue 5: GDDEGP derivative predictions require rays_predict**
 
@@ -820,7 +991,7 @@ When ``return_deriv=True``, predictions are returned with shape ``(num_derivs + 
 
 - Remember the structure: rows = output types, columns = test points
 - Row 0 is always function values
-- Subsequent rows are derivatives in the order specified by ``der_indices``
+- Subsequent rows are derivatives in the order specified by ``der_indices`` (or ``derivs_to_predict`` if specified)
 - Use row indexing to extract components:
   
   ::
@@ -862,6 +1033,55 @@ Yes! This is a key advantage of GDDEGP submodels.
     )
     
     # Works as long as the derivative ORDER was used in training
+
+**Issue 9: derivs_to_predict contains derivatives not in training**
+
+``derivs_to_predict`` must be a subset of the derivatives used during training.
+
+**Solution:**
+
+- Verify each entry in ``derivs_to_predict`` exists in the flattened ``der_indices``
+- Check that derivative specifications match exactly (including order of variable-order pairs)
+
+::
+
+    # Training derivatives
+    der_indices = [[[[1, 1]], [[2, 1]]], [[[1, 2]]]]
+    # Flattened: [[1,1]], [[2,1]], [[1,2]]
+    
+    # Valid derivs_to_predict
+    derivs_to_predict = [[[1, 1]], [[1, 2]]]  # Both exist in training
+    
+    # Invalid: [[2,2]] was not in training
+    derivs_to_predict = [[[1, 1]], [[2, 2]]]  # Error!
+
+**Issue 10: Output shape unexpected when using derivs_to_predict**
+
+When ``derivs_to_predict`` is specified, output shape is ``(len(derivs_to_predict) + 1, n_test)``, 
+not ``(num_all_derivs + 1, n_test)``.
+
+**Solution:**
+
+- Remember that row count equals ``len(derivs_to_predict) + 1``
+- Row order matches the order in ``derivs_to_predict``, not ``der_indices``
+
+::
+
+    # Training had 5 derivatives
+    der_indices = [
+        [[[1, 1]], [[2, 1]]],
+        [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]
+    ]
+    
+    # Request only 2 derivatives in specific order
+    derivs_to_predict = [[[2, 1]], [[1, 2]]]  # ∂f/∂x₂, then ∂²f/∂x₁²
+    
+    y_pred, _ = gp.predict(X_test, params, return_deriv=True, derivs_to_predict=derivs_to_predict)
+    
+    # y_pred.shape = (3, n_test), NOT (6, n_test)
+    # y_pred[0, :] = function values
+    # y_pred[1, :] = ∂f/∂x₂ (first in derivs_to_predict)
+    # y_pred[2, :] = ∂²f/∂x₁² (second in derivs_to_predict)
 
 ------------------------------------------------------------
 
@@ -945,6 +1165,29 @@ Best Practices
 
 12. **Profile prediction performance** for large-scale applications and optimize accordingly
 
+13. **Use derivs_to_predict for efficiency** when only specific derivatives are needed:
+    
+    ::
+    
+        # Instead of computing all 10 derivatives and discarding 8:
+        y_pred, _ = gp.predict(X_test, params, return_deriv=True)
+        needed = y_pred[[0, 3, 7], :]  # Extract rows manually
+        
+        # Compute only what you need:
+        derivs_to_predict = [[[1, 2]], [[2, 2]]]  # Just these two
+        y_pred, _ = gp.predict(
+            X_test, params, 
+            return_deriv=True, 
+            derivs_to_predict=derivs_to_predict
+        )
+
+14. **Match derivs_to_predict order to your analysis needs** - output rows follow your specified order:
+    
+    ::
+    
+        # If you need ∂f/∂x₂ before ∂f/∂x₁ for downstream processing:
+        derivs_to_predict = [[[2, 1]], [[1, 1]]]  # Specify desired order
+
 ------------------------------------------------------------
 
 
@@ -957,26 +1200,31 @@ JetGP provides a flexible and powerful prediction interface across all model var
 
 - **Unified interface** for function and derivative predictions
 - **Optional uncertainty quantification** via ``calc_cov`` parameter
+- **Selective derivative predictions** via ``derivs_to_predict`` parameter
 - **Row-wise output format** when ``return_deriv=True``: shape ``(num_derivs + 1, n_test)``
 - **Automatic denormalization** when ``normalize=True`` during training
 - **Efficient vectorized operations** for batch predictions
 
 **Output Format Summary:**
 
-+------------------+----------------------------------+
-| ``return_deriv`` | Output Shape                     |
-+==================+==================================+
-| ``False``        | ``(n_test,)``                    |
-+------------------+----------------------------------+
-| ``True``         | ``(num_derivs + 1, n_test)``     |
-+------------------+----------------------------------+
++------------------------------+---------------------------------------+
+| Configuration                | Output Shape                          |
++==============================+=======================================+
+| ``return_deriv=False``       | ``(n_test,)``                         |
++------------------------------+---------------------------------------+
+| ``return_deriv=True``,       | ``(num_all_derivs + 1, n_test)``      |
+| ``derivs_to_predict=None``   |                                       |
++------------------------------+---------------------------------------+
+| ``return_deriv=True``,       | ``(len(derivs_to_predict) + 1,        |
+| ``derivs_to_predict=[...]``  | n_test)``                             |
++------------------------------+---------------------------------------+
 
 **Row Structure when return_deriv=True:**
 
 - Row 0: Function value predictions
-- Row 1: First derivative component
+- Row 1: First derivative component (per ``der_indices`` or ``derivs_to_predict`` order)
 - Row 2: Second derivative component
-- ... (following order in ``der_indices``)
+- ... (following specified order)
 
 **Model-Specific Notes:**
 
@@ -1006,16 +1254,18 @@ JetGP provides a flexible and powerful prediction interface across all model var
 6. Use ``return_submodels=True`` for weighted models to diagnose performance
 7. Normalize directional vectors in GDDEGP when using ``rays_predict``
 8. Leverage GDDEGP/WDEGP-GDDEGP flexibility to predict in any direction
-9. Batch large prediction sets for memory efficiency
+9. Use ``derivs_to_predict`` for efficiency and custom derivative ordering
+10. Batch large prediction sets for memory efficiency
 
 **Typical Workflow:**
 
 1. Initialize and train model with appropriate configuration (including ``derivative_locations``)
 2. Optimize hyperparameters thoroughly
 3. Make predictions with uncertainty quantification
-4. Extract relevant components using row indexing (function, derivatives, submodels)
-5. Visualize results with confidence bands
-6. Validate against test data when available
+4. Use ``derivs_to_predict`` to select specific derivatives if needed
+5. Extract relevant components using row indexing (function, derivatives, submodels)
+6. Visualize results with confidence bands
+7. Validate against test data when available
 
 For more information on model initialization and hyperparameter optimization, 
 see the respective documentation sections.

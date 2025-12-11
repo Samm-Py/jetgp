@@ -56,9 +56,18 @@ class degp:
         smoothness_parameter=None
     ):
         if n_order > 0 and derivative_locations is None:
-            raise Exception('Must provide derivative locations!')
-        
-        if der_indices is None and n_order == 0:
+            import warnings
+            # Count total number of derivative components across all orders
+            n_derivs = sum(len(order_derivs) for order_derivs in der_indices)
+            n_train = len(x_train)
+            derivative_locations = [[i for i in range(n_train)] for _ in range(n_derivs)]
+            warnings.warn(
+                f"derivative_locations not provided. Assuming all {n_derivs} derivative(s) "
+                f"are available at all {n_train} training point(s).",
+                UserWarning
+        )
+            
+        elif der_indices is None and n_order == 0:
             der_indices = []
             derivative_locations = []
         self.n_order = n_order

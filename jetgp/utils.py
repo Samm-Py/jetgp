@@ -1155,7 +1155,7 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
 
 def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
          pop_size=100, n_generations=100, p=0.1, c=0.1,
-         minfunc=1e-8, minstep=1e-8, debug=False,
+         minfunc=1e-2, minstep=1e-2, debug=False,
          local_opt_every=15, initial_positions=None, seed=42):
     """
     JADE (Adaptive Differential Evolution) with optional local refinement
@@ -1302,7 +1302,7 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         pop_size=100, omega=0.5, phip=0.5, phig=0.5, n_generations=100,
-        minstep=1e-8, minfunc=1e-8, debug=False, seed=42,
+        minstep=1e-2, minfunc=1e-2, debug=False, seed=42,
         local_opt_every=15, initial_positions=None):
     """
     Particle Swarm Optimization with periodic local refinement

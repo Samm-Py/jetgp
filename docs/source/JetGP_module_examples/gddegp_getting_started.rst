@@ -1527,11 +1527,11 @@ This is where mixed coverage requires careful handling. We verify each direction
    # For prediction, we need rays that match these test points
    # rays_array_dir1 already has the correct correspondence
    y_pred_dir1 = gp_model.predict(
-       X_dir1_points, params,
-       rays_predict=[rays_array_dir1, rays_array_dir2],
-       calc_cov=False,
-       return_deriv=True
-   )
+        X_dir1_points, params,
+        rays_predict=[rays_array_dir1, rays_array_dir2[:, 0:rays_array_dir1.shape[1]]],
+        calc_cov=False,
+        return_deriv=True
+    )
 
    print(f"Prediction shape: {y_pred_dir1.shape}")
    print(f"Expected: [2 rows, {len(indices_with_dir1)} columns]")

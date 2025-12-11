@@ -1,52 +1,193 @@
 import numpy as np
 import pyoti.sparse as oti
-import pyoti.core as coti  # Required for the advanced implementation
+import pyoti.core as coti
 from line_profiler import profile
+import numba
 
 
-# @profile
-# def differences_by_dim_func(X1, X2, rays, n_order, index=-1):
-#     """
-#     Compute dimension-wise pairwise differences between X1 and X2,
-#     including hypercomplex perturbations in the directions specified by `rays`.
+# =============================================================================
+# Numba-accelerated helper functions for efficient matrix slicing
+# =============================================================================
 
-#     Parameters
-#     ----------
-#     X1 : ndarray of shape (n1, d)
-#         First input array.
-#     X2 : ndarray of shape (n2, d)
-#         Second input array.
-#     rays : ndarray of shape (d, n_rays)
-#         Direction vectors applied for each dimension using hypercomplex algebra.
-#     n_order : int
-#         Derivative order used to define the hypercomplex perturbation.
-#     index : list or int, optional
-#         Index to determine which points receive tagging. Default is -1 (all tagged).
+@numba.jit(nopython=True, cache=True)
+def extract_rows(content_full, row_indices, n_cols):
+    """
+    Extract rows from content_full at specified indices.
+    
+    Parameters
+    ----------
+    content_full : ndarray of shape (n_rows_full, n_cols)
+        Source matrix.
+    row_indices : ndarray of int64
+        Row indices to extract.
+    n_cols : int
+        Number of columns.
+        
+    Returns
+    -------
+    result : ndarray of shape (len(row_indices), n_cols)
+        Extracted rows.
+    """
+    n_rows = len(row_indices)
+    result = np.empty((n_rows, n_cols))
+    for i in range(n_rows):
+        ri = row_indices[i]
+        for j in range(n_cols):
+            result[i, j] = content_full[ri, j]
+    return result
 
-#     Returns
-#     -------
-#     differences_by_dim : list of ndarray
-#         List of length d. Each entry is an (n1, n2) array of directional differences for one dimension.
-#     """
-#     X1 = oti.array(X1)
-#     X2 = oti.array(X2)
 
-#     n1, d = X1.shape
-#     n2, _ = X2.shape
-#     n_rays = rays.shape[1]
+@numba.jit(nopython=True, cache=True)
+def extract_cols(content_full, col_indices, n_rows):
+    """
+    Extract columns from content_full at specified indices.
+    
+    Parameters
+    ----------
+    content_full : ndarray of shape (n_rows, n_cols_full)
+        Source matrix.
+    col_indices : ndarray of int64
+        Column indices to extract.
+    n_rows : int
+        Number of rows.
+        
+    Returns
+    -------
+    result : ndarray of shape (n_rows, len(col_indices))
+        Extracted columns.
+    """
+    n_cols = len(col_indices)
+    result = np.empty((n_rows, n_cols))
+    for i in range(n_rows):
+        for j in range(n_cols):
+            result[i, j] = content_full[i, col_indices[j]]
+    return result
 
-#     differences_by_dim = []
 
-#     for k in range(d):
-#         diffs_k = oti.zeros((n1, n2))
-#         for i in range(n1):
-#             for j in range(n2):
-#                 dire1 = sum(oti.e(l + 1, order=2 * n_order) *
-#                             rays[k, l] for l in range(n_rays))
-#                 diffs_k[i, j] = (X1[i, k] + dire1) - X2[j, k]
-#         differences_by_dim.append(diffs_k)
-#     return differences_by_dim
+@numba.jit(nopython=True, cache=True)
+def extract_submatrix(content_full, row_indices, col_indices):
+    """
+    Extract submatrix from content_full at specified row and column indices.
+    Replaces the expensive np.ix_ operation.
+    
+    Parameters
+    ----------
+    content_full : ndarray of shape (n_rows_full, n_cols_full)
+        Source matrix.
+    row_indices : ndarray of int64
+        Row indices to extract.
+    col_indices : ndarray of int64
+        Column indices to extract.
+        
+    Returns
+    -------
+    result : ndarray of shape (len(row_indices), len(col_indices))
+        Extracted submatrix.
+    """
+    n_rows = len(row_indices)
+    n_cols = len(col_indices)
+    result = np.empty((n_rows, n_cols))
+    for i in range(n_rows):
+        ri = row_indices[i]
+        for j in range(n_cols):
+            result[i, j] = content_full[ri, col_indices[j]]
+    return result
 
+
+@numba.jit(nopython=True, cache=True, parallel=False)
+def extract_and_assign(content_full, row_indices, col_indices, K, 
+                       row_start, col_start, sign):
+    """
+    Extract submatrix and assign directly to K with sign multiplication.
+    Combines extraction and assignment in one pass for better performance.
+    
+    Parameters
+    ----------
+    content_full : ndarray of shape (n_rows_full, n_cols_full)
+        Source matrix.
+    row_indices : ndarray of int64
+        Row indices to extract.
+    col_indices : ndarray of int64
+        Column indices to extract.
+    K : ndarray
+        Target matrix to fill.
+    row_start : int
+        Starting row index in K.
+    col_start : int
+        Starting column index in K.
+    sign : float
+        Sign multiplier (+1.0 or -1.0).
+    """
+    n_rows = len(row_indices)
+    n_cols = len(col_indices)
+    for i in range(n_rows):
+        ri = row_indices[i]
+        for j in range(n_cols):
+            K[row_start + i, col_start + j] = content_full[ri, col_indices[j]] * sign
+
+
+@numba.jit(nopython=True, cache=True)
+def extract_rows_and_assign(content_full, row_indices, K, 
+                            row_start, col_start, n_cols, sign):
+    """
+    Extract rows and assign directly to K with sign multiplication.
+    
+    Parameters
+    ----------
+    content_full : ndarray of shape (n_rows_full, n_cols)
+        Source matrix.
+    row_indices : ndarray of int64
+        Row indices to extract.
+    K : ndarray
+        Target matrix to fill.
+    row_start : int
+        Starting row index in K.
+    col_start : int
+        Starting column index in K.
+    n_cols : int
+        Number of columns to copy.
+    sign : float
+        Sign multiplier (+1.0 or -1.0).
+    """
+    n_rows = len(row_indices)
+    for i in range(n_rows):
+        ri = row_indices[i]
+        for j in range(n_cols):
+            K[row_start + i, col_start + j] = content_full[ri, j] * sign
+
+
+@numba.jit(nopython=True, cache=True)
+def extract_cols_and_assign(content_full, col_indices, K, 
+                            row_start, col_start, n_rows, sign):
+    """
+    Extract columns and assign directly to K with sign multiplication.
+    
+    Parameters
+    ----------
+    content_full : ndarray of shape (n_rows, n_cols_full)
+        Source matrix.
+    col_indices : ndarray of int64
+        Column indices to extract.
+    K : ndarray
+        Target matrix to fill.
+    row_start : int
+        Starting row index in K.
+    col_start : int
+        Starting column index in K.
+    n_rows : int
+        Number of rows to copy.
+    sign : float
+        Sign multiplier (+1.0 or -1.0).
+    """
+    n_cols = len(col_indices)
+    for i in range(n_rows):
+        for j in range(n_cols):
+            K[row_start + i, col_start + j] = content_full[i, col_indices[j]] * sign
+
+
+# =============================================================================
+# Difference computation functions
+# =============================================================================
 
 def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True):
     """
@@ -73,8 +214,6 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True):
         derivative-derivative blocks in training kernel).
         If False, use order n_order (sufficient for prediction without 
         derivative outputs).
-    index : int, optional
-        Currently unused. Reserved for future enhancements.
         
     Returns
     -------
@@ -82,26 +221,6 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True):
         A list where each element is an array of shape (n1, n2), containing 
         the differences between corresponding dimensions of X1 and X2, 
         augmented with directional hypercomplex perturbations.
-        
-    Notes
-    -----
-    - The function leverages hypercomplex arithmetic from the pyOTI library.
-    - The directional perturbation is computed as: perts = rays @ e_bases
-      where e_bases are the hypercomplex units for each ray direction.
-    - This routine is typically used in the construction of directional 
-      derivative kernels for Gaussian processes.
-      
-    Example
-    -------
-    >>> X1 = np.array([[1.0, 2.0], [3.0, 4.0]])
-    >>> X2 = np.array([[1.5, 2.5], [3.5, 4.5]])
-    >>> rays = np.eye(2)  # Standard basis directions
-    >>> n_order = 1
-    >>> diffs = differences_by_dim_func(X1, X2, rays, n_order)
-    >>> len(diffs)
-    2
-    >>> diffs[0].shape
-    (2, 2)
     """
     X1 = oti.array(X1)
     X2 = oti.array(X2)
@@ -164,125 +283,9 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True):
     return differences_by_dim
 
 
-# def rbf_kernel(differences, length_scales, n_order, kernel_func, der_indices, powers, index=-1):
-#     """
-#     Compute a radial basis function (RBF) kernel matrix with hypercomplex derivative augmentation.
-
-#     Parameters
-#     ----------
-#     differences : list of ndarray
-#         List of difference arrays for each input dimension.
-#     length_scales : ndarray
-#         Log-scaled length scale parameters.
-#     n_order : int
-#         Maximum derivative order.
-#     kernel_func : callable
-#         Kernel function to be used for evaluating pairwise differences.
-#     der_indices : list of lists
-#         Multi-index derivatives specifying derivative evaluation directions.
-#     powers : list of int
-#         Parity powers used to scale contributions.
-#     index : list or int, optional
-#         Index for submodel selection or evaluation region.
-
-#     Returns
-#     -------
-#     K : ndarray
-#         Full kernel matrix with function values and derivative blocks.
-#     """
-#     phi = kernel_func(differences, length_scales, index)
-
-#     for i in range(0, len(der_indices) + 1):
-#         row_j = 0
-#         for j in range(0, len(der_indices) + 1):
-#             if j == 0 and i == 0:
-#                 row_j = phi.real * (-1) ** powers[j]
-#             elif j > 0 and i == 0:
-#                 row_j = np.hstack(
-#                     (row_j, (-1) ** powers[j] * phi.get_deriv(der_indices[j - 1])))
-#             elif j == 0 and i > 0:
-#                 row_j = phi.get_deriv(der_indices[i - 1])
-#             else:
-#                 row_j = np.hstack((
-#                     row_j,
-#                     (-1) ** powers[j] *
-#                     phi.get_deriv(der_indices[j - 1] + der_indices[i - 1])
-#                 ))
-#         if i == 0:
-#             K = row_j
-#         else:
-#             K = np.vstack((K, row_j))
-
-#     return K
-
-# @profile
-# def rbf_kernel(differences, length_scales, n_order, n_rays, kernel_func, der_indices, powers, index=-1):
-#     """
-#     Assembles the full DD-GP covariance matrix with hypercomplex derivatives.
-
-#     This is an optimized version that pre-allocates the final matrix and fills
-#     it block by block, avoiding inefficient stacking operations.
-
-#     Parameters
-#     ----------
-#     differences : list of ndarray
-#         List of difference arrays for each input dimension.
-#     length_scales : ndarray
-#         Log-scaled length scale parameters.
-#     n_order : int
-#         Maximum derivative order.
-#     kernel_func : callable
-#         Kernel function to be used for evaluating pairwise differences.
-#     der_indices : list of lists
-#         Multi-index derivatives specifying derivative evaluation directions.
-#     powers : list of int
-#         Parity powers used to scale contributions.
-#     index : list or int, optional
-#         Index for submodel selection or evaluation region.
-
-#     Returns
-#     -------
-#     K : ndarray
-#         Full kernel matrix with function values and derivative blocks.
-#     """
-#     # Evaluate the kernel once to get the hypercomplex result
-#     phi = kernel_func(differences, length_scales, index)
-
-#     # Determine the dimensions of the final matrix
-#     n_blocks = len(der_indices) + 1
-#     block_rows, block_cols = phi.shape
-
-#     # Pre-allocate the full covariance matrix with zeros
-#     K = np.zeros((n_blocks * block_rows, n_blocks * block_cols))
-
-#     # Fill the matrix block by block
-#     for i in range(n_blocks):  # Block-row index
-#         for j in range(n_blocks):  # Block-column index
-
-#             # Get a view of the current block to be filled
-#             K_block = K[i*block_rows: (i+1)*block_rows,
-#                         j*block_cols: (j+1)*block_cols]
-
-#             # Fill the block based on its position in the matrix
-#             if i == 0 and j == 0:
-#                 # Top-left block: K_ff (function-function)
-#                 content = phi.real
-#             elif i == 0 and j > 0:
-#                 # Top row: K_fd (function-derivative)
-#                 content = phi.get_deriv(der_indices[j - 1])
-#             elif i > 0 and j == 0:
-#                 # First column: K_df (derivative-function)
-#                 content = phi.get_deriv(der_indices[i - 1])
-#             else:
-#                 # Inner blocks: K_dd (derivative-derivative)
-#                 content = phi.get_deriv(
-#                     der_indices[i - 1] + der_indices[j - 1])
-
-#             # Apply the sign-flipping power and assign to the block
-#             K_block[:, :] = content * ((-1) ** powers[j])
-
-#     return K
-
+# =============================================================================
+# Derivative mapping utilities
+# =============================================================================
 
 def deriv_map(nbases, order):
     """
@@ -316,60 +319,55 @@ def transform_der_indices(der_indices, der_map):
     return deriv_ind_transf, deriv_ind_order
 
 
+# =============================================================================
+# RBF Kernel Assembly Functions (Optimized with Numba)
+# =============================================================================
+
 def rbf_kernel(
-        phi,
+    phi,
     phi_exp,
     n_order,
     n_bases,
     der_indices,
     powers,
-    index = -1
+    index=-1
 ):
     """
     Assembles the full DD-GP covariance matrix using an efficient, pre-computed
     derivative array and block-wise matrix filling.
     
-    Supports both uniform blocks (all derivatives at all points) and non-contiguous
-    indices (different derivatives at different subsets of points).
+    This version uses Numba-accelerated functions for efficient matrix slicing,
+    replacing expensive np.ix_ operations.
     
     Parameters
     ----------
-    differences : ndarray of shape (N, M, D)
-        Pairwise differences between input points (X - X').
-    length_scales : ndarray of shape (D,)
-        Length scales for each input dimension (ARD).
+    phi : OTI array
+        Base kernel matrix from kernel_func(differences, length_scales).
+    phi_exp : ndarray
+        Expanded derivative array from phi.get_all_derivs().
     n_order : int
         Maximum derivative order considered.
     n_bases : int
         Total number of bases (function value + derivative terms).
-    kernel_func : callable
-        Function that computes the base RBF kernel and its derivatives.
     der_indices : list of lists
         Multi-index derivative structures for each derivative component.
     powers : list of int
         Powers of (-1) applied to each term (for symmetry or sign conventions).
-    index : list of lists or None, optional (default=None)
-        If None, assumes all derivative types apply to all training points (uniform blocks).
-        If provided, specifies which training point indices have each derivative type,
-        allowing non-contiguous index support and variable block sizes.
-    direction_index : int, optional (default=-1)
-        Index for selecting directional kernels or subspaces.
-    return_deriv : bool, optional (default=True)
-        If True, build full matrix with derivative-derivative blocks.
-        If False, only build function and function-derivative blocks.
+    index : list of lists
+        Specifies which training point indices have each derivative type.
         
     Returns
     -------
     K : ndarray
         Full kernel matrix with function values and derivative blocks.
     """
-    # --- 1. Initial Setup and Efficient Derivative Extraction ---
     dh = coti.get_dHelp()
+    
     # Create maps to translate derivative specifications to flat indices
     der_map = deriv_map(n_bases, 2 * n_order)
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
 
-    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
+    # Determine Block Sizes and Pre-allocate Matrix
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
     n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
@@ -380,9 +378,15 @@ def rbf_kernel(
     K = np.zeros((total_rows, total_cols))
     base_shape = (n_rows_func, n_cols_func)
     
+    # Pre-compute signs (avoid repeated exponentiation)
+    signs = np.array([(-1.0) ** p for p in powers], dtype=np.float64)
+    
+    # Convert index lists to numpy arrays for numba
+    index_arrays = [np.asarray(idx, dtype=np.int64) for idx in index]
+    
     # Block (0,0): Function-Function (K_ff)
     content_full = phi_exp[0].reshape(base_shape)
-    K[:n_rows_func, :n_cols_func] = content_full * ((-1) ** powers[0])
+    K[:n_rows_func, :n_cols_func] = content_full * signs[0]
     
     # First Block-Column: Derivative-Function (K_df)
     row_offset = n_rows_func
@@ -390,15 +394,13 @@ def rbf_kernel(
         flat_idx = der_indices_tr[i]
         content_full = phi_exp[flat_idx].reshape(base_shape)
         
-        current_indices = index[i]
+        current_indices = index_arrays[i]
         n_pts_this_order = len(current_indices)
         
-        # Slice rows at specific indices
-        content_sliced = content_full[current_indices, :]
-        
-        K[row_offset: row_offset + n_pts_this_order, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+        # Use numba for efficient row extraction and assignment
+        extract_rows_and_assign(content_full, current_indices, K,
+                                row_offset, 0, n_cols_func, signs[0])
         row_offset += n_pts_this_order
-    
     
     # First Block-Row: Function-Derivative (K_fd)
     col_offset = n_cols_func
@@ -406,13 +408,12 @@ def rbf_kernel(
         flat_idx = der_indices_tr[j]
         content_full = phi_exp[flat_idx].reshape(base_shape)
         
-        current_indices = index[j]
+        current_indices = index_arrays[j]
         n_pts_this_order = len(current_indices)
         
-        # Slice columns at specific indices
-        content_sliced = content_full[:, current_indices]
-        
-        K[:n_rows_func, col_offset: col_offset + n_pts_this_order] = content_sliced * ((-1) ** powers[j + 1])
+        # Use numba for efficient column extraction and assignment
+        extract_cols_and_assign(content_full, current_indices, K,
+                                0, col_offset, n_rows_func, signs[j + 1])
         col_offset += n_pts_this_order
     
     # Inner Blocks: Derivative-Derivative (K_dd)
@@ -420,11 +421,11 @@ def rbf_kernel(
     for i in range(n_deriv_types):
         col_offset = n_cols_func
         
-        row_indices = index[i]
+        row_indices = index_arrays[i]
         n_pts_row = len(row_indices)
         
         for j in range(n_deriv_types):
-            col_indices = index[j]
+            col_indices = index_arrays[j]
             n_pts_col = len(col_indices)
             
             # Multiply derivative indices to find correct flat index
@@ -434,11 +435,9 @@ def rbf_kernel(
             flat_idx = der_map[new_ord][new_idx]
             content_full = phi_exp[flat_idx].reshape(base_shape)
             
-            # Slice both rows and columns using non-contiguous indices
-            content_sliced = content_full[np.ix_(row_indices, col_indices)]
-            
-            K[row_offset: row_offset + n_pts_row,
-              col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers[j + 1])
+            # Use numba for efficient submatrix extraction and assignment (replaces np.ix_)
+            extract_and_assign(content_full, row_indices, col_indices, K,
+                               row_offset, col_offset, signs[j + 1])
             
             col_offset += n_pts_col
         
@@ -448,188 +447,197 @@ def rbf_kernel(
 
 
 def rbf_kernel_predictions(
-        phi,
+    phi,
     phi_exp,
     n_order,
     n_bases,
     der_indices,
     powers,
     return_deriv,
-    index = -1,
-    common_derivs = None,
+    index=-1,
+    common_derivs=None,
     calc_cov=False,
-    powers_predict = None
+    powers_predict=None
 ):
-
     """
     Constructs the RBF kernel matrix for predictions with directional derivative entries.
     
-    This handles the asymmetric case where:
-    - Rows: Test points (predictions)
-    - Columns: Training points (with derivative structure from index)
+    This version uses Numba-accelerated functions for efficient matrix slicing.
 
     Parameters
     ----------
-    differences : ndarray of shape (N_test, N_train, D)
-        Pairwise differences between test and training points.
-    length_scales : ndarray of shape (D,)
-        Length scales for each input dimension (ARD).
+    phi : OTI array
+        Base kernel matrix between test and training points.
+    phi_exp : ndarray
+        Expanded derivative array from phi.get_all_derivs().
     n_order : int
         Maximum derivative order.
     n_bases : int
         Number of input dimensions.
-    kernel_func : callable
-        Function that computes the base RBF kernel and its derivatives.
     der_indices : list
         Derivative specifications.
     powers : list of int
         Sign powers for each derivative type.
+    return_deriv : bool
+        If True, predict derivatives at ALL test points.
     index : list of lists
         Training point indices for each derivative type.
-    direction_index : int, optional (default=-1)
-        Index for selecting directional kernels or subspaces.
-    return_deriv : bool, optional (default=False)
-        If True, predict derivatives at ALL test points.
-    calc_cov : bool, optional (default=False)
+    common_derivs : list
+        Common derivative indices to predict.
+    calc_cov : bool
         If True, computing covariance (use all indices for rows).
+    powers_predict : list of int, optional
+        Sign powers for prediction derivatives.
 
     Returns
     -------
     K : ndarray
         Prediction kernel matrix.
     """
-    # --- 1. Initial Setup and Efficient Derivative Extraction ---
     if calc_cov and not return_deriv:
         return phi.real
+    
     dh = coti.get_dHelp()
-    # Create maps to translate derivative specifications to flat indices
-    # --- 2. Determine Block Sizes and Pre-allocate Matrix ---
+    
     n_rows_func, n_cols_func = phi.shape
     n_deriv_types = len(der_indices)
-    n_deriv_types_pred = len(common_derivs)
+    n_deriv_types_pred = len(common_derivs) if common_derivs else 0
+    
+    # Pre-compute signs
+    signs = np.array([(-1.0) ** p for p in powers], dtype=np.float64)
+    if powers_predict is not None:
+        signs_predict = np.array([(-1.0) ** p for p in powers_predict], dtype=np.float64)
+    else:
+        signs_predict = signs
+    
     if return_deriv:
         der_map = deriv_map(n_bases, 2 * n_order)
-        index_2 = [i for i in range(phi_exp.shape[-1])]
+        index_2 = np.arange(phi_exp.shape[-1], dtype=np.int64)
         if calc_cov:
-            index = [i for i in range(phi_exp.shape[-1])]
+            index_cov = np.arange(phi_exp.shape[-1], dtype=np.int64)
             n_deriv_types = n_deriv_types_pred
-            n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i in index_2])
+            n_pts_with_derivs_rows = n_deriv_types * len([i for i in range(n_cols_func) if i < len(index_2)])
         else:
             n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
     else:
         der_map = deriv_map(n_bases, n_order)
-        index_2 = []
+        index_2 = np.array([], dtype=np.int64)
         n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
 
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
-    der_indices_tr_pred, der_ind_order_pred = transform_der_indices(common_derivs, der_map)
-    n_pts_with_derivs_cols = n_deriv_types_pred * len([i for i in range(n_cols_func) if i in index_2])
+    der_indices_tr_pred, der_ind_order_pred = transform_der_indices(common_derivs, der_map) if common_derivs else ([], [])
+    n_pts_with_derivs_cols = n_deriv_types_pred * len([i for i in range(n_cols_func) if i < len(index_2)])
 
     total_rows = n_rows_func + n_pts_with_derivs_rows 
     total_cols = n_cols_func + n_pts_with_derivs_cols 
 
     K = np.zeros((total_rows, total_cols))
-
-    # The full content blocks are always the size of the original phi matrix
     base_shape = (n_rows_func, n_cols_func)
 
-    # --- 3. Fill the Matrix Block by Block ---
+    # Convert index lists to numpy arrays for numba
+    if index != -1 and isinstance(index, list) and len(index) > 0:
+        index_arrays = [np.asarray(idx, dtype=np.int64) for idx in index]
+    else:
+        index_arrays = []
 
     # Block (0,0): Function-Function (K_ff)
-    # The real part is always at index 0 of the flat array
     content_full = phi_exp[0].reshape(base_shape)
-    K[:n_rows_func, :n_cols_func] = content_full * ((-1) ** powers[0])
+    K[:n_rows_func, :n_cols_func] = content_full * signs[0]
     
     if not return_deriv:
         # First Block-Column: Derivative-Function (K_df)
         row_offset = n_rows_func
         for i in range(n_deriv_types):
-            # Get row indices for this derivative order
             if calc_cov:
-                row_indices = index_2
+                row_indices = index_cov
             else:
-                row_indices = index[i]
+                if not index_arrays:
+                    break
+                row_indices = index_arrays[i]
             n_pts_row = len(row_indices)
             
             flat_idx = der_indices_tr[i]
             content_full = phi_exp[flat_idx].reshape(base_shape)
             
-            # Slice rows using non-contiguous indices
-            content_sliced = content_full[row_indices, :]
-            
-            K[row_offset: row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
+            # Use numba for efficient row extraction
+            extract_rows_and_assign(content_full, row_indices, K,
+                                    row_offset, 0, n_cols_func, signs[0])
             row_offset += n_pts_row
         return K
-    else:
-        # First Block-Row: Function-Derivative (K_fd)
+    
+    # --- return_deriv=True case ---
+    
+    # First Block-Row: Function-Derivative (K_fd)
+    col_offset = n_cols_func
+    for j in range(n_deriv_types_pred):
+        col_indices = index_2
+        n_pts_col = len(col_indices)
+        
+        flat_idx = der_indices_tr_pred[j]
+        content_full = phi_exp[flat_idx].reshape(base_shape)
+        
+        # Use numba for efficient column extraction
+        extract_cols_and_assign(content_full, col_indices, K,
+                                0, col_offset, n_rows_func, signs_predict[j + 1])
+        col_offset += n_pts_col
+
+    # First Block-Column: Derivative-Function (K_df)
+    row_offset = n_rows_func
+    for i in range(n_deriv_types):
+        if calc_cov:
+            row_indices = index_cov
+            flat_idx = der_indices_tr_pred[i]
+        else:
+            if not index_arrays:
+                break
+            row_indices = index_arrays[i]
+            flat_idx = der_indices_tr[i]
+        n_pts_row = len(row_indices)
+        
+        content_full = phi_exp[flat_idx].reshape(base_shape)
+        
+        # Use numba for efficient row extraction
+        extract_rows_and_assign(content_full, row_indices, K,
+                                row_offset, 0, n_cols_func, signs[0])
+        row_offset += n_pts_row
+
+    # Inner Blocks: Derivative-Derivative (K_dd)
+    row_offset = n_rows_func
+    for i in range(n_deriv_types):
+        if calc_cov:
+            row_indices = index_cov
+        else:
+            if not index_arrays:
+                break
+            row_indices = index_arrays[i]
+        n_pts_row = len(row_indices)
+        
         col_offset = n_cols_func
         for j in range(n_deriv_types_pred):
-            # Get column indices for this derivative order
             col_indices = index_2
             n_pts_col = len(col_indices)
             
-            flat_idx = der_indices_tr_pred[j]
+            # Multiply the derivative indices to find the correct flat index
+            imdir1 = der_ind_order_pred[j]
+            imdir2 = der_ind_order[i]
+            new_idx, new_ord = dh.mult_dir(
+                imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+            flat_idx = der_map[new_ord][new_idx]
+
             content_full = phi_exp[flat_idx].reshape(base_shape)
             
-            # Slice columns using non-contiguous indices
-            content_sliced = content_full[:, col_indices]
-    
-            K[:n_rows_func, col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers_predict[j + 1])
+            # Use numba for efficient submatrix extraction and assignment (replaces np.ix_)
+            extract_and_assign(content_full, row_indices, col_indices, K,
+                               row_offset, col_offset, signs_predict[j + 1])
             col_offset += n_pts_col
-    
-        # First Block-Column: Derivative-Function (K_df)
-        row_offset = n_rows_func
-        for i in range(n_deriv_types):
-            # Get row indices for this derivative order
-            if calc_cov:
-                row_indices = index
-                flat_idx = der_indices_tr_pred[i]
-            else:
-                row_indices =index[i]
-                flat_idx = der_indices_tr[i]
-            n_pts_row = len(row_indices)
-            content_full = phi_exp[flat_idx].reshape(base_shape)
-            
-            # Slice rows using non-contiguous indices
-            content_sliced = content_full[row_indices, :]
-    
-            K[row_offset: row_offset + n_pts_row, :n_cols_func] = content_sliced * ((-1) ** powers[0])
-            row_offset += n_pts_row
-    
-        # Inner Blocks: Derivative-Derivative (K_dd)
-        row_offset = n_rows_func
-        for i in range(n_deriv_types):
-            # Get row indices for this derivative order
-            if calc_cov:
-                row_indices = index
-            else:
-                row_indices =index[i]
-            n_pts_row = len(row_indices)
-            
-            col_offset = n_cols_func
-            for j in range(n_deriv_types_pred):
-                # Get column indices for this derivative order
-                col_indices = index_2
-                n_pts_col = len(col_indices)
-                
-                # Multiply the derivative indices to find the correct flat index
-                imdir1 = der_ind_order_pred[j]
-                imdir2 = der_ind_order[i]
-                new_idx, new_ord = dh.mult_dir(
-                    imdir1[0], imdir1[1], imdir2[0], imdir2[1])
-                flat_idx = der_map[new_ord][new_idx]
-    
-                content_full = phi_exp[flat_idx].reshape(base_shape)
-                
-                # Slice both rows and columns using non-contiguous indices
-                content_sliced = content_full[np.ix_(row_indices, col_indices)]
-    
-                K[row_offset: row_offset + n_pts_row, 
-                  col_offset: col_offset + n_pts_col] = content_sliced * ((-1) ** powers_predict[j + 1])
-                col_offset += n_pts_col
-            row_offset += n_pts_row
-    
-        return K
+        row_offset += n_pts_row
+
+    return K
+
+
+# =============================================================================
+# Utility functions
+# =============================================================================
 
 def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigma_n):
     """
@@ -654,13 +662,12 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     weights_matrix : ndarray of shape (n_test, n_train)
         Interpolation weights for each test point.
     """
-    
     # Compute K matrix (training covariance) - same for all test points
     K = kernel_func(diffs_by_dim, length_scales).real
     n_train = K.shape[0]
     
     # Compute r vectors (test-train covariances) for all test points at once
-    r_all = kernel_func(diffs_test, length_scales).real  # shape: (n_test, n_train)
+    r_all = kernel_func(diffs_test, length_scales).real
     n_test = r_all.shape[0]
     
     # Build augmented system matrix M (same for all test points)
@@ -675,24 +682,28 @@ def determine_weights(diffs_by_dim, diffs_test, length_scales, kernel_func, sigm
     r_augmented[:, :n_train] = r_all
     r_augmented[:, n_train] = 1
     
-    # Solve for all test points at once: M @ solution.T = r_augmented.T
-    # solution.T has shape (n_train+1, n_test)
-    solution = np.linalg.solve(M, r_augmented.T)  # shape: (n_train+1, n_test)
+    # Solve for all test points at once
+    solution = np.linalg.solve(M, r_augmented.T)
     
     # Extract weights (exclude Lagrange multiplier)
-    weights_matrix = solution[:n_train, :].T  # shape: (n_test, n_train)
+    weights_matrix = solution[:n_train, :].T
     
     return weights_matrix
 
+
 def to_list(x):
+    """Convert tuple to list recursively."""
     if isinstance(x, tuple):
         return [to_list(i) for i in x]
     return x
 
+
 def to_tuple(item):
+    """Convert list to tuple recursively."""
     if isinstance(item, list):
         return tuple(to_tuple(x) for x in item)
     return item
+
 
 def find_common_derivatives(all_indices):
     """Find derivative indices common to all submodels."""

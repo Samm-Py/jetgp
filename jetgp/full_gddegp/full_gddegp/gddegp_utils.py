@@ -2,360 +2,7 @@ import numpy as np
 import pyoti.sparse as oti
 import pyoti.core as coti
 from line_profiler import profile
-import numba
 
-
-# =============================================================================
-# Numba-accelerated helper functions for efficient matrix slicing
-# =============================================================================
-
-@numba.jit(nopython=True, cache=True)
-def extract_rows(content_full, row_indices, n_cols):
-    """
-    Extract rows from content_full at specified indices.
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    n_cols : int
-        Number of columns.
-        
-    Returns
-    -------
-    result : ndarray of shape (len(row_indices), n_cols)
-        Extracted rows.
-    """
-    n_rows = len(row_indices)
-    result = np.empty((n_rows, n_cols))
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            result[i, j] = content_full[ri, j]
-    return result
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_cols(content_full, col_indices, n_rows):
-    """
-    Extract columns from content_full at specified indices.
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows, n_cols_full)
-        Source matrix.
-    col_indices : ndarray of int64
-        Column indices to extract.
-    n_rows : int
-        Number of rows.
-        
-    Returns
-    -------
-    result : ndarray of shape (n_rows, len(col_indices))
-        Extracted columns.
-    """
-    n_cols = len(col_indices)
-    result = np.empty((n_rows, n_cols))
-    for i in range(n_rows):
-        for j in range(n_cols):
-            result[i, j] = content_full[i, col_indices[j]]
-    return result
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_submatrix(content_full, row_indices, col_indices):
-    """
-    Extract submatrix from content_full at specified row and column indices.
-    Replaces the expensive np.ix_ operation.
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols_full)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    col_indices : ndarray of int64
-        Column indices to extract.
-        
-    Returns
-    -------
-    result : ndarray of shape (len(row_indices), len(col_indices))
-        Extracted submatrix.
-    """
-    n_rows = len(row_indices)
-    n_cols = len(col_indices)
-    result = np.empty((n_rows, n_cols))
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            result[i, j] = content_full[ri, col_indices[j]]
-    return result
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_submatrix_transposed(content_full, row_indices, col_indices):
-    """
-    Extract submatrix and return its transpose.
-    Replaces content_full[np.ix_(row_indices, col_indices)].T
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols_full)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    col_indices : ndarray of int64
-        Column indices to extract.
-        
-    Returns
-    -------
-    result : ndarray of shape (len(col_indices), len(row_indices))
-        Transposed extracted submatrix.
-    """
-    n_rows = len(row_indices)
-    n_cols = len(col_indices)
-    result = np.empty((n_cols, n_rows))
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            result[j, i] = content_full[ri, col_indices[j]]
-    return result
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_rows_transposed(content_full, row_indices, n_cols):
-    """
-    Extract rows and return transposed result.
-    Replaces content_full[row_indices, :].T
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    n_cols : int
-        Number of columns.
-        
-    Returns
-    -------
-    result : ndarray of shape (n_cols, len(row_indices))
-        Transposed extracted rows.
-    """
-    n_rows = len(row_indices)
-    result = np.empty((n_cols, n_rows))
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            result[j, i] = content_full[ri, j]
-    return result
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_cols_transposed(content_full, col_indices, n_rows):
-    """
-    Extract columns and return transposed result.
-    Replaces content_full[:, col_indices].T
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows, n_cols_full)
-        Source matrix.
-    col_indices : ndarray of int64
-        Column indices to extract.
-    n_rows : int
-        Number of rows.
-        
-    Returns
-    -------
-    result : ndarray of shape (len(col_indices), n_rows)
-        Transposed extracted columns.
-    """
-    n_cols = len(col_indices)
-    result = np.empty((n_cols, n_rows))
-    for i in range(n_rows):
-        for j in range(n_cols):
-            result[j, i] = content_full[i, col_indices[j]]
-    return result
-
-
-@numba.jit(nopython=True, cache=True, parallel=False)
-def extract_and_assign(content_full, row_indices, col_indices, K, 
-                       row_start, col_start):
-    """
-    Extract submatrix and assign directly to K.
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols_full)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    col_indices : ndarray of int64
-        Column indices to extract.
-    K : ndarray
-        Target matrix to fill.
-    row_start : int
-        Starting row index in K.
-    col_start : int
-        Starting column index in K.
-    """
-    n_rows = len(row_indices)
-    n_cols = len(col_indices)
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            K[row_start + i, col_start + j] = content_full[ri, col_indices[j]]
-
-
-@numba.jit(nopython=True, cache=True, parallel=False)
-def extract_and_assign_transposed(content_full, row_indices, col_indices, K, 
-                                  row_start, col_start):
-    """
-    Extract submatrix and assign its transpose directly to K.
-    Replaces K[...] = content_full[np.ix_(row_indices, col_indices)].T
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols_full)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract from content_full.
-    col_indices : ndarray of int64
-        Column indices to extract from content_full.
-    K : ndarray
-        Target matrix to fill.
-    row_start : int
-        Starting row index in K.
-    col_start : int
-        Starting column index in K.
-    """
-    n_rows = len(row_indices)
-    n_cols = len(col_indices)
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            # Transposed assignment: K[col_idx, row_idx] = content[row_idx, col_idx]
-            K[row_start + j, col_start + i] = content_full[ri, col_indices[j]]
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_rows_and_assign(content_full, row_indices, K, 
-                            row_start, col_start, n_cols):
-    """
-    Extract rows and assign directly to K.
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    K : ndarray
-        Target matrix to fill.
-    row_start : int
-        Starting row index in K.
-    col_start : int
-        Starting column index in K.
-    n_cols : int
-        Number of columns to copy.
-    """
-    n_rows = len(row_indices)
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            K[row_start + i, col_start + j] = content_full[ri, j]
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_cols_and_assign(content_full, col_indices, K, 
-                            row_start, col_start, n_rows):
-    """
-    Extract columns and assign directly to K.
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows, n_cols_full)
-        Source matrix.
-    col_indices : ndarray of int64
-        Column indices to extract.
-    K : ndarray
-        Target matrix to fill.
-    row_start : int
-        Starting row index in K.
-    col_start : int
-        Starting column index in K.
-    n_rows : int
-        Number of rows to copy.
-    """
-    n_cols = len(col_indices)
-    for i in range(n_rows):
-        for j in range(n_cols):
-            K[row_start + i, col_start + j] = content_full[i, col_indices[j]]
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_rows_and_assign_transposed(content_full, row_indices, K, 
-                                       row_start, col_start, n_cols):
-    """
-    Extract rows and assign transposed result directly to K.
-    Replaces K[...] = content_full[row_indices, :].T
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows_full, n_cols)
-        Source matrix.
-    row_indices : ndarray of int64
-        Row indices to extract.
-    K : ndarray
-        Target matrix to fill.
-    row_start : int
-        Starting row index in K.
-    col_start : int
-        Starting column index in K.
-    n_cols : int
-        Number of columns in content_full.
-    """
-    n_rows = len(row_indices)
-    for i in range(n_rows):
-        ri = row_indices[i]
-        for j in range(n_cols):
-            K[row_start + j, col_start + i] = content_full[ri, j]
-
-
-@numba.jit(nopython=True, cache=True)
-def extract_cols_and_assign_transposed(content_full, col_indices, K, 
-                                       row_start, col_start, n_rows):
-    """
-    Extract columns and assign transposed result directly to K.
-    Replaces K[...] = content_full[:, col_indices].T
-    
-    Parameters
-    ----------
-    content_full : ndarray of shape (n_rows, n_cols_full)
-        Source matrix.
-    col_indices : ndarray of int64
-        Column indices to extract.
-    K : ndarray
-        Target matrix to fill.
-    row_start : int
-        Starting row index in K.
-    col_start : int
-        Starting column index in K.
-    n_rows : int
-        Number of rows in content_full.
-    """
-    n_cols = len(col_indices)
-    for i in range(n_rows):
-        for j in range(n_cols):
-            K[row_start + j, col_start + i] = content_full[i, col_indices[j]]
-
-
-# =============================================================================
-# Derivative index transformation utilities
-# =============================================================================
 
 def make_first_odd(der_indices):
     """Transform derivative indices to use odd bases (1, 3, 5, ...)."""
@@ -380,10 +27,6 @@ def make_first_even(der_indices):
         result.append(new_group)
     return result
 
-
-# =============================================================================
-# Difference computation functions
-# =============================================================================
 
 def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
                                   derivative_locations_X1, derivative_locations_X2,
@@ -518,9 +161,28 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     return differences_by_dim
 
 
-# =============================================================================
-# Derivative mapping utilities
-# =============================================================================
+# def make_der_indices(num_directions: int, max_order: int):
+#     """
+#     Build the list of derivative-index specs.
+
+#     Parameters
+#     ----------
+#     num_directions : int
+#         Number of distinct directional tags.
+#     max_order : int
+#         Maximum derivative order.
+
+#     Returns
+#     -------
+#     der_indices : list
+#         List of [[tag, order], ...] for every order and tag.
+#     """
+#     der_indices = []
+#     for order in range(1, max_order + 1):
+#         for tag in range(1, num_directions + 1):
+#             der_indices.append([[tag, order]])
+#     return der_indices
+
 
 def deriv_map(nbases, order):
     """Create mapping from (order, index) to flattened index."""
@@ -548,10 +210,6 @@ def transform_der_indices(der_indices, der_map):
     return deriv_ind_transf, deriv_ind_order
 
 
-# =============================================================================
-# RBF Kernel Assembly Functions (Optimized with Numba)
-# =============================================================================
-
 @profile
 def rbf_kernel(
     phi,
@@ -563,9 +221,6 @@ def rbf_kernel(
 ):
     """
     Assembles the full GDDEGP covariance matrix with selective derivative coverage.
-    
-    This version uses Numba-accelerated functions for efficient matrix slicing,
-    replacing expensive np.ix_ operations.
 
     Parameters
     ----------
@@ -579,6 +234,8 @@ def rbf_kernel(
         Number of OTI bases (must be even).
     der_indices : list
         Derivative index specifications.
+    powers : list of int
+        Powers of (-1) applied to each term (unused in GDDEGP but kept for API consistency).
     index : list of list
         index[i] contains indices of points with derivative direction i.
 
@@ -607,9 +264,6 @@ def rbf_kernel(
     der_indices_tr_even, der_ind_order_even = transform_der_indices(der_indices_even, der_map)
     der_indices_tr_odd, der_ind_order_odd = transform_der_indices(der_indices_odd, der_map)
 
-    # Convert index lists to numpy arrays for numba
-    index_arrays = [np.asarray(locs, dtype=np.int64) for locs in index]
-
     # Compute block offsets
     row_offsets = [0, PHIrows]
     for i in range(total_derivs):
@@ -633,22 +287,18 @@ def rbf_kernel(
             elif i == 0 and j > 0:
                 # K_fd: Function rows, derivative j columns
                 idx = der_indices_tr_even[j - 1]
-                col_locs = index_arrays[j - 1]
+                col_locs = index[j - 1]
                 col_start = col_offsets[j]
-                
-                # Use numba for efficient column extraction
-                extract_cols_and_assign(phi_exp[idx], col_locs, K,
-                                        0, col_start, PHIrows)
+                col_end = col_start + len(col_locs)
+                K[0:PHIrows, col_start:col_end] = phi_exp[idx][:, col_locs]
 
             elif i > 0 and j == 0:
                 # K_df: Derivative i rows, function columns
                 idx = der_indices_tr_odd[i - 1]
-                row_locs = index_arrays[i - 1]
+                row_locs = index[i - 1]
                 row_start = row_offsets[i]
-                
-                # Use numba for efficient row extraction
-                extract_rows_and_assign(phi_exp[idx], row_locs, K,
-                                        row_start, 0, PHIcols)
+                row_end = row_start + len(row_locs)
+                K[row_start:row_end, 0:PHIcols] = phi_exp[idx][row_locs, :]
 
             else:
                 # K_dd: Derivative i rows, derivative j columns
@@ -658,14 +308,14 @@ def rbf_kernel(
                     imdir1[0], imdir1[1], imdir2[0], imdir2[1])
                 idx = der_map[new_ord][new_idx]
 
-                row_locs = index_arrays[i - 1]
-                col_locs = index_arrays[j - 1]
+                row_locs = index[i - 1]
+                col_locs = index[j - 1]
                 row_start = row_offsets[i]
+                row_end = row_start + len(row_locs)
                 col_start = col_offsets[j]
+                col_end = col_start + len(col_locs)
 
-                # Use numba for efficient submatrix extraction (replaces np.ix_)
-                extract_and_assign(phi_exp[idx], row_locs, col_locs, K,
-                                   row_start, col_start)
+                K[row_start:row_end, col_start:col_end] = phi_exp[idx][np.ix_(row_locs, col_locs)]
 
     return K
 
@@ -684,8 +334,6 @@ def rbf_kernel_predictions(
 ):
     """
     Constructs the RBF kernel matrix for predictions with selective derivative coverage.
-    
-    This version uses Numba-accelerated functions for efficient matrix slicing.
 
     Parameters
     ----------
@@ -699,6 +347,8 @@ def rbf_kernel_predictions(
         Number of OTI bases.
     der_indices : list
         Derivative specifications for training data.
+    powers : list of int
+        Sign powers (unused in GDDEGP but kept for API consistency).
     return_deriv : bool
         If True, predict derivatives at test points.
     index : list of list
@@ -707,6 +357,8 @@ def rbf_kernel_predictions(
         Common derivative indices to predict.
     calc_cov : bool
         If True, computing covariance.
+    powers_predict : list of int, optional
+        Sign powers for prediction derivatives (unused but kept for API consistency).
 
     Returns
     -------
@@ -727,13 +379,10 @@ def rbf_kernel_predictions(
     if n_order == 0:
         return phi.real.T
 
-    # Convert index lists to numpy arrays for numba
-    index_arrays = [np.asarray(locs, dtype=np.int64) for locs in index]
-
     # Determine derivative map
     if return_deriv:
         der_map = deriv_map(n_bases, 2 * n_order)
-        derivative_locations_test = [np.arange(n_test, dtype=np.int64)] * n_deriv_types_pred
+        derivative_locations_test = [list(range(n_test))] * n_deriv_types_pred
     else:
         der_map = deriv_map(n_bases, n_order)
 
@@ -778,15 +427,13 @@ def rbf_kernel_predictions(
 
     # First Block-Row: Function-Derivative (K_fd)
     for j in range(n_deriv_types):
-        train_locs = index_arrays[j]
+        train_locs = index[j]
         col_start = col_offsets[j + 1]
+        col_end = col_start + len(train_locs)
 
         flat_idx = der_indices_tr_odd[j]
         content_full = phi_exp[flat_idx].reshape(base_shape)
-        
-        # Use numba for efficient row extraction with transpose
-        extract_rows_and_assign_transposed(content_full, train_locs, K,
-                                           0, col_start, n_test)
+        K[:n_test, col_start:col_end] = content_full[train_locs, :].T
 
     if not return_deriv:
         return K
@@ -799,22 +446,22 @@ def rbf_kernel_predictions(
     for i in range(n_deriv_types_pred):
         test_locs = derivative_locations_test[i]
         row_start = row_offsets[i + 1]
+        row_end = row_start + len(test_locs)
 
         flat_idx = der_indices_tr_even_pred[i]
         content_full = phi_exp[flat_idx].reshape(base_shape)
-        
-        # Use numba for efficient column extraction with transpose
-        extract_cols_and_assign_transposed(content_full, test_locs, K,
-                                           row_start, 0, n_train)
+        K[row_start:row_end, :n_train] = content_full[:, test_locs].T
 
     # Inner Blocks: Derivative-Derivative (K_dd)
     for i in range(n_deriv_types_pred):
         test_locs = derivative_locations_test[i]
         row_start = row_offsets[i + 1]
+        row_end = row_start + len(test_locs)
 
         for j in range(n_deriv_types):
-            train_locs = index_arrays[j]
+            train_locs = index[j]
             col_start = col_offsets[j + 1]
+            col_end = col_start + len(train_locs)
 
             imdir_train = der_ind_order_odd[j]
             imdir_test = der_ind_order_even_pred[i]
@@ -825,9 +472,10 @@ def rbf_kernel_predictions(
             flat_idx = der_map[new_ord][new_idx]
 
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            
-            # Use numba for efficient submatrix extraction with transpose (replaces np.ix_ + .T)
-            extract_and_assign_transposed(content_full, train_locs, test_locs, K,
-                                          row_start, col_start)
+            submatrix = content_full[np.ix_(train_locs, test_locs)]
+            K[row_start:row_end, col_start:col_end] = submatrix.T
 
     return K
+
+
+

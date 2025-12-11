@@ -62,10 +62,10 @@
         <p class="text">
             <a id="prevFileLink" class="nav" href="z_c5e96b40a6c28974_kernel_funcs_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
-            <a id="nextFileLink" class="nav" href="z_bfc9531b75b5e358___init___py.html">&#xbb; next</a>
+            <a id="nextFileLink" class="nav" href="z_ba95805218372c86_optimizer_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-12-03 17:50 -0600
+            created at 2025-12-09 12:51 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -1237,7 +1237,7 @@
     <p class="pln"><span class="n"><a id="t1155" href="#t1155">1155</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1156" href="#t1156">1156</a></span><span class="t"><span class="key">def</span> <span class="nam">jade</span><span class="op">(</span><span class="nam">func</span><span class="op">,</span> <span class="nam">lb</span><span class="op">,</span> <span class="nam">ub</span><span class="op">,</span> <span class="nam">ieqcons</span><span class="op">=</span><span class="op">[</span><span class="op">]</span><span class="op">,</span> <span class="nam">f_ieqcons</span><span class="op">=</span><span class="key">None</span><span class="op">,</span> <span class="nam">args</span><span class="op">=</span><span class="op">(</span><span class="op">)</span><span class="op">,</span> <span class="nam">kwargs</span><span class="op">=</span><span class="op">{</span><span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1157" href="#t1157">1157</a></span><span class="t">         <span class="nam">pop_size</span><span class="op">=</span><span class="num">100</span><span class="op">,</span> <span class="nam">n_generations</span><span class="op">=</span><span class="num">100</span><span class="op">,</span> <span class="nam">p</span><span class="op">=</span><span class="num">0.1</span><span class="op">,</span> <span class="nam">c</span><span class="op">=</span><span class="num">0.1</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1158" href="#t1158">1158</a></span><span class="t">         <span class="nam">minfunc</span><span class="op">=</span><span class="num">1e-8</span><span class="op">,</span> <span class="nam">minstep</span><span class="op">=</span><span class="num">1e-8</span><span class="op">,</span> <span class="nam">debug</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1158" href="#t1158">1158</a></span><span class="t">         <span class="nam">minfunc</span><span class="op">=</span><span class="num">1e-2</span><span class="op">,</span> <span class="nam">minstep</span><span class="op">=</span><span class="num">1e-2</span><span class="op">,</span> <span class="nam">debug</span><span class="op">=</span><span class="key">False</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1159" href="#t1159">1159</a></span><span class="t">         <span class="nam">local_opt_every</span><span class="op">=</span><span class="num">15</span><span class="op">,</span> <span class="nam">initial_positions</span><span class="op">=</span><span class="key">None</span><span class="op">,</span> <span class="nam">seed</span><span class="op">=</span><span class="num">42</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1160" href="#t1160">1160</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1161" href="#t1161">1161</a></span><span class="t"><span class="str">    JADE (Adaptive Differential Evolution) with optional local refinement</span>&nbsp;</span><span class="r"></span></p>
@@ -1384,7 +1384,7 @@
     <p class="pln"><span class="n"><a id="t1302" href="#t1302">1302</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t1303" href="#t1303">1303</a></span><span class="t"><span class="key">def</span> <span class="nam">pso</span><span class="op">(</span><span class="nam">func</span><span class="op">,</span> <span class="nam">lb</span><span class="op">,</span> <span class="nam">ub</span><span class="op">,</span> <span class="nam">ieqcons</span><span class="op">=</span><span class="op">[</span><span class="op">]</span><span class="op">,</span> <span class="nam">f_ieqcons</span><span class="op">=</span><span class="key">None</span><span class="op">,</span> <span class="nam">args</span><span class="op">=</span><span class="op">(</span><span class="op">)</span><span class="op">,</span> <span class="nam">kwargs</span><span class="op">=</span><span class="op">{</span><span class="op">}</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1304" href="#t1304">1304</a></span><span class="t">        <span class="nam">pop_size</span><span class="op">=</span><span class="num">100</span><span class="op">,</span> <span class="nam">omega</span><span class="op">=</span><span class="num">0.5</span><span class="op">,</span> <span class="nam">phip</span><span class="op">=</span><span class="num">0.5</span><span class="op">,</span> <span class="nam">phig</span><span class="op">=</span><span class="num">0.5</span><span class="op">,</span> <span class="nam">n_generations</span><span class="op">=</span><span class="num">100</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t1305" href="#t1305">1305</a></span><span class="t">        <span class="nam">minstep</span><span class="op">=</span><span class="num">1e-8</span><span class="op">,</span> <span class="nam">minfunc</span><span class="op">=</span><span class="num">1e-8</span><span class="op">,</span> <span class="nam">debug</span><span class="op">=</span><span class="key">False</span><span class="op">,</span> <span class="nam">seed</span><span class="op">=</span><span class="num">42</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t1305" href="#t1305">1305</a></span><span class="t">        <span class="nam">minstep</span><span class="op">=</span><span class="num">1e-2</span><span class="op">,</span> <span class="nam">minfunc</span><span class="op">=</span><span class="num">1e-2</span><span class="op">,</span> <span class="nam">debug</span><span class="op">=</span><span class="key">False</span><span class="op">,</span> <span class="nam">seed</span><span class="op">=</span><span class="num">42</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1306" href="#t1306">1306</a></span><span class="t">        <span class="nam">local_opt_every</span><span class="op">=</span><span class="num">15</span><span class="op">,</span> <span class="nam">initial_positions</span><span class="op">=</span><span class="key">None</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1307" href="#t1307">1307</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t1308" href="#t1308">1308</a></span><span class="t"><span class="str">    Particle Swarm Optimization with periodic local refinement</span>&nbsp;</span><span class="r"></span></p>
@@ -2304,10 +2304,10 @@
         <p>
             <a class="nav" href="z_c5e96b40a6c28974_kernel_funcs_py.html">&#xab; prev</a> &nbsp; &nbsp;
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
-            <a class="nav" href="z_bfc9531b75b5e358___init___py.html">&#xbb; next</a>
+            <a class="nav" href="z_ba95805218372c86_optimizer_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-12-03 17:50 -0600
+            created at 2025-12-09 12:51 -0600
         </p>
     </div>
 </footer>

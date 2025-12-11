@@ -4,7 +4,7 @@ from jetgp.full_gddegp import gddegp_utils as utils
 import jetgp.utils as gen_utils
 from scipy.linalg import cho_solve, cho_factor
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
-from line_profiler import profile
+
 class Optimizer:
     """
     Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
@@ -19,8 +19,7 @@ class Optimizer:
 
     def __init__(self, model):
         self.model = model
-    
-    @profile
+
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the negative log marginal likelihood (NLL) of the model.

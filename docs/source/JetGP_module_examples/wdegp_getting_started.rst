@@ -89,14 +89,14 @@ Detailed Example
 Consider a problem with 10 training points and 2 submodels where:
 
 - **Submodel 0**: Uses 1st-order derivatives at points [1,2,3] and 2nd-order derivatives at points [4,5,6]
-- **Submodel 1**: Uses 1st-order derivatives at points [4,5,6] and 2nd-order derivatives at points [1,2,3]
+- **Submodel 1**: Uses 1st-order derivatives at points [7,8,9] and 2nd-order derivatives at points [7,8,9]
 
 .. code-block:: python
 
    # Submodel indices: which points have which derivative type
    submodel_indices = [
        [[1, 2, 3], [4, 5, 6]],  # Submodel 0: 1st order at [1,2,3], 2nd order at [4,5,6]
-       [[4, 5, 6], [1, 2, 3]]   # Submodel 1: 1st order at [4,5,6], 2nd order at [1,2,3]
+       [[7, 8, 9], [7, 8, 9]]   # Submodel 1: 1st order at [7,8,9], 2nd order at [7,8,9]
    ]
    
    # Derivative specifications: what derivative types each submodel uses
@@ -109,8 +109,8 @@ Consider a problem with 10 training points and 2 submodels where:
 
 - ``submodel_indices[0][0] = [1, 2, 3]`` means Submodel 0 has the derivative type ``derivative_specs[0][0] = [[[1,1]]]`` (1st order) at training points 1, 2, and 3
 - ``submodel_indices[0][1] = [4, 5, 6]`` means Submodel 0 has the derivative type ``derivative_specs[0][1] = [[[1,2]]]`` (2nd order) at training points 4, 5, and 6
-- ``submodel_indices[1][0] = [4, 5, 6]`` means Submodel 1 has the derivative type ``derivative_specs[1][0] = [[[1,1]]]`` (1st order) at training points 4, 5, and 6
-- ``submodel_indices[1][1] = [1, 2, 3]`` means Submodel 1 has the derivative type ``derivative_specs[1][1] = [[[1,2]]]`` (2nd order) at training points 1, 2, and 3
+- ``submodel_indices[1][0] = [4, 5, 6]`` means Submodel 1 has the derivative type ``derivative_specs[1][0] = [[[1,1]]]`` (1st order) at training points 7, 8, and 9
+- ``submodel_indices[1][1] = [1, 2, 3]`` means Submodel 1 has the derivative type ``derivative_specs[1][1] = [[[1,2]]]`` (2nd order) at training points 7, 8, and 9
 
 **Key Features:**
 

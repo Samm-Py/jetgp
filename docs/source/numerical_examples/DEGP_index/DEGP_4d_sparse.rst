@@ -156,10 +156,10 @@ is available.
             kernel=kernel, kernel_type=kernel_type
         )
         params = gp_model.optimize_hyperparameters(
-            optimizer='jade',
-            pop_size=100,
+            optimizer='pso',
+            pop_size=200,
             n_generations=15,
-            local_opt_every=None,
+            local_opt_every=15,
             debug=True
         )
         return gp_model, params
