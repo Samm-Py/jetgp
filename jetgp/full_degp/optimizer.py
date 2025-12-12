@@ -58,7 +58,8 @@ class Optimizer:
             self.model.powers,
             index = self.model.derivative_locations,
         )
-        K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
+        noise_var = (10 ** sigma_n) ** 2
+        K.flat[::K.shape[0] + 1] += noise_var
         K += self.model.sigma_data**2
 
         try:
