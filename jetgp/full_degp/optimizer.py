@@ -44,11 +44,13 @@ class Optimizer:
         phi = self.model.kernel_func(diffs, ell)
         if self.model.n_order == 0:
             n_bases = 0
+            phi_exp = phi.real
+            phi_exp = phi_exp[np.newaxis, :, :]
         else:
             n_bases = phi.get_active_bases()[-1]
         
         # Extract ALL derivative components into a single flat array (highly efficient)
-        phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
         K = utils.rbf_kernel(
             phi,
             phi_exp,

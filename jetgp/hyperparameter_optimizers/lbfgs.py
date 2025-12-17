@@ -71,9 +71,6 @@ def lbfgs_smart(func, lb, ub, **kwargs):
             x_init = np.array(x0)
         elif starting_points is not None:
             x_init = starting_points[i]
-        elif strategy in ['exclusion', 'adaptive']:
-            x_init = _get_excluded_start(lb, ub, found_optima, scale, 
-                                         exclusion_radius, max_rejection)
         else:  # random
             x_init = np.random.uniform(lb, ub)
         

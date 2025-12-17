@@ -1,5 +1,5 @@
 import numpy as np
-import pyoti.sparse as oti
+import pyoti.static.onumm4n2 as oti
 import pyoti.core as coti
 from line_profiler import profile
 import numba
@@ -189,7 +189,8 @@ def extract_cols_and_assign(content_full, col_indices, K,
 # Difference computation functions
 # =============================================================================
 
-def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
+
+def differences_by_dim_func(X1, X2, n_order, oti_module, return_deriv=True):
     """
     Compute pairwise differences between two input arrays X1 and X2 for each dimension,
     embedding hypercomplex units along each dimension for automatic differentiation.
@@ -206,6 +207,8 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
         Second set of input points with n2 samples in d dimensions.
     n_order : int
         The base order used to construct hypercomplex units (e_{k+1}) with order 2 * n_order.
+    oti_module : module
+        The PyOTI static module (e.g., pyoti.static.onumm4n2).
     return_deriv : bool, optional
         If True, use 2*n_order for derivative predictions.
 
@@ -215,8 +218,8 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
         A list where each element is an array of shape (n1, n2), containing the differences
         between corresponding dimensions of X1 and X2, augmented with hypercomplex units.
     """
-    X1 = oti.array(X1)
-    X2 = oti.array(X2)
+    X1 = oti_module.array(X1)
+    X2 = oti_module.array(X2)
     n1, d = X1.shape
     n2, d = X2.shape
 
@@ -224,26 +227,26 @@ def differences_by_dim_func(X1, X2, n_order, return_deriv=True):
 
     if n_order == 0:
         for k in range(d):
-            diffs_k = oti.zeros((n1, n2))
+            diffs_k = oti_module.zeros((n1, n2))
             for i in range(n1):
-                diffs_k[i, :] = X1[i, k] - (X2[:, k].T)
+                diffs_k[i, :] = X1[i, k] - (oti_module.transpose(X2[:, k]))
             differences_by_dim.append(diffs_k)
     elif not return_deriv:
         for k in range(d):
-            diffs_k = oti.zeros((n1, n2))
+            diffs_k = oti_module.zeros((n1, n2))
             for i in range(n1):
                 diffs_k[i, :] = (
                     X1[i, k]
-                    + oti.e(k + 1, order=n_order)
+                    + oti_module.e(k + 1, order=n_order)
                     - (X2[:, k].T)
                 )
             differences_by_dim.append(diffs_k)
     else:
         for k in range(d):
-            diffs_k = oti.zeros((n1, n2))
+            diffs_k = oti_module.zeros((n1, n2))
             for i in range(n1):
                 diffs_k[i, :] = X1[i, k] - (X2[:, k].T)
-            differences_by_dim.append(diffs_k + oti.e(k + 1, order=2 * n_order))
+            differences_by_dim.append(diffs_k + oti_module.e(k + 1, order=2 * n_order))
 
     return differences_by_dim
 

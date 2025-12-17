@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.linalg import cholesky, solve
 import jetgp.utils as utils
-from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory, get_oti_module
 from jetgp.full_ddegp.optimizer import Optimizer
 from jetgp.full_ddegp import ddegp_utils
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
@@ -73,6 +73,7 @@ class ddegp:
         self.der_indices = der_indices
         self.normalize = normalize
         self.derivative_locations = derivative_locations
+        self.oti = get_oti_module(self.n_rays, n_order)
 
         self.flattened_der_indices = utils.flatten_der_indices(der_indices)
 
@@ -88,7 +89,7 @@ class ddegp:
 
         self.powers = utils.build_companion_array(self.n_rays, n_order, der_indices)
         self.differences_by_dim = ddegp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, self.rays, n_order)
+            self.x_train, self.x_train, self.rays, n_order, self.oti)
 
         self.sigma_data = (
             np.zeros((self.y_train.shape[0], self.y_train.shape[0]))
@@ -100,7 +101,8 @@ class ddegp:
             normalize=self.normalize,
             n_order=self.n_order,
             differences_by_dim=self.differences_by_dim,
-            smoothness_parameter=smoothness_parameter
+            smoothness_parameter=smoothness_parameter,
+            oti_module=self.oti
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -168,7 +170,11 @@ class ddegp:
         # Build training kernel matrix
         phi_train = self.kernel_func(self.differences_by_dim, length_scales)
         self.n_bases_rays = phi_train.get_active_bases()[-1]
-        phi_exp_train = phi_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+        if self.n_order > 0:
+            phi_exp_train = phi_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+        else:
+            phi_exp_train = phi_train.real
+            phi_exp_train = phi_exp_train[np.newaxis, :, :]
 
         K = ddegp_utils.rbf_kernel(
             phi_train, phi_exp_train, self.n_order, self.n_bases_rays,
@@ -194,14 +200,17 @@ class ddegp:
 
         # Compute train-test differences and kernel
         diff_x_test_x_train = ddegp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.rays, self.n_order, return_deriv=return_deriv)
+            self.x_train, X_test, self.rays, self.n_order,self.oti, return_deriv=return_deriv)
         
         phi_train_test = self.kernel_func(diff_x_test_x_train, length_scales)
-        if return_deriv:
-            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+        if self.n_order > 0:
+            if return_deriv:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+            else:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
         else:
-            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
-
+            phi_exp_train_test = phi_train_test.real
+            phi_exp_train_test =  phi_exp_train_test[np.newaxis, :, :]
         K_s = ddegp_utils.rbf_kernel_predictions(
             phi_train_test, phi_exp_train_test, self.n_order, self.n_bases_rays,
             self.flattened_der_indices, self.powers,
@@ -234,13 +243,17 @@ class ddegp:
 
         # Compute test-test differences and kernel for covariance
         diff_x_test_x_test = ddegp_utils.differences_by_dim_func(
-            X_test, X_test, self.rays, self.n_order, return_deriv=return_deriv)
+            X_test, X_test, self.rays, self.n_order,self.oti, return_deriv=return_deriv)
         
         phi_test_test = self.kernel_func(diff_x_test_x_test, length_scales)
         bases = phi_test_test.get_active_bases()
         n_bases = bases[-1] if len(bases) > 0 else 0
-        phi_exp_test_test = phi_test_test.get_all_derivs(n_bases, 2 * self.n_order)
-
+        
+        if self.n_order > 0:
+            phi_exp_test_test = phi_test_test.get_all_derivs(n_bases, 2 * self.n_order)
+        else:
+            phi_exp_test_test = phi_test_test.real
+            phi_exp_test_test  = phi_exp_test_test [np.newaxis, :, :]
         K_ss = ddegp_utils.rbf_kernel_predictions(
             phi_test_test, phi_exp_test_test, self.n_order, n_bases,
             self.flattened_der_indices, self.powers,

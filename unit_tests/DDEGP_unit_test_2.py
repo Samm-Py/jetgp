@@ -19,7 +19,7 @@ from unittest.mock import patch
 from jetgp.full_ddegp.ddegp import ddegp
 from jetgp.full_ddegp import ddegp_utils
 from scipy.stats import qmc
-
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory, get_oti_module
 
 class TestDDEGPNormalizeOff(unittest.TestCase):
     """Test case for DDEGP with normalize=False (covers lines 69-70)."""
@@ -365,9 +365,9 @@ class TestDDEGPUtilsDifferencesByDim(unittest.TestCase):
         rays = np.eye(d)
         
         n_order = 0  # KEY: n_order=0 triggers the first branch
-        
+        oti_module = get_oti_module(d, n_order)
         result = ddegp_utils.differences_by_dim_func(
-            X1, X2, rays, n_order, return_deriv=True
+            X1, X2, rays, n_order,oti_module=oti_module, return_deriv=True
         )
         
         # Verify result structure
@@ -523,7 +523,8 @@ class TestDDEGPCoverageSummary(unittest.TestCase):
             X1 = np.random.randn(5, 2)
             X2 = np.random.randn(4, 2)
             rays = np.eye(2)
-            result = ddegp_utils.differences_by_dim_func(X1, X2, rays, n_order=0)
+            oti_module = get_oti_module(2, 0)
+            result = ddegp_utils.differences_by_dim_func(X1, X2, rays, n_order=0, oti_module=oti_module)
             self.assertEqual(len(result), 2)
             print("✓ PASS | differences_by_dim_func works with n_order=0")
         except AssertionError as e:

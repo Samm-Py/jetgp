@@ -995,15 +995,17 @@ def generate_submodel_noise_matricies_old(sigma_data, index, der_indices, num_po
     return sub_model_matricies
 
 
-def matern_kernel_builder(nu):
+def matern_kernel_builder(nu, oti_module=None):
     """
     Symbolically builds the Matérn kernel function with given smoothness ν.
-
+    
     Parameters
     ----------
     nu : float
         Smoothness parameter of the Matérn kernel. Should be a half-integer (e.g., 0.5, 1.5, 2.5, ...).
-
+    oti_module : module, optional
+        The PyOTI static module to use for exp/sqrt. If None, uses numpy.
+        
     Returns
     -------
     callable
@@ -1015,8 +1017,13 @@ def matern_kernel_builder(nu):
     z = sp.sqrt(2 * nu) * r
     k_r = prefactor * z**nu * sp.simplify(sp.besselk(nu, z))
     expr = sp.simplify(k_r)
-    custom_dict = {"exp": oti.exp}
-    matern_kernel_func = sp.lambdify((r), expr, modules=[custom_dict, "numpy"])
+    
+    if oti_module is not None:
+        custom_dict = {"exp": oti_module.exp}
+        matern_kernel_func = sp.lambdify(r, expr, modules=[custom_dict, "numpy"])
+    else:
+        matern_kernel_func = sp.lambdify(r, expr, modules=["numpy"])
+    
     return matern_kernel_func
 
 

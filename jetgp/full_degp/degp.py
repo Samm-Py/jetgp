@@ -3,7 +3,7 @@ from numpy.linalg import cholesky, solve
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
 from jetgp.full_degp import degp_utils
 import jetgp.utils as utils
-from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory, get_oti_module
 from jetgp.full_degp.optimizer import Optimizer
 
 
@@ -79,7 +79,7 @@ class degp:
         self.der_indices = der_indices
         self.normalize = normalize
         self.derivative_locations = derivative_locations
-
+        self.oti = get_oti_module(n_bases, n_order)
         self.y_train_input = y_train
         self.x_train_input = x_train
 
@@ -111,7 +111,7 @@ class degp:
         #     )
         # else:
         self.differences_by_dim = degp_utils.differences_by_dim_func(
-            self.x_train, self.x_train, n_order
+            self.x_train, self.x_train, n_order, self.oti
         )
 
         # Initialize noise matrix
@@ -127,7 +127,8 @@ class degp:
             normalize=normalize,
             differences_by_dim=self.differences_by_dim,
             n_order=n_order,
-            smoothness_parameter=smoothness_parameter
+            smoothness_parameter=smoothness_parameter,
+            oti_module=self.oti
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel, kernel_type=self.kernel_type
@@ -194,7 +195,12 @@ class degp:
 
         # Build training kernel matrix
         phi_train = self.kernel_func(self.differences_by_dim, length_scales)
-        phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
+        
+        if self.n_order > 0:
+            phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
+        else:
+            phi_exp_train = phi_train.real
+            phi_exp_train = phi_exp_train[np.newaxis, :, :]
 
         K = degp_utils.rbf_kernel(
             phi_train, phi_exp_train, self.n_order, self.n_bases,
@@ -225,15 +231,19 @@ class degp:
         #     )
         # else:
         diff_x_test_x_train = degp_utils.differences_by_dim_func(
-            self.x_train, X_test, self.n_order, return_deriv=return_deriv
+            self.x_train, X_test, self.n_order, self.oti, return_deriv=return_deriv
         )
 
         # Compute train-test kernel
         phi_train_test = self.kernel_func(diff_x_test_x_train, length_scales)
-        if return_deriv:
-            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        if self.n_order > 0:
+            if return_deriv:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+            else:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, self.n_order)
         else:
-            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, self.n_order)
+            phi_exp_train_test = phi_train_test.real
+            phi_exp_train_test =  phi_exp_train_test[np.newaxis, :, :]
 
         K_s = degp_utils.rbf_kernel_predictions(
             phi_train_test, phi_exp_train_test, self.n_order, self.n_bases,
@@ -273,12 +283,16 @@ class degp:
         #     )
         # else:
         diff_x_test_x_test = degp_utils.differences_by_dim_func(
-            X_test, X_test, self.n_order, return_deriv=return_deriv
+            X_test, X_test, self.n_order, self.oti, return_deriv=return_deriv
         )
 
         # Compute test-test kernel
         phi_test_test = self.kernel_func(diff_x_test_x_test, length_scales)
-        phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        if self.n_order > 0:
+            phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        else:
+            phi_exp_test_test = phi_test_test.real
+            phi_exp_test_test = phi_exp_test_test[np.newaxis,:,:]
 
         K_ss = degp_utils.rbf_kernel_predictions(
             phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,

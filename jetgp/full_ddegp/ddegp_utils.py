@@ -1,7 +1,5 @@
 import numpy as np
 import numba
-from numba import prange
-import pyoti.sparse as oti
 import pyoti.core as coti
 from line_profiler import profile
 
@@ -190,7 +188,7 @@ def extract_cols_and_assign(content_full, col_indices, K,
 # Difference computation functions
 # =============================================================================
 
-def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
+def differences_by_dim_func(X1, X2, rays, n_order, oti_module, return_deriv=True, index=-1):
     """
     Compute dimension-wise pairwise differences between X1 and X2,
     including hypercomplex perturbations in the directions specified by `rays`.
@@ -210,6 +208,8 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
         The base order used to construct hypercomplex units.
         When return_deriv=True, uses order 2*n_order.
         When return_deriv=False, uses order n_order.
+    oti_module : module
+        The PyOTI static module (e.g., pyoti.static.onumm4n2).
     return_deriv : bool, optional (default=True)
         If True, use order 2*n_order for hypercomplex units (needed for 
         derivative-derivative blocks in training kernel).
@@ -239,14 +239,15 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
     >>> X2 = np.array([[1.5, 2.5], [3.5, 4.5]])
     >>> rays = np.eye(2)  # Standard basis directions
     >>> n_order = 1
-    >>> diffs = differences_by_dim_func(X1, X2, rays, n_order)
+    >>> oti_module = get_oti_module(2, 1)  # dim=2, n_order=1
+    >>> diffs = differences_by_dim_func(X1, X2, rays, n_order, oti_module)
     >>> len(diffs)
     2
     >>> diffs[0].shape
     (2, 2)
     """
-    X1 = oti.array(X1)
-    X2 = oti.array(X2)
+    X1 = oti_module.array(X1)
+    X2 = oti_module.array(X2)
     n1, d = X1.shape
     n2, _ = X2.shape
     n_rays = rays.shape[1]
@@ -256,9 +257,9 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
     # Case 1: n_order == 0 (no hypercomplex perturbation)
     if n_order == 0:
         for k in range(d):
-            diffs_k = oti.zeros((n1, n2))
+            diffs_k = oti_module.zeros((n1, n2))
             for i in range(n1):
-                diffs_k[i, :] = X1[i, k] - X2[:, k].T
+                diffs_k[i, :] = X1[i, k] - oti_module.transpose(X2[:, k])
             differences_by_dim.append(diffs_k)
         return differences_by_dim
     
@@ -269,7 +270,7 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
         hc_order = n_order
     
     # Pre-calculate the perturbation vector using directional rays
-    e_bases = [oti.e(i + 1, order=hc_order) for i in range(n_rays)]
+    e_bases = [oti_module.e(i + 1, order=hc_order) for i in range(n_rays)]
     perts = np.dot(rays, e_bases)
     
     # Case 2: return_deriv=False (prediction without derivative outputs)
@@ -280,7 +281,7 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
             X2_k = X2[:, k]
             
             # Pre-allocate the result matrix for this dimension
-            diffs_k = oti.zeros((n1, n2))
+            diffs_k = oti_module.zeros((n1, n2))
             
             # Use an efficient single loop for subtraction
             for i in range(n1):
@@ -294,7 +295,7 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
             X2_k = X2[:, k]
             
             # Pre-allocate the result matrix for this dimension
-            diffs_k = oti.zeros((n1, n2))
+            diffs_k = oti_module.zeros((n1, n2))
             
             # Compute differences without perturbation first
             for i in range(n1):
@@ -304,7 +305,6 @@ def differences_by_dim_func(X1, X2, rays, n_order, return_deriv=True, index=-1):
             differences_by_dim.append(diffs_k + perts[k])
     
     return differences_by_dim
-
 
 # =============================================================================
 # Derivative mapping utilities

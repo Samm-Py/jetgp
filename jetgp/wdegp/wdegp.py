@@ -14,7 +14,7 @@ import numpy as np
 from numpy.linalg import cholesky
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
 import jetgp.utils as utils
-from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory, get_oti_module
 
 
 class wdegp:
@@ -92,6 +92,11 @@ class wdegp:
         self.kernel = kernel
         self.kernel_type = kernel_type
         
+        if submodel_type == 'degp' or submodel_type == 'ddegp':
+            self.oti = get_oti_module(self.n_bases, n_order)
+        elif submodel_type == 'gddegp':
+            self.oti = get_oti_module(2*self.n_bases, n_order)
+            
         self.num_points = len(x_train)
         self.dim = x_train.shape[1]
         self.num_submodels = len(y_train)
@@ -130,7 +135,8 @@ class wdegp:
             normalize=self.normalize,
             n_order=self.n_order,
             differences_by_dim=self.differences_by_dim,
-            smoothness_parameter=smoothness_parameter
+            smoothness_parameter=smoothness_parameter,
+            oti_module=self.oti
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -283,7 +289,7 @@ class wdegp:
         if self.submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
             self.differences_by_dim = wdegp_utils.differences_by_dim_func(
-                x, x, self.n_order
+                x, x, self.n_order, self.oti
             )
         elif self.submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
@@ -293,6 +299,7 @@ class wdegp:
                 x, x,
                 self.rays,
                 self.n_order,
+                self.oti,
                 return_deriv=True
             )
         elif self.submodel_type == 'gddegp':
@@ -330,6 +337,7 @@ class wdegp:
                 global_rays, global_rays,
                 global_derivative_locations, global_derivative_locations,
                 self.n_order,
+                self.oti,
                 return_deriv=True
             )
 
@@ -544,7 +552,7 @@ class wdegp:
             if self.submodel_type == 'degp':
                 from jetgp.wdegp import wdegp_utils
                 diffs_for_weights = wdegp_utils.differences_by_dim_func(
-                    X_test_norm, x_train, 0, return_deriv=False
+                    X_test_norm, x_train, 0,self.oti, return_deriv=False
                 )
             else:
                 diffs_for_weights = self._compute_weight_differences(X_test_norm, x_train)
@@ -567,9 +575,11 @@ class wdegp:
             phi_train_train = self.kernel_func(diffs_train_train, ell)
             if self.n_order == 0:
                 self.n_bases_rays = 0
+                phi_exp_train_train = phi_train_train.real
+                phi_exp_train_train = phi_exp_train_train [np.newaxis, :, :]
             else:
                 self.n_bases_rays = phi_train_train.get_active_bases()[-1]
-            phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+                phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
             
             # Build training kernel matrix
             K = gp_utils.rbf_kernel(
@@ -596,11 +606,14 @@ class wdegp:
     
             # Compute train-test kernel
             phi_train_test = self.kernel_func(diffs_train_test, ell)
-            if return_deriv:
-                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+            if self.n_order > 0:
+                if return_deriv:
+                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+                else:
+                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
             else:
-                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
-            
+                phi_exp_train_test = phi_train_test.real
+                phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
             K_s = gp_utils.rbf_kernel_predictions(
                 phi_train_test, phi_exp_train_test, self.n_order, self.n_bases_rays,
                 self.flattened_der_indices[i], self.powers[i],
@@ -705,7 +718,7 @@ class wdegp:
         if self.submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
             return wdegp_utils.differences_by_dim_func(
-                x_train, X_test, self.n_order, return_deriv=return_deriv
+                x_train, X_test, self.n_order,self.oti, return_deriv=return_deriv
             )
         elif self.submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
@@ -715,6 +728,7 @@ class wdegp:
                 x_train, X_test,
                 self.rays,
                 self.n_order,
+                self.oti,
                 return_deriv=return_deriv
             )
         elif self.submodel_type == 'gddegp':
@@ -729,6 +743,7 @@ class wdegp:
                 self.global_rays, rays_test,
                 self.global_derivative_locations, deriv_locs_test,
                 self.n_order,
+                self.oti,
                 return_deriv=return_deriv
             )
 
@@ -736,16 +751,16 @@ class wdegp:
         """Compute differences for weight calculation (always without derivatives)."""
         if self.submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
-            return wdegp_utils.differences_by_dim_func(X_test, x_train, 0, return_deriv=False)
+            return wdegp_utils.differences_by_dim_func(X_test, x_train, 0,self.oti, return_deriv=False)
         elif self.submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
             return wddegp_utils.differences_by_dim_func(
-                X_test, x_train, self.rays, 0, return_deriv=False
+                X_test, x_train, self.rays, 0,self.oti, return_deriv=False
             )
         elif self.submodel_type == 'gddegp':
             from jetgp.full_gddegp import wgddegp_utils
             return wgddegp_utils.differences_by_dim_func(
-                X_test, x_train, None, None, None, None, 0, return_deriv=False
+                X_test, x_train, None, None, None, None, 0,self.oti, return_deriv=False
             )
 
     def _compute_predictive_variance(
@@ -761,12 +776,15 @@ class wdegp:
         )
         
         phi_test_test = self.kernel_func(diffs_test_test, ell)
-        bases = phi_test_test.get_active_bases()
-        if len(bases) == 0:
+        
+        if self.n_order == 0:
             n_bases = 0
+            phi_exp_test_test = phi_test_test.real
+            phi_exp_test_test  =    phi_exp_test_test [np.newaxis, :, :]
         else:
+            bases = phi_test_test.get_active_bases()
             n_bases = bases[-1]
-        phi_exp_test_test = phi_test_test.get_all_derivs( n_bases, 2 * self.n_order)
+            phi_exp_test_test = phi_test_test.get_all_derivs( n_bases, 2 * self.n_order)
         
         deriv_locs_test = [list(range(len(X_test)))] * len(self.derivative_locations[submodel_idx]) if return_deriv else None
         
@@ -809,7 +827,7 @@ class wdegp:
         if self.submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
             return wdegp_utils.differences_by_dim_func(
-                X_test, X_test, self.n_order, return_deriv=return_deriv
+                X_test, X_test, self.n_order,self.oti, return_deriv=return_deriv
             )
         elif self.submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
@@ -818,6 +836,7 @@ class wdegp:
                 X_test, X_test,
                 self.rays, 
                 self.n_order,
+                self.oti,
                 return_deriv=return_deriv
             )
         elif self.submodel_type == 'gddegp':
@@ -831,5 +850,6 @@ class wdegp:
                 rays_test, rays_test,
                 deriv_locs, deriv_locs,
                 self.n_order,
+                self.oti,
                 return_deriv=return_deriv
             )

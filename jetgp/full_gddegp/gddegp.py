@@ -1,6 +1,6 @@
 import numpy as np
 import jetgp.utils as utils
-from jetgp.kernel_funcs.kernel_funcs import KernelFactory
+from jetgp.kernel_funcs.kernel_funcs import KernelFactory, get_oti_module
 from jetgp.full_gddegp.optimizer import Optimizer
 from jetgp.full_gddegp import gddegp_utils
 from scipy.linalg import cho_solve, cho_factor, solve_triangular
@@ -67,11 +67,14 @@ class gddegp:
         self.max_order = n_order
         self.rays_list = rays_list
         self.dim = x_train.shape[1]
+        self.n_bases = 2*x_train.shape[1]
+        self.oti = get_oti_module(self.n_bases, n_order)
         self.num_points = x_train.shape[0]
         self.kernel = kernel
         self.kernel_type = kernel_type
         self.normalize = normalize
         self.derivative_locations = derivative_locations
+        self.der_indices = der_indices
 
         self.flattened_der_indices = utils.flatten_der_indices(der_indices)
 
@@ -86,10 +89,10 @@ class gddegp:
             self.y_train = utils.reshape_y_train(y_train)
 
         self.differences_by_dim = gddegp_utils.differences_by_dim_func(
-            self.x_train, self.x_train,
+            self.x_train, self.x_train, 
             self.rays_list, self.rays_list,
             self.derivative_locations, self.derivative_locations,
-            self.n_order
+            n_order, self.oti, return_deriv=True
         )
 
         self.sigma_data = (
@@ -102,7 +105,8 @@ class gddegp:
             normalize=self.normalize,
             n_order=self.max_order,
             differences_by_dim=self.differences_by_dim,
-            smoothness_parameter=smoothness_parameter
+            smoothness_parameter=smoothness_parameter,
+            oti_module=self.oti
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -165,8 +169,8 @@ class gddegp:
             rays_predict = []
             for i in range(n_rays):
                 # Cycle through coordinate axes if more rays than dimensions
-                axis_idx = i % self.n_bases
-                ray_array = np.zeros((self.n_bases, n_predict))
+                axis_idx = i % self.dim
+                ray_array = np.zeros((self.dim, n_predict))
                 ray_array[axis_idx, :] = 1.0
                 rays_predict.append(ray_array)
         
@@ -238,9 +242,11 @@ class gddegp:
         phi_train = self.kernel_func(self.differences_by_dim, length_scales)
         if self.n_order == 0:
             self.n_bases = 0
+            phi_exp_train = phi_train.real
+            phi_exp_train = phi_exp_train[np.newaxis,:,:]
         else:
             self.n_bases = phi_train.get_active_bases()[-1]
-        phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
+            phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
 
         # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
         powers = [0] * (len(self.flattened_der_indices) + 1)
@@ -252,7 +258,7 @@ class gddegp:
         )
         K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
         K += self.sigma_data ** 2
-
+        self.K_train = K
         # Solve linear system
         try:
             cho_solve_failed = False
@@ -283,16 +289,19 @@ class gddegp:
             self.x_train, X_test,
             self.rays_list, rays_test,
             self.derivative_locations, derivative_locations_test,
-            self.n_order, return_deriv=return_deriv
+            self.n_order,self.oti, return_deriv=return_deriv
         )
 
         # Compute train-test kernel
         phi_train_test = self.kernel_func(diff_x_train_x_test, length_scales)
-        if return_deriv:
-            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        if self.n_order > 0:
+            if return_deriv:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+            else:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, self.n_order)
         else:
-            phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, self.n_order)
-
+            phi_exp_train_test = phi_train_test.real
+            phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
         K_s = gddegp_utils.rbf_kernel_predictions(
             phi_train_test, phi_exp_train_test, self.n_order, self.n_bases,
             self.flattened_der_indices, 
@@ -328,12 +337,16 @@ class gddegp:
             X_test, X_test,
             rays_test, rays_test,
             derivative_locations_test, derivative_locations_test,
-            self.n_order, return_deriv=return_deriv
+            self.n_order,self.oti, return_deriv=return_deriv
         )
 
         # Compute test-test kernel
         phi_test_test = self.kernel_func(diff_x_test_x_test, length_scales)
-        phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        if self.n_order > 0:
+            phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        else:
+            phi_exp_test_test = phi_test_test.real
+            phi_exp_test_test = phi_exp_test_test[np.newaxis, :, :]
 
         K_ss = gddegp_utils.rbf_kernel_predictions(
             phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,

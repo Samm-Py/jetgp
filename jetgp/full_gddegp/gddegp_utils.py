@@ -1,5 +1,4 @@
 import numpy as np
-import pyoti.sparse as oti
 import pyoti.core as coti
 from line_profiler import profile
 import numba
@@ -384,10 +383,9 @@ def make_first_even(der_indices):
 # =============================================================================
 # Difference computation functions
 # =============================================================================
-
 def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
                                   derivative_locations_X1, derivative_locations_X2,
-                                  e_tags_1, e_tags_2):
+                                  e_tags_1, e_tags_2, oti_module):
     """
     Compute differences for a single dimension k.
     Only perturbs points at specified derivative_locations with their corresponding rays.
@@ -410,6 +408,8 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
         derivative_locations_X2[i] contains indices of X2 points with direction i.
     e_tags_1, e_tags_2 : list
         OTI basis elements for each direction.
+    oti_module : module
+        The PyOTI static module.
 
     Returns
     -------
@@ -435,23 +435,23 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
                 perturb_X2_values[pt_idx] = perturb_X2_values[pt_idx] + e_tags_2[dir_idx] * rays[k, j]
 
     # Convert to OTI arrays
-    perturb_X1 = oti.array(perturb_X1_values)
-    perturb_X2 = oti.array(perturb_X2_values)
+    perturb_X1 = oti_module.array(perturb_X1_values)
+    perturb_X2 = oti_module.array(perturb_X2_values)
 
     # Tag coordinates
     X1_k_tagged = X1[:, k] + perturb_X1
     X2_k_tagged = X2[:, k] + perturb_X2
 
     # Compute differences
-    diffs_k = oti.zeros((n1, n2))
+    diffs_k = oti_module.zeros((n1, n2))
     for i in range(n1):
-        diffs_k[i, :] = X1_k_tagged[i, 0] - X2_k_tagged[:, 0].T
+        diffs_k[i, :] = X1_k_tagged[i, 0] - oti_module.transpose(X2_k_tagged[:, 0])
 
     return diffs_k
 
 
 def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, derivative_locations_X2,
-                            n_order, return_deriv=True):
+                            n_order, oti_module, return_deriv=True):
     """
     Compute dimension-wise differences with OTI tagging on both X1 and X2.
 
@@ -471,6 +471,8 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
         derivative_locations_X2[i] contains indices of X2 points with derivative direction i.
     n_order : int
         Derivative order for OTI tagging.
+    oti_module : module
+        The PyOTI static module (e.g., pyoti.static.onumm4n2).
     return_deriv : bool, optional
         If True, use order 2*n_order for derivative-derivative blocks.
 
@@ -479,8 +481,8 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     differences_by_dim : list of oti.array
         List of length d, each element is an (n1, n2) OTI array.
     """
-    X1 = oti.array(X1)
-    X2 = oti.array(X2)
+    X1 = oti_module.array(X1)
+    X2 = oti_module.array(X2)
     n1, d = X1.shape
     n2, _ = X2.shape
 
@@ -498,12 +500,12 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
         e_tags_2 = [0] * m
     elif not return_deriv:
         for i in range(m):
-            e_tags_1.append(oti.e((2 * i + 1), order=n_order))
-            e_tags_2.append(oti.e((2 * i + 2), order=n_order))
+            e_tags_1.append(oti_module.e((2 * i + 1), order=n_order))
+            e_tags_2.append(oti_module.e((2 * i + 2), order=n_order))
     else:
         for i in range(m):
-            e_tags_1.append(oti.e((2 * i + 1), order=2 * n_order))
-            e_tags_2.append(oti.e((2 * i + 2), order=2 * n_order))
+            e_tags_1.append(oti_module.e((2 * i + 1), order=2 * n_order))
+            e_tags_2.append(oti_module.e((2 * i + 2), order=2 * n_order))
 
     # Compute differences for each dimension
     differences_by_dim = []
@@ -511,7 +513,7 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
         diffs_k = compute_dimension_differences(
             k, X1, X2, n1, n2, rays_X1, rays_X2,
             derivative_locations_X1, derivative_locations_X2,
-            e_tags_1, e_tags_2
+            e_tags_1, e_tags_2, oti_module
         )
         differences_by_dim.append(diffs_k)
 
