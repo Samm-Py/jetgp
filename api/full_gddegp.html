@@ -1,0 +1,1129 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Full GDDEGP &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/full_gddegp';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Weighted DDEGP (WDDEGP)" href="weighted_ddegp.html" />
+    <link rel="prev" title="Full DDEGP" href="full_ddegp.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/api/full_gddegp.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/api/full_gddegp.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Full GDDEGP</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp.gddegp"><code class="docutils literal notranslate"><span class="pre">gddegp</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp.gddegp.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">gddegp.optimize_hyperparameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp.gddegp.predict"><code class="docutils literal notranslate"><span class="pre">gddegp.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.compute_dimension_differences"><code class="docutils literal notranslate"><span class="pre">compute_dimension_differences()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_and_assign"><code class="docutils literal notranslate"><span class="pre">extract_and_assign()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_and_assign_transposed"><code class="docutils literal notranslate"><span class="pre">extract_and_assign_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols"><code class="docutils literal notranslate"><span class="pre">extract_cols()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign"><code class="docutils literal notranslate"><span class="pre">extract_cols_and_assign()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign_transposed"><code class="docutils literal notranslate"><span class="pre">extract_cols_and_assign_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_transposed"><code class="docutils literal notranslate"><span class="pre">extract_cols_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows"><code class="docutils literal notranslate"><span class="pre">extract_rows()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign"><code class="docutils literal notranslate"><span class="pre">extract_rows_and_assign()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign_transposed"><code class="docutils literal notranslate"><span class="pre">extract_rows_and_assign_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_transposed"><code class="docutils literal notranslate"><span class="pre">extract_rows_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_submatrix"><code class="docutils literal notranslate"><span class="pre">extract_submatrix()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_submatrix_transposed"><code class="docutils literal notranslate"><span class="pre">extract_submatrix_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.make_first_even"><code class="docutils literal notranslate"><span class="pre">make_first_even()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.make_first_odd"><code class="docutils literal notranslate"><span class="pre">make_first_odd()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.rbf_kernel_predictions"><code class="docutils literal notranslate"><span class="pre">rbf_kernel_predictions()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer.negative_log_marginal_likelihood"><code class="docutils literal notranslate"><span class="pre">Optimizer.negative_log_marginal_likelihood()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer.nll_wrapper"><code class="docutils literal notranslate"><span class="pre">Optimizer.nll_wrapper()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_hyperparameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-jetgp.full_gddegp.gddegp">
+<span id="full-gddegp"></span><h1>Full GDDEGP<a class="headerlink" href="#module-jetgp.full_gddegp.gddegp" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp.gddegp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp.</span></span><span class="sig-name descname"><span class="pre">gddegp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivative_locations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'SE'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'anisotropic'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothness_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp.html#gddegp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp.gddegp" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Global Directional Derivative-Enhanced Gaussian Process (GDDEGP) model.</p>
+<p>Supports point-wise directional derivatives with unique rays per point,
+hypercomplex representation, and automatic normalization. Includes methods
+for training, prediction, and uncertainty quantification using kernel methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_train</strong> (<em>ndarray</em>) – Training input data of shape (n_samples, n_features).</p></li>
+<li><p><strong>y_train</strong> (<em>list</em><em> or </em><em>ndarray</em>) – Training targets or list of directional derivatives.</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
+<li><p><strong>rays_list</strong> (<em>list</em><em> of </em><em>ndarray</em>) – List of ray arrays. rays_list[i] has shape (d, len(derivative_locations[i])).</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Derivative multi-indices corresponding to each derivative term.</p></li>
+<li><p><strong>derivative_locations</strong> (<em>list</em><em> of </em><em>lists</em>) – Which training points have which derivatives.</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to normalize inputs and outputs.</p></li>
+<li><p><strong>sigma_data</strong> (<em>float</em><em> or </em><em>array-like</em><em>, </em><em>optional</em>) – Observation noise standard deviation or diagonal noise values.</p></li>
+<li><p><strong>kernel</strong> (<em>str</em><em>, </em><em>default='SE'</em>) – Kernel type (‘SE’, ‘RQ’, ‘Matern’, etc.).</p></li>
+<li><p><strong>kernel_type</strong> (<em>str</em><em>, </em><em>default='anisotropic'</em>) – Kernel anisotropy (‘anisotropic’ or ‘isotropic’).</p></li>
+<li><p><strong>smoothness_parameter</strong> (<em>float</em><em>, </em><em>optional</em>) – Smoothness parameter for Matern kernel.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp.gddegp.optimize_hyperparameters">
+<span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp.html#gddegp.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp.gddegp.optimize_hyperparameters" title="Link to this definition">#</a></dt>
+<dd><p>Run the optimizer to find the best kernel hyperparameters.
+Returns optimized hyperparameter vector.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp.gddegp.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivs_to_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp.html#gddegp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp.gddegp.predict" title="Link to this definition">#</a></dt>
+<dd><p>Predict posterior mean and optional variance at test points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X_test</strong> (<em>ndarray</em>) – Test input points of shape (n_test, n_features).</p></li>
+<li><p><strong>params</strong> (<em>ndarray</em>) – Log-scaled kernel hyperparameters.</p></li>
+<li><p><strong>rays_predict</strong> (<em>list</em><em> of </em><em>ndarray</em><em>, </em><em>optional</em>) – Rays at test points for derivative predictions.</p></li>
+<li><p><strong>calc_cov</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to compute predictive variance.</p></li>
+<li><p><strong>return_deriv</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to return derivative predictions.</p></li>
+<li><p><strong>derivs_to_predict</strong> (<em>list</em><em>, </em><em>optional</em>) – Specific derivatives to predict. Must be subset of training derivatives.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>f_mean</strong> (<em>ndarray</em>) – Predictive mean vector.</p></li>
+<li><p><strong>f_var</strong> (<em>ndarray, optional</em>) – Predictive variance vector (only if calc_cov=True).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function" id="module-jetgp.full_gddegp.gddegp_utils">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.compute_dimension_differences">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">compute_dimension_differences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivative_locations_X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivative_locations_X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_tags_1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_tags_2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oti_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#compute_dimension_differences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.compute_dimension_differences" title="Link to this definition">#</a></dt>
+<dd><p>Compute differences for a single dimension k.
+Only perturbs points at specified derivative_locations with their corresponding rays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<em>int</em>) – Dimension index.</p></li>
+<li><p><strong>X1</strong> (<em>oti.array</em>) – Input point arrays of shape (n1, d) and (n2, d).</p></li>
+<li><p><strong>X2</strong> (<em>oti.array</em>) – Input point arrays of shape (n1, d) and (n2, d).</p></li>
+<li><p><strong>n1</strong> (<em>int</em>) – Number of points in X1, X2.</p></li>
+<li><p><strong>n2</strong> (<em>int</em>) – Number of points in X1, X2.</p></li>
+<li><p><strong>rays_X1</strong> (<em>list</em><em> of </em><em>ndarray</em><em> or </em><em>None</em>) – rays_X1[i] has shape (d, len(derivative_locations_X1[i])).</p></li>
+<li><p><strong>rays_X2</strong> (<em>list</em><em> of </em><em>ndarray</em><em> or </em><em>None</em>) – rays_X2[i] has shape (d, len(derivative_locations_X2[i])).</p></li>
+<li><p><strong>derivative_locations_X1</strong> (<em>list</em><em> of </em><em>list</em>) – derivative_locations_X1[i] contains indices of X1 points with direction i.</p></li>
+<li><p><strong>derivative_locations_X2</strong> (<em>list</em><em> of </em><em>list</em>) – derivative_locations_X2[i] contains indices of X2 points with direction i.</p></li>
+<li><p><strong>e_tags_1</strong> (<em>list</em>) – OTI basis elements for each direction.</p></li>
+<li><p><strong>e_tags_2</strong> (<em>list</em>) – OTI basis elements for each direction.</p></li>
+<li><p><strong>oti_module</strong> (<em>module</em>) – The PyOTI static module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>diffs_k</strong> – Differences for dimension k with shape (n1, n2).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>oti.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.deriv_map">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">deriv_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#deriv_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.deriv_map" title="Link to this definition">#</a></dt>
+<dd><p>Create mapping from (order, index) to flattened index.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.differences_by_dim_func">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">differences_by_dim_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivative_locations_X1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivative_locations_X2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oti_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#differences_by_dim_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.differences_by_dim_func" title="Link to this definition">#</a></dt>
+<dd><p>Compute dimension-wise differences with OTI tagging on both X1 and X2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X1</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n1</em><em>, </em><em>d</em><em>)</em>) – First set of input points.</p></li>
+<li><p><strong>X2</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n2</em><em>, </em><em>d</em><em>)</em>) – Second set of input points.</p></li>
+<li><p><strong>rays_X1</strong> (<em>list</em><em> of </em><em>ndarray</em><em> or </em><em>None</em>) – List of ray arrays for X1. rays_X1[i] has shape (d, len(derivative_locations_X1[i])).</p></li>
+<li><p><strong>rays_X2</strong> (<em>list</em><em> of </em><em>ndarray</em><em> or </em><em>None</em>) – List of ray arrays for X2. rays_X2[i] has shape (d, len(derivative_locations_X2[i])).</p></li>
+<li><p><strong>derivative_locations_X1</strong> (<em>list</em><em> of </em><em>list</em>) – derivative_locations_X1[i] contains indices of X1 points with derivative direction i.</p></li>
+<li><p><strong>derivative_locations_X2</strong> (<em>list</em><em> of </em><em>list</em>) – derivative_locations_X2[i] contains indices of X2 points with derivative direction i.</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>) – Derivative order for OTI tagging.</p></li>
+<li><p><strong>oti_module</strong> (<em>module</em>) – The PyOTI static module (e.g., pyoti.static.onumm4n2).</p></li>
+<li><p><strong>return_deriv</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, use order 2*n_order for derivative-derivative blocks.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>differences_by_dim</strong> – List of length d, each element is an (n1, n2) OTI array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of oti.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_and_assign">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_and_assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_start</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_and_assign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_and_assign" title="Link to this definition">#</a></dt>
+<dd><p>Extract submatrix and assign directly to K.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+<li><p><strong>K</strong> (<em>ndarray</em>) – Target matrix to fill.</p></li>
+<li><p><strong>row_start</strong> (<em>int</em>) – Starting row index in K.</p></li>
+<li><p><strong>col_start</strong> (<em>int</em>) – Starting column index in K.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_and_assign_transposed">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_and_assign_transposed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_start</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_and_assign_transposed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_and_assign_transposed" title="Link to this definition">#</a></dt>
+<dd><p>Extract submatrix and assign its transpose directly to K.
+Replaces K[…] = content_full[np.ix_(row_indices, col_indices)].T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract from content_full.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract from content_full.</p></li>
+<li><p><strong>K</strong> (<em>ndarray</em>) – Target matrix to fill.</p></li>
+<li><p><strong>row_start</strong> (<em>int</em>) – Starting row index in K.</p></li>
+<li><p><strong>col_start</strong> (<em>int</em>) – Starting column index in K.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_cols">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_cols</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rows</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_cols"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_cols" title="Link to this definition">#</a></dt>
+<dd><p>Extract columns from content_full at specified indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+<li><p><strong>n_rows</strong> (<em>int</em>) – Number of rows.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Extracted columns.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray of shape (n_rows, len(col_indices))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_cols_and_assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rows</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_cols_and_assign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign" title="Link to this definition">#</a></dt>
+<dd><p>Extract columns and assign directly to K.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+<li><p><strong>K</strong> (<em>ndarray</em>) – Target matrix to fill.</p></li>
+<li><p><strong>row_start</strong> (<em>int</em>) – Starting row index in K.</p></li>
+<li><p><strong>col_start</strong> (<em>int</em>) – Starting column index in K.</p></li>
+<li><p><strong>n_rows</strong> (<em>int</em>) – Number of rows to copy.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign_transposed">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_cols_and_assign_transposed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rows</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_cols_and_assign_transposed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign_transposed" title="Link to this definition">#</a></dt>
+<dd><p>Extract columns and assign transposed result directly to K.
+Replaces K[…] = content_full[:, col_indices].T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+<li><p><strong>K</strong> (<em>ndarray</em>) – Target matrix to fill.</p></li>
+<li><p><strong>row_start</strong> (<em>int</em>) – Starting row index in K.</p></li>
+<li><p><strong>col_start</strong> (<em>int</em>) – Starting column index in K.</p></li>
+<li><p><strong>n_rows</strong> (<em>int</em>) – Number of rows in content_full.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_cols_transposed">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_cols_transposed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_rows</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_cols_transposed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_transposed" title="Link to this definition">#</a></dt>
+<dd><p>Extract columns and return transposed result.
+Replaces content_full[:, col_indices].T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+<li><p><strong>n_rows</strong> (<em>int</em>) – Number of rows.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Transposed extracted columns.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray of shape (len(col_indices), n_rows)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_rows">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_rows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cols</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_rows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_rows" title="Link to this definition">#</a></dt>
+<dd><p>Extract rows from content_full at specified indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>n_cols</strong> (<em>int</em>) – Number of columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Extracted rows.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray of shape (len(row_indices), n_cols)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_rows_and_assign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cols</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_rows_and_assign"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign" title="Link to this definition">#</a></dt>
+<dd><p>Extract rows and assign directly to K.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>K</strong> (<em>ndarray</em>) – Target matrix to fill.</p></li>
+<li><p><strong>row_start</strong> (<em>int</em>) – Starting row index in K.</p></li>
+<li><p><strong>col_start</strong> (<em>int</em>) – Starting column index in K.</p></li>
+<li><p><strong>n_cols</strong> (<em>int</em>) – Number of columns to copy.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign_transposed">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_rows_and_assign_transposed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cols</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_rows_and_assign_transposed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign_transposed" title="Link to this definition">#</a></dt>
+<dd><p>Extract rows and assign transposed result directly to K.
+Replaces K[…] = content_full[row_indices, :].T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>K</strong> (<em>ndarray</em>) – Target matrix to fill.</p></li>
+<li><p><strong>row_start</strong> (<em>int</em>) – Starting row index in K.</p></li>
+<li><p><strong>col_start</strong> (<em>int</em>) – Starting column index in K.</p></li>
+<li><p><strong>n_cols</strong> (<em>int</em>) – Number of columns in content_full.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_rows_transposed">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_rows_transposed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_cols</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_rows_transposed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_transposed" title="Link to this definition">#</a></dt>
+<dd><p>Extract rows and return transposed result.
+Replaces content_full[row_indices, :].T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>n_cols</strong> (<em>int</em>) – Number of columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Transposed extracted rows.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray of shape (n_cols, len(row_indices))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_submatrix">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_submatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_submatrix"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_submatrix" title="Link to this definition">#</a></dt>
+<dd><p>Extract submatrix from content_full at specified row and column indices.
+Replaces the expensive <a href="#id1"><span class="problematic" id="id2">np.ix_</span></a> operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Extracted submatrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray of shape (len(row_indices), len(col_indices))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.extract_submatrix_transposed">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">extract_submatrix_transposed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">content_full</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">row_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">col_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#extract_submatrix_transposed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.extract_submatrix_transposed" title="Link to this definition">#</a></dt>
+<dd><p>Extract submatrix and return its transpose.
+Replaces content_full[np.ix_(row_indices, col_indices)].T</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>content_full</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_rows_full</em><em>, </em><em>n_cols_full</em><em>)</em>) – Source matrix.</p></li>
+<li><p><strong>row_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Row indices to extract.</p></li>
+<li><p><strong>col_indices</strong> (<em>ndarray</em><em> of </em><em>int64</em>) – Column indices to extract.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Transposed extracted submatrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray of shape (len(col_indices), len(row_indices))</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.make_first_even">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">make_first_even</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#make_first_even"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.make_first_even" title="Link to this definition">#</a></dt>
+<dd><p>Transform derivative indices to use even bases (2, 4, 6, …).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.make_first_odd">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">make_first_odd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#make_first_odd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.make_first_odd" title="Link to this definition">#</a></dt>
+<dd><p>Transform derivative indices to use odd bases (1, 3, 5, …).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.rbf_kernel">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_exp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#rbf_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.rbf_kernel" title="Link to this definition">#</a></dt>
+<dd><p>Assembles the full GDDEGP covariance matrix with selective derivative coverage.</p>
+<p>This version uses Numba-accelerated functions for efficient matrix slicing,
+replacing expensive <a href="#id3"><span class="problematic" id="id4">np.ix_</span></a> operations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi</strong> (<em>OTI array</em>) – Base kernel matrix from kernel_func(differences, length_scales).</p></li>
+<li><p><strong>phi_exp</strong> (<em>ndarray</em>) – Expanded derivative array from phi.get_all_derivs().</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
+<li><p><strong>n_bases</strong> (<em>int</em>) – Number of OTI bases (must be even).</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em>) – Derivative index specifications.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> of </em><em>list</em>) – index[i] contains indices of points with derivative direction i.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>K</strong> – Kernel matrix with block structure based on derivative locations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.rbf_kernel_predictions">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">rbf_kernel_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi_exp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">common_derivs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#rbf_kernel_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.rbf_kernel_predictions" title="Link to this definition">#</a></dt>
+<dd><p>Constructs the RBF kernel matrix for predictions with selective derivative coverage.</p>
+<p>This version uses Numba-accelerated functions for efficient matrix slicing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>phi</strong> (<em>OTI array</em>) – Base kernel matrix between test and training points.</p></li>
+<li><p><strong>phi_exp</strong> (<em>ndarray</em>) – Expanded derivative array from phi.get_all_derivs().</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>) – Maximum derivative order.</p></li>
+<li><p><strong>n_bases</strong> (<em>int</em>) – Number of OTI bases.</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em>) – Derivative specifications for training data.</p></li>
+<li><p><strong>return_deriv</strong> (<em>bool</em>) – If True, predict derivatives at test points.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> of </em><em>list</em>) – Training point indices for each derivative type.</p></li>
+<li><p><strong>common_derivs</strong> (<em>list</em>) – Common derivative indices to predict.</p></li>
+<li><p><strong>calc_cov</strong> (<em>bool</em>) – If True, computing covariance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>K</strong> – Prediction kernel matrix.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.gddegp_utils.transform_der_indices">
+<span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.gddegp_utils.</span></span><span class="sig-name descname"><span class="pre">transform_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/gddegp_utils.html#transform_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.gddegp_utils.transform_der_indices" title="Link to this definition">#</a></dt>
+<dd><p>Transform derivative indices to flattened format.</p>
+</dd></dl>
+
+<dl class="py class" id="module-jetgp.full_gddegp.optimizer">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.optimizer.Optimizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jetgp.full_gddegp.optimizer.</span></span><span class="sig-name descname"><span class="pre">Optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/optimizer.html#Optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.optimizer.Optimizer" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
+by minimizing the negative log marginal likelihood (NLL).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>object</em>) – An instance of a model (e.g., ddegp) containing the necessary training data
+and kernel configuration.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.optimizer.Optimizer.negative_log_marginal_likelihood">
+<span class="sig-name descname"><span class="pre">negative_log_marginal_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/optimizer.html#Optimizer.negative_log_marginal_likelihood"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.optimizer.Optimizer.negative_log_marginal_likelihood" title="Link to this definition">#</a></dt>
+<dd><p>Compute the negative log marginal likelihood (NLL) of the model.</p>
+<p>NLL = 0.5 * y^T K^-1 y + 0.5 * log|K| + 0.5 * N * log(2π)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x0</strong> (<em>ndarray</em>) – Vector of log-scaled hyperparameters (length scales and noise).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Value of the negative log marginal likelihood.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.optimizer.Optimizer.nll_wrapper">
+<span class="sig-name descname"><span class="pre">nll_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/optimizer.html#Optimizer.nll_wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.optimizer.Optimizer.nll_wrapper" title="Link to this definition">#</a></dt>
+<dd><p>Wrapper function to compute NLL for optimizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x0</strong> (<em>ndarray</em>) – Hyperparameter vector.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>NLL evaluated at x0.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.full_gddegp.optimizer.Optimizer.optimize_hyperparameters">
+<span class="sig-name descname"><span class="pre">optimize_hyperparameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pso'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/full_gddegp/optimizer.html#Optimizer.optimize_hyperparameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.full_gddegp.optimizer.Optimizer.optimize_hyperparameters" title="Link to this definition">#</a></dt>
+<dd><p>Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>n_restart_optimizer<span class="classifier">int, default=20</span></dt><dd><p>Maximum number of iterations for PSO.</p>
+</dd>
+<dt>swarm_size<span class="classifier">int, default=20</span></dt><dd><p>Number of particles in the swarm.</p>
+</dd>
+<dt>verbose<span class="classifier">bool, default=True</span></dt><dd><p>Controls verbosity of PSO output.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>best_x<span class="classifier">ndarray</span></dt><dd><p>The optimal set of hyperparameters found.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="full_ddegp.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Full DDEGP</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="weighted_ddegp.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Weighted DDEGP (WDDEGP)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp.gddegp"><code class="docutils literal notranslate"><span class="pre">gddegp</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp.gddegp.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">gddegp.optimize_hyperparameters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp.gddegp.predict"><code class="docutils literal notranslate"><span class="pre">gddegp.predict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.compute_dimension_differences"><code class="docutils literal notranslate"><span class="pre">compute_dimension_differences()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.deriv_map"><code class="docutils literal notranslate"><span class="pre">deriv_map()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.differences_by_dim_func"><code class="docutils literal notranslate"><span class="pre">differences_by_dim_func()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_and_assign"><code class="docutils literal notranslate"><span class="pre">extract_and_assign()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_and_assign_transposed"><code class="docutils literal notranslate"><span class="pre">extract_and_assign_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols"><code class="docutils literal notranslate"><span class="pre">extract_cols()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign"><code class="docutils literal notranslate"><span class="pre">extract_cols_and_assign()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_and_assign_transposed"><code class="docutils literal notranslate"><span class="pre">extract_cols_and_assign_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_cols_transposed"><code class="docutils literal notranslate"><span class="pre">extract_cols_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows"><code class="docutils literal notranslate"><span class="pre">extract_rows()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign"><code class="docutils literal notranslate"><span class="pre">extract_rows_and_assign()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_and_assign_transposed"><code class="docutils literal notranslate"><span class="pre">extract_rows_and_assign_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_rows_transposed"><code class="docutils literal notranslate"><span class="pre">extract_rows_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_submatrix"><code class="docutils literal notranslate"><span class="pre">extract_submatrix()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.extract_submatrix_transposed"><code class="docutils literal notranslate"><span class="pre">extract_submatrix_transposed()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.make_first_even"><code class="docutils literal notranslate"><span class="pre">make_first_even()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.make_first_odd"><code class="docutils literal notranslate"><span class="pre">make_first_odd()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.rbf_kernel"><code class="docutils literal notranslate"><span class="pre">rbf_kernel()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.rbf_kernel_predictions"><code class="docutils literal notranslate"><span class="pre">rbf_kernel_predictions()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.gddegp_utils.transform_der_indices"><code class="docutils literal notranslate"><span class="pre">transform_der_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer"><code class="docutils literal notranslate"><span class="pre">Optimizer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer.negative_log_marginal_likelihood"><code class="docutils literal notranslate"><span class="pre">Optimizer.negative_log_marginal_likelihood()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer.nll_wrapper"><code class="docutils literal notranslate"><span class="pre">Optimizer.nll_wrapper()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.full_gddegp.optimizer.Optimizer.optimize_hyperparameters"><code class="docutils literal notranslate"><span class="pre">Optimizer.optimize_hyperparameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

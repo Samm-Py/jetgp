@@ -1,0 +1,1298 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jetgp.wdegp.wdegp &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/thebelab-helper.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/jetgp/wdegp/wdegp';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../../../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for jetgp.wdegp.wdegp</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Unified Weighted Derivative-Enhanced Gaussian Process (WDEGP)</span>
+<span class="sd">==============================================================</span>
+
+<span class="sd">Supports DEGP, DDEGP, or GDDEGP mode for all submodels.</span>
+
+<span class="sd">Submodel Types:</span>
+<span class="sd">- &#39;degp&#39;: Coordinate-aligned derivatives (standard DEGP)</span>
+<span class="sd">- &#39;ddegp&#39;: Global directional derivatives (same rays at all points)</span>
+<span class="sd">- &#39;gddegp&#39;: Point-wise directional derivatives (unique rays per point)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cholesky</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cho_solve</span><span class="p">,</span> <span class="n">cho_factor</span><span class="p">,</span> <span class="n">solve_triangular</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.kernel_funcs.kernel_funcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">KernelFactory</span><span class="p">,</span> <span class="n">get_oti_module</span>
+
+
+<div class="viewcode-block" id="wdegp">
+<a class="viewcode-back" href="../../../api/weighted_degp.html#jetgp.wdegp.wdegp.wdegp">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">wdegp</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Unified Weighted Derivative-Enhanced Gaussian Process (WDEGP) regression model.</span>
+
+<span class="sd">    Supports multiple submodels with DEGP, DDEGP, or GDDEGP derivative structure.</span>
+<span class="sd">    All submodels use the same derivative type.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x_train : ndarray of shape (n_samples, n_features)</span>
+<span class="sd">        Input training points.</span>
+<span class="sd">    y_train : list of lists of arrays</span>
+<span class="sd">        Each element is a submodel&#39;s data: [y_func, y_der1, y_der2, ...]</span>
+<span class="sd">    n_order : int</span>
+<span class="sd">        Maximum derivative order to be supported.</span>
+<span class="sd">    n_bases : int</span>
+<span class="sd">        Number of OTI basis terms used.</span>
+<span class="sd">    der_indices : list of lists</span>
+<span class="sd">        Multi-indices of derivatives for each submodel.</span>
+<span class="sd">    derivative_locations : list of lists of lists, optional</span>
+<span class="sd">        For each submodel, which points have which derivatives.</span>
+<span class="sd">        derivative_locations[submodel][deriv_type] = [point_indices]</span>
+<span class="sd">        If None, all points have all derivatives.</span>
+<span class="sd">    submodel_type : str, default=&#39;degp&#39;</span>
+<span class="sd">        Type of derivative structure: &#39;degp&#39;, &#39;ddegp&#39;, or &#39;gddegp&#39;.</span>
+<span class="sd">    rays : ndarray, optional</span>
+<span class="sd">        For &#39;ddegp&#39; mode: global ray directions, shape (d, n_directions).</span>
+<span class="sd">        All submodels share these rays.</span>
+<span class="sd">    rays_list : list of list of ndarray, optional</span>
+<span class="sd">        For &#39;gddegp&#39; mode: point-wise rays organized by submodel.</span>
+<span class="sd">        rays_list[submodel_idx][dir_idx] has shape (d, n_points_with_dir).</span>
+<span class="sd">        Example: rays_list[0] = [rays_dir1_sm1, rays_dir2_sm1] for submodel 1.</span>
+<span class="sd">    normalize : bool, default=True</span>
+<span class="sd">        If True, normalizes the input and output data.</span>
+<span class="sd">    sigma_data : float or ndarray, optional</span>
+<span class="sd">        Known observation noise or covariance matrix.</span>
+<span class="sd">    kernel : str, default=&#39;SE&#39;</span>
+<span class="sd">        Type of kernel to use: &#39;SE&#39;, &#39;RQ&#39;, &#39;Matern&#39;, or &#39;SineExp&#39;.</span>
+<span class="sd">    kernel_type : str, default=&#39;anisotropic&#39;</span>
+<span class="sd">        Whether kernel is &#39;anisotropic&#39; or &#39;isotropic&#39;.</span>
+<span class="sd">    smoothness_parameter : float, optional</span>
+<span class="sd">        Smoothness parameter for Matern kernel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">x_train</span><span class="p">,</span> 
+        <span class="n">y_train</span><span class="p">,</span> 
+        <span class="n">n_order</span><span class="p">,</span> 
+        <span class="n">n_bases</span><span class="p">,</span> 
+        <span class="n">der_indices</span><span class="p">,</span>
+        <span class="n">derivative_locations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">submodel_type</span><span class="o">=</span><span class="s1">&#39;degp&#39;</span><span class="p">,</span>
+        <span class="n">rays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">rays_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+        <span class="n">sigma_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> 
+        <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+        <span class="n">smoothness_parameter</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="c1"># Store basic parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span> <span class="o">=</span> <span class="n">x_train</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span> <span class="o">=</span> <span class="n">y_train</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">=</span> <span class="n">n_order</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="n">n_bases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">der_indices</span> <span class="o">=</span> <span class="n">der_indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span> <span class="o">=</span> <span class="n">derivative_locations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">=</span> <span class="n">submodel_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rays</span> <span class="o">=</span> <span class="n">rays</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span> <span class="o">=</span> <span class="n">rays_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span> <span class="o">=</span> <span class="n">kernel_type</span>
+        
+        <span class="k">if</span> <span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span> <span class="ow">or</span> <span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span> <span class="o">=</span> <span class="n">get_oti_module</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span> <span class="o">=</span> <span class="n">get_oti_module</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span><span class="p">)</span>
+            
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_train</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+        
+        <span class="c1"># Store original input for reference</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_train_input</span> <span class="o">=</span> <span class="p">[</span><span class="n">yt</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">yt</span><span class="p">,</span> <span class="s1">&#39;copy&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">yt</span> <span class="k">for</span> <span class="n">yt</span> <span class="ow">in</span> <span class="n">y_train</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_train_input</span> <span class="o">=</span> <span class="n">x_train</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Validate configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_validate_config</span><span class="p">()</span>
+        
+        <span class="c1"># Set up derivative_locations defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_derivative_locations</span><span class="p">()</span>
+        
+        <span class="c1"># Process derivative indices</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_derivative_indices</span><span class="p">()</span>
+        
+        <span class="c1"># Handle sigma_data</span>
+        <span class="k">if</span> <span class="n">sigma_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compute_total_constraints</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">)</span>
+
+        <span class="c1"># Normalize if requested</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_normalize_data</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">reshape_y_train</span><span class="p">(</span><span class="n">submodel</span><span class="p">)</span> <span class="k">for</span> <span class="n">submodel</span> <span class="ow">in</span> <span class="n">y_train</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_train_normalized</span> <span class="o">=</span> <span class="n">x_train</span>
+            
+        <span class="c1"># Precompute differences</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_precompute_differences</span><span class="p">()</span>
+        
+        <span class="c1"># Set up kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span> <span class="o">=</span> <span class="n">KernelFactory</span><span class="p">(</span>
+            <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">,</span>
+            <span class="n">normalize</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">,</span>
+            <span class="n">n_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+            <span class="n">differences_by_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span>
+            <span class="n">smoothness_parameter</span><span class="o">=</span><span class="n">smoothness_parameter</span><span class="p">,</span>
+            <span class="n">oti_module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span><span class="o">.</span><span class="n">create_kernel</span><span class="p">(</span>
+            <span class="n">kernel_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
+            <span class="n">kernel_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span><span class="o">.</span><span class="n">bounds</span>
+        
+        <span class="c1"># Set up optimizer</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">Optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_validate_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validate the configuration parameters.&quot;&quot;&quot;</span>
+        <span class="n">valid_types</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;degp&#39;</span><span class="p">,</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">,</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_types</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;submodel_type must be one of </span><span class="si">{</span><span class="n">valid_types</span><span class="si">}</span><span class="s2">, got &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;rays parameter is required for submodel_type=&#39;ddegp&#39;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rays must have shape (d, n_directions), got </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;rays_list parameter is required for submodel_type=&#39;gddegp&#39;&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;rays_list must have </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span><span class="si">}</span><span class="s2"> entries (one per submodel), &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">sm_idx</span><span class="p">,</span> <span class="n">sm_rays</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">dir_idx</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sm_rays</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;rays_list[</span><span class="si">{</span><span class="n">sm_idx</span><span class="si">}</span><span class="s2">][</span><span class="si">{</span><span class="n">dir_idx</span><span class="si">}</span><span class="s2">] must have shape (d, n_points), &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_derivative_locations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up derivative_locations with defaults.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Default: all points have all derivatives for all submodels</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">submodel_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span><span class="p">):</span>
+                <span class="n">n_derivs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_count_derivatives_for_submodel</span><span class="p">(</span><span class="n">submodel_idx</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_points</span><span class="p">))]</span> <span class="o">*</span> <span class="n">n_derivs</span>
+                <span class="p">)</span>
+        
+        <span class="c1"># For GDDEGP, validate rays_list matches derivative_locations per submodel</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">sm_idx</span><span class="p">,</span> <span class="n">sm_rays</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">):</span>
+                <span class="n">submodel_locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="n">sm_idx</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">dir_idx</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sm_rays</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">dir_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">submodel_locs</span><span class="p">):</span>
+                        <span class="n">expected_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">submodel_locs</span><span class="p">[</span><span class="n">dir_idx</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">expected_size</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;rays_list[</span><span class="si">{</span><span class="n">sm_idx</span><span class="si">}</span><span class="s2">][</span><span class="si">{</span><span class="n">dir_idx</span><span class="si">}</span><span class="s2">] has </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns but &quot;</span>
+                                <span class="sa">f</span><span class="s2">&quot;derivative_locations[</span><span class="si">{</span><span class="n">sm_idx</span><span class="si">}</span><span class="s2">][</span><span class="si">{</span><span class="n">dir_idx</span><span class="si">}</span><span class="s2">] expects </span><span class="si">{</span><span class="n">expected_size</span><span class="si">}</span><span class="s2"> points&quot;</span>
+                            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_count_derivatives_for_submodel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">submodel_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Count the number of derivative types for a submodel.&quot;&quot;&quot;</span>
+        <span class="c1"># Flatten der_indices for this submodel</span>
+        <span class="n">der_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">der_indices</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">]</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">der_idx</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">count</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_setup_derivative_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Process and flatten derivative indices for each submodel.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">powers</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="n">base_der_indices</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">gen_OTI_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">submodel_idx</span><span class="p">,</span> <span class="n">ders</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">der_indices</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">build_companion_array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">ders</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">flat_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="n">ders</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flat_indices</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_total_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute total number of constraints across all submodels.&quot;&quot;&quot;</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">submodel_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span><span class="p">):</span>
+            <span class="c1"># Function values</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_points</span>
+            <span class="c1"># Derivative values</span>
+            <span class="k">for</span> <span class="n">locs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">]:</span>
+                <span class="n">total</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">locs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_normalize_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalize input and output data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+            <span class="c1"># Standard DEGP normalization</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">submodel_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">):</span>
+                <span class="n">y_norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> \
+                    <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> 
+                        <span class="n">submodel_data</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">submodel_data</span><span class="p">)),</span>  <span class="c1"># placeholder</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_norm</span><span class="p">)</span>
+        
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="c1"># DDEGP uses directional normalization</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">submodel_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">):</span>
+                <span class="n">y_norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> \
+                    <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data_directional</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> 
+                        <span class="n">submodel_data</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">submodel_data</span><span class="p">)),</span>  <span class="c1"># placeholder</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="p">)</span>
+                
+                <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_norm</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rays</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">rays</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[:,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="c1"># GDDEGP uses directional normalization</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">submodel_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">):</span>
+                <span class="n">y_norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> \
+                    <span class="n">utils</span><span class="o">.</span><span class="n">normalize_y_data_directional</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">,</span> 
+                        <span class="n">submodel_data</span><span class="p">,</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">submodel_data</span><span class="p">)),</span>  <span class="c1"># placeholder</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_norm</span><span class="p">)</span>
+            <span class="c1"># Normalize rays_list using normalize_directions_2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">utils</span><span class="o">.</span><span class="n">normalize_directions_2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="n">sm_rays</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">sm_rays</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span>
+            <span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">x_train_normalized</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_train</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="p">)</span>
+        
+    <span class="k">def</span><span class="w"> </span><span class="nf">_precompute_differences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Precompute differences_by_dim based on submodel_type.&quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train_normalized</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp_utils</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_ddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wddegp_utils</span>
+            <span class="c1"># Use first submodel&#39;s derivative_locations as reference</span>
+            <span class="c1"># (all submodels share same rays structure)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span> <span class="o">=</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wgddegp_utils</span>
+            
+            <span class="c1"># For GDDEGP, combine rays from all submodels into global structure</span>
+            <span class="c1"># Each submodel may have a different number of direction types</span>
+            <span class="n">max_n_dirs</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sm_rays</span><span class="p">)</span> <span class="k">for</span> <span class="n">sm_rays</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">)</span>
+            
+            <span class="n">global_rays</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">global_derivative_locations</span> <span class="o">=</span> <span class="p">[]</span>
+            
+            <span class="k">for</span> <span class="n">dir_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_n_dirs</span><span class="p">):</span>
+                <span class="c1"># Concatenate rays and locations for this direction from all submodels</span>
+                <span class="n">rays_for_dir</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">locs_for_dir</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">sm_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span><span class="p">):</span>
+                    <span class="n">sm_rays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">[</span><span class="n">sm_idx</span><span class="p">]</span>
+                    <span class="n">sm_locs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="n">sm_idx</span><span class="p">]</span>
+                    <span class="c1"># Only include if this submodel has this direction type</span>
+                    <span class="k">if</span> <span class="n">dir_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">sm_rays</span><span class="p">):</span>
+                        <span class="n">rays_for_dir</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sm_rays</span><span class="p">[</span><span class="n">dir_idx</span><span class="p">])</span>
+                        <span class="n">locs_for_dir</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sm_locs</span><span class="p">[</span><span class="n">dir_idx</span><span class="p">])</span>
+                
+                <span class="k">if</span> <span class="n">rays_for_dir</span><span class="p">:</span>  <span class="c1"># Only add if at least one submodel has this direction</span>
+                    <span class="n">global_rays</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(</span><span class="n">rays_for_dir</span><span class="p">))</span>
+                    <span class="n">global_derivative_locations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">locs_for_dir</span><span class="p">)</span>
+            
+            <span class="c1"># Store global structures for use in kernel computations</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_rays</span> <span class="o">=</span> <span class="n">global_rays</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_derivative_locations</span> <span class="o">=</span> <span class="n">global_derivative_locations</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span> <span class="o">=</span> <span class="n">wgddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span>
+                <span class="n">global_rays</span><span class="p">,</span> <span class="n">global_rays</span><span class="p">,</span>
+                <span class="n">global_derivative_locations</span><span class="p">,</span> <span class="n">global_derivative_locations</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_utils_module</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the appropriate utils module based on submodel_type.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp_utils</span>
+            <span class="k">return</span> <span class="n">wdegp_utils</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_ddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wddegp_utils</span>
+            <span class="k">return</span> <span class="n">wddegp_utils</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wgddegp_utils</span>
+            <span class="k">return</span> <span class="n">wgddegp_utils</span>
+
+<div class="viewcode-block" id="wdegp.optimize_hyperparameters">
+<a class="viewcode-back" href="../../../api/weighted_degp.html#jetgp.wdegp.wdegp.wdegp.optimize_hyperparameters">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimize_hyperparameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Optimize hyperparameters via the configured optimizer.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Optimized hyperparameter vector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    
+<div class="viewcode-block" id="wdegp.predict">
+<a class="viewcode-back" href="../../../api/weighted_degp.html#jetgp.wdegp.wdegp.wdegp.predict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">X_test</span><span class="p">,</span> 
+        <span class="n">length_scales</span><span class="p">,</span> 
+        <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> 
+        <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">return_submodels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">rays_predict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">derivs_to_predict</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute posterior predictive mean and (optionally) covariance at test points.</span>
+<span class="sd">    </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X_test : ndarray of shape (n_test, n_features)</span>
+<span class="sd">            Test input points.</span>
+<span class="sd">        length_scales : ndarray</span>
+<span class="sd">            Log-scaled kernel hyperparameters including noise level.</span>
+<span class="sd">        calc_cov : bool, default=False</span>
+<span class="sd">            If True, also compute and return predictive covariance.</span>
+<span class="sd">        return_deriv : bool, default=False</span>
+<span class="sd">            If True, also predict derivatives (requires rays_predict for GDDEGP).</span>
+<span class="sd">        return_submodels : bool, default=False</span>
+<span class="sd">            If True, return submodel-specific contributions.</span>
+<span class="sd">        rays_predict : list of ndarray, optional</span>
+<span class="sd">            For &#39;gddegp&#39; mode with return_deriv=True: rays at test points.</span>
+<span class="sd">            rays_predict[dir_idx] has shape (d, n_test).</span>
+<span class="sd">        derivs_to_predict : list, optional</span>
+<span class="sd">            Specific derivatives to predict. If None, predicts all common derivatives.</span>
+<span class="sd">    </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y_val : ndarray</span>
+<span class="sd">            Predicted mean values. Shape depends on return_deriv.</span>
+<span class="sd">        y_var : ndarray, optional</span>
+<span class="sd">            Predictive variances (only if calc_cov=True).</span>
+<span class="sd">        submodel_vals : list of ndarrays, optional</span>
+<span class="sd">            Submodel predictions (only if return_submodels=True).</span>
+<span class="sd">        submodel_cov : list of ndarrays, optional</span>
+<span class="sd">            Submodel variances (only if calc_cov and return_submodels are True).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+        
+        <span class="n">gp_utils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_utils_module</span><span class="p">()</span>
+        
+        <span class="n">ell</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">sigma_n</span> <span class="o">=</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">n_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">n_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="c1"># =========================================================================</span>
+        <span class="c1"># Validation checks for rays_predict parameter</span>
+        <span class="c1"># =========================================================================</span>
+        
+        <span class="c1"># Check 1: Warning when rays_predict provided but return_deriv=False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">return_deriv</span> <span class="ow">and</span> <span class="n">rays_predict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;rays_predict provided but return_deriv=False. &quot;</span>
+                <span class="s2">&quot;The rays will be ignored.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span>
+            <span class="p">)</span>
+        
+        <span class="c1"># Check 2: Handle missing rays_predict for GDDEGP/DDEGP with return_deriv=True</span>
+        <span class="k">if</span> <span class="n">return_deriv</span> <span class="ow">and</span> <span class="n">rays_predict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+                <span class="c1"># Determine number of ray directions from training</span>
+                <span class="n">n_rays</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rays</span><span class="p">)</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No rays_predict provided for GDDEGP with return_deriv=True. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Using coordinate axes as default prediction rays (</span><span class="si">{</span><span class="n">n_rays</span><span class="si">}</span><span class="s2"> directions).&quot;</span><span class="p">,</span>
+                    <span class="ne">UserWarning</span>
+                <span class="p">)</span>
+                <span class="c1"># Build default coordinate axis rays</span>
+                <span class="n">rays_predict</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_rays</span><span class="p">):</span>
+                    <span class="n">axis_idx</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span>
+                    <span class="n">ray_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">n_test</span><span class="p">))</span>
+                    <span class="n">ray_array</span><span class="p">[</span><span class="n">axis_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">rays_predict</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ray_array</span><span class="p">)</span>
+                    
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+                <span class="c1"># DDEGP uses global rays, no rays_predict needed</span>
+                <span class="k">pass</span>
+        
+        <span class="c1"># Check 3: Validate rays_predict structure when provided and return_deriv=True</span>
+        <span class="k">if</span> <span class="n">return_deriv</span> <span class="ow">and</span> <span class="n">rays_predict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+                <span class="c1"># Validate number of ray directions</span>
+                <span class="n">n_expected_rays</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rays</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span> <span class="o">!=</span> <span class="n">n_expected_rays</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Number of prediction ray directions (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span><span class="si">}</span><span class="s2">) &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;does not match training ray directions (</span><span class="si">{</span><span class="n">n_expected_rays</span><span class="si">}</span><span class="s2">)&quot;</span>
+                    <span class="p">)</span>
+                
+                <span class="c1"># Validate each ray array</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ray_array</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ray_array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;rays_predict[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] must be a numpy ndarray, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ray_array</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ray_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;rays_predict[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] must be 2-dimensional, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ray_array</span><span class="o">.</span><span class="n">ndim</span><span class="si">}</span><span class="s2"> dimensions&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ray_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;rays_predict[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] has </span><span class="si">{</span><span class="n">ray_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="s2"> (number of input dimensions)&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">if</span> <span class="n">ray_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">n_test</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;rays_predict[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] has </span><span class="si">{</span><span class="n">ray_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columns, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="n">n_test</span><span class="si">}</span><span class="s2"> (number of test points)&quot;</span>
+                        <span class="p">)</span>
+                        
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+                <span class="c1"># For DDEGP, rays_predict should match global rays structure</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;rays_predict for DDEGP must be a numpy ndarray, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">if</span> <span class="n">rays_predict</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;rays_predict has </span><span class="si">{</span><span class="n">rays_predict</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> rows, &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;expected </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="si">}</span><span class="s2"> (number of input dimensions)&quot;</span>
+                    <span class="p">)</span>
+                    
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+                <span class="c1"># DEGP doesn&#39;t use rays, warn if provided</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;rays_predict provided but submodel_type=&#39;degp&#39; does not use rays. &quot;</span>
+                    <span class="s2">&quot;The rays will be ignored.&quot;</span><span class="p">,</span>
+                    <span class="ne">UserWarning</span>
+                <span class="p">)</span>
+        
+        <span class="c1"># =========================================================================</span>
+        <span class="c1"># End of validation checks</span>
+        <span class="c1"># =========================================================================</span>
+        
+        <span class="c1"># Normalize test inputs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="n">X_test_norm</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_x_data_test</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mus_x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">rays_predict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+                <span class="n">rays_predict</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">normalize_directions_2</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="n">rays_predict</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_test_norm</span> <span class="o">=</span> <span class="n">X_test</span>
+        
+        <span class="n">x_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train_normalized</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_train</span>
+    
+        <span class="c1"># Find common derivatives across submodels for weighted combination</span>
+        <span class="k">if</span> <span class="n">return_deriv</span><span class="p">:</span>
+            <span class="n">common</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">find_common_derivatives</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">)</span>
+            <span class="n">common_derivs</span> <span class="o">=</span> <span class="p">[</span><span class="n">gp_utils</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">common</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">derivs_to_predict</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">return_deriv</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Making predictions for all derivatives that are common among submodels&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">derivs_to_predict_tuples</span> <span class="o">=</span> <span class="p">{</span><span class="n">gp_utils</span><span class="o">.</span><span class="n">to_tuple</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">derivs_to_predict</span><span class="p">}</span>
+                <span class="c1"># Check if any requested derivatives are not in common</span>
+                <span class="n">invalid_derivs</span> <span class="o">=</span> <span class="n">derivs_to_predict_tuples</span> <span class="o">-</span> <span class="n">common</span>  <span class="c1"># Set difference</span>
+                <span class="k">if</span> <span class="n">invalid_derivs</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;The following derivatives are not available for prediction: </span><span class="si">{</span><span class="n">invalid_derivs</span><span class="si">}</span><span class="s2">. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Valid derivatives are: </span><span class="si">{</span><span class="n">common</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="n">common</span> <span class="o">=</span> <span class="n">common</span> <span class="o">&amp;</span> <span class="n">derivs_to_predict_tuples</span>  <span class="c1"># Set intersection</span>
+                <span class="n">common_derivs</span> <span class="o">=</span> <span class="p">[</span><span class="n">gp_utils</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">d</span><span class="p">)</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">common</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">powers_predict</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">build_companion_array_predict</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">common_derivs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">common_derivs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">powers_predict</span> <span class="o">=</span> <span class="kc">None</span>
+    
+        <span class="n">y_val</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">y_var</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">submodel_vals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">submodel_cov</span> <span class="o">=</span> <span class="p">[]</span>
+    
+        <span class="c1"># For multiple submodels, compute weights (using function-only differences)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp_utils</span>
+                <span class="n">diffs_for_weights</span> <span class="o">=</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                    <span class="n">X_test_norm</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">diffs_for_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_weight_differences</span><span class="p">(</span><span class="n">X_test_norm</span><span class="p">,</span> <span class="n">x_train</span><span class="p">)</span>
+            
+            <span class="c1"># Use train-train differences for weight computation</span>
+            <span class="n">diffs_train_for_weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span>
+            
+            <span class="n">weights_matrix</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">determine_weights</span><span class="p">(</span>
+                <span class="n">diffs_train_for_weights</span><span class="p">,</span> <span class="n">diffs_for_weights</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">,</span> <span class="n">sigma_n</span>
+            <span class="p">)</span>
+    
+        <span class="c1"># Loop over submodels</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span><span class="p">):</span>
+            <span class="n">deriv_locs_i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            
+            <span class="c1"># Get train-train differences (single global structure for all modes)</span>
+            <span class="n">diffs_train_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span>
+            
+            <span class="c1"># Compute kernel on train-train</span>
+            <span class="n">phi_train_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_train_train</span><span class="p">,</span> <span class="n">ell</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">phi_exp_train_train</span> <span class="o">=</span> <span class="n">phi_train_train</span><span class="o">.</span><span class="n">real</span>
+                <span class="n">phi_exp_train_train</span> <span class="o">=</span> <span class="n">phi_exp_train_train</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span> <span class="o">=</span> <span class="n">phi_train_train</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">phi_exp_train_train</span> <span class="o">=</span> <span class="n">phi_train_train</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+            
+            <span class="c1"># Build training kernel matrix</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+                <span class="n">phi_train_train</span><span class="p">,</span> <span class="n">phi_exp_train_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> 
+                <span class="n">index</span><span class="o">=</span><span class="n">deriv_locs_i</span>
+            <span class="p">)</span>
+            <span class="n">K</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">))</span>
+            
+            <span class="c1"># Solve linear system</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train_normalized</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Cholesky decomposition failed, using standard solve.&#39;</span><span class="p">)</span>
+    
+            <span class="c1"># Compute train-test differences</span>
+            <span class="n">diffs_train_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_train_test_differences</span><span class="p">(</span>
+                <span class="n">x_train</span><span class="p">,</span> <span class="n">X_test_norm</span><span class="p">,</span> <span class="n">return_deriv</span><span class="p">,</span> <span class="n">rays_predict</span>
+            <span class="p">)</span>
+    
+            <span class="c1"># Compute train-test kernel</span>
+            <span class="n">phi_train_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_train_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">return_deriv</span><span class="p">:</span>
+                    <span class="n">phi_exp_train_test</span> <span class="o">=</span> <span class="n">phi_train_test</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">phi_exp_train_test</span> <span class="o">=</span> <span class="n">phi_train_test</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">phi_exp_train_test</span> <span class="o">=</span> <span class="n">phi_train_test</span><span class="o">.</span><span class="n">real</span>
+                <span class="n">phi_exp_train_test</span> <span class="o">=</span> <span class="n">phi_exp_train_test</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+            <span class="n">K_s</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">rbf_kernel_predictions</span><span class="p">(</span>
+                <span class="n">phi_train_test</span><span class="p">,</span> <span class="n">phi_exp_train_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span><span class="p">,</span> 
+                <span class="n">index</span><span class="o">=</span><span class="n">deriv_locs_i</span><span class="p">,</span>
+                <span class="n">common_derivs</span><span class="o">=</span><span class="n">common_derivs</span><span class="p">,</span>
+                <span class="n">powers_predict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">powers_predict</span>
+            <span class="p">)</span>
+            
+            <span class="c1"># Compute predictive mean</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+                <span class="n">K_s</span> <span class="o">=</span> <span class="n">K_s</span><span class="o">.</span><span class="n">T</span>
+                <span class="n">f_mean</span> <span class="o">=</span> <span class="n">K_s</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">alpha</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f_mean</span> <span class="o">=</span> <span class="n">K_s</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">alpha</span>
+            <span class="n">f_mean</span> <span class="o">=</span> <span class="n">f_mean</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            
+            <span class="c1"># Denormalize predictions</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">return_deriv</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+                        <span class="n">f_mean</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_predictions_directional</span><span class="p">(</span>
+                           <span class="n">f_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                           <span class="n">common_derivs</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">f_mean</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_predictions</span><span class="p">(</span>
+                            <span class="n">f_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                            <span class="n">common_derivs</span><span class="p">,</span> <span class="n">X_test</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">f_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu_y</span> <span class="o">+</span> <span class="n">f_mean</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span>
+    
+            <span class="c1"># Reshape predictions</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">f_mean</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">num_derivs</span> <span class="o">=</span> <span class="n">m</span> <span class="o">//</span> <span class="n">n</span>
+            <span class="n">reshaped</span> <span class="o">=</span> <span class="n">f_mean</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_derivs</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">calc_cov</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">reshaped</span>
+                
+            <span class="c1"># Apply weights for multiple submodels</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Compute weight for this submodel</span>
+                <span class="n">unique_indices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">subindex</span> <span class="ow">in</span> <span class="n">deriv_locs_i</span><span class="p">:</span>
+                    <span class="n">unique_indices</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">subindex</span><span class="p">)</span>
+                <span class="n">unique_indices</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">unique_indices</span><span class="p">)</span>
+                
+                <span class="n">weight</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">weights_matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">unique_indices</span><span class="p">:</span>
+                    <span class="n">weight</span> <span class="o">+=</span> <span class="n">weights_matrix</span><span class="p">[:,</span> <span class="n">idx</span><span class="p">]</span>
+                
+                <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                    <span class="n">submodel_vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reshaped</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                
+                <span class="n">reshaped_weighted</span> <span class="o">=</span> <span class="n">reshaped</span> <span class="o">*</span> <span class="n">weight</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">reshaped_weighted</span> <span class="o">=</span> <span class="n">reshaped</span>
+                <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot return submodels for a single model&#39;</span><span class="p">)</span>
+            
+            <span class="n">y_val</span> <span class="o">+=</span> <span class="n">reshaped_weighted</span>
+    
+            <span class="c1"># Compute covariance if requested</span>
+            <span class="k">if</span> <span class="n">calc_cov</span><span class="p">:</span>
+                <span class="n">f_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_predictive_variance</span><span class="p">(</span>
+                    <span class="n">X_test_norm</span><span class="p">,</span> <span class="n">deriv_locs_i</span><span class="p">,</span> <span class="n">common_derivs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers_predict</span><span class="p">,</span> 
+                    <span class="n">ell</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">K_s</span><span class="p">,</span> <span class="n">L</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">cho_solve_failed</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">low</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">cho_solve_failed</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cho_solve_failed</span><span class="p">,</span>
+                    <span class="n">return_deriv</span><span class="p">,</span> <span class="n">rays_predict</span>
+                <span class="p">)</span>
+                
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">f_var_reshaped</span> <span class="o">=</span> <span class="n">f_var</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_derivs</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="n">reshaped</span><span class="p">,</span> <span class="n">f_var_reshaped</span>
+                    <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                        <span class="n">submodel_cov</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f_var_reshaped</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                    <span class="n">f_var_reshaped</span> <span class="o">=</span> <span class="n">f_var_reshaped</span> <span class="o">*</span> <span class="n">weight</span>
+                    <span class="n">y_var</span> <span class="o">+=</span> <span class="n">f_var_reshaped</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">y_var</span> <span class="o">=</span> <span class="n">f_var</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_derivs</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    
+        <span class="c1"># Return results</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_submodels</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">calc_cov</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">y_val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">return_submodels</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">calc_cov</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">,</span> <span class="n">submodel_cov</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">submodel_vals</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">calc_cov</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">y_val</span><span class="p">,</span> <span class="n">y_var</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">y_val</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_train_test_differences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">return_deriv</span><span class="p">,</span> <span class="n">rays_predict</span><span class="p">,</span> <span class="n">submodel_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute train-test differences based on submodel_type.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp_utils</span>
+            <span class="k">return</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_ddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wddegp_utils</span>
+            <span class="c1"># For test points, derivative_locations is all test points if return_deriv</span>
+            <span class="n">deriv_locs_test</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp_utils</span>
+            <span class="c1"># Use global rays structure for train side</span>
+            <span class="n">n_dirs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rays</span><span class="p">)</span>
+            <span class="c1"># For test points, use rays_predict if provided</span>
+            <span class="n">rays_test</span> <span class="o">=</span> <span class="n">rays_predict</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="ow">and</span> <span class="n">rays_predict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">deriv_locs_test</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))]</span> <span class="o">*</span> <span class="n">n_dirs</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">gddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">x_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">global_rays</span><span class="p">,</span> <span class="n">rays_test</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">global_derivative_locations</span><span class="p">,</span> <span class="n">deriv_locs_test</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_weight_differences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">x_train</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute differences for weight calculation (always without derivatives).&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp_utils</span>
+            <span class="k">return</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_ddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wddegp_utils</span>
+            <span class="k">return</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">X_test</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wgddegp_utils</span>
+            <span class="k">return</span> <span class="n">wgddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">X_test</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_predictive_variance</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">deriv_locs_i</span><span class="p">,</span><span class="n">common_derivs</span><span class="p">,</span><span class="n">powers_predict</span><span class="p">,</span> <span class="n">ell</span><span class="p">,</span> <span class="n">submodel_idx</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">K_s</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">cho_solve_failed</span><span class="p">,</span>
+        <span class="n">return_deriv</span><span class="p">,</span> <span class="n">rays_predict</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute predictive variance for a submodel.&quot;&quot;&quot;</span>
+        <span class="n">gp_utils</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_utils_module</span><span class="p">()</span>
+        
+        <span class="c1"># Compute test-test differences</span>
+        <span class="n">diffs_test_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_test_test_differences</span><span class="p">(</span>
+            <span class="n">X_test</span><span class="p">,</span> <span class="n">return_deriv</span><span class="p">,</span> <span class="n">rays_predict</span><span class="p">,</span> <span class="n">submodel_idx</span><span class="o">=</span><span class="n">submodel_idx</span>
+        <span class="p">)</span>
+        
+        <span class="n">phi_test_test</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_test_test</span><span class="p">,</span> <span class="n">ell</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n_bases</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">phi_exp_test_test</span> <span class="o">=</span> <span class="n">phi_test_test</span><span class="o">.</span><span class="n">real</span>
+            <span class="n">phi_exp_test_test</span>  <span class="o">=</span>    <span class="n">phi_exp_test_test</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bases</span> <span class="o">=</span> <span class="n">phi_test_test</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()</span>
+            <span class="n">n_bases</span> <span class="o">=</span> <span class="n">bases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">phi_exp_test_test</span> <span class="o">=</span> <span class="n">phi_test_test</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span> <span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+        
+        <span class="n">deriv_locs_test</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">])</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="kc">None</span>
+        
+        <span class="n">K_ss</span> <span class="o">=</span> <span class="n">gp_utils</span><span class="o">.</span><span class="n">rbf_kernel_predictions</span><span class="p">(</span>
+            <span class="n">phi_test_test</span><span class="p">,</span> <span class="n">phi_exp_test_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases_rays</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">],</span>
+            <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span><span class="p">,</span>
+            <span class="n">index</span><span class="o">=</span> <span class="n">deriv_locs_test</span><span class="p">,</span>
+            <span class="n">common_derivs</span> <span class="o">=</span> <span class="n">common_derivs</span><span class="p">,</span>
+            <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">powers_predict</span><span class="o">=</span><span class="n">powers_predict</span>
+        <span class="p">)</span>
+        
+        <span class="n">n_test</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">cho_solve_failed</span><span class="p">:</span>
+                <span class="n">f_cov</span> <span class="o">=</span> <span class="n">K_ss</span> <span class="o">-</span> <span class="n">K_s</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">K_s</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">solve_triangular</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">K_s</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="n">low</span><span class="p">)</span>
+            <span class="n">f_cov</span> <span class="o">=</span> <span class="n">K_ss</span> <span class="o">-</span> <span class="n">v</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">v</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span> <span class="ow">or</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+                <span class="n">f_var</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_cov_directional</span><span class="p">(</span>
+                    <span class="n">f_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">],</span> <span class="n">X_test</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">f_var</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_cov</span><span class="p">(</span>
+                    <span class="n">f_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">submodel_idx</span><span class="p">],</span> <span class="n">X_test</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">f_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
+        
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f_var</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_test_test_differences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">return_deriv</span><span class="p">,</span> <span class="n">rays_predict</span><span class="p">,</span> <span class="n">submodel_idx</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute test-test differences for covariance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;degp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp_utils</span>
+            <span class="k">return</span> <span class="n">wdegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">X_test</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;ddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_ddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wddegp_utils</span>
+            <span class="n">deriv_locs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">wddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">X_test</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rays</span><span class="p">,</span> 
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">submodel_type</span> <span class="o">==</span> <span class="s1">&#39;gddegp&#39;</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wgddegp_utils</span>
+            <span class="c1"># For test-test, use rays_predict if provided</span>
+            <span class="n">rays_test</span> <span class="o">=</span> <span class="n">rays_predict</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="n">n_dirs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_rays</span><span class="p">)</span> <span class="k">if</span> <span class="n">rays_test</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">rays_test</span><span class="p">)</span>
+            <span class="n">deriv_locs</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_test</span><span class="p">)))]</span> <span class="o">*</span> <span class="n">n_dirs</span> <span class="k">if</span> <span class="n">return_deriv</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">wgddegp_utils</span><span class="o">.</span><span class="n">differences_by_dim_func</span><span class="p">(</span>
+                <span class="n">X_test</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span>
+                <span class="n">rays_test</span><span class="p">,</span> <span class="n">rays_test</span><span class="p">,</span>
+                <span class="n">deriv_locs</span><span class="p">,</span> <span class="n">deriv_locs</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="n">return_deriv</span>
+            <span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

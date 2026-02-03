@@ -1,0 +1,2187 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Utilities and Helpers &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/utilities_and_helpers';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Getting Started with JetGP" href="../getting_started/index.html" />
+    <link rel="prev" title="Hyperparameter Optimizers" href="hyperparameter_optimizers.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/api/utilities_and_helpers.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/api/utilities_and_helpers.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Utilities and Helpers</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.build_companion_array"><code class="docutils literal notranslate"><span class="pre">build_companion_array()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.build_companion_array_predict"><code class="docutils literal notranslate"><span class="pre">build_companion_array_predict()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.check_gp_gradient"><code class="docutils literal notranslate"><span class="pre">check_gp_gradient()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.compare_OTI_indices"><code class="docutils literal notranslate"><span class="pre">compare_OTI_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.convert_index_to_exponent_form"><code class="docutils literal notranslate"><span class="pre">convert_index_to_exponent_form()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.ecl_acquisition"><code class="docutils literal notranslate"><span class="pre">ecl_acquisition()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.ecl_batch_acquisition"><code class="docutils literal notranslate"><span class="pre">ecl_batch_acquisition()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.finite_difference_gradient"><code class="docutils literal notranslate"><span class="pre">finite_difference_gradient()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.flatten_der_indices"><code class="docutils literal notranslate"><span class="pre">flatten_der_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.gen_OTI_indices"><code class="docutils literal notranslate"><span class="pre">gen_OTI_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_bernoulli_lambda"><code class="docutils literal notranslate"><span class="pre">generate_bernoulli_lambda()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_bernoulli_numbers"><code class="docutils literal notranslate"><span class="pre">generate_bernoulli_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_bernoulli_polynomial"><code class="docutils literal notranslate"><span class="pre">generate_bernoulli_polynomial()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_submodel_noise_matricies"><code class="docutils literal notranslate"><span class="pre">generate_submodel_noise_matricies()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_submodel_noise_matricies_old"><code class="docutils literal notranslate"><span class="pre">generate_submodel_noise_matricies_old()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_entropy_ridge_direction_nd"><code class="docutils literal notranslate"><span class="pre">get_entropy_ridge_direction_nd()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_entropy_ridge_direction_nd_2"><code class="docutils literal notranslate"><span class="pre">get_entropy_ridge_direction_nd_2()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_inverse"><code class="docutils literal notranslate"><span class="pre">get_inverse()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_optimization_bounds"><code class="docutils literal notranslate"><span class="pre">get_optimization_bounds()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_pdf_params"><code class="docutils literal notranslate"><span class="pre">get_pdf_params()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_surrogate_gradient_ray"><code class="docutils literal notranslate"><span class="pre">get_surrogate_gradient_ray()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.jade"><code class="docutils literal notranslate"><span class="pre">jade()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.local_box_around_point"><code class="docutils literal notranslate"><span class="pre">local_box_around_point()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.matern_kernel_builder"><code class="docutils literal notranslate"><span class="pre">matern_kernel_builder()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_directions"><code class="docutils literal notranslate"><span class="pre">normalize_directions()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_directions_2"><code class="docutils literal notranslate"><span class="pre">normalize_directions_2()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_x_data_test"><code class="docutils literal notranslate"><span class="pre">normalize_x_data_test()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_x_data_train"><code class="docutils literal notranslate"><span class="pre">normalize_x_data_train()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_y_data"><code class="docutils literal notranslate"><span class="pre">normalize_y_data()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_y_data_directional"><code class="docutils literal notranslate"><span class="pre">normalize_y_data_directional()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.nrmse"><code class="docutils literal notranslate"><span class="pre">nrmse()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.pso"><code class="docutils literal notranslate"><span class="pre">pso()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.reshape_y_train"><code class="docutils literal notranslate"><span class="pre">reshape_y_train()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.robust_local_optimization"><code class="docutils literal notranslate"><span class="pre">robust_local_optimization()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.scale_samples"><code class="docutils literal notranslate"><span class="pre">scale_samples()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.should_accept_local_result"><code class="docutils literal notranslate"><span class="pre">should_accept_local_result()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.sobol_points"><code class="docutils literal notranslate"><span class="pre">sobol_points()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_cov"><code class="docutils literal notranslate"><span class="pre">transform_cov()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_cov_directional"><code class="docutils literal notranslate"><span class="pre">transform_cov_directional()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_predictions"><code class="docutils literal notranslate"><span class="pre">transform_predictions()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_predictions_directional"><code class="docutils literal notranslate"><span class="pre">transform_predictions_directional()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory"><code class="docutils literal notranslate"><span class="pre">KernelFactory</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.dim"><code class="docutils literal notranslate"><span class="pre">KernelFactory.dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.normalize"><code class="docutils literal notranslate"><span class="pre">KernelFactory.normalize</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.differences_by_dim"><code class="docutils literal notranslate"><span class="pre">KernelFactory.differences_by_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.true_noise_std"><code class="docutils literal notranslate"><span class="pre">KernelFactory.true_noise_std</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.bounds"><code class="docutils literal notranslate"><span class="pre">KernelFactory.bounds</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.nu"><code class="docutils literal notranslate"><span class="pre">KernelFactory.nu</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.n_order"><code class="docutils literal notranslate"><span class="pre">KernelFactory.n_order</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.SI_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.SI_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.clear_caches"><code class="docutils literal notranslate"><span class="pre">KernelFactory.clear_caches()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.create_kernel"><code class="docutils literal notranslate"><span class="pre">KernelFactory.create_kernel()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data"><code class="docutils literal notranslate"><span class="pre">KernelFactory.get_bounds_from_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.matern_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.matern_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.rq_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.rq_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.se_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.se_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.sine_exp_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.sine_exp_kernel_isotropic()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.get_oti_module"><code class="docutils literal notranslate"><span class="pre">get_oti_module()</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-jetgp.utils">
+<span id="utilities-and-helpers"></span><h1>Utilities and Helpers<a class="headerlink" href="#module-jetgp.utils" title="Link to this heading">#</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.build_companion_array">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">build_companion_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#build_companion_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.build_companion_array" title="Link to this definition">#</a></dt>
+<dd><p>Build a companion array that maps each derivative index to its corresponding order in the OTI basis.</p>
+<p>The array represents the order of each component in the OTI (Order-Truncated Imaginary) number system:
+- 0 for function values.
+- Corresponding derivative order for each derivative term.</p>
+<section id="parameters">
+<h2>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>nvars<span class="classifier">int</span></dt><dd><p>Number of variables (input dimensions).</p>
+</dd>
+<dt>order<span class="classifier">int</span></dt><dd><p>Maximum derivative order considered.</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Derivative indices in exponent form, where each sublist represents the derivative multi-index
+for a specific derivative term.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h2>Returns:<a class="headerlink" href="#returns" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>companion_array<span class="classifier">ndarray</span></dt><dd><p>A 1D array of length (1 + total derivatives), where:
+- The first entry is 0 (function value).
+- Each subsequent entry indicates the derivative order (e.g., 1 for first derivatives).</p>
+</dd>
+</dl>
+</section>
+<section id="example">
+<h2>Example:<a class="headerlink" href="#example" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nvars</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">build_companion_array</span><span class="p">(</span><span class="n">nvars</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">)</span>
+<span class="go">array([0, 1, 2, 1])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.build_companion_array_predict">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">build_companion_array_predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#build_companion_array_predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.build_companion_array_predict" title="Link to this definition">#</a></dt>
+<dd><p>Build a companion array that maps each derivative index to its corresponding order in the OTI basis.</p>
+<p>The array represents the order of each component in the OTI (Order-Truncated Imaginary) number system:
+- 0 for function values.
+- Corresponding derivative order for each derivative term.</p>
+<section id="id1">
+<h2>Parameters:<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>nvars<span class="classifier">int</span></dt><dd><p>Number of variables (input dimensions).</p>
+</dd>
+<dt>order<span class="classifier">int</span></dt><dd><p>Maximum derivative order considered.</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Derivative indices in exponent form, where each sublist represents the derivative multi-index
+for a specific derivative term.</p>
+</dd>
+</dl>
+</section>
+<section id="id2">
+<h2>Returns:<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>companion_array<span class="classifier">ndarray</span></dt><dd><p>A 1D array of length (1 + total derivatives), where:
+- The first entry is 0 (function value).
+- Each subsequent entry indicates the derivative order (e.g., 1 for first derivatives).</p>
+</dd>
+</dl>
+</section>
+<section id="id3">
+<h2>Example:<a class="headerlink" href="#id3" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nvars</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">build_companion_array</span><span class="p">(</span><span class="n">nvars</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">)</span>
+<span class="go">array([0, 1, 2, 1])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.check_gp_gradient">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">check_gp_gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#check_gp_gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.check_gp_gradient" title="Link to this definition">#</a></dt>
+<dd><p>Compare GP-predicted gradient vs finite-difference at x.
+Prints and returns both.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.compare_OTI_indices">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">compare_OTI_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">term_check</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#compare_OTI_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.compare_OTI_indices" title="Link to this definition">#</a></dt>
+<dd><p>Compare a given multi-index term against all basis terms in the OTI number system.</p>
+<p>This function searches through all OTI basis terms (multi-indices) up to the specified order
+and identifies the <strong>order</strong> of the matching term.</p>
+<section id="id4">
+<h2>Parameters:<a class="headerlink" href="#id4" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>nvars<span class="classifier">int</span></dt><dd><p>Number of variables (input dimensions).</p>
+</dd>
+<dt>order<span class="classifier">int</span></dt><dd><p>Maximum derivative order considered.</p>
+</dd>
+<dt>term_check<span class="classifier">list of [int, int]</span></dt><dd><p>The multi-index to check, given in exponent form [[var_index, exponent], …].</p>
+</dd>
+</dl>
+</section>
+<section id="id5">
+<h2>Returns:<a class="headerlink" href="#id5" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>int</dt><dd><p>The order of the term in the OTI basis (1, 2, …, order).
+Returns -1 if no matching term is found.</p>
+</dd>
+</dl>
+</section>
+<section id="id6">
+<h2>Example:<a class="headerlink" href="#id6" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nvars</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">term_check</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span>  <span class="c1"># Represents ∂²/∂x₁²</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compare_OTI_indices</span><span class="p">(</span><span class="n">nvars</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">term_check</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.convert_index_to_exponent_form">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">convert_index_to_exponent_form</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#convert_index_to_exponent_form"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.convert_index_to_exponent_form" title="Link to this definition">#</a></dt>
+<dd><p>Convert a list of indices into exponent form.</p>
+<p>For a given list of integers, the function compresses consecutive identical elements
+into pairs [value, count], where ‘value’ is the element and ‘count’ is its occurrence.</p>
+<section id="id7">
+<h2>Parameters:<a class="headerlink" href="#id7" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>lst<span class="classifier">list of int</span></dt><dd><p>A list of integers representing variable indices.</p>
+</dd>
+</dl>
+</section>
+<section id="id8">
+<h2>Returns:<a class="headerlink" href="#id8" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>list of [int, int]</dt><dd><p>A compressed list where each entry is [value, count], representing the multiplicity
+of each unique value in the original list.</p>
+</dd>
+</dl>
+</section>
+<section id="id9">
+<h2>Example:<a class="headerlink" href="#id9" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lst</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">convert_index_to_exponent_form</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+<span class="go">[[1, 2], [2, 3], [3, 1]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.ecl_acquisition">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">ecl_acquisition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mu_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#ecl_acquisition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.ecl_acquisition" title="Link to this definition">#</a></dt>
+<dd><p>Entropy Contour Learning (ECL) acquisition function for gddegp models.</p>
+<p>Implements the ECL acquisition function from equation (8):
+ECL(x | S_N, g) = -P(g(Y(x)) &gt; 0) log P(g(Y(x)) &gt; 0) - P(g(Y(x)) ≤ 0) log P(g(Y(x)) ≤ 0)</p>
+<p>Where g is the affine limit state function g(Y(x)) = Y(x) - T and the failure
+region G is defined by g(Y(x)) ≤ 0.</p>
+<section id="id10">
+<h2>Parameters:<a class="headerlink" href="#id10" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>gp_model<span class="classifier">gddegp</span></dt><dd><p>Trained gp model instance</p>
+</dd>
+<dt>X<span class="classifier">array-like, shape (n_points, n_features) or (n_features,)</span></dt><dd><p>Points to evaluate the acquisition function</p>
+</dd>
+<dt>rays_predict<span class="classifier">ndarray</span></dt><dd><p>Ray directions for prediction. Shape should be (n_dims, n_rays)</p>
+</dd>
+<dt>params<span class="classifier">ndarray</span></dt><dd><p>Hyperparameters for gddegp prediction</p>
+</dd>
+<dt>threshold<span class="classifier">float, default=0.0</span></dt><dd><p>Threshold T for the affine limit state function g(Y(x)) = Y(x) - T
+Default is 0.0, meaning failure region is defined by Y(x) ≤ 0</p>
+</dd>
+</dl>
+</section>
+<section id="id11">
+<h2>Returns:<a class="headerlink" href="#id11" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>ecl_values<span class="classifier">array-like, shape (n_points,) or float</span></dt><dd><p>ECL acquisition function values (higher values indicate more informative points)</p>
+</dd>
+</dl>
+</section>
+<section id="examples">
+<h2>Examples:<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># After training your gddegp model</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ecl_vals</span> <span class="o">=</span> <span class="n">ecl_acquisition</span><span class="p">(</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">candidate_points</span><span class="p">,</span> <span class="n">rays</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">next_point_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">ecl_vals</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">next_point</span> <span class="o">=</span> <span class="n">candidate_points</span><span class="p">[</span><span class="n">next_point_idx</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.ecl_batch_acquisition">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">ecl_batch_acquisition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_predict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#ecl_batch_acquisition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.ecl_batch_acquisition" title="Link to this definition">#</a></dt>
+<dd><p>Batch ECL acquisition function that selects multiple points simultaneously.</p>
+<p>Uses a greedy approach to select the next batch_size points that maximize
+the ECL criterion while maintaining diversity.</p>
+<section id="id12">
+<h2>Parameters:<a class="headerlink" href="#id12" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>gp_model<span class="classifier">gddegp</span></dt><dd><p>Trained gddegp model instance</p>
+</dd>
+<dt>X<span class="classifier">array-like, shape (n_candidates, n_features)</span></dt><dd><p>Candidate points to select from</p>
+</dd>
+<dt>rays_predict<span class="classifier">ndarray</span></dt><dd><p>Ray directions for prediction</p>
+</dd>
+<dt>params<span class="classifier">ndarray</span></dt><dd><p>Hyperparameters for gddegp prediction</p>
+</dd>
+<dt>threshold<span class="classifier">float, default=0.0</span></dt><dd><p>Threshold for the limit state function</p>
+</dd>
+<dt>batch_size<span class="classifier">int, default=1</span></dt><dd><p>Number of points to select in the batch</p>
+</dd>
+</dl>
+</section>
+<section id="id13">
+<h2>Returns:<a class="headerlink" href="#id13" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>selected_indices<span class="classifier">array-like, shape (batch_size,)</span></dt><dd><p>Indices of selected points from X</p>
+</dd>
+<dt>selected_points<span class="classifier">array-like, shape (batch_size, n_features)</span></dt><dd><p>The selected points</p>
+</dd>
+</dl>
+</section>
+<section id="id14">
+<h2>Examples:<a class="headerlink" href="#id14" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">indices</span><span class="p">,</span> <span class="n">points</span> <span class="o">=</span> <span class="n">ecl_batch_acquisition</span><span class="p">(</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">candidates</span><span class="p">,</span> <span class="n">rays</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">next_experiments</span> <span class="o">=</span> <span class="n">points</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.finite_difference_gradient">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">finite_difference_gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#finite_difference_gradient"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.finite_difference_gradient" title="Link to this definition">#</a></dt>
+<dd><p>Compute central finite difference approximation of GP mean gradient at x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gp</strong> (<em>object</em>) – Trained GP model instance</p></li>
+<li><p><strong>x</strong> (<em>ndarray</em><em>, </em><em>shape</em><em> (</em><em>1</em><em>, </em><em>d</em><em>)</em>) – Point at which to compute finite difference gradient</p></li>
+<li><p><strong>params</strong> (<em>array-like</em>) – GP hyperparameters</p></li>
+<li><p><strong>h</strong> (<em>float</em>) – Step size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>grad_fd</strong> – Central finite difference gradient estimate</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (d, 1)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.flatten_der_indices">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">flatten_der_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#flatten_der_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.flatten_der_indices" title="Link to this definition">#</a></dt>
+<dd><p>Flatten a nested list of derivative indices.</p>
+<section id="id15">
+<h2>Parameters:<a class="headerlink" href="#id15" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>indices<span class="classifier">list of lists</span></dt><dd><p>A nested list where each sublist contains derivative index specifications.</p>
+</dd>
+</dl>
+</section>
+<section id="id16">
+<h2>Returns:<a class="headerlink" href="#id16" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>list</dt><dd><p>A single flattened list containing all derivative index entries.</p>
+</dd>
+</dl>
+</section>
+<section id="id17">
+<h2>Example:<a class="headerlink" href="#id17" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flatten_der_indices</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+<span class="go">[[1, 1], [1, 2], [2, 1]]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.gen_OTI_indices">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">gen_OTI_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#gen_OTI_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.gen_OTI_indices" title="Link to this definition">#</a></dt>
+<dd><p>Generate the list of OTI (Order-Truncated Imaginary) basis indices in exponent form.</p>
+<p>For a given number of variables and maximum derivative order, this function produces the
+multi-index representations for all basis terms in the OTI number system.</p>
+<section id="id18">
+<h2>Parameters:<a class="headerlink" href="#id18" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>nvars<span class="classifier">int</span></dt><dd><p>Number of variables (input dimensions).</p>
+</dd>
+<dt>order<span class="classifier">int</span></dt><dd><p>Maximum derivative order considered.</p>
+</dd>
+</dl>
+</section>
+<section id="id19">
+<h2>Returns:<a class="headerlink" href="#id19" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>list of lists</dt><dd><p>A nested list where:
+- The outer list has length <cite>order</cite> (one entry per derivative order).
+- Each inner list contains multi-indices in exponent form for that order.</p>
+</dd>
+</dl>
+</section>
+<section id="id20">
+<h2>Example:<a class="headerlink" href="#id20" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nvars</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">order</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">gen_OTI_indices</span><span class="p">(</span><span class="n">nvars</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+<span class="go">[</span>
+<span class="go">    [[[1, 1]], [[2, 1]]],         # First-order derivatives: ∂/∂x₁, ∂/∂x₂</span>
+<span class="go">    # Second-order: ∂²/∂x₁², ∂²/∂x₁∂x₂, ∂²/∂x₂²</span>
+<span class="go">    [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]</span>
+<span class="go">]</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.generate_bernoulli_lambda">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">generate_bernoulli_lambda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">callable</span></span></span><a class="reference internal" href="../_modules/jetgp/utils.html#generate_bernoulli_lambda"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.generate_bernoulli_lambda" title="Link to this definition">#</a></dt>
+<dd><p>Generates a callable (lambda) function for the (2*alpha)-th Bernoulli polynomial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>alpha</strong> – A non-negative integer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A callable function that evaluates B_{2*alpha}(x).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.generate_bernoulli_numbers">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">generate_bernoulli_numbers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Fraction</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/jetgp/utils.html#generate_bernoulli_numbers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.generate_bernoulli_numbers" title="Link to this definition">#</a></dt>
+<dd><p>Generates Bernoulli numbers B_0 to B_n_max using their recurrence relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n_max</strong> – The maximum order of the Bernoulli number to generate.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of Bernoulli numbers as Fraction objects.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.generate_bernoulli_polynomial">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">generate_bernoulli_polynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Polynomial</span></span></span><a class="reference internal" href="../_modules/jetgp/utils.html#generate_bernoulli_polynomial"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.generate_bernoulli_polynomial" title="Link to this definition">#</a></dt>
+<dd><p>Generates the (2*alpha)-th Bernoulli polynomial, B_{2*alpha}(x).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>alpha</strong> – A non-negative integer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A numpy.polynomial.Polynomial object representing the polynomial.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.generate_submodel_noise_matricies">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">generate_submodel_noise_matricies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#generate_submodel_noise_matricies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.generate_submodel_noise_matricies" title="Link to this definition">#</a></dt>
+<dd><p>Generate diagonal noise covariance matrices for each submodel component
+(including function values and their associated derivatives).</p>
+<p>This function constructs a list of diagonal matrices where each matrix corresponds
+to a specific group of training indices (e.g., for a submodel), and includes
+both function value noise and associated derivative noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_data</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_total</em><em>, </em><em>n_total</em><em>)</em>) – Full covariance (typically diagonal) matrix for all training data, including function values and derivatives.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> of </em><em>lists</em><em> of </em><em>int</em>) – List where each sublist contains indices of the function values for one submodel (e.g., a cluster or partition).</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Each sublist contains derivative directions for the submodel, corresponding to base_der_indices.</p></li>
+<li><p><strong>num_points</strong> (<em>int</em>) – Number of training points per function (used to compute index offsets for derivatives).</p></li>
+<li><p><strong>base_der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Master list of derivative indices that define the ordering of blocks in the covariance matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sub_model_matricies</strong> – List of diagonal noise matrices (ndarray of shape (n_submodel_total, n_submodel_total)) for each submodel,
+combining noise contributions from function values and all applicable derivative components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If a derivative index in <cite>der_indices</cite> is not found in <cite>base_der_indices</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigma_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">base_der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_points</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generate_submodel_noise_matricies</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">num_points</span><span class="p">,</span> <span class="n">base_der_indices</span><span class="p">)</span>
+<span class="go">[array of shape (6, 6), array of shape (9, 9)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.generate_submodel_noise_matricies_old">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">generate_submodel_noise_matricies_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#generate_submodel_noise_matricies_old"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.generate_submodel_noise_matricies_old" title="Link to this definition">#</a></dt>
+<dd><p>Generate diagonal noise covariance matrices for each submodel component
+(including function values and their associated derivatives).</p>
+<p>This function constructs a list of diagonal matrices where each matrix corresponds
+to a specific group of training indices (e.g., for a submodel), and includes
+both function value noise and associated derivative noise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma_data</strong> (<em>ndarray</em><em> of </em><em>shape</em><em> (</em><em>n_total</em><em>, </em><em>n_total</em><em>)</em>) – Full covariance (typically diagonal) matrix for all training data, including function values and derivatives.</p></li>
+<li><p><strong>index</strong> (<em>list</em><em> of </em><em>lists</em><em> of </em><em>int</em>) – List where each sublist contains indices of the function values for one submodel (e.g., a cluster or partition).</p></li>
+<li><p><strong>der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Each sublist contains derivative directions for the submodel, corresponding to base_der_indices.</p></li>
+<li><p><strong>num_points</strong> (<em>int</em>) – Number of training points per function (used to compute index offsets for derivatives).</p></li>
+<li><p><strong>base_der_indices</strong> (<em>list</em><em> of </em><em>lists</em>) – Master list of derivative indices that define the ordering of blocks in the covariance matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sub_model_matricies</strong> – List of diagonal noise matrices (ndarray of shape (n_submodel_total, n_submodel_total)) for each submodel,
+combining noise contributions from function values and all applicable derivative components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – If a derivative index in <cite>der_indices</cite> is not found in <cite>base_der_indices</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigma_data</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">base_der_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">num_points</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generate_submodel_noise_matricies</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">num_points</span><span class="p">,</span> <span class="n">base_der_indices</span><span class="p">)</span>
+<span class="go">[array of shape (6, 6), array of shape (9, 9)]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.get_entropy_ridge_direction_nd">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">get_entropy_ridge_direction_nd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#get_entropy_ridge_direction_nd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.get_entropy_ridge_direction_nd" title="Link to this definition">#</a></dt>
+<dd><p>Get a direction tangent to the entropy level set (“ridge direction”) at x.
+In higher dimensions, returns either a single direction or an orthonormal basis for the tangent space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gp</strong> (<em>object</em>) – Trained GP model instance with .predict</p></li>
+<li><p><strong>x</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>1</em><em>, </em><em>d</em><em>)</em>) – The input location</p></li>
+<li><p><strong>params</strong> (<em>array-like</em>) – GP hyperparameters</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – ECL threshold</p></li>
+<li><p><strong>h</strong> (<em>float</em>) – Finite difference step</p></li>
+<li><p><strong>fallback_axis</strong> (<em>int</em>) – Axis for fallback if gradient is zero</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em>) – Normalize output direction</p></li>
+<li><p><strong>random_dir</strong> (<em>bool</em>) – If True, return a random direction in the ridge (level set). If False, returns first basis vector.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – For reproducible random direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>ridge_dir</strong> (<em>ndarray, shape (d, 1)</em>) – Ridge direction (tangent to entropy level set) at x</p></li>
+<li><p><strong>grad_H</strong> (<em>ndarray, shape (d, 1)</em>) – Gradient of entropy at x</p></li>
+<li><p><strong>basis</strong> (<em>ndarray, shape (d, d-1)</em>) – (If requested) Orthonormal basis for tangent space to entropy level set at x</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.get_entropy_ridge_direction_nd_2">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">get_entropy_ridge_direction_nd_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#get_entropy_ridge_direction_nd_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.get_entropy_ridge_direction_nd_2" title="Link to this definition">#</a></dt>
+<dd><p>Get a direction tangent to the entropy level set (“ridge direction”) at x.
+In higher dimensions, returns either a single direction or an orthonormal basis for the tangent space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gp</strong> (<em>object</em>) – Trained GP model instance with .predict</p></li>
+<li><p><strong>x</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>1</em><em>, </em><em>d</em><em>)</em>) – The input location</p></li>
+<li><p><strong>params</strong> (<em>array-like</em>) – GP hyperparameters</p></li>
+<li><p><strong>threshold</strong> (<em>float</em>) – ECL threshold</p></li>
+<li><p><strong>h</strong> (<em>float</em>) – Finite difference step</p></li>
+<li><p><strong>fallback_axis</strong> (<em>int</em>) – Axis for fallback if gradient is zero</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em>) – Normalize output direction</p></li>
+<li><p><strong>random_dir</strong> (<em>bool</em>) – If True, return a random direction in the ridge (level set). If False, returns first basis vector.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em> or </em><em>None</em>) – For reproducible random direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>ridge_dir</strong> (<em>ndarray, shape (d, 1)</em>) – Ridge direction (tangent to entropy level set) at x</p></li>
+<li><p><strong>grad_H</strong> (<em>ndarray, shape (d, 1)</em>) – Gradient of entropy at x</p></li>
+<li><p><strong>basis</strong> (<em>ndarray, shape (d, d-1)</em>) – (If requested) Orthonormal basis for tangent space to entropy level set at x</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.get_inverse">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">get_inverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#get_inverse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.get_inverse" title="Link to this definition">#</a></dt>
+<dd><p>Transforms uniform samples to a specified distribution via inverse CDF.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.get_optimization_bounds">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">get_optimization_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#get_optimization_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.get_optimization_bounds" title="Link to this definition">#</a></dt>
+<dd><p>Determines optimization bounds. Prioritizes explicit bounds if provided.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.get_pdf_params">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">get_pdf_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#get_pdf_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.get_pdf_params" title="Link to this definition">#</a></dt>
+<dd><p>Computes scipy-specific loc/scale parameters. Prioritizes explicit bounds if provided.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.get_surrogate_gradient_ray">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">get_surrogate_gradient_ray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback_axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#get_surrogate_gradient_ray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.get_surrogate_gradient_ray" title="Link to this definition">#</a></dt>
+<dd><p>Returns a normalized surrogate gradient direction (d x 1 column vector)
+at location x using the current GP model (any input dimension).
+If the GP mean at x is above threshold, returns -grad; else returns grad.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gp</strong> (<em>object</em>) – Trained GP model instance with .predict (supports arbitrary input dim)</p></li>
+<li><p><strong>x</strong> (<em>array-like</em><em>, </em><em>shape</em><em> (</em><em>1</em><em>, </em><em>d</em><em>)</em>) – The input location where to compute the surrogate gradient direction</p></li>
+<li><p><strong>params</strong> (<em>array-like</em>) – GP hyperparameters</p></li>
+<li><p><strong>fallback_axis</strong> (<em>int</em><em>, </em><em>default=0</em>) – Axis to use if gradient norm is zero (default: 0)</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em><em>, </em><em>default=True</em>) – If True, return a unit vector; else, return unnormalized gradient</p></li>
+<li><p><strong>threshold</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – Threshold value for sign flip</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>ray</strong> (<em>ndarray, shape (d, 1)</em>) – The chosen direction (as a column vector)</p></li>
+<li><p><strong>grad</strong> (<em>ndarray, shape (d, 1)</em>) – The predicted gradient as a column vector (signed as above)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.jade">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">jade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ieqcons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ieqcons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_opt_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#jade"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.jade" title="Link to this definition">#</a></dt>
+<dd><p>JADE (Adaptive Differential Evolution) with optional local refinement
+and minstep stopping criterion applied only when g_best improves.</p>
+<p>JADE: Adaptive Differential Evolution With Optional External Archive
+<a class="reference external" href="https://ieeexplore.ieee.org/abstract/document/5208221">https://ieeexplore.ieee.org/abstract/document/5208221</a></p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.local_box_around_point">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">local_box_around_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_next</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#local_box_around_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.local_box_around_point" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.matern_kernel_builder">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">matern_kernel_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oti_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#matern_kernel_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.matern_kernel_builder" title="Link to this definition">#</a></dt>
+<dd><p>Symbolically builds the Matérn kernel function with given smoothness ν.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nu</strong> (<em>float</em>) – Smoothness parameter of the Matérn kernel. Should be a half-integer (e.g., 0.5, 1.5, 2.5, …).</p></li>
+<li><p><strong>oti_module</strong> (<em>module</em><em>, </em><em>optional</em>) – The PyOTI static module to use for exp/sqrt. If None, uses numpy.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A lambdified function that evaluates the Matérn kernel as a function of distance r.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.normalize_directions">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_directions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#normalize_directions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.normalize_directions" title="Link to this definition">#</a></dt>
+<dd><p>Normalize direction vectors (rays) based on input scaling.</p>
+<p>This function rescales direction vectors used for <strong>directional derivatives</strong> so that
+they are consistent with normalized input space.</p>
+<section id="id21">
+<h2>Parameters:<a class="headerlink" href="#id21" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of the input variables (used for scaling each direction).</p>
+</dd>
+<dt>rays<span class="classifier">ndarray of shape (nvars, n_directions)</span></dt><dd><p>Direction vectors (columns) in the original input space.</p>
+</dd>
+</dl>
+</section>
+<section id="id22">
+<h2>Returns:<a class="headerlink" href="#id22" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>transformed_rays<span class="classifier">ndarray of shape (nvars, n_directions)</span></dt><dd><p>Normalized direction vectors.</p>
+</dd>
+</dl>
+</section>
+<section id="id23">
+<h2>Example:<a class="headerlink" href="#id23" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigmas_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_directions</span><span class="p">(</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="n">rays</span><span class="p">)</span>
+<span class="go">array([[0.5, 0. ],</span>
+<span class="go">       [0. , 1. ]])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.normalize_directions_2">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_directions_2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#normalize_directions_2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.normalize_directions_2" title="Link to this definition">#</a></dt>
+<dd><p>Normalize direction vectors (rays) based on input scaling.</p>
+<p>This function rescales direction vectors used for <strong>directional derivatives</strong> so that
+they are consistent with normalized input space.</p>
+<section id="id24">
+<h2>Parameters:<a class="headerlink" href="#id24" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of the input variables (used for scaling each direction).</p>
+</dd>
+<dt>rays<span class="classifier">ndarray of shape (nvars, n_directions)</span></dt><dd><p>Direction vectors (columns) in the original input space.</p>
+</dd>
+</dl>
+</section>
+<section id="id25">
+<h2>Returns:<a class="headerlink" href="#id25" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>transformed_rays<span class="classifier">ndarray of shape (nvars, n_directions)</span></dt><dd><p>Normalized direction vectors.</p>
+</dd>
+</dl>
+</section>
+<section id="id26">
+<h2>Example:<a class="headerlink" href="#id26" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">sigmas_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_directions</span><span class="p">(</span><span class="n">sigmas_x</span><span class="p">,</span> <span class="n">rays</span><span class="p">)</span>
+<span class="go">array([[0.5, 0. ],</span>
+<span class="go">        [0. , 1. ]])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.normalize_x_data_test">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_x_data_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mus_x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#normalize_x_data_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.normalize_x_data_test" title="Link to this definition">#</a></dt>
+<dd><p>Normalize test input data using the mean and standard deviation from the training inputs.</p>
+<section id="id27">
+<h2>Parameters:<a class="headerlink" href="#id27" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>X_test<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Test input points to be normalized.</p>
+</dd>
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of the training inputs for each variable (used for scaling).</p>
+</dd>
+<dt>mus_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Means of the training inputs for each variable (used for centering).</p>
+</dd>
+</dl>
+</section>
+<section id="id28">
+<h2>Returns:<a class="headerlink" href="#id28" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>X_train_normalized<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Normalized test inputs.</p>
+</dd>
+</dl>
+</section>
+<section id="id29">
+<h2>Example:<a class="headerlink" href="#id29" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sigmas_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mus_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_x_data_test</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">sigmas_x</span><span class="p">,</span> <span class="n">mus_x</span><span class="p">)</span>
+<span class="go">array([[2.0, 1.0]])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.normalize_x_data_train">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_x_data_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#normalize_x_data_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.normalize_x_data_train" title="Link to this definition">#</a></dt>
+<dd><p>Normalize training input data by centering and scaling each variable.</p>
+<section id="id30">
+<h2>Parameters:<a class="headerlink" href="#id30" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>X_train<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Training input points.</p>
+</dd>
+</dl>
+</section>
+<section id="id31">
+<h2>Returns:<a class="headerlink" href="#id31" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>X_train_normalized<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Normalized training inputs.</p>
+</dd>
+<dt>mean_vec_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Mean values for each input variable (used for centering).</p>
+</dd>
+<dt>std_vec_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations for each input variable (used for scaling).</p>
+</dd>
+</dl>
+</section>
+<section id="id32">
+<h2>Example:<a class="headerlink" href="#id32" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_x_data_train</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="go">(array([[-1., -1.], [ 1.,  1.]]), array([[2., 3.]]), array([[1., 1.]]))</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.normalize_y_data">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_y_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#normalize_y_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.normalize_y_data" title="Link to this definition">#</a></dt>
+<dd><p>Normalize function values, derivatives, and observational noise for training data.</p>
+<p>This function:
+- Normalizes function values (<cite>y_train[0]</cite>) to have zero mean and unit variance.
+- Scales <strong>derivatives</strong> using the chain rule, considering input normalization.
+- Scales <strong>observational noise</strong> (<cite>sigma_data</cite>) accordingly.</p>
+<section id="id33">
+<h2>Parameters:<a class="headerlink" href="#id33" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>X_train<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Training input points (used to compute input normalization statistics).</p>
+</dd>
+<dt>y_train<span class="classifier">list of arrays</span></dt><dd><p>List where:
+- y_train[0] contains function values.
+- y_train[1:], if present, contain derivative values for each derivative component.</p>
+</dd>
+<dt>sigma_data<span class="classifier">float or None</span></dt><dd><p>Standard deviation of the observational noise (for function values).
+If provided, it will be normalized.</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Multi-index derivative structures for each derivative component.</p>
+</dd>
+</dl>
+</section>
+<section id="id34">
+<h2>Returns:<a class="headerlink" href="#id34" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_train_normalized<span class="classifier">ndarray of shape (n_total,)</span></dt><dd><p>Normalized function values and derivatives (flattened).</p>
+</dd>
+<dt>mean_vec_y<span class="classifier">ndarray of shape (m, 1)</span></dt><dd><p>Mean of function values before normalization.</p>
+</dd>
+<dt>std_vec_y<span class="classifier">ndarray of shape (m, 1)</span></dt><dd><p>Standard deviation of function values before normalization.</p>
+</dd>
+<dt>std_vec_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of input variables.</p>
+</dd>
+<dt>mean_vec_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Means of input variables.</p>
+</dd>
+<dt>noise_std_normalized<span class="classifier">float or None</span></dt><dd><p>Normalized observational noise standard deviation.</p>
+</dd>
+</dl>
+</section>
+<section id="id35">
+<h2>Example:<a class="headerlink" href="#id35" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_y_data</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">sigma_data</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">der_indices</span><span class="o">=</span><span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]])</span>
+<span class="go">(y_train_normalized, mean_vec_y, std_vec_y,</span>
+<span class="go"> std_vec_x, mean_vec_x, noise_std_normalized)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.normalize_y_data_directional">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">normalize_y_data_directional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#normalize_y_data_directional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.normalize_y_data_directional" title="Link to this definition">#</a></dt>
+<dd><p>Normalize function values and <strong>directional derivatives</strong> for training data.</p>
+<p>This function:
+- Normalizes <strong>function values (`y_train[0]`)</strong> to have zero mean and unit variance.
+- Scales <strong>directional derivatives</strong> (<cite>y_train[1:]</cite>) by the <strong>function value standard deviation (`std_vec_y`)</strong>.</p>
+<section id="id36">
+<h2>Parameters:<a class="headerlink" href="#id36" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>X_train<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Training input points (used to compute input normalization statistics).</p>
+</dd>
+<dt>y_train<span class="classifier">list of arrays</span></dt><dd><p>List where:
+- y_train[0] contains function values.
+- y_train[1:], if present, contain directional derivative values for each direction.</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Directions for directional derivatives (each sublist represents a direction vector).</p>
+</dd>
+</dl>
+</section>
+<section id="id37">
+<h2>Returns:<a class="headerlink" href="#id37" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_train_normalized<span class="classifier">ndarray of shape (n_total,)</span></dt><dd><p>Normalized function values and directional derivatives (flattened).</p>
+</dd>
+<dt>mean_vec_y<span class="classifier">ndarray of shape (m, 1)</span></dt><dd><p>Mean of function values before normalization.</p>
+</dd>
+<dt>std_vec_y<span class="classifier">ndarray of shape (m, 1)</span></dt><dd><p>Standard deviation of function values before normalization.</p>
+</dd>
+<dt>std_vec_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of input variables.</p>
+</dd>
+<dt>mean_vec_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Means of input variables.</p>
+</dd>
+</dl>
+</section>
+<section id="id38">
+<h2>Example:<a class="headerlink" href="#id38" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">normalize_y_data_directional</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">der_indices</span><span class="o">=</span><span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]]])</span>
+<span class="go">(y_train_normalized, mean_vec_y, std_vec_y, std_vec_x, mean_vec_x)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.nrmse">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">nrmse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_true</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'minmax'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#nrmse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.nrmse" title="Link to this definition">#</a></dt>
+<dd><p>Compute the Normalized Root Mean Squared Error (NRMSE) between true and predicted values.</p>
+<section id="id39">
+<h2>Parameters:<a class="headerlink" href="#id39" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_true<span class="classifier">array-like</span></dt><dd><p>Ground truth or reference values.</p>
+</dd>
+<dt>y_pred<span class="classifier">array-like</span></dt><dd><p>Predicted values to compare against the ground truth.</p>
+</dd>
+<dt>norm_type<span class="classifier">str, default=”minmax”</span></dt><dd><p>The method used to normalize the RMSE:
+- ‘minmax’: Normalize by the range (max - min) of <cite>y_true</cite>.
+- ‘mean’: Normalize by the mean of <cite>y_true</cite>.
+- ‘std’: Normalize by the standard deviation of <cite>y_true</cite>.</p>
+</dd>
+</dl>
+</section>
+<section id="id40">
+<h2>Returns:<a class="headerlink" href="#id40" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>float</dt><dd><p>The normalized root mean squared error.</p>
+</dd>
+</dl>
+</section>
+<section id="raises">
+<h2>Raises:<a class="headerlink" href="#raises" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>ValueError</dt><dd><p>If <cite>norm_type</cite> is not one of {‘minmax’, ‘mean’, ‘std’}.</p>
+</dd>
+</dl>
+</section>
+<section id="id41">
+<h2>Example:<a class="headerlink" href="#id41" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.5</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">nrmse</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">norm_type</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="go">0.1443  # Example value (varies depending on input)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.pso">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">pso</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ieqcons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_ieqcons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pop_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">omega</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_generations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minstep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minfunc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local_opt_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_positions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#pso"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.pso" title="Link to this definition">#</a></dt>
+<dd><p>Particle Swarm Optimization with periodic local refinement
+R. C. Eberhart, Y. Shi and J. Kennedy, Swarm Intelligence, CA, San Mateo:Morgan Kaufmann, 2001.
+https://theswissbay.ch/pdf/Gentoomen%20Library/Artificial%20Intelligence/Swarm%20Intelligence/Swarm%20intelligence%20-%20James%20Kennedy.pdf
+Parameters:
+———–
+func : callable</p>
+<blockquote>
+<div><p>Objective function to minimize</p>
+</div></blockquote>
+<dl class="simple">
+<dt>lb<span class="classifier">array_like</span></dt><dd><p>Lower bounds for variables</p>
+</dd>
+<dt>ub<span class="classifier">array_like</span></dt><dd><p>Upper bounds for variables</p>
+</dd>
+<dt>ieqcons<span class="classifier">list, optional</span></dt><dd><p>List of inequality constraint functions</p>
+</dd>
+<dt>f_ieqcons<span class="classifier">callable, optional</span></dt><dd><p>Function returning array of inequality constraints</p>
+</dd>
+<dt>args<span class="classifier">tuple, optional</span></dt><dd><p>Extra arguments passed to objective function</p>
+</dd>
+<dt>kwargs<span class="classifier">dict, optional</span></dt><dd><p>Extra keyword arguments passed to objective function</p>
+</dd>
+<dt>swarmsize<span class="classifier">int, optional</span></dt><dd><p>Number of particles in swarm</p>
+</dd>
+<dt>omega<span class="classifier">float, optional</span></dt><dd><p>Inertia weight</p>
+</dd>
+<dt>phip<span class="classifier">float, optional</span></dt><dd><p>Personal best weight</p>
+</dd>
+<dt>phig<span class="classifier">float, optional</span></dt><dd><p>Global best weight</p>
+</dd>
+<dt>maxiter<span class="classifier">int, optional</span></dt><dd><p>Maximum number of iterations</p>
+</dd>
+<dt>minstep<span class="classifier">float, optional</span></dt><dd><p>Minimum step size for convergence</p>
+</dd>
+<dt>minfunc<span class="classifier">float, optional</span></dt><dd><p>Minimum function improvement for convergence</p>
+</dd>
+<dt>debug<span class="classifier">bool, optional</span></dt><dd><p>Whether to print debug information</p>
+</dd>
+<dt>seed<span class="classifier">int, optional</span></dt><dd><p>Random seed for reproducibility</p>
+</dd>
+<dt>local_opt_every<span class="classifier">int, optional</span></dt><dd><p>Frequency of local optimization (every N iterations)</p>
+</dd>
+</dl>
+<section id="id42">
+<h2>Returns:<a class="headerlink" href="#id42" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>best_position<span class="classifier">ndarray</span></dt><dd><p>Best position found</p>
+</dd>
+<dt>best_value<span class="classifier">float</span></dt><dd><p>Best function value found</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.reshape_y_train">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">reshape_y_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#reshape_y_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.reshape_y_train" title="Link to this definition">#</a></dt>
+<dd><p>Flatten and concatenate function values and derivative observations into a single 1D array.</p>
+<section id="id43">
+<h2>Parameters:<a class="headerlink" href="#id43" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_train<span class="classifier">list of arrays</span></dt><dd><p>A list where:
+- y_train[0] contains the function values (shape: (n_samples,))
+- y_train[1:], if present, contain derivative values (shape: (n_samples,)) for each derivative component.</p>
+</dd>
+</dl>
+</section>
+<section id="id44">
+<h2>Returns:<a class="headerlink" href="#id44" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>ndarray of shape (n_total,)</dt><dd><p>A flattened 1D array concatenating function values and all derivatives.</p>
+</dd>
+</dl>
+</section>
+<section id="id45">
+<h2>Example:<a class="headerlink" href="#id45" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">reshape_y_train</span><span class="p">(</span><span class="n">y_train</span><span class="p">)</span>
+<span class="go">array([1.0, 2.0, 0.5, 1.0])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.robust_local_optimization">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">robust_local_optimization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ub</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#robust_local_optimization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.robust_local_optimization" title="Link to this definition">#</a></dt>
+<dd><p>Robust L-BFGS-B optimization with abnormal termination handling</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.scale_samples">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">scale_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_bounds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_bounds</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#scale_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.scale_samples" title="Link to this definition">#</a></dt>
+<dd><p>Scale each column of samples from the unit interval [0, 1] to user-defined bounds [lb_j, ub_j].</p>
+<section id="id46">
+<h2>Parameters:<a class="headerlink" href="#id46" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>samples<span class="classifier">ndarray of shape (d, n)</span></dt><dd><p>A 2D array where each column represents a sample in [0, 1]^n.</p>
+</dd>
+<dt>lower_bounds<span class="classifier">array-like of length n</span></dt><dd><p>Lower bounds for each dimension.</p>
+</dd>
+<dt>upper_bounds<span class="classifier">array-like of length n</span></dt><dd><p>Upper bounds for each dimension.</p>
+</dd>
+</dl>
+</section>
+<section id="id47">
+<h2>Returns:<a class="headerlink" href="#id47" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>ndarray of shape (d, n)</dt><dd><p>Scaled samples where each column is mapped from [0, 1] to [lb_j, ub_j] for each dimension.</p>
+</dd>
+</dl>
+</section>
+<section id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Link to this heading">#</a></h2>
+<p>This function assumes that each sample is a column vector, and bounds are applied column-wise.</p>
+</section>
+<section id="id48">
+<h2>Example:<a class="headerlink" href="#id48" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lower_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">upper_bounds</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">scale_samples</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">lower_bounds</span><span class="p">,</span> <span class="n">upper_bounds</span><span class="p">)</span>
+<span class="go">array([[0.5, 1.4],</span>
+<span class="go">       [0.8, 1.8]])</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.should_accept_local_result">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">should_accept_local_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_res</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_best_f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_feasible</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#should_accept_local_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.should_accept_local_result" title="Link to this definition">#</a></dt>
+<dd><p>Check if local optimization result should be accepted</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.sobol_points">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">sobol_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#sobol_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.sobol_points" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.transform_cov">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">transform_cov</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#transform_cov"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.transform_cov" title="Link to this definition">#</a></dt>
+<dd><p>Rescale the diagonal of a covariance matrix to reflect the original (unnormalized) variance
+of function values and derivatives.</p>
+<p>This function transforms the variance estimates from normalized space back to the original scale.</p>
+<section id="id49">
+<h2>Parameters:<a class="headerlink" href="#id49" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>cov<span class="classifier">ndarray of shape (n_total, n_total)</span></dt><dd><p>Covariance matrix from the GP model (including function values and derivatives).</p>
+</dd>
+<dt>sigma_y<span class="classifier">float</span></dt><dd><p>Standard deviation used to normalize the function values.</p>
+</dd>
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations used to normalize each input dimension.</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Derivative multi-indices, where each sublist represents the derivative directions and orders.</p>
+</dd>
+<dt>X_test<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Test input points corresponding to the covariance matrix blocks.</p>
+</dd>
+</dl>
+</section>
+<section id="id50">
+<h2>Returns:<a class="headerlink" href="#id50" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_var_normalized<span class="classifier">ndarray of shape (n_total,)</span></dt><dd><p>Rescaled variances for function values and derivatives in the original space.</p>
+</dd>
+</dl>
+</section>
+<section id="id51">
+<h2>Example:<a class="headerlink" href="#id51" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_total</span><span class="p">,</span> <span class="n">n_total</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform_cov</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">,</span> <span class="n">sigmas_x</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">n_total</span><span class="p">,)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.transform_cov_directional">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">transform_cov_directional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#transform_cov_directional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.transform_cov_directional" title="Link to this definition">#</a></dt>
+<dd><p>Rescale the diagonal of a covariance matrix for function values and directional derivatives.</p>
+<p>Unlike <cite>transform_cov</cite>, this function assumes <strong>directional derivatives</strong> (not multi-index derivatives),
+so no input scaling (<cite>sigmas_x</cite>) is applied to derivative terms.</p>
+<section id="id52">
+<h2>Parameters:<a class="headerlink" href="#id52" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>cov<span class="classifier">ndarray of shape (n_total, n_total)</span></dt><dd><p>Covariance matrix from the GP model (including function values and directional derivatives).</p>
+</dd>
+<dt>sigma_y<span class="classifier">float</span></dt><dd><p>Standard deviation used to normalize the function values.</p>
+</dd>
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations used to normalize each input dimension (unused for derivatives here).</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Derivative directions (for directional derivatives).</p>
+</dd>
+<dt>X_test<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Test input points corresponding to the covariance matrix blocks.</p>
+</dd>
+</dl>
+</section>
+<section id="id53">
+<h2>Returns:<a class="headerlink" href="#id53" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_var_normalized<span class="classifier">ndarray of shape (n_total,)</span></dt><dd><p>Rescaled variances for function values and directional derivatives in the original space.</p>
+</dd>
+</dl>
+</section>
+<section id="id54">
+<h2>Example:<a class="headerlink" href="#id54" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cov</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_total</span><span class="p">,</span> <span class="n">n_total</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform_cov_directrional</span><span class="p">(</span><span class="n">cov</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">,</span> <span class="n">sigmas_x</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">n_total</span><span class="p">,)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.transform_predictions">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">transform_predictions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#transform_predictions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.transform_predictions" title="Link to this definition">#</a></dt>
+<dd><p>Rescale predicted function values and derivatives from normalized space back to their original scale.</p>
+<p>This function transforms both function value predictions and <strong>multi-index derivatives</strong>
+back to the original units after GP prediction.</p>
+<section id="id55">
+<h2>Parameters:<a class="headerlink" href="#id55" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_pred<span class="classifier">ndarray of shape (n_total,)</span></dt><dd><p>Predicted mean values from the GP model in normalized space
+(includes function values and derivatives).</p>
+</dd>
+<dt>mu_y<span class="classifier">float</span></dt><dd><p>Mean of the original function values (before normalization).</p>
+</dd>
+<dt>sigma_y<span class="classifier">float</span></dt><dd><p>Standard deviation of the original function values (before normalization).</p>
+</dd>
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of the input variables (used for rescaling derivatives).</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Multi-index derivative structures for each derivative component.</p>
+</dd>
+<dt>X_test<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Test input points corresponding to the prediction blocks.</p>
+</dd>
+</dl>
+</section>
+<section id="id56">
+<h2>Returns:<a class="headerlink" href="#id56" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_train_normalized<span class="classifier">ndarray of shape (n_total, 1)</span></dt><dd><p>Rescaled function values and derivatives in the original scale.</p>
+</dd>
+</dl>
+</section>
+<section id="id57">
+<h2>Example:<a class="headerlink" href="#id57" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_total</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform_predictions</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">mu_y</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">,</span> <span class="n">sigmas_x</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(n_total, 1)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.utils.transform_predictions_directional">
+<span class="sig-prename descclassname"><span class="pre">jetgp.utils.</span></span><span class="sig-name descname"><span class="pre">transform_predictions_directional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmas_x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">der_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/utils.html#transform_predictions_directional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.utils.transform_predictions_directional" title="Link to this definition">#</a></dt>
+<dd><p>Rescale predicted function values and <strong>directional derivatives</strong> from normalized space
+back to their original scale.</p>
+<p>This function assumes the derivatives are <strong>directional</strong> (not multi-index),
+so it applies only output scaling (sigma_y) to derivatives.</p>
+<section id="id58">
+<h2>Parameters:<a class="headerlink" href="#id58" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_pred<span class="classifier">ndarray of shape (n_total,)</span></dt><dd><p>Predicted mean values from the GP model in normalized space
+(includes function values and directional derivatives).</p>
+</dd>
+<dt>mu_y<span class="classifier">float</span></dt><dd><p>Mean of the original function values (before normalization).</p>
+</dd>
+<dt>sigma_y<span class="classifier">float</span></dt><dd><p>Standard deviation of the original function values (before normalization).</p>
+</dd>
+<dt>sigmas_x<span class="classifier">ndarray of shape (1, nvars)</span></dt><dd><p>Standard deviations of the input variables (not used here but included for compatibility).</p>
+</dd>
+<dt>der_indices<span class="classifier">list of lists</span></dt><dd><p>Directions for directional derivatives (each sublist represents a direction vector).</p>
+</dd>
+<dt>X_test<span class="classifier">ndarray of shape (n_samples, nvars)</span></dt><dd><p>Test input points corresponding to the prediction blocks.</p>
+</dd>
+</dl>
+</section>
+<section id="id59">
+<h2>Returns:<a class="headerlink" href="#id59" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>y_train_normalized<span class="classifier">ndarray of shape (n_total, 1)</span></dt><dd><p>Rescaled function values and directional derivatives in the original scale.</p>
+</dd>
+</dl>
+</section>
+<section id="id60">
+<h2>Example:<a class="headerlink" href="#id60" title="Link to this heading">#</a></h2>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_total</span><span class="p">,)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">transform_predictions_directional</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">mu_y</span><span class="p">,</span> <span class="n">sigma_y</span><span class="p">,</span> <span class="n">sigmas_x</span><span class="p">,</span> <span class="n">der_indices</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(n_total, 1)</span>
+</pre></div>
+</div>
+</section>
+</dd></dl>
+
+<dl class="py class" id="module-jetgp.kernel_funcs.kernel_funcs">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jetgp.kernel_funcs.kernel_funcs.</span></span><span class="sig-name descname"><span class="pre">KernelFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_noise_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothness_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oti_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory" title="Link to this definition">#</a></dt>
+<dd><p>Factory for generating different kernel functions (SE, RQ, SineExp, Matérn)
+in isotropic and anisotropic forms with caching for improved performance.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.dim">
+<span class="sig-name descname"><span class="pre">dim</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.dim" title="Link to this definition">#</a></dt>
+<dd><p>Dimensionality of the input space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.normalize" title="Link to this definition">#</a></dt>
+<dd><p>Whether to normalize inputs (scaling differences to [-3, 3]).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.differences_by_dim">
+<span class="sig-name descname"><span class="pre">differences_by_dim</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.differences_by_dim" title="Link to this definition">#</a></dt>
+<dd><p>Pairwise differences between input points, by dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.true_noise_std">
+<span class="sig-name descname"><span class="pre">true_noise_std</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.true_noise_std" title="Link to this definition">#</a></dt>
+<dd><p>Known noise standard deviation (for adjusting noise bounds).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float, optional</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.bounds">
+<span class="sig-name descname"><span class="pre">bounds</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.bounds" title="Link to this definition">#</a></dt>
+<dd><p>Hyperparameter bounds (log10 space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list of tuples</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.nu">
+<span class="sig-name descname"><span class="pre">nu</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.nu" title="Link to this definition">#</a></dt>
+<dd><p>Smoothness parameter for the Matérn kernel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.n_order">
+<span class="sig-name descname"><span class="pre">n_order</span></span><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.n_order" title="Link to this definition">#</a></dt>
+<dd><p>Order of derivatives for kernel smoothness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic">
+<span class="sig-name descname"><span class="pre">SI_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.SI_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic" title="Link to this definition">#</a></dt>
+<dd><p>Anisotropic SI kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell_1, …, ell_dim, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_isotropic">
+<span class="sig-name descname"><span class="pre">SI_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.SI_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_isotropic" title="Link to this definition">#</a></dt>
+<dd><p>Isotropic SI kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.clear_caches">
+<span class="sig-name descname"><span class="pre">clear_caches</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.clear_caches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.clear_caches" title="Link to this definition">#</a></dt>
+<dd><p>Clear all caches. Call when training data changes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.create_kernel">
+<span class="sig-name descname"><span class="pre">create_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kernel_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.create_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.create_kernel" title="Link to this definition">#</a></dt>
+<dd><p>Returns a kernel function based on specified name and type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernel_name</strong> (<em>str</em>) – Name of the kernel (‘SE’, ‘RQ’, ‘SineExp’, ‘Matern’).</p></li>
+<li><p><strong>kernel_type</strong> (<em>str</em>) – Type of kernel (‘anisotropic’ or ‘isotropic’).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The selected kernel function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data">
+<span class="sig-name descname"><span class="pre">get_bounds_from_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.get_bounds_from_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data" title="Link to this definition">#</a></dt>
+<dd><p>Computes bounds for hyperparameters based on the observed data range.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic">
+<span class="sig-name descname"><span class="pre">matern_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.matern_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic" title="Link to this definition">#</a></dt>
+<dd><p>Anisotropic Matérn kernel (half-integer ν) with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell_1, …, ell_dim, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic">
+<span class="sig-name descname"><span class="pre">matern_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.matern_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic" title="Link to this definition">#</a></dt>
+<dd><p>Isotropic Matérn kernel (half-integer ν) with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic">
+<span class="sig-name descname"><span class="pre">rq_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.rq_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic" title="Link to this definition">#</a></dt>
+<dd><p>Anisotropic Rational Quadratic (RQ) kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell_1, …, ell_dim, alpha, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic">
+<span class="sig-name descname"><span class="pre">rq_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.rq_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic" title="Link to this definition">#</a></dt>
+<dd><p>Isotropic Rational Quadratic (RQ) kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell, alpha, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic">
+<span class="sig-name descname"><span class="pre">se_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.se_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic" title="Link to this definition">#</a></dt>
+<dd><p>Anisotropic Squared Exponential (SE) kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell_1, …, ell_dim, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic">
+<span class="sig-name descname"><span class="pre">se_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.se_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic" title="Link to this definition">#</a></dt>
+<dd><p>Isotropic Squared Exponential (SE) kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic">
+<span class="sig-name descname"><span class="pre">sine_exp_kernel_anisotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.sine_exp_kernel_anisotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic" title="Link to this definition">#</a></dt>
+<dd><p>Anisotropic Sine-Exponential (Periodic) kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell_1, …, ell_dim, p_1, …, p_dim, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic">
+<span class="sig-name descname"><span class="pre">sine_exp_kernel_isotropic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory.sine_exp_kernel_isotropic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic" title="Link to this definition">#</a></dt>
+<dd><p>Isotropic Sine-Exponential (Periodic) kernel with caching.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>differences_by_dim</strong> (<em>list</em><em> of </em><em>ndarray</em>) – Pairwise differences by dimension.</p></li>
+<li><p><strong>length_scales</strong> (<em>list</em>) – Hyperparameters: [ell, p, sigma_f]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Kernel matrix values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.get_oti_module">
+<span class="sig-prename descclassname"><span class="pre">jetgp.kernel_funcs.kernel_funcs.</span></span><span class="sig-name descname"><span class="pre">get_oti_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_bases</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_compile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">otilib_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_sparse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#get_oti_module"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.get_oti_module" title="Link to this definition">#</a></dt>
+<dd><p>Dynamically import the correct PyOTI static library.
+If the module doesn’t exist and auto_compile=True, attempts to compile it.
+Falls back to pyoti.sparse if compilation fails or is disabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_bases</strong> (<em>int</em>) – Number of bases (dimension of the input space).</p></li>
+<li><p><strong>n_order</strong> (<em>int</em>) – Derivative order for the GP. The OTI order will be 2*n_order.</p></li>
+<li><p><strong>auto_compile</strong> (<em>bool</em><em>, </em><em>optional</em><em> (</em><em>default=False</em><em>)</em>) – If True, attempt to compile missing modules automatically.
+Requires jetgp.cmod_writer and jetgp.build_static to be available.</p></li>
+<li><p><strong>otilib_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to otilib-master directory. If None, attempts auto-detection.</p></li>
+<li><p><strong>-------</strong></p></li>
+<li><p><strong>module</strong> – The appropriate pyoti.static.onummXnY module, or pyoti.sparse as fallback.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="hyperparameter_optimizers.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Hyperparameter Optimizers</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../getting_started/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Getting Started with JetGP</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.build_companion_array"><code class="docutils literal notranslate"><span class="pre">build_companion_array()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.build_companion_array_predict"><code class="docutils literal notranslate"><span class="pre">build_companion_array_predict()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.check_gp_gradient"><code class="docutils literal notranslate"><span class="pre">check_gp_gradient()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.compare_OTI_indices"><code class="docutils literal notranslate"><span class="pre">compare_OTI_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.convert_index_to_exponent_form"><code class="docutils literal notranslate"><span class="pre">convert_index_to_exponent_form()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.ecl_acquisition"><code class="docutils literal notranslate"><span class="pre">ecl_acquisition()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.ecl_batch_acquisition"><code class="docutils literal notranslate"><span class="pre">ecl_batch_acquisition()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.finite_difference_gradient"><code class="docutils literal notranslate"><span class="pre">finite_difference_gradient()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.flatten_der_indices"><code class="docutils literal notranslate"><span class="pre">flatten_der_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.gen_OTI_indices"><code class="docutils literal notranslate"><span class="pre">gen_OTI_indices()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_bernoulli_lambda"><code class="docutils literal notranslate"><span class="pre">generate_bernoulli_lambda()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_bernoulli_numbers"><code class="docutils literal notranslate"><span class="pre">generate_bernoulli_numbers()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_bernoulli_polynomial"><code class="docutils literal notranslate"><span class="pre">generate_bernoulli_polynomial()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_submodel_noise_matricies"><code class="docutils literal notranslate"><span class="pre">generate_submodel_noise_matricies()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.generate_submodel_noise_matricies_old"><code class="docutils literal notranslate"><span class="pre">generate_submodel_noise_matricies_old()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_entropy_ridge_direction_nd"><code class="docutils literal notranslate"><span class="pre">get_entropy_ridge_direction_nd()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_entropy_ridge_direction_nd_2"><code class="docutils literal notranslate"><span class="pre">get_entropy_ridge_direction_nd_2()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_inverse"><code class="docutils literal notranslate"><span class="pre">get_inverse()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_optimization_bounds"><code class="docutils literal notranslate"><span class="pre">get_optimization_bounds()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_pdf_params"><code class="docutils literal notranslate"><span class="pre">get_pdf_params()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.get_surrogate_gradient_ray"><code class="docutils literal notranslate"><span class="pre">get_surrogate_gradient_ray()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.jade"><code class="docutils literal notranslate"><span class="pre">jade()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.local_box_around_point"><code class="docutils literal notranslate"><span class="pre">local_box_around_point()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.matern_kernel_builder"><code class="docutils literal notranslate"><span class="pre">matern_kernel_builder()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_directions"><code class="docutils literal notranslate"><span class="pre">normalize_directions()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_directions_2"><code class="docutils literal notranslate"><span class="pre">normalize_directions_2()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_x_data_test"><code class="docutils literal notranslate"><span class="pre">normalize_x_data_test()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_x_data_train"><code class="docutils literal notranslate"><span class="pre">normalize_x_data_train()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_y_data"><code class="docutils literal notranslate"><span class="pre">normalize_y_data()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.normalize_y_data_directional"><code class="docutils literal notranslate"><span class="pre">normalize_y_data_directional()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.nrmse"><code class="docutils literal notranslate"><span class="pre">nrmse()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.pso"><code class="docutils literal notranslate"><span class="pre">pso()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.reshape_y_train"><code class="docutils literal notranslate"><span class="pre">reshape_y_train()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.robust_local_optimization"><code class="docutils literal notranslate"><span class="pre">robust_local_optimization()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.scale_samples"><code class="docutils literal notranslate"><span class="pre">scale_samples()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.should_accept_local_result"><code class="docutils literal notranslate"><span class="pre">should_accept_local_result()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.sobol_points"><code class="docutils literal notranslate"><span class="pre">sobol_points()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_cov"><code class="docutils literal notranslate"><span class="pre">transform_cov()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_cov_directional"><code class="docutils literal notranslate"><span class="pre">transform_cov_directional()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_predictions"><code class="docutils literal notranslate"><span class="pre">transform_predictions()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.utils.transform_predictions_directional"><code class="docutils literal notranslate"><span class="pre">transform_predictions_directional()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory"><code class="docutils literal notranslate"><span class="pre">KernelFactory</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.dim"><code class="docutils literal notranslate"><span class="pre">KernelFactory.dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.normalize"><code class="docutils literal notranslate"><span class="pre">KernelFactory.normalize</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.differences_by_dim"><code class="docutils literal notranslate"><span class="pre">KernelFactory.differences_by_dim</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.true_noise_std"><code class="docutils literal notranslate"><span class="pre">KernelFactory.true_noise_std</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.bounds"><code class="docutils literal notranslate"><span class="pre">KernelFactory.bounds</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.nu"><code class="docutils literal notranslate"><span class="pre">KernelFactory.nu</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.n_order"><code class="docutils literal notranslate"><span class="pre">KernelFactory.n_order</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.SI_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.SI_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.clear_caches"><code class="docutils literal notranslate"><span class="pre">KernelFactory.clear_caches()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.create_kernel"><code class="docutils literal notranslate"><span class="pre">KernelFactory.create_kernel()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data"><code class="docutils literal notranslate"><span class="pre">KernelFactory.get_bounds_from_data()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.matern_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.matern_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.rq_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.rq_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.se_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.se_kernel_isotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.sine_exp_kernel_anisotropic()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic"><code class="docutils literal notranslate"><span class="pre">KernelFactory.sine_exp_kernel_isotropic()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#jetgp.kernel_funcs.kernel_funcs.get_oti_module"><code class="docutils literal notranslate"><span class="pre">get_oti_module()</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

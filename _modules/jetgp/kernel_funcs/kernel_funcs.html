@@ -1,0 +1,1363 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>jetgp.kernel_funcs.kernel_funcs &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/thebelab-helper.js"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/jetgp/kernel_funcs/kernel_funcs';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../../../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for jetgp.kernel_funcs.kernel_funcs</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">line_profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">profile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">importlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+
+
+<div class="viewcode-block" id="get_oti_module">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.get_oti_module">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_oti_module</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">auto_compile</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">otilib_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_sparse</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dynamically import the correct PyOTI static library.</span>
+<span class="sd">    If the module doesn&#39;t exist and auto_compile=True, attempts to compile it.</span>
+<span class="sd">    Falls back to pyoti.sparse if compilation fails or is disabled.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_bases : int</span>
+<span class="sd">        Number of bases (dimension of the input space).</span>
+<span class="sd">    n_order : int</span>
+<span class="sd">        Derivative order for the GP. The OTI order will be 2*n_order.</span>
+<span class="sd">    auto_compile : bool, optional (default=False)</span>
+<span class="sd">        If True, attempt to compile missing modules automatically.</span>
+<span class="sd">        Requires jetgp.cmod_writer and jetgp.build_static to be available.</span>
+<span class="sd">    otilib_path : str, optional</span>
+<span class="sd">        Path to otilib-master directory. If None, attempts auto-detection.</span>
+<span class="sd">        </span>
+<span class="sd">    -------</span>
+<span class="sd">    module</span>
+<span class="sd">        The appropriate pyoti.static.onummXnY module, or pyoti.sparse as fallback.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">module_name</span> <span class="o">=</span> <span class="s2">&quot;pyoti.real&quot;</span>
+        <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    
+    <span class="n">oti_order</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span>
+    <span class="n">module_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;pyoti.static.onumm</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">use_sparse</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;pyoti.sparse&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ModuleNotFoundError</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">auto_compile</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;PyOTI static module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39; not found. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Falling back to pyoti.sparse which is significantly slower.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For better performance, compile the static module manually:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  1. cd /path/to/otilib-master/build</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  2. cmake ..</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  3. make m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2"> -j8</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  4. python build_static.py m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;pyoti.sparse&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Check if auto-compile tools are available</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.cmod_writer</span><span class="w"> </span><span class="kn">import</span> <span class="n">writer</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.build_static</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_module</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;PyOTI static module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39; not found and auto-compile &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;tools (jetgp.cmod_writer, jetgp.build_static) are not available.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Falling back to pyoti.sparse which is significantly slower.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For better performance, compile the static module manually:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  1. cd /path/to/otilib-master/build</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  2. cmake ..</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  3. make m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2"> -j8</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  4. python build_static.py m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;pyoti.sparse&quot;</span><span class="p">)</span>
+        
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39; not found. Attempting to compile...&quot;</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_compile_oti_module</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">oti_order</span><span class="p">,</span> <span class="n">otilib_path</span><span class="p">)</span>
+            
+            <span class="c1"># Clear import caches and retry</span>
+            <span class="n">importlib</span><span class="o">.</span><span class="n">invalidate_caches</span><span class="p">()</span>
+            
+            <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Failed to compile PyOTI static module &#39;</span><span class="si">{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Falling back to pyoti.sparse which is significantly slower.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;For better performance, compile the static module manually:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  1. cd /path/to/otilib-master/build</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  2. cmake ..</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  3. make m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2"> -j8</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;  4. python build_static.py m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s2">&quot;pyoti.sparse&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_otilib_path</span><span class="p">(</span><span class="n">otilib_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Auto-detect otilib path from the installed pyoti package location.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    otilib_path : str, optional</span>
+<span class="sd">        Override path to otilib-master directory.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    otilib_path : str</span>
+<span class="sd">        Path to otilib-master directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use explicit argument if provided</span>
+    <span class="k">if</span> <span class="n">otilib_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">otilib_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;otilib path does not exist: </span><span class="si">{</span><span class="n">otilib_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">otilib_path</span>
+    
+    <span class="c1"># Check environment variable</span>
+    <span class="n">otilib_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;OTILIB_PATH&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">otilib_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">otilib_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;OTILIB_PATH does not exist: </span><span class="si">{</span><span class="n">otilib_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">otilib_path</span>
+    
+    <span class="c1"># Auto-detect from installed pyoti</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">pyoti</span>
+        
+        <span class="c1"># Get the pyoti package location</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pyoti</span><span class="p">,</span> <span class="s1">&#39;__path__&#39;</span><span class="p">):</span>
+            <span class="n">pyoti_install_path</span> <span class="o">=</span> <span class="n">pyoti</span><span class="o">.</span><span class="n">__path__</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pyoti</span><span class="p">,</span> <span class="s1">&#39;__file__&#39;</span><span class="p">):</span>
+            <span class="n">pyoti_install_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">pyoti</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Cannot determine pyoti installation path&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Navigate up from pyoti to find otilib root</span>
+        <span class="c1"># Typical structure: otilib-master/src/python/pyoti/pyoti/__init__.py</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">pyoti_install_path</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>  <span class="c1"># Navigate up to 6 levels</span>
+            <span class="n">parent</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">current</span><span class="p">)</span>
+            
+            <span class="c1"># Check if this looks like otilib root</span>
+            <span class="c1"># Must have BOTH CMakeLists.txt AND src/ directory (not just build dir)</span>
+            <span class="n">potential_cmake</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;CMakeLists.txt&#39;</span><span class="p">)</span>
+            <span class="n">potential_src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;src&#39;</span><span class="p">)</span>
+            <span class="n">potential_include</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">potential_cmake</span><span class="p">)</span> <span class="ow">and</span> 
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">potential_src</span><span class="p">)</span> <span class="ow">and</span> 
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">potential_include</span><span class="p">)):</span>
+                <span class="n">otilib_path</span> <span class="o">=</span> <span class="n">parent</span>
+                <span class="k">break</span>
+            
+            <span class="n">current</span> <span class="o">=</span> <span class="n">parent</span>
+                
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    
+    <span class="c1"># Final validation</span>
+    <span class="k">if</span> <span class="n">otilib_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="s2">&quot;Could not auto-detect otilib path. Please either:</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;  1. Set the OTILIB_PATH environment variable</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;  2. Pass otilib_path explicitly to get_oti_module()</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;  3. Ensure pyoti is installed from the otilib source tree&quot;</span>
+        <span class="p">)</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">otilib_path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;otilib path does not exist: </span><span class="si">{</span><span class="n">otilib_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">otilib_path</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compile_oti_module</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">oti_order</span><span class="p">,</span> <span class="n">otilib_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compile a PyOTI static module.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_bases : int</span>
+<span class="sd">        Number of bases.</span>
+<span class="sd">    oti_order : int</span>
+<span class="sd">        OTI order (already multiplied by 2).</span>
+<span class="sd">    otilib_path : str, optional</span>
+<span class="sd">        Path to otilib-master directory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Auto-detect path</span>
+    <span class="n">otilib_path</span> <span class="o">=</span> <span class="n">_get_otilib_path</span><span class="p">(</span><span class="n">otilib_path</span><span class="p">)</span>
+    
+    <span class="n">build_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">otilib_path</span><span class="p">,</span> <span class="s1">&#39;build&#39;</span><span class="p">)</span>
+    <span class="n">module_target</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;m</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">n</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2">&quot;</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Compiling OTI module: </span><span class="si">{</span><span class="n">module_target</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  otilib_path: </span><span class="si">{</span><span class="n">otilib_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  build_dir: </span><span class="si">{</span><span class="n">build_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    
+    <span class="c1"># Step 1: Generate C code using cmod_writer (from jetgp)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step 1/4: Generating C code for m=</span><span class="si">{</span><span class="n">n_bases</span><span class="si">}</span><span class="s2">, n=</span><span class="si">{</span><span class="n">oti_order</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">_run_cmod_writer</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">oti_order</span><span class="p">,</span> <span class="n">otilib_path</span><span class="p">)</span>
+    
+    <span class="c1"># Step 2: Run cmake (if needed)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Step 2/4: Running cmake...&quot;</span><span class="p">)</span>
+    <span class="n">_run_cmake</span><span class="p">(</span><span class="n">build_dir</span><span class="p">)</span>
+    
+    <span class="c1"># Step 3: Run make</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step 3/4: Compiling </span><span class="si">{</span><span class="n">module_target</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+    <span class="n">_run_make</span><span class="p">(</span><span class="n">build_dir</span><span class="p">,</span> <span class="n">module_target</span><span class="p">)</span>
+    
+    <span class="c1"># Step 4: Build and install Python module</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Step 4/4: Building Python module...&quot;</span><span class="p">)</span>
+    <span class="n">_run_build_static</span><span class="p">(</span><span class="n">build_dir</span><span class="p">,</span> <span class="n">module_target</span><span class="p">,</span> <span class="n">otilib_path</span><span class="p">)</span>
+    
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Successfully compiled </span><span class="si">{</span><span class="n">module_target</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_cmod_writer</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">oti_order</span><span class="p">,</span> <span class="n">otilib_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate C code using cmod_writer from jetgp.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.cmod_writer</span><span class="w"> </span><span class="kn">import</span> <span class="n">writer</span>
+    
+    <span class="n">w</span> <span class="o">=</span> <span class="n">writer</span><span class="p">(</span><span class="n">nbases</span><span class="o">=</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">oti_order</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">write_files</span><span class="p">(</span><span class="n">base_dir</span><span class="o">=</span><span class="n">otilib_path</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_cmake</span><span class="p">(</span><span class="n">build_dir</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run cmake in the build directory.&quot;&quot;&quot;</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">build_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;cmake&#39;</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">],</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">build_dir</span><span class="p">,</span>
+        <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;cmake failed with return code </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;stdout: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;stderr: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_make</span><span class="p">(</span><span class="n">build_dir</span><span class="p">,</span> <span class="n">module_target</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run make for the specific module target.&quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+        <span class="p">[</span><span class="s1">&#39;make&#39;</span><span class="p">,</span> <span class="n">module_target</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;-j</span><span class="si">{</span><span class="n">n_jobs</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">],</span>
+        <span class="n">cwd</span><span class="o">=</span><span class="n">build_dir</span><span class="p">,</span>
+        <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">text</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;make failed with return code </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;stdout: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stdout</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;stderr: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_run_build_static</span><span class="p">(</span><span class="n">build_dir</span><span class="p">,</span> <span class="n">module_target</span><span class="p">,</span> <span class="n">otilib_path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build and install the Python module using jetgp&#39;s build_static.&quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.build_static</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_module</span>
+    
+    <span class="n">build_module</span><span class="p">(</span><span class="n">module_target</span><span class="p">,</span> <span class="n">otilib_path</span><span class="o">=</span><span class="n">otilib_path</span><span class="p">,</span> <span class="n">build_dir</span><span class="o">=</span><span class="n">build_dir</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="KernelFactory">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">KernelFactory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Factory for generating different kernel functions (SE, RQ, SineExp, Matérn)</span>
+<span class="sd">    in isotropic and anisotropic forms with caching for improved performance.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dim : int</span>
+<span class="sd">        Dimensionality of the input space.</span>
+<span class="sd">    normalize : bool</span>
+<span class="sd">        Whether to normalize inputs (scaling differences to [-3, 3]).</span>
+<span class="sd">    differences_by_dim : list of arrays</span>
+<span class="sd">        Pairwise differences between input points, by dimension.</span>
+<span class="sd">    true_noise_std : float, optional</span>
+<span class="sd">        Known noise standard deviation (for adjusting noise bounds).</span>
+<span class="sd">    bounds : list of tuples</span>
+<span class="sd">        Hyperparameter bounds (log10 space).</span>
+<span class="sd">    nu : float</span>
+<span class="sd">        Smoothness parameter for the Matérn kernel.</span>
+<span class="sd">    n_order : int</span>
+<span class="sd">        Order of derivatives for kernel smoothness.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span><span class="n">normalize</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> 
+                 <span class="n">true_noise_std</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">smoothness_parameter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">oti_module</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span> <span class="o">=</span> <span class="n">normalize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span> <span class="o">=</span> <span class="n">differences_by_dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">true_noise_std</span> <span class="o">=</span> <span class="n">true_noise_std</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span> <span class="o">=</span> <span class="n">oti_module</span>
+        <span class="k">if</span> <span class="n">smoothness_parameter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">smoothness_parameter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">smoothness_parameter</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">=</span> <span class="n">n_order</span>
+        <span class="c1"># Dynamic OTI import</span>
+        
+        <span class="c1"># Initialize caching infrastructure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_caches</span><span class="p">()</span>
+
+    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># Caching Infrastructure</span>
+    <span class="c1"># -------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize all cache variables.&quot;&quot;&quot;</span>
+        <span class="c1"># Temporary array cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp2</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="c1"># Hyperparameter cache</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_p</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_pi_over_p</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="KernelFactory.clear_caches">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.clear_caches">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_caches</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear all caches. Call when training data changes.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_caches</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_temp_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Ensure temporary arrays exist with correct shape.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        shape : tuple</span>
+<span class="sd">            Required shape for temporary arrays.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            (tmp1, tmp2, sqdist) temporary arrays.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span> <span class="o">!=</span> <span class="n">shape</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span> <span class="o">=</span> <span class="n">shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_reset_sqdist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset sqdist accumulator to zero.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="c1"># Use the most efficient method available in oti</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span><span class="p">,</span> <span class="s1">&#39;fill&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span> <span class="s1">&#39;set_zero&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">set_zero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Fallback: multiply by zero</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span><span class="p">)</span>
+
+    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># Hyperparameter Caching Methods</span>
+    <span class="c1"># -------------------------------------------------------------------</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_se_params_aniso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache anisotropic SE kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;se_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;se_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_se_params_iso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache isotropic SE kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;se_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;se_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_rq_params_aniso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache anisotropic RQ kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;rq_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;rq_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_rq_params_iso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache isotropic RQ kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;rq_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;rq_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_sine_exp_params_aniso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache anisotropic Sine-Exponential kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;sine_exp_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sine_exp_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_p</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">:</span><span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_pi_over_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_p</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_pi_over_p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_sine_exp_params_iso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache isotropic Sine-Exponential kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;sine_exp_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sine_exp_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_p</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_pi_over_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_p</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_pi_over_p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_matern_params_aniso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache anisotropic Matern kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;matern_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;matern_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_matern_params_iso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache isotropic Matern kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;matern_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;matern_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_si_params_aniso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache anisotropic SI kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;si_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;si_aniso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">length_scales</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_cache_si_params_iso</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cache isotropic SI kernel hyperparameters.&quot;&quot;&quot;</span>
+        <span class="n">ls_tuple</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">length_scales</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">!=</span> <span class="p">(</span><span class="s1">&#39;si_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_length_scales</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;si_iso&#39;</span><span class="p">,</span> <span class="n">ls_tuple</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">length_scales</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_ell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_sigma_f_sq</span>
+
+    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># Bounds and Factory Methods</span>
+    <span class="c1"># -------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="KernelFactory.get_bounds_from_data">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.get_bounds_from_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bounds_from_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Computes bounds for hyperparameters based on the observed data range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">diffs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">:</span>
+            <span class="n">min_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">diffs</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
+            <span class="n">max_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">diffs</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">max_val</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.create_kernel">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.create_kernel">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_kernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_name</span><span class="p">,</span> <span class="n">kernel_type</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a kernel function based on specified name and type.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kernel_name : str</span>
+<span class="sd">            Name of the kernel (&#39;SE&#39;, &#39;RQ&#39;, &#39;SineExp&#39;, &#39;Matern&#39;).</span>
+<span class="sd">        kernel_type : str</span>
+<span class="sd">            Type of kernel (&#39;anisotropic&#39; or &#39;isotropic&#39;).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        callable</span>
+<span class="sd">            The selected kernel function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Clear caches when creating a new kernel</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_caches</span><span class="p">()</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_bounds_from_data</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">kernel_type</span> <span class="o">==</span> <span class="s2">&quot;anisotropic&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_anisotropic</span><span class="p">(</span><span class="n">kernel_name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">kernel_type</span> <span class="o">==</span> <span class="s2">&quot;isotropic&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_isotropic</span><span class="p">(</span><span class="n">kernel_name</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid kernel_type&quot;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets bounds and returns the anisotropic kernel function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        callable</span>
+<span class="sd">            The anisotropic kernel function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma_n_bound</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SE&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">se_kernel_anisotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;RQ&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rq_kernel_anisotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SineExp&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sine_exp_kernel_anisotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;Matern&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">jetgp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">,</span> <span class="n">oti_module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_anisotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SI&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_add_bounds</span><span class="p">([(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SI_kernel_prebuild</span> <span class="o">=</span> <span class="n">jetgp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">generate_bernoulli_lambda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SI_kernel_anisotropic</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Anisotropic kernel not implemented&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets bounds and returns the isotropic kernel function.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        callable</span>
+<span class="sd">            The isotropic kernel function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sigma_n_bound</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">16</span><span class="p">,</span> <span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="n">core_bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_bounds_from_data</span><span class="p">()</span>
+            <span class="n">core_bounds</span> <span class="o">=</span> <span class="p">[(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">])),</span>
+                <span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">real</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">]))</span>
+            <span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SE&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">se_kernel_isotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;RQ&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rq_kernel_isotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SineExp&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sine_exp_kernel_isotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;Matern&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span> <span class="o">=</span> <span class="n">jetgp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">matern_kernel_builder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">,</span><span class="n">oti_module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_isotropic</span>
+        <span class="k">elif</span> <span class="n">kernel</span> <span class="o">==</span> <span class="s2">&quot;SI&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="n">core_bounds</span> <span class="o">+</span> <span class="p">[(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sigma_n_bound</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SI_kernel_prebuild</span> <span class="o">=</span> <span class="n">jetgp</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">generate_bernoulli_lambda</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">SI_kernel_isotropic</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Isotropic kernel not implemented&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_add_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extra_bounds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Append additional hyperparameter bounds to the kernel&#39;s configuration.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        extra_bounds : list of tuple</span>
+<span class="sd">            Bounds to append, where each tuple is a (min, max) pair in log10 scale.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">normalize</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">+</span> <span class="n">extra_bounds</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">+=</span> <span class="n">extra_bounds</span>
+
+    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># Anisotropic Kernel Implementations with Caching</span>
+    <span class="c1"># -------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="KernelFactory.se_kernel_anisotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_anisotropic">[docs]</a>
+    <span class="nd">@profile</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">se_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Anisotropic Squared Exponential (SE) kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell_1, ..., ell_dim, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_se_params_aniso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_temp_arrays</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_sqdist</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp2</span></div>
+
+
+
+<div class="viewcode-block" id="KernelFactory.rq_kernel_anisotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_anisotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rq_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Anisotropic Rational Quadratic (RQ) kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell_1, ..., ell_dim, alpha, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_rq_params_aniso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_temp_arrays</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_sqdist</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="c1"># (1 + sqdist / (2 * alpha))^(-alpha)</span>
+        <span class="n">inv_2alpha</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">inv_2alpha</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">tmp2</span><span class="p">,</span> <span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp2</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.sine_exp_kernel_anisotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_anisotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sine_exp_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Anisotropic Sine-Exponential (Periodic) kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell_1, ..., ell_dim, p_1, ..., p_dim, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">pi_over_p</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_sine_exp_params_aniso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_temp_arrays</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_sqdist</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">pi_over_p</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp1</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.matern_kernel_anisotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_anisotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matern_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Anisotropic Matérn kernel (half-integer ν) with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell_1, ..., ell_dim, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_matern_params_aniso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        
+        <span class="c1"># Compute scaled distance</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-16</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> 
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sigma_f_sq</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span><span class="p">(</span><span class="n">sqdist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.SI_kernel_anisotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_anisotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">SI_kernel_anisotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Anisotropic SI kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell_1, ..., ell_dim, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_si_params_aniso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        
+        <span class="n">val</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">val</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">ell</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SI_kernel_prebuild</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">sigma_f_sq</span> <span class="o">*</span> <span class="n">val</span></div>
+
+
+    <span class="c1"># -------------------------------------------------------------------</span>
+    <span class="c1"># Isotropic Kernel Implementations with Caching</span>
+    <span class="c1"># -------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="KernelFactory.se_kernel_isotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.se_kernel_isotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">se_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Isotropic Squared Exponential (SE) kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_se_params_iso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_temp_arrays</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_sqdist</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp2</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.rq_kernel_isotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.rq_kernel_isotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rq_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Isotropic Rational Quadratic (RQ) kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell, alpha, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_rq_params_iso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_temp_arrays</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_sqdist</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="c1"># (1 + sqdist / (2 * alpha))^(-alpha)</span>
+        <span class="n">inv_2alpha</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">inv_2alpha</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">tmp2</span><span class="p">,</span> <span class="o">-</span><span class="n">alpha</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp2</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.sine_exp_kernel_isotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.sine_exp_kernel_isotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sine_exp_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Isotropic Sine-Exponential (Periodic) kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell, p, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">pi_over_p</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_sine_exp_params_iso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        <span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_temp_arrays</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_sqdist</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">pi_over_p</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">ell</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sqdist</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sqdist</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sqdist</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tmp1</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">tmp2</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">tmp1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">tmp1</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.matern_kernel_isotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.matern_kernel_isotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">matern_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Isotropic Matérn kernel (half-integer ν) with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_matern_params_iso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        
+        <span class="c1"># Compute scaled distance</span>
+        <span class="n">sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+            <span class="nb">sum</span><span class="p">((</span><span class="n">ell</span> <span class="o">*</span> <span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-16</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span> 
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sigma_f_sq</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">matern_kernel_prebuild</span><span class="p">(</span><span class="n">sqdist</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="KernelFactory.SI_kernel_isotropic">
+<a class="viewcode-back" href="../../../api/utilities_and_helpers.html#jetgp.kernel_funcs.kernel_funcs.KernelFactory.SI_kernel_isotropic">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">SI_kernel_isotropic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Isotropic SI kernel with caching.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        differences_by_dim : list of ndarray</span>
+<span class="sd">            Pairwise differences by dimension.</span>
+<span class="sd">        length_scales : list</span>
+<span class="sd">            Hyperparameters: [ell, sigma_f]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            Kernel matrix values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ell</span><span class="p">,</span> <span class="n">sigma_f_sq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache_si_params_iso</span><span class="p">(</span><span class="n">length_scales</span><span class="p">)</span>
+        
+        <span class="n">val</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">val</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">ell</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">SI_kernel_prebuild</span><span class="p">(</span><span class="n">differences_by_dim</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">return</span> <span class="n">sigma_f_sq</span> <span class="o">*</span> <span class="n">val</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

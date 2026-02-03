@@ -1,0 +1,1390 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>JetGP Modules Overview &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'getting_started/module_overview';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Initializing JetGP Modules" href="Initializing_JetGP_Modules.html" />
+    <link rel="prev" title="Getting Started with JetGP" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Getting Started with JetGP</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../JetGP_module_examples/index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/getting_started/module_overview.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/getting_started/module_overview.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>JetGP Modules Overview</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-modules">Available Modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-comparison">Module Comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-arguments">Common Arguments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#higher-order-directional-derivatives">Higher-Order Directional Derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prediction-interface">Prediction Interface</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wdegp-specific-interface">WDEGP-Specific Interface</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="jetgp-modules-overview">
+<h1>JetGP Modules Overview<a class="headerlink" href="#jetgp-modules-overview" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>JetGP provides a unified framework for constructing <strong>derivative-enhanced Gaussian Process (GP)</strong> models.
+Each module corresponds to a distinct GP formulation, differing in how function and derivative information are incorporated.
+The core model families include:</p>
+<ul class="simple">
+<li><p><strong>DEGP</strong> – Derivative-Enhanced Gaussian Process</p></li>
+<li><p><strong>DDEGP</strong> – Directional Derivative-Enhanced Gaussian Process</p></li>
+<li><p><strong>GDDEGP</strong> – Generalized Directional Derivative-Enhanced Gaussian Process</p></li>
+<li><p><strong>WDEGP</strong> – Weighted Derivative-Enhanced Gaussian Process (supports DEGP, DDEGP, or GDDEGP submodels)</p></li>
+</ul>
+<p>All these models share a common structure and initialization interface.
+This page provides an overview of their usage and explains the shared arguments that appear in all implementations.</p>
+<p>For detailed initialization instructions, see <span class="xref std std-doc">initialization</span>.</p>
+</section>
+<hr class="docutils" />
+<section id="available-modules">
+<h2>Available Modules<a class="headerlink" href="#available-modules" title="Link to this heading">#</a></h2>
+<p><strong>1. full_degp</strong></p>
+<ul class="simple">
+<li><p><strong>File:</strong> <code class="docutils literal notranslate"><span class="pre">full_degp/degp.py</span></code></p></li>
+<li><p><strong>Class:</strong> <code class="docutils literal notranslate"><span class="pre">degp</span></code></p></li>
+<li><p><strong>Description:</strong>
+Implements a standard Derivative-Enhanced Gaussian Process (DEGP) where function values and their derivatives
+(up to arbitrary order) are jointly modeled using <strong>coordinate-aligned partial derivatives</strong>
+(e.g., <span class="math notranslate nohighlight">\(\partial f/\partial x_1\)</span>, <span class="math notranslate nohighlight">\(\partial f/\partial x_2\)</span>).</p></li>
+</ul>
+<p><strong>2. full_ddegp</strong></p>
+<ul>
+<li><p><strong>File:</strong> <code class="docutils literal notranslate"><span class="pre">full_ddegp/ddegp.py</span></code></p></li>
+<li><p><strong>Class:</strong> <code class="docutils literal notranslate"><span class="pre">ddegp</span></code></p></li>
+<li><p><strong>Description:</strong>
+Constructs a <strong>Directional Derivative-Enhanced Gaussian Process (DDEGP)</strong> using directional derivative information
+evaluated along <strong>global directions</strong>.
+This means that all training points share the same derivative directions, allowing the model to capture variation
+along specific, predefined axes of sensitivity.
+Such an approach is well suited for problems where global sensitivity along known direction(s) is of interest.</p>
+<p><strong>Additional initialization parameter:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rays</span></code> – A 2D array of shape <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">n_directions)</span></code> specifying the global directional vectors.
+Each column is a direction vector shared by all training points.</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>3. full_gddegp</strong></p>
+<ul>
+<li><p><strong>File:</strong> <code class="docutils literal notranslate"><span class="pre">full_gddegp/gddegp.py</span></code></p></li>
+<li><p><strong>Class:</strong> <code class="docutils literal notranslate"><span class="pre">gddegp</span></code></p></li>
+<li><p><strong>Description:</strong>
+Implements the <strong>Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</strong>, an extension of DDEGP
+that allows <strong>distinct directional derivative information at each training point</strong>.
+In contrast to DDEGP, the directional vectors need not be the same globally, enabling the model to represent
+spatially varying directional sensitivities.</p>
+<p>A key advantage of GDDEGP is that predictions can be made along <strong>any direction</strong>—not just those used
+during training—as long as the derivative order was included in training.</p>
+<p><strong>Additional initialization parameter:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_list</span></code> – A list of 2D arrays, one per direction index.
+For direction <code class="docutils literal notranslate"><span class="pre">i</span></code>, <code class="docutils literal notranslate"><span class="pre">rays_list[i]</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">n_points_with_direction_i)</span></code>,
+where column <code class="docutils literal notranslate"><span class="pre">j</span></code> corresponds to the point at <code class="docutils literal notranslate"><span class="pre">derivative_locations[i][j]</span></code>.</p></li>
+</ul>
+<p><strong>Additional prediction parameter:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_predict</span></code> – Required when <code class="docutils literal notranslate"><span class="pre">return_deriv=True</span></code>. A list of 2D arrays specifying
+the directional vectors at each prediction point. These can be <strong>any directions</strong>, not
+limited to those used in training.</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>4. wdegp</strong></p>
+<ul>
+<li><p><strong>File:</strong> <code class="docutils literal notranslate"><span class="pre">wdegp/wdegp.py</span></code></p></li>
+<li><p><strong>Class:</strong> <code class="docutils literal notranslate"><span class="pre">wdegp</span></code></p></li>
+<li><p><strong>Description:</strong>
+Implements the <strong>Weighted Derivative-Enhanced Gaussian Process (WDEGP)</strong> framework, inspired by the
+<em>Weighted Gradient-Enhanced Kriging (WGEK)</em> method introduced by Han <em>et al.</em> <span id="id1">[<a class="reference internal" href="../theory/weighted_gp.html#id8" title="Zhong-Hua Han, Yu Zhang, Chen-Xing Song, and Ke-Shi Zhang. Weighted gradient-enhanced kriging for high-dimensional surrogate modeling and design optimization. AIAA Journal, 55(12):4330-4346, 2017. URL: https://doi.org/10.2514/1.J055842, arXiv:https://doi.org/10.2514/1.J055842, doi:10.2514/1.J055842.">14</a>]</span>
+and extended in <span id="id2">[<a class="reference internal" href="../theory/weighted_gp.html#id7" title="Chen Zhou Xu, Zhong Hua Han, Ke Shi Zhang, and Wen Ping Song. Improved weighted gradient-enhanced kriging model for high-dimensional aerodynamic modeling problems. In 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021, 32nd Congress of the International Council of the Aeronautical Sciences, ICAS 2021. International Council of the Aeronautical Sciences, 2021.">20</a>]</span>.</p>
+<p>In this formulation, the training data are divided into smaller subsets to build multiple <strong>submodels</strong>,
+each trained on a reduced set of derivatives. Predictions from all submodels are then
+<strong>combined through weighted summation</strong>. This approach preserves the accuracy advantages of
+derivative-enhanced models while <strong>reducing the computational cost</strong> associated with large matrix inversions.</p>
+<p>WDEGP is a <strong>unified framework</strong> that supports three submodel types via the <code class="docutils literal notranslate"><span class="pre">submodel_type</span></code> parameter:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'degp'</span></code> – Submodels use coordinate-aligned partial derivatives (default)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'ddegp'</span></code> – Submodels use global directional derivatives (requires <code class="docutils literal notranslate"><span class="pre">rays</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'gddegp'</span></code> – Submodels use point-wise directional derivatives (requires <code class="docutils literal notranslate"><span class="pre">rays_list</span></code>)</p></li>
+</ul>
+<p>See <a class="reference internal" href="#wdegp-specific"><span class="std std-ref">WDEGP-Specific Interface</span></a> for detailed documentation of the WDEGP interface.</p>
+</li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="module-comparison">
+<h2>Module Comparison<a class="headerlink" href="#module-comparison" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table" id="id5">
+<caption><span class="caption-text">Comparison of JetGP modules</span><a class="headerlink" href="#id5" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 20.0%" />
+<col style="width: 20.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Module</p></th>
+<th class="head"><p>Derivative Type</p></th>
+<th class="head"><p>Ray Specification</p></th>
+<th class="head"><p>Use Case</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>DEGP</p></td>
+<td><p>Partial</p></td>
+<td><p>N/A</p></td>
+<td><p>Standard derivative data with coordinate-aligned derivatives</p></td>
+</tr>
+<tr class="row-odd"><td><p>DDEGP</p></td>
+<td><p>Directional</p></td>
+<td><p>Global <code class="docutils literal notranslate"><span class="pre">rays</span></code></p></td>
+<td><p>Fixed directions across all training points</p></td>
+</tr>
+<tr class="row-even"><td><p>GDDEGP</p></td>
+<td><p>Directional</p></td>
+<td><p>Point-wise <code class="docutils literal notranslate"><span class="pre">rays_list</span></code></p></td>
+<td><p>Spatially-varying directions (e.g., gradient-aligned)</p></td>
+</tr>
+<tr class="row-odd"><td><p>WDEGP</p></td>
+<td><p>Any</p></td>
+<td><p>Depends on <code class="docutils literal notranslate"><span class="pre">submodel_type</span></code></p></td>
+<td><p>Partitioned training data for computational efficiency</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr class="docutils" />
+</section>
+<section id="common-arguments">
+<span id="id3"></span><h2>Common Arguments<a class="headerlink" href="#common-arguments" title="Link to this heading">#</a></h2>
+<p><strong>n_bases</strong>
+Specifies the <strong>dimensionality of the input space</strong> (i.e., the number of input variables).
+For a function <span class="math notranslate nohighlight">\(f(x_1, x_2, \ldots, x_d)\)</span>, set <code class="docutils literal notranslate"><span class="pre">n_bases</span> <span class="pre">=</span> <span class="pre">d</span></code>.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># For a 2D function f(x, y)</span>
+<span class="n">n_bases</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># For a 1D function f(x)</span>
+<span class="n">n_bases</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p><strong>n_order</strong>
+Specifies the <strong>maximum derivative order</strong> included in the model.
+This determines the highest-order derivatives that can be used for training.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># First-order derivatives only (∂f/∂x, ∂f/∂y)</span>
+<span class="n">n_order</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Up to second-order derivatives (∂f/∂x, ∂²f/∂x², etc.)</span>
+<span class="n">n_order</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">n_order</span></code> parameter should be consistent with the derivatives specified in <code class="docutils literal notranslate"><span class="pre">der_indices</span></code>.
+When using the Matern kernel, ensure that <code class="docutils literal notranslate"><span class="pre">smoothness_parameter</span> <span class="pre">&gt;=</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">n_order</span></code>
+so the kernel is sufficiently smooth to support the highest-order derivatives.</p>
+</div>
+<p><strong>der_indices</strong>
+Specifies which derivatives are included in the model.
+This argument is a <strong>nested list</strong>, where each sublist contains all derivative components of a particular order.
+Each derivative component is itself a list specifying the variable indices and derivative order.</p>
+<p>Examples:</p>
+<p><strong>1D function</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>             <span class="c1"># first-order derivative only</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]]</span> <span class="c1"># first- and second-order derivatives</span>
+</pre></div>
+</div>
+<p><strong>2D function</strong> – all derivatives up to second order</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">],</span>                      <span class="c1"># first-order derivatives</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="p">]</span>    <span class="c1"># second-order derivatives</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>2D function</strong> – all derivatives up to third order</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">],</span>                                        <span class="c1"># first-order</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="p">],</span>                     <span class="c1"># second-order</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span> <span class="p">]</span>    <span class="c1"># third-order</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>derivative_locations</strong>
+Specifies which training points have each derivative defined in <code class="docutils literal notranslate"><span class="pre">der_indices</span></code>.
+This argument is a <strong>list of lists</strong>, where each sublist contains the training point indices for the corresponding derivative.
+The structure must match <code class="docutils literal notranslate"><span class="pre">der_indices</span></code> exactly—one entry per derivative.
+Indices can be <strong>non-contiguous</strong> (e.g., <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">2,</span> <span class="pre">5,</span> <span class="pre">7]</span></code> is valid).</p>
+<p>Examples:</p>
+<p><strong>1D function</strong> – first-order derivative at points 2, 3, 4, 5</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>  <span class="c1"># 1 derivative → 1 entry</span>
+</pre></div>
+</div>
+<p><strong>1D function</strong> – first and second-order derivatives at different locations</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>  <span class="c1"># df/dx at all 6 points</span>
+    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>            <span class="c1"># d²f/dx² at middle 3 points only</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>2D function</strong> – all first-order derivatives at same locations</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>  <span class="c1"># ∂f/∂x₁ at these points</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>   <span class="c1"># ∂f/∂x₂ at these points</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>2D function</strong> – first and second-order with different coverage</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">],</span>                      <span class="c1"># 2 first-order derivatives</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="p">]</span>    <span class="c1"># 3 second-order derivatives</span>
+<span class="p">]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>  <span class="c1"># ∂f/∂x₁ at all 9 points</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>  <span class="c1"># ∂f/∂x₂ at all 9 points</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>                  <span class="c1"># ∂²f/∂x₁² at interior only</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>                  <span class="c1"># ∂²f/∂x₁∂x₂ at interior only</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>                   <span class="c1"># ∂²f/∂x₂² at interior only</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Non-contiguous indices</strong> – derivatives at alternating points</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>  <span class="c1"># df/dx at even indices</span>
+    <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>   <span class="c1"># d²f/dx² at odd indices</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>y_train</strong>
+Contains the training observations: function values and derivative values.
+This argument is a <strong>list of arrays</strong>, where:</p>
+<ul class="simple">
+<li><p>The <strong>first entry</strong> contains function values at all training points, shape <code class="docutils literal notranslate"><span class="pre">(n_train,</span> <span class="pre">1)</span></code></p></li>
+<li><p><strong>Subsequent entries</strong> contain derivative values, one array per derivative in <code class="docutils literal notranslate"><span class="pre">der_indices</span></code></p></li>
+<li><p>Each derivative array has shape <code class="docutils literal notranslate"><span class="pre">(n_points_with_derivative,</span> <span class="pre">1)</span></code></p></li>
+</ul>
+<p>The structure must match <code class="docutils literal notranslate"><span class="pre">der_indices</span></code> and <code class="docutils literal notranslate"><span class="pre">derivative_locations</span></code> exactly.</p>
+<p>Examples:</p>
+<p><strong>1D function</strong> – function values + first derivative at subset of points</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6 training points, derivative at points [2, 3, 4, 5]</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">y_func</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>                           <span class="c1"># shape (6, 1) - function at all points</span>
+    <span class="n">y_deriv</span><span class="p">[</span><span class="n">derivative_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># shape (4, 1) - df/dx at 4 points</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>1D function</strong> – first and second derivatives at different locations</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 6 training points</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>  <span class="c1"># df/dx at all 6 points</span>
+    <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>            <span class="c1"># d²f/dx² at 3 points</span>
+<span class="p">]</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">y_func</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>                               <span class="c1"># shape (6, 1)</span>
+    <span class="n">y_deriv_1</span><span class="p">[</span><span class="n">derivative_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>   <span class="c1"># shape (6, 1)</span>
+    <span class="n">y_deriv_2</span><span class="p">[</span><span class="n">derivative_locations</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>    <span class="c1"># shape (3, 1)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>2D function</strong> – first-order derivatives at all points</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 9 training points on 3×3 grid</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">]]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>  <span class="c1"># ∂f/∂x₁</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>   <span class="c1"># ∂f/∂x₂</span>
+<span class="p">]</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">y_func</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>      <span class="c1"># shape (9, 1) - function values</span>
+    <span class="n">y_deriv_x1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>  <span class="c1"># shape (9, 1) - ∂f/∂x₁</span>
+    <span class="n">y_deriv_x2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1"># shape (9, 1) - ∂f/∂x₂</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>2D function</strong> – mixed derivative coverage</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># 9 training points, second-order only at interior (points 4, 5, 7, 8)</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span> <span class="p">],</span>                      <span class="c1"># first-order</span>
+    <span class="p">[</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]</span> <span class="p">]</span>    <span class="c1"># second-order</span>
+<span class="p">]</span>
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>  <span class="c1"># ∂f/∂x₁ at all</span>
+    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>  <span class="c1"># ∂f/∂x₂ at all</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>                  <span class="c1"># ∂²f/∂x₁²</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>                  <span class="c1"># ∂²f/∂x₁∂x₂</span>
+    <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>                   <span class="c1"># ∂²f/∂x₂²</span>
+<span class="p">]</span>
+
+<span class="n">interior_pts</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">y_func</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>                          <span class="c1"># shape (9, 1)</span>
+    <span class="n">y_deriv_x1</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>                      <span class="c1"># shape (9, 1)</span>
+    <span class="n">y_deriv_x2</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>                      <span class="c1"># shape (9, 1)</span>
+    <span class="n">y_deriv_x1x1</span><span class="p">[</span><span class="n">interior_pts</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>      <span class="c1"># shape (4, 1)</span>
+    <span class="n">y_deriv_x1x2</span><span class="p">[</span><span class="n">interior_pts</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>      <span class="c1"># shape (4, 1)</span>
+    <span class="n">y_deriv_x2x2</span><span class="p">[</span><span class="n">interior_pts</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>       <span class="c1"># shape (4, 1)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>normalize</strong>
+Controls whether training inputs and outputs are <strong>normalized</strong> before model fitting.
+Normalization significantly improves <strong>numerical stability</strong> in covariance matrix computation and
+<strong>conditioning</strong> during hyperparameter optimization, especially when derivative observations are included.</p>
+<p><strong>If ``True``</strong>, the following scaling is applied:</p>
+<ul>
+<li><p><strong>Inputs:</strong>
+Each input dimension <span class="math notranslate nohighlight">\(x_j\)</span> is standardized to zero mean and unit variance:</p>
+<div class="math notranslate nohighlight">
+\[x'_j = \frac{x_j - \mu_{x,j}}{\sigma_{x,j}}\]</div>
+</li>
+<li><p><strong>Outputs:</strong>
+Function values are standardized as</p>
+<div class="math notranslate nohighlight">
+\[y' = \frac{y - \mu_y}{\sigma_y}\]</div>
+</li>
+<li><p><strong>Derivatives:</strong>
+Derivative observations are rescaled according to the chain rule,
+ensuring consistent scaling between function and derivative values.</p>
+<p>For the first derivative <span class="math notranslate nohighlight">\(\frac{\partial y}{\partial x_j}\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\left(\frac{\partial y'}{\partial x'_j}\right)
+= \frac{\sigma_{x,j}}{\sigma_y}
+\left(\frac{\partial y}{\partial x_j}\right)\]</div>
+<p>For higher-order derivatives of total order <span class="math notranslate nohighlight">\(m\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[\left(\frac{\partial^m y'}{\partial x'_{j_1}\cdots \partial x'_{j_m}}\right)
+= \frac{\sigma_{x,j_1}\sigma_{x,j_2}\cdots\sigma_{x,j_m}}{\sigma_y}
+\left(\frac{\partial^m y}{\partial x_{j_1}\cdots \partial x_{j_m}}\right)\]</div>
+</li>
+</ul>
+<p>These transformations preserve the covariance structure between function values and derivatives,
+while keeping all data components on comparable scales.</p>
+<p><strong>If ``False``</strong>, raw input and output values are used directly,
+which may lead to ill-conditioned covariance matrices if feature magnitudes vary widely.</p>
+<p><strong>Directional Derivatives:</strong></p>
+<p>When <strong>directional derivatives</strong> are used (e.g., derivatives evaluated along
+specific direction vectors or rays), normalization involves a preliminary
+step to ensure consistency between the original and normalized input spaces.</p>
+<p>As above, inputs and outputs are normalized according to the following:</p>
+<div class="math notranslate nohighlight">
+\[x'_j = \frac{x_j - \mu_{x,j}}{\sigma_{x,j}}, \qquad
+y' = \frac{y - \mu_y}{\sigma_y},\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mu_{x,j}, \sigma_{x,j}\)</span> are the mean and standard deviation of
+the inputs, and <span class="math notranslate nohighlight">\(\mu_y, \sigma_y\)</span> are those of the output.</p>
+<p>Directional vectors are scaled accordingly:</p>
+<div class="math notranslate nohighlight">
+\[v'_j = \frac{v_j}{\sigma_{x,j}},\]</div>
+<p>so that directional information is preserved in normalized coordinates.
+Using the <strong>chain rule</strong>, the derivative with respect to normalized inputs is</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial y'}{\partial x'_j} =
+\frac{\partial y'}{\partial y} \frac{\partial y}{\partial x_j} \frac{\partial x_j}{\partial x'_j}
+= \frac{1}{\sigma_y} \frac{\partial y}{\partial x_j} \sigma_{x,j}.\]</div>
+<p>Multiplying by the normalized direction vector <span class="math notranslate nohighlight">\(\mathbf{v}'\)</span> gives</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial y'}{\partial \mathbf{v}'}
+= \sum_{j=1}^{d} v'_j \frac{\partial y'}{\partial x'_j}
+= \sum_{j=1}^{d} \frac{v_j}{\sigma_{x,j}} \frac{\sigma_{x,j}}{\sigma_y} \frac{\partial y}{\partial x_j}
+= \frac{1}{\sigma_y} \sum_{j=1}^{d} v_j \frac{\partial y}{\partial x_j}.\]</div>
+<p>The input scaling factors <span class="math notranslate nohighlight">\(\sigma_{x,j}\)</span> cancel, leaving only a global
+scaling by <span class="math notranslate nohighlight">\(1/\sigma_y\)</span>. Therefore, the normalized directional derivative becomes:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial y'}{\partial \mathbf{v}'} = \frac{1}{\sigma_y}
+\frac{\partial y}{\partial \mathbf{v}}.\]</div>
+<section id="higher-order-directional-derivatives">
+<h3>Higher-Order Directional Derivatives<a class="headerlink" href="#higher-order-directional-derivatives" title="Link to this heading">#</a></h3>
+<p>The same logic extends to second-order or higher derivatives:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^n y'}{\partial \mathbf{v}'^n}
+= \frac{1}{\sigma_y}
+  \sum_{j_1,\ldots,j_n} v_{j_1}\sigma_{x,j_1} \cdots v_{j_n}\sigma_{x,j_m}
+  \frac{\partial^n y}{\partial x_{j_1}\cdots\partial x_{j_n}}.\]</div>
+<p>and the normalized higher order directional derivative becomes:</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial^n y'}{\partial \mathbf{v}'^n} = \frac{1}{\sigma_y}
+\frac{\partial^n y}{\partial \mathbf{v}^n}.\]</div>
+</section>
+<section id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Normalization statistics (means and standard deviations) are stored internally
+and automatically applied when evaluating predictions on new test points.</p></li>
+<li><p>When predictions are returned, JetGP automatically rescales them to the original physical units.</p></li>
+</ul>
+<p id="kernel-argument"><strong>kernel</strong>
+Specifies the kernel function used in the GP covariance structure.
+Available kernels include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;SE&quot;</span></code> – Squared Exponential (RBF)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;RQ&quot;</span></code> – Rational Quadratic</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;Matern&quot;</span></code> – Matern family of kernels</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;SineExp&quot;</span></code> – Sine-Exponential kernel</p></li>
+</ul>
+<p>The choice of kernel affects smoothness, differentiability, and correlation structure of the function being modeled.</p>
+<p><strong>kernel_type</strong>
+Determines whether the kernel is <strong>isotropic</strong> or <strong>anisotropic</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;isotropic&quot;</span></code> → a single length scale <span class="math notranslate nohighlight">\(\ell\)</span> shared across all input dimensions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;anisotropic&quot;</span></code> → each input dimension <span class="math notranslate nohighlight">\(j\)</span> has its own length scale <span class="math notranslate nohighlight">\(\ell_j\)</span>.
+Covariance is computed dimension-wise, allowing directional dependencies and varying smoothness.</p></li>
+</ul>
+<p><strong>Kernel Formulas (Isotropic vs Anisotropic)</strong></p>
+<div class="pst-scrollable-table-container"><table class="table" id="id6">
+<caption><span class="caption-text">Kernel formulas for isotropic and anisotropic types</span><a class="headerlink" href="#id6" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 20.0%" />
+<col style="width: 40.0%" />
+<col style="width: 40.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Kernel</p></th>
+<th class="head"><p>Isotropic</p></th>
+<th class="head"><p>Anisotropic</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>SE (RBF)</p></td>
+<td><div class="math notranslate nohighlight">
+\[k(x, x') = \sigma_f^2 \exp\Big(-\frac{\|x-x'\|^2}{2 \ell^2}\Big)\]</div>
+</td>
+<td><div class="math notranslate nohighlight">
+\[k(x, x') = \sigma_f^2 \exp\Big(-\frac{1}{2} \sum_{j=1}^d \frac{(x_j - x'_j)^2}{\ell_j^2}\Big)\]</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>RQ</p></td>
+<td><div class="math notranslate nohighlight">
+\[k(x, x') = \sigma_f^2 \Big(1 + \frac{\|x-x'\|^2}{2 \alpha \ell^2} \Big)^{-\alpha}\]</div>
+</td>
+<td><div class="math notranslate nohighlight">
+\[k(x, x') = \sigma_f^2 \Big(1 + \frac{1}{2 \alpha} \sum_{j=1}^d \frac{(x_j - x'_j)^2}{\ell_j^2} \Big)^{-\alpha}\]</div>
+</td>
+</tr>
+<tr class="row-even"><td><p>Matern</p></td>
+<td><div class="math notranslate nohighlight">
+\[r = \frac{\|x-x'\|}{\ell}, \quad k(x,x') = \frac{2^{1-\nu}}{\Gamma(\nu)} (\sqrt{2\nu} r)^\nu K_\nu(\sqrt{2\nu} r)\]</div>
+</td>
+<td><div class="math notranslate nohighlight">
+\[r = \sqrt{\sum_{j=1}^d \frac{(x_j - x'_j)^2}{\ell_j^2}}, \quad k(x,x') = \frac{2^{1-\nu}}{\Gamma(\nu)} (\sqrt{2\nu} r)^\nu K_\nu(\sqrt{2\nu} r)\]</div>
+</td>
+</tr>
+<tr class="row-odd"><td><p>SineExp</p></td>
+<td><div class="math notranslate nohighlight">
+\[k(x, x') = \sigma_f^2 \exp\Big(-2 \frac{\sum_{j=1}^d \sin^2(\pi (x_j - x'_j) / p_j)}{\ell^2}\Big)\]</div>
+</td>
+<td><div class="math notranslate nohighlight">
+\[k(x, x') = \sigma_f^2 \exp\Big(-2 \sum_{j=1}^d \frac{\sin^2(\pi (x_j - x'_j) / p_j)}{\ell_j^2}\Big)\]</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>smoothness_parameter</strong>
+Specifies the smoothness of the covariance function, primarily used for the <strong>Matern</strong> kernel.
+This parameter controls the differentiability of functions sampled from the Gaussian Process.</p>
+<ul class="simple">
+<li><p>Denoted as <span class="math notranslate nohighlight">\(\nu = \text{smoothness\_parameter} + 0.5\)</span>.</p></li>
+<li><p>Only <strong>integer values</strong> of <code class="docutils literal notranslate"><span class="pre">smoothness_parameter</span></code> are supported.</p></li>
+<li><p>This parameter <strong>must be provided</strong> when <code class="docutils literal notranslate"><span class="pre">kernel=&quot;Matern&quot;</span></code>.</p></li>
+</ul>
+<p><strong>Interpretation of integer smoothness values:</strong></p>
+<div class="pst-scrollable-table-container"><table class="table" id="id7">
+<caption><span class="caption-text">Matern kernel smoothness interpretation</span><a class="headerlink" href="#id7" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 33.3%" />
+<col style="width: 33.3%" />
+<col style="width: 33.3%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>smoothness_parameter</p></th>
+<th class="head"><p>ν</p></th>
+<th class="head"><p>Differentiability</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>0.5</p></td>
+<td><p>Continuous, non-differentiable</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>1.5</p></td>
+<td><p>Once differentiable</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>2.5</p></td>
+<td><p>Twice differentiable</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>3.5</p></td>
+<td><p>Three times differentiable</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<ul class="simple">
+<li><p>For kernels other than Matern, this parameter is ignored.</p></li>
+<li><p>When using <strong>derivative-enhanced GPs</strong>, it is recommended that
+<code class="docutils literal notranslate"><span class="pre">smoothness_parameter</span> <span class="pre">&gt;=</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">n_order</span></code>
+to ensure that the kernel is sufficiently smooth to support the highest-order derivatives.</p></li>
+</ul>
+</div>
+<hr class="docutils" />
+</section>
+</section>
+<section id="prediction-interface">
+<span id="id4"></span><h2>Prediction Interface<a class="headerlink" href="#prediction-interface" title="Link to this heading">#</a></h2>
+<p>All JetGP models share a common prediction interface via the <code class="docutils literal notranslate"><span class="pre">predict()</span></code> method.</p>
+<p><strong>Basic Usage</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Full Signature</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_cov</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+    <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rays_predict</span><span class="o">=</span><span class="kc">None</span>  <span class="c1"># GDDEGP only</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Parameters</strong></p>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">X_test</span></code></dt><dd><p>Test points at which to make predictions. Shape <code class="docutils literal notranslate"><span class="pre">(n_test,</span> <span class="pre">d)</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">params</span></code></dt><dd><p>Optimized hyperparameters returned by <code class="docutils literal notranslate"><span class="pre">optimize_hyperparameters()</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">calc_cov</span></code> <em>(bool, default: True)</em></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return the predictive variance/covariance.
+If <code class="docutils literal notranslate"><span class="pre">False</span></code>, only return the mean prediction (faster).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">return_deriv</span></code> <em>(bool, default: False)</em></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return predictions for both function values and derivatives.
+The output shape becomes <code class="docutils literal notranslate"><span class="pre">(n_outputs,</span> <span class="pre">n_test)</span></code> where <code class="docutils literal notranslate"><span class="pre">n_outputs</span> <span class="pre">=</span> <span class="pre">1</span> <span class="pre">+</span> <span class="pre">n_derivatives</span></code>.</p>
+<ul class="simple">
+<li><p>Row 0: function value predictions</p></li>
+<li><p>Rows 1, 2, …: derivative predictions in the order specified by <code class="docutils literal notranslate"><span class="pre">der_indices</span></code></p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">rays_predict</span></code> <em>(list of arrays, GDDEGP only)</em></dt><dd><p>Required for GDDEGP when <code class="docutils literal notranslate"><span class="pre">return_deriv=True</span></code>.
+A list of 2D arrays specifying directional vectors at each test point.
+Structure: <code class="docutils literal notranslate"><span class="pre">rays_predict[i]</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">n_test)</span></code> for direction <code class="docutils literal notranslate"><span class="pre">i</span></code>.</p>
+<p><strong>Note:</strong> For GDDEGP, you can specify <strong>any directions</strong> in <code class="docutils literal notranslate"><span class="pre">rays_predict</span></code>—not limited
+to the directions used during training. The only restriction is derivative <strong>order</strong>.</p>
+</dd>
+</dl>
+<p><strong>Return Values</strong></p>
+<ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">calc_cov=False</span></code>: Returns <code class="docutils literal notranslate"><span class="pre">y_pred</span></code> only</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">calc_cov=True</span></code>: Returns <code class="docutils literal notranslate"><span class="pre">(y_pred,</span> <span class="pre">y_cov)</span></code></p></li>
+</ul>
+<dl class="simple">
+<dt>When <code class="docutils literal notranslate"><span class="pre">return_deriv=False</span></code>:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y_pred</span></code>: shape <code class="docutils literal notranslate"><span class="pre">(n_test,)</span></code> – function value predictions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_cov</span></code>: shape <code class="docutils literal notranslate"><span class="pre">(n_test,)</span></code> – predictive variances</p></li>
+</ul>
+</dd>
+<dt>When <code class="docutils literal notranslate"><span class="pre">return_deriv=True</span></code>:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y_pred</span></code>: shape <code class="docutils literal notranslate"><span class="pre">(n_outputs,</span> <span class="pre">n_test)</span></code> – function and derivative predictions</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_cov</span></code>: shape <code class="docutils literal notranslate"><span class="pre">(n_outputs,</span> <span class="pre">n_test)</span></code> – predictive variances for each output</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Examples</strong></p>
+<p>Basic prediction (function values only):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Prediction with variance:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_var</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Prediction with derivatives (DEGP/DDEGP):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred_full</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">y_func</span> <span class="o">=</span> <span class="n">y_pred_full</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>      <span class="c1"># Function values</span>
+<span class="n">y_deriv_1</span> <span class="o">=</span> <span class="n">y_pred_full</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>   <span class="c1"># First derivative</span>
+<span class="n">y_deriv_2</span> <span class="o">=</span> <span class="n">y_pred_full</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>   <span class="c1"># Second derivative (if included)</span>
+</pre></div>
+</div>
+<p>Prediction with derivatives (GDDEGP):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Can use ANY directions at test points (not limited to training directions)</span>
+<span class="n">rays_predict</span> <span class="o">=</span> <span class="p">[</span><span class="n">rays_dir1_test</span><span class="p">,</span> <span class="n">rays_dir2_test</span><span class="p">]</span>  <span class="c1"># Each shape (d, n_test)</span>
+
+<span class="n">y_pred_full</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+    <span class="n">rays_predict</span><span class="o">=</span><span class="n">rays_predict</span><span class="p">,</span>
+    <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For detailed information on model-specific prediction behavior, derivative restrictions,
+and troubleshooting, see <span class="xref std std-doc">predictions</span>.</p>
+<hr class="docutils" />
+</section>
+<section id="wdegp-specific-interface">
+<span id="wdegp-specific"></span><h2>WDEGP-Specific Interface<a class="headerlink" href="#wdegp-specific-interface" title="Link to this heading">#</a></h2>
+<p>WDEGP extends the base interface with additional parameters for submodel configuration.</p>
+<p><strong>Initialization</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="n">derivative_locations</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">submodel_type</span><span class="o">=</span><span class="s1">&#39;degp&#39;</span><span class="p">,</span>  <span class="c1"># &#39;degp&#39;, &#39;ddegp&#39;, or &#39;gddegp&#39;</span>
+    <span class="n">rays</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>             <span class="c1"># Required if submodel_type=&#39;ddegp&#39;</span>
+    <span class="n">rays_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>        <span class="c1"># Required if submodel_type=&#39;gddegp&#39;</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+    <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>WDEGP-Specific Parameters</strong></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">submodel_type</span></code> <em>(str, default: ‘degp’)</em></dt><dd><p>Specifies the type of GP model used for each submodel:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'degp'</span></code> – Coordinate-aligned partial derivatives</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'ddegp'</span></code> – Global directional derivatives (requires <code class="docutils literal notranslate"><span class="pre">rays</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'gddegp'</span></code> – Point-wise directional derivatives (requires <code class="docutils literal notranslate"><span class="pre">rays_list</span></code>)</p></li>
+</ul>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">rays</span></code> <em>(ndarray, required if submodel_type=’ddegp’)</em></dt><dd><p>Global directional vectors shared by all submodels.
+Shape: <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">n_directions)</span></code></p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">rays_list</span></code> <em>(list of lists, required if submodel_type=’gddegp’)</em></dt><dd><p>Point-wise directional vectors for each submodel.
+Structure: <code class="docutils literal notranslate"><span class="pre">rays_list[submodel_idx][direction_idx]</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(d,</span> <span class="pre">n_points_in_submodel_with_direction)</span></code>.</p>
+</dd>
+</dl>
+<p><strong>Data Structure for WDEGP</strong></p>
+<p>In WDEGP, data is organized by <strong>submodel</strong>. Each list has one entry per submodel:</p>
+<p><code class="docutils literal notranslate"><span class="pre">y_train</span></code> – List of lists:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">y_vals</span><span class="p">,</span> <span class="n">dy1_sm1</span><span class="p">,</span> <span class="n">dy2_sm1</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>  <span class="c1"># Submodel 1 data</span>
+    <span class="p">[</span><span class="n">y_vals</span><span class="p">,</span> <span class="n">dy1_sm2</span><span class="p">,</span> <span class="n">dy2_sm2</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>  <span class="c1"># Submodel 2 data</span>
+    <span class="o">...</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The function values <code class="docutils literal notranslate"><span class="pre">y_vals</span></code> (shape <code class="docutils literal notranslate"><span class="pre">(n_train,</span> <span class="pre">1)</span></code>) are <strong>shared</strong> across all submodels</p></li>
+<li><p>Derivative arrays have shapes matching the points in each submodel’s <code class="docutils literal notranslate"><span class="pre">derivative_locations</span></code></p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">der_indices</span></code> – List of derivative specifications per submodel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]],</span>  <span class="c1"># Submodel 1: 1st and 2nd order</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]]]</span>   <span class="c1"># Submodel 2: 1st and 2nd order</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">derivative_locations</span></code> – List of location lists per submodel:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">sm1_deriv1_locs</span><span class="p">,</span> <span class="n">sm1_deriv2_locs</span><span class="p">],</span>  <span class="c1"># Submodel 1 locations</span>
+    <span class="p">[</span><span class="n">sm2_deriv1_locs</span><span class="p">,</span> <span class="n">sm2_deriv2_locs</span><span class="p">]</span>   <span class="c1"># Submodel 2 locations</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Derivative locations must be DISJOINT across submodels.</strong></p>
+<p>Each training point’s derivatives can only belong to <strong>one</strong> submodel.
+Overlapping derivative locations will cause incorrect covariance computations.</p>
+<p>Valid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]],</span>  <span class="c1"># Submodel 1: even indices</span>
+    <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>   <span class="c1"># Submodel 2: odd indices (disjoint!)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Invalid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span>  <span class="c1"># Submodel 1</span>
+    <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>   <span class="c1"># Submodel 2: index 2 overlaps!</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p><strong>WDEGP Prediction</strong></p>
+<p>WDEGP prediction supports an additional parameter to return submodel predictions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_cov</span><span class="p">,</span> <span class="n">submodel_preds</span><span class="p">,</span> <span class="n">submodel_covs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+    <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">return_submodels</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">return_submodels</span></code> <em>(bool, default: False)</em></dt><dd><p>If <code class="docutils literal notranslate"><span class="pre">True</span></code>, return individual submodel predictions in addition to the weighted combination.</p>
+</dd>
+</dl>
+<p><strong>Return Values with return_submodels=True:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">y_pred</span></code>: Combined (weighted) prediction, shape <code class="docutils literal notranslate"><span class="pre">(n_test,)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y_cov</span></code>: Combined predictive variance, shape <code class="docutils literal notranslate"><span class="pre">(n_test,)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">submodel_preds</span></code>: List of predictions from each submodel</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">submodel_covs</span></code>: List of variances from each submodel</p></li>
+</ul>
+<p><strong>Derivative Prediction Flexibility (GDDEGP Submodels)</strong></p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">submodel_type='gddegp'</span></code>, WDEGP inherits GDDEGP’s prediction flexibility:
+you can predict directional derivatives along <strong>any direction</strong> via <code class="docutils literal notranslate"><span class="pre">rays_predict</span></code>.
+The restriction is on derivative <strong>order</strong>, not direction—only orders present in <strong>all</strong>
+submodels can be predicted.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Predict in any direction (not limited to training directions)</span>
+<span class="n">y_pred</span><span class="p">,</span> <span class="n">y_cov</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+    <span class="n">rays_predict</span><span class="o">=</span><span class="n">rays_predict</span><span class="p">,</span>  <span class="c1"># Any directions</span>
+    <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For detailed information on WDEGP prediction behavior and derivative restrictions
+by submodel type, see <span class="xref std std-doc">predictions</span>.</p>
+<p><strong>Complete WDEGP Example (DEGP Submodels)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+
+<span class="c1"># 10 training points, alternating submodel assignment</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">sm1_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>  <span class="c1"># Even indices → Submodel 1</span>
+<span class="n">sm2_indices</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>  <span class="c1"># Odd indices → Submodel 2</span>
+
+<span class="c1"># Function and derivative values</span>
+<span class="n">y_vals</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>                    <span class="c1"># Shape (10, 1)</span>
+<span class="n">dy_sm1</span> <span class="o">=</span> <span class="n">df</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>      <span class="c1"># Shape (5, 1)</span>
+<span class="n">dy_sm2</span> <span class="o">=</span> <span class="n">df</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>      <span class="c1"># Shape (5, 1)</span>
+
+<span class="c1"># WDEGP data structure</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">y_vals</span><span class="p">,</span> <span class="n">dy_sm1</span><span class="p">],</span>  <span class="c1"># Submodel 1</span>
+    <span class="p">[</span><span class="n">y_vals</span><span class="p">,</span> <span class="n">dy_sm2</span><span class="p">]</span>   <span class="c1"># Submodel 2</span>
+<span class="p">]</span>
+
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]],</span>  <span class="c1"># Submodel 1: first-order derivative</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]]</span>   <span class="c1"># Submodel 2: first-order derivative</span>
+<span class="p">]</span>
+
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">sm1_indices</span><span class="p">],</span>  <span class="c1"># Submodel 1 derivative locations</span>
+    <span class="p">[</span><span class="n">sm2_indices</span><span class="p">]</span>   <span class="c1"># Submodel 2 derivative locations (DISJOINT!)</span>
+<span class="p">]</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bases</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="n">derivative_locations</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">submodel_type</span><span class="o">=</span><span class="s1">&#39;degp&#39;</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span>
+<span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span> <span class="n">pop_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_generations</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+
+<span class="c1"># Predict with submodel outputs</span>
+<span class="n">y_pred</span><span class="p">,</span> <span class="n">y_cov</span><span class="p">,</span> <span class="n">sm_preds</span><span class="p">,</span> <span class="n">sm_covs</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">return_submodels</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Complete WDEGP Example (GDDEGP Submodels)</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+
+<span class="c1"># Partition by distance from origin</span>
+<span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">sm1_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span> <span class="k">if</span> <span class="n">distances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">median_dist</span><span class="p">]</span>
+<span class="n">sm2_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span> <span class="k">if</span> <span class="n">distances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">median_dist</span><span class="p">]</span>
+
+<span class="c1"># Build point-wise rays for each submodel</span>
+<span class="c1"># rays_list[submodel_idx][direction_idx] has shape (d, n_points_in_submodel)</span>
+<span class="n">rays_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">rays_dir1_sm1</span><span class="p">,</span> <span class="n">rays_dir2_sm1</span><span class="p">],</span>  <span class="c1"># Submodel 1 rays</span>
+    <span class="p">[</span><span class="n">rays_dir1_sm2</span><span class="p">,</span> <span class="n">rays_dir2_sm2</span><span class="p">]</span>   <span class="c1"># Submodel 2 rays</span>
+<span class="p">]</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_bases</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="n">derivative_locations</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="o">=</span><span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">submodel_type</span><span class="o">=</span><span class="s1">&#39;gddegp&#39;</span><span class="p">,</span>
+    <span class="n">rays_list</span><span class="o">=</span><span class="n">rays_list</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>JetGP’s modular design enables flexible experimentation with derivative-based Gaussian Process models.
+Each variant — DEGP, DDEGP, GDDEGP, and WDEGP — builds upon a shared foundation,
+with common kernel interfaces and optimization routines.
+This unified structure simplifies the exploration of increasingly rich GP formulations for
+sensitivity analysis, model calibration, and uncertainty quantification.</p>
+<p>For detailed initialization instructions, see <span class="xref std std-doc">initialization</span>.
+For prediction behavior and derivative restrictions, see <span class="xref std std-doc">predictions</span>.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Getting Started with JetGP</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="Initializing_JetGP_Modules.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Initializing JetGP Modules</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#available-modules">Available Modules</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-comparison">Module Comparison</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-arguments">Common Arguments</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#higher-order-directional-derivatives">Higher-Order Directional Derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notes">Notes</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#prediction-interface">Prediction Interface</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wdegp-specific-interface">WDEGP-Specific Interface</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
