@@ -352,7 +352,7 @@ class gddegp:
             phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,
             self.flattened_der_indices,
             return_deriv=return_deriv,
-            index=self.derivative_locations,
+            index=derivative_locations_test,
             common_derivs=common_derivs,
             calc_cov=True,
         )
