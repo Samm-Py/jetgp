@@ -198,6 +198,13 @@ class ddegp:
         if self.normalize:
             X_test = utils.normalize_x_data_test(X_test, self.sigmas_x, self.mus_x)
 
+        # Set up test derivative locations
+        if return_deriv:
+            derivative_locations_test = [
+                list(range(X_test.shape[0])) for _ in range(len(common_derivs))]
+        else:
+            derivative_locations_test = None
+
         # Compute train-test differences and kernel
         diff_x_test_x_train = ddegp_utils.differences_by_dim_func(
             self.x_train, X_test, self.rays, self.n_order,self.oti, return_deriv=return_deriv)
@@ -258,7 +265,7 @@ class ddegp:
             phi_test_test, phi_exp_test_test, self.n_order, n_bases,
             self.flattened_der_indices, self.powers,
             return_deriv=return_deriv,
-            index=self.derivative_locations,
+            index=derivative_locations_test,
             common_derivs=common_derivs,
             calc_cov=True,
             powers_predict=self.powers_predict
