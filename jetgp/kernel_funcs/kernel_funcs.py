@@ -8,7 +8,7 @@ import os
 import warnings
 
 
-def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None, use_sparse = False):
+def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_sparse = True):
     """
     Dynamically import the correct PyOTI static library.
     If the module doesn't exist and auto_compile=True, attempts to compile it.
