@@ -10,3 +10,4 @@ Examples related to arbitrary order derivative-enhanced Gaussian Processes (DEGP
 
    DEGP
    DEGP_4d_sparse
+   DEGP_chain

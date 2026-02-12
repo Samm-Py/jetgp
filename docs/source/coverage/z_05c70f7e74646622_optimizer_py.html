@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for jetgp/full_degp/optimizer.py: 96%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_26708bb638d75ec6___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-12-17 14:10 -0600
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
+            created at 2026-01-12 14:30 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -134,14 +134,14 @@
     <p class="pln"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">        <span class="com"># Extract ALL derivative components into a single flat array (highly efficient)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">            <span class="nam">phi_exp</span> <span class="op">=</span> <span class="nam">phi</span><span class="op">.</span><span class="nam">get_all_derivs</span><span class="op">(</span><span class="nam">n_bases</span><span class="op">,</span> <span class="num">2</span> <span class="op">*</span> <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">n_order</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t54" href="#t54">54</a></span><span class="t">        <span class="nam">K</span> <span class="op">=</span> <span class="nam">utils</span><span class="op">.</span><span class="nam">rbf_kernel</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">            <span class="nam">phi</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">            <span class="nam">phi_exp</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">n_order</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">            <span class="nam">n_bases</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">flattened_der_indices</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t60" href="#t60">60</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">powers</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">            <span class="nam">index</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">derivative_locations</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t62" href="#t62">62</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">            <span class="nam">phi</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">            <span class="nam">phi_exp</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">n_order</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">            <span class="nam">n_bases</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">flattened_der_indices</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t60" href="#t60">60</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">powers</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">            <span class="nam">index</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">derivative_locations</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t62" href="#t62">62</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t63" href="#t63">63</a></span><span class="t">        <span class="nam">noise_var</span> <span class="op">=</span> <span class="op">(</span><span class="num">10</span> <span class="op">**</span> <span class="nam">sigma_n</span><span class="op">)</span> <span class="op">**</span> <span class="num">2</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t64" href="#t64">64</a></span><span class="t">        <span class="nam">K</span><span class="op">.</span><span class="nam">flat</span><span class="op">[</span><span class="op">:</span><span class="op">:</span><span class="nam">K</span><span class="op">.</span><span class="nam">shape</span><span class="op">[</span><span class="num">0</span><span class="op">]</span> <span class="op">+</span> <span class="num">1</span><span class="op">]</span> <span class="op">+=</span> <span class="nam">noise_var</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t65" href="#t65">65</a></span><span class="t">        <span class="nam">K</span> <span class="op">+=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">sigma_data</span><span class="op">**</span><span class="num">2</span>&nbsp;</span><span class="r"></span></p>
@@ -149,9 +149,9 @@
     <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">            <span class="nam">L</span><span class="op">,</span> <span class="nam">low</span> <span class="op">=</span> <span class="nam">cho_factor</span><span class="op">(</span><span class="nam">K</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">            <span class="nam">alpha</span> <span class="op">=</span> <span class="nam">cho_solve</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">                <span class="op">(</span><span class="nam">L</span><span class="op">,</span> <span class="nam">low</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">y_train</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">                <span class="op">(</span><span class="nam">L</span><span class="op">,</span> <span class="nam">low</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">y_train</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">            <span class="nam">data_fit</span> <span class="op">=</span> <span class="num">0.5</span> <span class="op">*</span> <span class="nam">np</span><span class="op">.</span><span class="nam">dot</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">model</span><span class="op">.</span><span class="nam">y_train</span><span class="op">,</span> <span class="nam">alpha</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t75" href="#t75">75</a></span><span class="t">            <span class="nam">log_det_K</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">sum</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">log</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">diag</span><span class="op">(</span><span class="nam">L</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -179,8 +179,8 @@
     <p class="run"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">        <span class="key">return</span> <span class="nam">self</span><span class="op">.</span><span class="nam">negative_log_marginal_likelihood</span><span class="op">(</span><span class="nam">x0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">    <span class="key">def</span> <span class="nam">optimize_hyperparameters</span><span class="op">(</span>    <span class="nam">self</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">    <span class="nam">optimizer</span><span class="op">=</span><span class="str">"pso"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">    <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">    <span class="nam">optimizer</span><span class="op">=</span><span class="str">"pso"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">    <span class="op">**</span><span class="nam">kwargs</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t102" href="#t102">102</a></span><span class="t">        <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t"><span class="str">        Optimize the DEGP model hyperparameters using Particle Swarm Optimization (PSO).</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -202,8 +202,8 @@
     <p class="run"><span class="n"><a id="t120" href="#t120">120</a></span><span class="t">        <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">optimizer</span><span class="op">,</span> <span class="nam">str</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t121" href="#t121">121</a></span><span class="t">            <span class="key">if</span> <span class="nam">optimizer</span> <span class="key">not</span> <span class="key">in</span> <span class="nam">OPTIMIZERS</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t122" href="#t122">122</a></span><span class="t">                <span class="key">raise</span> <span class="nam">ValueError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t123" href="#t123">123</a></span><span class="t">                    <span class="str">f"Unknown optimizer '{optimizer}'. Available: {list(OPTIMIZERS.keys())}"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t123" href="#t123">123</a></span><span class="t">                    <span class="str">f"Unknown optimizer '{optimizer}'. Available: {list(OPTIMIZERS.keys())}"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t125" href="#t125">125</a></span><span class="t">            <span class="nam">optimizer_fn</span> <span class="op">=</span> <span class="nam">OPTIMIZERS</span><span class="op">[</span><span class="nam">optimizer</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t">            <span class="nam">optimizer_fn</span> <span class="op">=</span> <span class="nam">optimizer</span>  <span class="com"># allow passing a callable directly</span>&nbsp;</span><span class="r"></span></p>
@@ -227,8 +227,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_26708bb638d75ec6___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-12-17 14:10 -0600
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
+            created at 2026-01-12 14:30 -0600
         </p>
     </div>
 </footer>

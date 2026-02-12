@@ -35,6 +35,8 @@ backup/
 backup/*
 extra/
 extra/*
+examples/
+examples/*
 jetgp/wdegp_old
 jetgp/wdegp_old/*
 docs/build

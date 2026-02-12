@@ -8,7 +8,7 @@ import os
 import warnings
 
 
-def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None):
+def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None, use_sparse = False):
     """
     Dynamically import the correct PyOTI static library.
     If the module doesn't exist and auto_compile=True, attempts to compile it.
@@ -26,7 +26,6 @@ def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None):
     otilib_path : str, optional
         Path to otilib-master directory. If None, attempts auto-detection.
         
-    Returns
     -------
     module
         The appropriate pyoti.static.onummXnY module, or pyoti.sparse as fallback.
@@ -37,7 +36,8 @@ def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None):
     
     oti_order = 2 * n_order
     module_name = f"pyoti.static.onumm{n_bases}n{oti_order}"
-    
+    if use_sparse:
+        return importlib.import_module("pyoti.sparse")
     try:
         return importlib.import_module(module_name)
     except ModuleNotFoundError:

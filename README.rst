@@ -754,3 +754,8 @@ This example uses point-wise directional derivatives with gradient-aligned rays.
    :alt: WDEGP 2D example visualization with GDDEGP submodels
    :align: center
    :width: 100%
+
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.

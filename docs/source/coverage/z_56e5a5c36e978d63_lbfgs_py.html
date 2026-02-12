@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for jetgp/hyperparameter_optimizers/lbfgs.py: 84%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_56e5a5c36e978d63_powell_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-12-17 14:10 -0600
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
+            created at 2026-01-12 14:30 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -158,12 +158,12 @@
     <p class="pln"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t77" href="#t77">77</a></span><span class="t">        <span class="com"># Run optimization</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">        <span class="nam">res</span> <span class="op">=</span> <span class="nam">minimize</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">            <span class="nam">func</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">            <span class="nam">x_init</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">            <span class="nam">method</span><span class="op">=</span><span class="str">"L-BFGS-B"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">            <span class="nam">bounds</span><span class="op">=</span><span class="nam">list</span><span class="op">(</span><span class="nam">zip</span><span class="op">(</span><span class="nam">lb</span><span class="op">,</span> <span class="nam">ub</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">            <span class="nam">options</span><span class="op">=</span><span class="op">{</span><span class="str">"maxiter"</span><span class="op">:</span> <span class="nam">maxiter</span><span class="op">,</span> <span class="str">"ftol"</span><span class="op">:</span> <span class="nam">ftol</span><span class="op">,</span> <span class="str">"gtol"</span><span class="op">:</span> <span class="nam">gtol</span><span class="op">,</span> <span class="str">"disp"</span><span class="op">:</span> <span class="nam">disp</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">            <span class="nam">func</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">            <span class="nam">x_init</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">            <span class="nam">method</span><span class="op">=</span><span class="str">"L-BFGS-B"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">            <span class="nam">bounds</span><span class="op">=</span><span class="nam">list</span><span class="op">(</span><span class="nam">zip</span><span class="op">(</span><span class="nam">lb</span><span class="op">,</span> <span class="nam">ub</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">            <span class="nam">options</span><span class="op">=</span><span class="op">{</span><span class="str">"maxiter"</span><span class="op">:</span> <span class="nam">maxiter</span><span class="op">,</span> <span class="str">"ftol"</span><span class="op">:</span> <span class="nam">ftol</span><span class="op">,</span> <span class="str">"gtol"</span><span class="op">:</span> <span class="nam">gtol</span><span class="op">,</span> <span class="str">"disp"</span><span class="op">:</span> <span class="nam">disp</span><span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">        <span class="com"># Store optimum (normalized)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t87" href="#t87">87</a></span><span class="t">        <span class="nam">x_opt_norm</span> <span class="op">=</span> <span class="op">(</span><span class="nam">res</span><span class="op">.</span><span class="nam">x</span> <span class="op">-</span> <span class="nam">lb</span><span class="op">)</span> <span class="op">/</span> <span class="nam">scale</span>&nbsp;</span><span class="r"></span></p>
@@ -177,7 +177,7 @@
     <p class="pln"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t96" href="#t96">96</a></span><span class="t">        <span class="key">if</span> <span class="nam">debug</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">            <span class="nam">print</span><span class="op">(</span><span class="str">f"[L-BFGS-B {strategy}] Restart {i+1}/{n_restarts} | "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">                  <span class="str">f"f={res.fun:.6e} | best={best_val:.6e} | "</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis mis2 show_mis"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">                  <span class="str">f"f={res.fun:.6e} | best={best_val:.6e} | "</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">    <span class="key">return</span> <span class="nam">best_x</span><span class="op">,</span> <span class="nam">best_val</span>&nbsp;</span><span class="r"></span></p>
@@ -231,8 +231,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_56e5a5c36e978d63_powell_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.6.9">coverage.py v7.6.9</a>,
-            created at 2025-12-17 14:10 -0600
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
+            created at 2026-01-12 14:30 -0600
         </p>
     </div>
 </footer>
