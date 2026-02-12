@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -969,9 +969,7 @@ The model is evaluated on a 100×100 grid. For function value predictions (witho
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]]]
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function value interpolation errors:
+Function value interpolation errors:
 ================================================================================
 Point 0 (x=-0.8839, y=11.2872): Abs Error = 3.94e-06, Rel Error = 1.30e-07
 Point 1 (x=3.8919, y=0.7885): Abs Error = 4.28e-07, Rel Error = 1.09e-07
@@ -2515,7 +2513,9 @@ Optimizing hyperparameters...
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 2: [-0.09053186 -0.73035732  2.0372785  -4.14466991] -90.95112349689443
-New best for swarm at iteration 3: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 3: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 3: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
@@ -2551,10 +2551,10 @@ New best for swarm at iteration 11: [-0.09297468 -1.18673833  1.62110991 -6.2788
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 11: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.30988802351078
 Best after iteration 12: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.30988802351078
 Best after iteration 13: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.30988802351078
+New best for swarm at iteration 14: [-0.09038285 -1.2103533   1.61639447 -6.38585653] -206.41467065215375
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 14: [-0.09038285 -1.2103533   1.61639447 -6.38585653] -206.41467065215375
-New best for swarm at iteration 14: [-0.08229875 -1.1711397   1.53766027 -6.4899267 ] -206.6592844109254
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 14: [-0.08229875 -1.1711397   1.53766027 -6.4899267 ] -206.6592844109254
 New best for swarm at iteration 14: [-0.09206264 -1.18212303  1.64571202 -6.31287348] -207.39613996845014
 Best after iteration 14: [-0.09206264 -1.18212303  1.64571202 -6.31287348] -207.39613996845014
 </pre></div>
@@ -2623,9 +2623,7 @@ Evaluating model on test grid...
 ======================================================================
 Test grid: 50×50 = 2500 points
 Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+
 Model Performance:
   NRMSE: 0.000113
   Max absolute error: 0.296195
