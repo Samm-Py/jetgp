@@ -4,6 +4,8 @@ JetGP
 
 A Gaussian Process library with support for arbitrary-order derivative-enhanced training data.
 
+`Documentation <https://samm-py.github.io/jetgp/>`_
+
 Module Overview
 ===============
 
