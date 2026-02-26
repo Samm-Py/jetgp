@@ -1889,3 +1889,239 @@ Where ``|l1| = len(derivative_locations[0])`` and ``|l2| = len(derivative_locati
      - ``[center, center]``
      - All points have both dirs
 
+---
+
+Example 3: More Direction Types Than Spatial Dimensions
+--------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates a case that was **silently broken before the** ``n_bases`` **fix** introduced in GDDEGP: using **more direction types than spatial dimensions**.
+
+GDDEGP internally allocates a pair of OTI basis units ``(e_{2k-1}, e_{2k})`` for each direction type ``k``. The correct OTI space size is therefore:
+
+.. math::
+
+   n\_\text{bases} = 2 \times n\_\text{direction\_types}
+
+Previously the code set ``n_bases = 2 × spatial_dim``, which gave the wrong OTI space whenever ``n_direction_types ≠ spatial_dim``. The fix ensures the OTI module is always sized by the actual number of direction types.
+
+Here we use a **2D function with 3 direction types per training point** (``n_direction_types = 3 > spatial_dim = 2``). With the old code, only four OTI bases would have been allocated — too few for the third direction's ``e5, e6`` pair — causing incorrect kernel evaluations. With the fix, six bases are correctly allocated.
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import numpy as np
+    from jetgp.full_gddegp.gddegp import gddegp
+    import matplotlib.pyplot as plt
+
+    print("Modules imported successfully.")
+
+---
+
+Step 2: Define the function and training grid
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    np.random.seed(42)
+
+    # 2D input space — 5×5 grid
+    x_vals = np.linspace(0, 1, 5)
+    X_train = np.array([[x1, x2] for x1 in x_vals for x2 in x_vals])
+    n_train = len(X_train)
+
+    def f(X):      return np.sin(X[:, 0]) + X[:, 1] ** 2
+    def df_dx1(X): return np.cos(X[:, 0])
+    def df_dx2(X): return 2.0 * X[:, 1]
+    def dir_deriv(X, ray):
+        g = np.stack([df_dx1(X), df_dx2(X)], axis=1)  # (n, 2)
+        return (g @ ray).flatten()
+
+    # Three fixed direction types for all training points
+    ray_x1   = np.array([1.0, 0.0])            # x1-axis
+    ray_x2   = np.array([0.0, 1.0])            # x2-axis
+    ray_diag = np.array([np.cos(np.pi/4),
+                         np.sin(np.pi/4)])     # 45° diagonal
+
+    print(f"Training points     : {n_train}  (5×5 grid)")
+    print(f"Spatial dimension   : 2")
+    print(f"Direction types     : 3  →  n_bases = 2×3 = 6 (OTI pairs e1-e2, e3-e4, e5-e6)")
+    print(f"Old (broken) formula: n_bases = 2×spatial_dim = 2×2 = 4  (too small!)")
+
+**Explanation:**
+We have a 2D input space but three derivative directions, so the OTI module must allocate **six** bases. The old formula ``2 × spatial_dim = 4`` was too small for the third direction's OTI pair ``(e5, e6)``, silently corrupting kernel evaluations. The fix computes the size from ``len(flattened_der_indices)``.
+
+---
+
+Step 3: Build training data and rays_list
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    y_func = f(X_train).reshape(-1, 1)
+
+    # Directional derivative values at each training point for each direction type
+    y_dir1 = dir_deriv(X_train, ray_x1).reshape(-1, 1)    # df along x1-axis
+    y_dir2 = dir_deriv(X_train, ray_x2).reshape(-1, 1)    # df along x2-axis
+    y_dir3 = dir_deriv(X_train, ray_diag).reshape(-1, 1)  # df along 45°
+
+    y_train = [y_func, y_dir1, y_dir2, y_dir3]
+
+    # rays_list[k] has shape (spatial_dim, n_points_with_direction_k)
+    # Here every training point has every direction, so shape is (2, n_train) each.
+    rays_list = [
+        np.tile(ray_x1.reshape(-1, 1),   (1, n_train)),   # direction type 1
+        np.tile(ray_x2.reshape(-1, 1),   (1, n_train)),   # direction type 2
+        np.tile(ray_diag.reshape(-1, 1), (1, n_train)),   # direction type 3
+    ]
+
+    # Three direction types: OTI indices [1,1], [2,1], [3,1]
+    der_indices = [[[[1, 1]], [[2, 1]], [[3, 1]]]]
+    derivative_locations = [list(range(n_train))] * 3
+
+    print("y_train shapes    :", [v.shape for v in y_train])
+    print("rays_list shapes  :", [r.shape for r in rays_list])
+    print("der_indices       :", der_indices)
+
+**Explanation:**
+``rays_list[k]`` stores the physical direction vectors for direction type ``k``. Because we use the same direction at every point, each array is simply the direction vector tiled ``n_train`` times. The ``der_indices`` entry ``[[k, 1]]`` maps to the ``k``-th OTI pair ``(e_{2k-1}, e_{2k})``.
+
+---
+
+Step 4: Initialize the GDDEGP model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    # GDDEGP automatically sets n_bases = 2 * len(flattened_der_indices) = 2*3 = 6
+    model = gddegp(
+        X_train, y_train,
+        n_order=1,
+        rays_list=rays_list,
+        der_indices=der_indices,
+        derivative_locations=derivative_locations,
+        normalize=True,
+        kernel="SE", kernel_type="anisotropic"
+    )
+
+    print(f"n_bases (OTI space size) : {model.n_bases}")
+    print(f"  = 2 × n_direction_types = 2 × 3 = 6  ✓")
+    print(f"  (old formula would have given 2 × spatial_dim = 2 × 2 = 4  ✗)")
+
+---
+
+Step 5: Optimize hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    params = model.optimize_hyperparameters(
+        optimizer='powell',
+        n_restart_optimizer=5,
+        debug=False
+    )
+    print("Optimized hyperparameters:", params)
+
+---
+
+Step 6: Predict at test points
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    np.random.seed(7)
+    X_test = np.random.uniform(0, 1, (40, 2))
+    n_test = len(X_test)
+
+    # Provide rays at test points for all 3 direction types
+    rays_predict = [
+        np.tile(ray_x1.reshape(-1, 1),   (1, n_test)),
+        np.tile(ray_x2.reshape(-1, 1),   (1, n_test)),
+        np.tile(ray_diag.reshape(-1, 1), (1, n_test)),
+    ]
+
+    pred = model.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=False,
+        return_deriv=True,
+        derivs_to_predict=[[[1, 1]], [[2, 1]], [[3, 1]]]
+    )
+
+    # pred shape: (4, n_test) — row 0 = f, rows 1–3 = directional derivatives
+    f_pred    = pred[0, :]
+    dir1_pred = pred[1, :]
+    dir2_pred = pred[2, :]
+    dir3_pred = pred[3, :]
+
+    f_true    = f(X_test).flatten()
+    dir1_true = dir_deriv(X_test, ray_x1)
+    dir2_true = dir_deriv(X_test, ray_x2)
+    dir3_true = dir_deriv(X_test, ray_diag)
+
+    def rmse(a, b): return float(np.sqrt(np.mean((a - b) ** 2)))
+    def corr(a, b): return float(np.corrcoef(a, b)[0, 1])
+
+    print(f"{'Quantity':<25} {'RMSE':>10}  {'Correlation':>12}")
+    print("-" * 52)
+    print(f"{'f(x)':<25} {rmse(f_pred, f_true):>10.4e}  {corr(f_pred, f_true):>12.4f}")
+    print(f"{'df/dr1 (x1-axis)':<25} {rmse(dir1_pred, dir1_true):>10.4e}  {corr(dir1_pred, dir1_true):>12.4f}")
+    print(f"{'df/dr2 (x2-axis)':<25} {rmse(dir2_pred, dir2_true):>10.4e}  {corr(dir2_pred, dir2_true):>12.4f}")
+    print(f"{'df/dr3 (45° diag)':<25} {rmse(dir3_pred, dir3_true):>10.4e}  {corr(dir3_pred, dir3_true):>12.4f}")
+
+---
+
+Step 7: Visualise predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+
+    pairs = [
+        (f_pred,    f_true,    r'$f(x)$'),
+        (dir1_pred, dir1_true, r'$D_{r_1} f$  (x1-axis)'),
+        (dir2_pred, dir2_true, r'$D_{r_2} f$  (x2-axis)'),
+        (dir3_pred, dir3_true, r'$D_{r_3} f$  (45° diag)'),
+    ]
+
+    for ax, (pred_vals, true_vals, label) in zip(axes.flat, pairs):
+        ax.scatter(true_vals, pred_vals, alpha=0.7, edgecolors='k', linewidths=0.5)
+        lo = min(true_vals.min(), pred_vals.min()) - 0.1
+        hi = max(true_vals.max(), pred_vals.max()) + 0.1
+        ax.plot([lo, hi], [lo, hi], 'r--', linewidth=2, label='Perfect')
+        r = corr(pred_vals, true_vals)
+        ax.set_title(f'{label}   (r = {r:.3f})')
+        ax.set_xlabel('True')
+        ax.set_ylabel('Predicted')
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3)
+
+    plt.suptitle('GDDEGP with 3 Direction Types in a 2D Space', fontsize=14, y=1.01)
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **GDDEGP with more direction types than spatial dimensions** and highlights the ``n_bases`` fix.
+
+Key takeaways:
+
+- **``n_bases = 2 × n_direction_types``** (not ``2 × spatial_dim``): the OTI space must be sized by the number of derivative direction types because GDDEGP allocates one OTI pair per direction type
+- **Old behaviour**: ``n_bases = 2 × spatial_dim = 4`` for a 2D problem, regardless of the number of directions. Using 3 direction types would access ``e5, e6`` which did not exist, silently corrupting kernel evaluations.
+- **New behaviour**: ``n_bases`` is computed from ``len(flattened_der_indices)``, correctly allocating all required OTI pairs.
+- **Practical implication**: models with more direction types than input dimensions (e.g., a 2D problem where you observe 3+ gradient-related quantities per point) now work correctly without any change to the user-facing API.
+
+**When to use more direction types than spatial dimensions:**
+
+- Observing first-order directional derivatives in more directions than the problem dimensionality (over-determined gradient information)
+- Combining first- and second-order derivatives in different directions at the same training points
+- Sensor layouts where derivative readings exceed the number of spatial axes
+

@@ -361,6 +361,35 @@ same global directions used during training.
         derivs_to_predict=derivs_to_predict
     )
 
+.. note::
+
+   **DDEGP: rays define the full prediction vocabulary.**
+   Unlike DEGP (where the OTI space always spans the coordinate axes),
+   DDEGP builds its internal OTI space from the ``rays`` array passed at
+   construction — specifically ``n_rays = rays.shape[1]`` determines the
+   OTI dimension.  A consequence is that ``derivs_to_predict`` can only
+   reference ray indices that exist in ``rays``.
+
+   This means you can predict derivatives along directions **not** present
+   in the training data, but those directions must still appear as columns
+   in ``rays`` at construction time.  For example, to later predict along
+   a 4th direction ``[[4, 1]]``, ``rays`` must have been defined with at
+   least 4 columns — even if no training data was provided for ray 4::
+
+       # rays defines 4 directions; training data only covers 3
+       rays = np.column_stack([ray1, ray2, ray3, ray4])  # shape (d, 4)
+       der_indices = [[[[1,1]], [[2,1]], [[3,1]]]]        # train with 3
+
+       model = ddegp(X_train, y_train, n_order=1,
+                     der_indices=der_indices, rays=rays, ...)
+
+       # Valid: ray 4 was declared upfront even though it wasn't trained
+       model.predict(X_test, params, return_deriv=True,
+                     derivs_to_predict=[[[4, 1]]])
+
+   If ``rays`` had only 3 columns, requesting ``[[4, 1]]`` would fail
+   because ``e4`` does not exist in the 3-dimensional OTI space.
+
 ----
 
 **3. GDDEGP (Generalized Directional Derivative-Enhanced GP)**
@@ -565,27 +594,34 @@ diagnostics for each submodel. WDEGP supports three submodel types via the
 
 **With derivs_to_predict:**
 
-For weighted models, ``derivs_to_predict`` must specify derivatives that are shared 
-across all submodels (for DEGP/DDEGP) or derivative orders shared across all submodels 
-(for GDDEGP):
+For weighted models, ``derivs_to_predict`` can specify any valid derivative index —
+it is no longer restricted to derivatives that are common to all submodels.  Each
+submodel constructs its own K_* from kernel derivatives directly, so a submodel
+that was not trained on a particular derivative can still contribute a cross-covariance
+prediction for it (informed by its function values and any trained derivatives):
 
 ::
 
     # WDEGP with two submodels
     # Submodel 1 has: ∂f/∂x₁, ∂f/∂x₂
-    # Submodel 2 has: ∂f/∂x₁, ∂f/∂x₂, ∂²f/∂x₁²
-    # Shared: ∂f/∂x₁, ∂f/∂x₂
-    
-    # Valid: subset of shared derivatives
+    # Submodel 2 has: ∂f/∂x₁ only
+    # Common: ∂f/∂x₁  — but ∂f/∂x₂ can still be requested
+
+    # Predict the common derivative
     derivs_to_predict = [[[1, 1]]]  # Only ∂f/∂x₁
-    
+
     y_pred, y_cov = gp.predict(
         X_test, params, calc_cov=True, return_deriv=True,
         derivs_to_predict=derivs_to_predict
     )
-    
-    # Invalid: includes non-shared derivative
-    derivs_to_predict = [[[1, 1]], [[1, 2]]]  # ∂²f/∂x₁² not shared - will raise error
+
+    # Also valid: request ∂f/∂x₂ even though submodel 2 wasn't trained on it
+    derivs_to_predict = [[[1, 1]], [[2, 1]]]
+
+    y_pred, y_cov = gp.predict(
+        X_test, params, calc_cov=True, return_deriv=True,
+        derivs_to_predict=derivs_to_predict
+    )
 
 **With submodel outputs:**
 

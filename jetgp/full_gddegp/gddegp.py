@@ -67,8 +67,6 @@ class gddegp:
         self.max_order = n_order
         self.rays_list = rays_list
         self.dim = x_train.shape[1]
-        self.n_bases = 2*x_train.shape[1]
-        self.oti = get_oti_module(self.n_bases, n_order)
         self.num_points = x_train.shape[0]
         self.kernel = kernel
         self.kernel_type = kernel_type
@@ -76,7 +74,12 @@ class gddegp:
         self.derivative_locations = derivative_locations
         self.der_indices = der_indices
 
+        # Flatten derivative indices first so we can size the OTI module correctly.
+        # GDDEGP needs 2 OTI bases per direction type (one odd tag for X1, one even
+        # tag for X2), so n_bases = 2 * n_direction_types.
         self.flattened_der_indices = utils.flatten_der_indices(der_indices)
+        self.n_bases = 2 * len(self.flattened_der_indices)
+        self.oti = get_oti_module(self.n_bases, n_order)
 
         if normalize:
             self.y_train, self.mu_y, self.sigma_y, self.sigmas_x, self.mus_x, sigma_data = \
@@ -141,7 +144,11 @@ class gddegp:
         return_deriv : bool, default=False
             Whether to return derivative predictions.
         derivs_to_predict : list, optional
-            Specific derivatives to predict. Must be subset of training derivatives.
+            Specific derivatives to predict. Can include derivatives not present in the
+            training set — the cross-covariance K_* is constructed from kernel derivatives
+            and does not require the requested derivative to have been observed during
+            training. Each entry must be a valid derivative spec within n_bases and n_order.
+            If None, defaults to all derivatives used in training.
 
         Returns
         -------
@@ -156,14 +163,14 @@ class gddegp:
         # Handle missing rays_predict when derivatives are requested
         if return_deriv and rays_predict is None:
             n_rays = len(self.flattened_der_indices)
-            
+
             warnings.warn(
                 f"No rays_predict provided for derivative predictions. "
                 f"Predictions will be made along coordinate axes: "
                 f"[1,0,0,...], [0,1,0,...], etc. for {n_rays} directional derivative(s).",
                 UserWarning
             )
-            
+
             # Construct coordinate axis rays for each entry in flattened_der_indices
             # Each ray array has shape (n_bases, n_predict)
             rays_predict = []
@@ -173,7 +180,7 @@ class gddegp:
                 ray_array = np.zeros((self.dim, n_predict))
                 ray_array[axis_idx, :] = 1.0
                 rays_predict.append(ray_array)
-        
+
         # Warn if rays provided but not needed
         if not return_deriv and rays_predict is not None:
             warnings.warn(
@@ -181,7 +188,7 @@ class gddegp:
                 "The provided rays will be ignored.",
                 UserWarning
             )
-    
+
         # Validate rays_predict structure when predicting derivatives
         if return_deriv and rays_predict is not None:
             # Check number of rays doesn't exceed training rays
@@ -191,43 +198,37 @@ class gddegp:
                     f"training rays ({len(self.rays_list)}). rays_predict must have at most "
                     f"{len(self.rays_list)} ray array(s)."
                 )
-            
+
             # Check shape of each ray array
             for i, ray_array in enumerate(rays_predict):
                 if not isinstance(ray_array, np.ndarray):
                     raise TypeError(
                         f"Ray array {i} must be a numpy ndarray, got {type(ray_array).__name__}."
                     )
-                
+
                 if ray_array.ndim != 2:
                     raise ValueError(
                         f"Ray array {i} must be 2-dimensional, got {ray_array.ndim} dimensions."
                     )
-                
+
                 if ray_array.shape[0] != self.dim:
                     raise ValueError(
                         f"Ray array {i} has {ray_array.shape[0]} rows, expected {self.n_bases} "
                         f"(one per spatial dimension)."
                     )
-                
+
                 if ray_array.shape[1] != n_predict:
                     raise ValueError(
                         f"Ray array {i} has {ray_array.shape[1]} columns, expected {n_predict} "
                         f"(one per test point)."
                     )
-    
+
         length_scales = params[:-1]
         sigma_n = params[-1]
 
         # Set up derivative prediction configuration
         if return_deriv:
             if derivs_to_predict is not None:
-                invalid_derivs = [d for d in derivs_to_predict if d not in self.flattened_der_indices]
-                if invalid_derivs:
-                    raise ValueError(
-                        f"The following derivative indices are not in the training set: {invalid_derivs}. "
-                        f"Valid derivative indices are: {self.flattened_der_indices}"
-                    )
                 common_derivs = derivs_to_predict
             else:
                 common_derivs = self.flattened_der_indices

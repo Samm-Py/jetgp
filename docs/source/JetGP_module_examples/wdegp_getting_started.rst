@@ -2419,3 +2419,212 @@ This example demonstrates **WDEGP with GDDEGP submodels** using point-wise direc
 - You need maximum flexibility in derivative predictions
 - Physics-informed direction selection is beneficial
 - Adaptive sampling strategies determine local directions
+
+---
+
+Example: Predicting Derivatives Not Common to All Submodels
+------------------------------------------------------------
+
+Overview
+~~~~~~~~
+In a WDEGP model each submodel may carry a different set of derivative observations. Previously, requesting a derivative at prediction time that was absent from *any* submodel would raise a ``ValueError``. Now, **each submodel handles the request independently** using the analytic kernel cross-covariance, so a derivative that exists in only a subset of submodels can still be predicted from the full ensemble.
+
+We model :math:`f(x_1, x_2) = \sin(x_1) + x_2^2` with two submodels:
+
+- **Submodel 0** (corner points): function values + :math:`\partial f/\partial x_1`
+- **Submodel 1** (edge/centre points): function values + :math:`\partial f/\partial x_1` + :math:`\partial f/\partial x_2`
+
+:math:`\partial f/\partial x_2` is not common to all submodels — but we can still predict it.
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import numpy as np
+    import warnings
+    from jetgp.wdegp.wdegp import wdegp
+    import matplotlib.pyplot as plt
+
+    print("Modules imported successfully.")
+
+---
+
+Step 2: Define training data with heterogeneous derivative coverage
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    np.random.seed(7)
+
+    # 3×3 grid — 9 training points
+    x_vals = np.linspace(0, 1, 3)
+    X_train = np.array([[x1, x2] for x1 in x_vals for x2 in x_vals])
+
+    def f(X):      return np.sin(X[:, 0]) + X[:, 1] ** 2
+    def df_dx1(X): return np.cos(X[:, 0])
+    def df_dx2(X): return 2.0 * X[:, 1]
+
+    corners = [0, 2, 6, 8]
+    edges   = [1, 3, 4, 5, 7]   # includes centre
+
+    y_all = f(X_train).reshape(-1, 1)
+
+    # Submodel 0: f everywhere + df/dx1 at corners
+    submodel_0 = [y_all, df_dx1(X_train[corners]).reshape(-1, 1)]
+
+    # Submodel 1: f everywhere + df/dx1 + df/dx2 at edges
+    submodel_1 = [y_all,
+                  df_dx1(X_train[edges]).reshape(-1, 1),
+                  df_dx2(X_train[edges]).reshape(-1, 1)]
+
+    y_train = [submodel_0, submodel_1]
+
+    print("Submodel 0: f (9 pts) + df/dx1 (corners, 4 pts)")
+    print("Submodel 1: f (9 pts) + df/dx1 (edges, 5 pts) + df/dx2 (edges, 5 pts)")
+    print("df/dx2 is NOT common to all submodels.")
+
+**Explanation:**
+The two submodels have different derivative coverage. ``df/dx2`` is present only in submodel 1 (edge points). Previously this asymmetry would block derivative predictions — now each submodel contributes whatever it can to the ensemble.
+
+---
+
+Step 3: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    der_indices = [
+        [[[[1, 1]]]],              # Submodel 0: dx1 only
+        [[[[1, 1]], [[2, 1]]]],    # Submodel 1: dx1 and dx2
+    ]
+    derivative_locations = [
+        [corners],                 # Submodel 0: dx1 at corners
+        [edges, edges],            # Submodel 1: dx1 and dx2 at edges
+    ]
+
+    print("der_indices          :", der_indices)
+    print("derivative_locations : submodel 0 →", derivative_locations[0])
+    print("                       submodel 1 →", derivative_locations[1])
+
+---
+
+Step 4: Initialize and train the WDEGP model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model = wdegp(
+            X_train, y_train,
+            n_order=1, n_bases=2,
+            der_indices=der_indices,
+            derivative_locations=derivative_locations,
+            normalize=True,
+            kernel="SE", kernel_type="anisotropic",
+        )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        params = model.optimize_hyperparameters(
+            optimizer="powell", n_restart_optimizer=5, debug=False
+        )
+
+    print("Optimized hyperparameters:", params)
+
+---
+
+Step 5: Predict the non-common derivative
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    np.random.seed(99)
+    X_test = np.random.uniform(0, 1, (40, 2))
+
+    # Request df/dx2 — absent from submodel 0 but present in submodel 1.
+    # Prior to the update this would have raised a ValueError.
+    pred = model.predict(
+        X_test, params,
+        calc_cov=False,
+        return_deriv=True,
+        derivs_to_predict=[[[2, 1]]]   # dx2
+    )
+
+    # pred shape: (2, n_test) — row 0 = f, row 1 = df/dx2
+    f_pred   = pred[0, :]
+    dx2_pred = pred[1, :]
+
+    f_true   = f(X_test).flatten()
+    dx2_true = df_dx2(X_test).flatten()
+
+    rmse_f   = float(np.sqrt(np.mean((f_pred - f_true) ** 2)))
+    rmse_dx2 = float(np.sqrt(np.mean((dx2_pred - dx2_true) ** 2)))
+    corr_dx2 = float(np.corrcoef(dx2_pred, dx2_true)[0, 1])
+
+    print(f"Function RMSE               : {rmse_f:.4e}")
+    print(f"df/dx2 RMSE (non-common)    : {rmse_dx2:.4e}")
+    print(f"df/dx2 correlation          : {corr_dx2:.4f}")
+
+**Explanation:**
+``derivs_to_predict=[[[2, 1]]]`` requests :math:`\partial f/\partial x_2`. Submodel 0 does not have training data for this derivative, but it can still form its cross-covariance :math:`K_*` analytically from the kernel. Submodel 1 has direct training data and contributes a stronger signal. The weighted ensemble combines both, yielding a useful prediction.
+
+---
+
+Step 6: Visualise predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    # Scatter: predicted vs true df/dx2
+    axes[0].scatter(dx2_true, dx2_pred, alpha=0.7, edgecolors='k', linewidths=0.5)
+    lims = [min(dx2_true.min(), dx2_pred.min()) - 0.1,
+            max(dx2_true.max(), dx2_pred.max()) + 0.1]
+    axes[0].plot(lims, lims, 'r--', linewidth=2, label='Perfect prediction')
+    axes[0].set_xlabel(r'True $\partial f / \partial x_2$')
+    axes[0].set_ylabel(r'Predicted $\partial f / \partial x_2$')
+    axes[0].set_title(f'Non-common df/dx2  (r = {corr_dx2:.3f})')
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+
+    # Slice along x2 (x1 fixed at 0.5)
+    x2_line = np.linspace(0, 1, 60)
+    X_line  = np.column_stack([np.full(60, 0.5), x2_line])
+    pred_line = model.predict(X_line, params, calc_cov=False,
+                              return_deriv=True, derivs_to_predict=[[[2, 1]]])
+    true_line = df_dx2(X_line).flatten()
+
+    axes[1].plot(x2_line, true_line,         'b-',  linewidth=2, label='True $2x_2$')
+    axes[1].plot(x2_line, pred_line[1, :],   'r--', linewidth=2, label='GP prediction')
+    axes[1].set_xlabel(r'$x_2$  (with $x_1 = 0.5$)')
+    axes[1].set_ylabel(r'$\partial f / \partial x_2$')
+    axes[1].set_title('Non-common df/dx2 — slice at x1 = 0.5')
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **predicting non-common derivatives** in WDEGP.
+
+Key takeaways:
+
+- **No ``ValueError`` for non-common derivatives**: each submodel independently handles the requested derivative through the kernel's analytic cross-covariance
+- **Submodels without training data for the requested derivative** still contribute via the kernel — they simply carry more uncertainty for that direction
+- **Submodels with direct training data** contribute a stronger, data-informed signal and naturally receive higher weight in the ensemble
+- **``derivs_to_predict``** can request any derivative that exists within ``n_bases`` and ``n_order``, regardless of which submodels observed it
+
+**When to use non-common derivative prediction:**
+
+- Different sensors or simulation runs provide derivative data at different points
+- Submodels are specialised for different regions with different available information
+- Post-hoc exploration of gradient directions not uniformly covered in training

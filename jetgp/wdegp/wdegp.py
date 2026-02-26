@@ -393,7 +393,10 @@ class wdegp:
             For 'gddegp' mode with return_deriv=True: rays at test points.
             rays_predict[dir_idx] has shape (d, n_test).
         derivs_to_predict : list, optional
-            Specific derivatives to predict. If None, predicts all common derivatives.
+            Specific derivatives to predict. Can include derivatives not present in the
+            training set of any submodel — each submodel constructs K_* from kernel
+            derivatives directly. If None, defaults to all derivatives common to all
+            submodels.
     
         Returns
         -------
@@ -519,23 +522,14 @@ class wdegp:
         
         x_train = self.x_train_normalized if self.normalize else self.x_train
     
-        # Find common derivatives across submodels for weighted combination
+        # Determine which derivatives to predict across submodels
         if return_deriv:
-            common = gp_utils.find_common_derivatives(self.flattened_der_indices)
-            common_derivs = [gp_utils.to_list(d) for d in common]
-            if derivs_to_predict is None and return_deriv:
-                print('Making predictions for all derivatives that are common among submodels')
+            if derivs_to_predict is not None:
+                common_derivs = derivs_to_predict
             else:
-                derivs_to_predict_tuples = {gp_utils.to_tuple(d) for d in derivs_to_predict}
-                # Check if any requested derivatives are not in common
-                invalid_derivs = derivs_to_predict_tuples - common  # Set difference
-                if invalid_derivs:
-                    raise ValueError(
-                        f"The following derivatives are not available for prediction: {invalid_derivs}. "
-                        f"Valid derivatives are: {common}"
-                    )
-                common = common & derivs_to_predict_tuples  # Set intersection
+                common = gp_utils.find_common_derivatives(self.flattened_der_indices)
                 common_derivs = [gp_utils.to_list(d) for d in common]
+                print('Making predictions for all derivatives that are common among submodels')
             self.powers_predict = utils.build_companion_array_predict(
                 self.n_bases, self.n_order, common_derivs)
         else:

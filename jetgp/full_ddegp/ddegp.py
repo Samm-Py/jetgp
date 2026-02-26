@@ -27,6 +27,11 @@ class ddegp:
         Derivative multi-indices corresponding to each derivative term.
     rays : ndarray
         Array of shape (d, n_rays), where each column is a direction vector.
+        **Important:** ``rays`` defines the OTI space dimension used internally
+        (``n_rays = rays.shape[1]``).  Every direction you may ever want to
+        predict — including directions for which no training data exists — must
+        appear as a column here.  A direction absent from ``rays`` cannot be
+        requested via ``derivs_to_predict`` at prediction time.
     derivative_locations : list of lists
         Which training points have which derivatives.
     normalize : bool, default=True
@@ -133,7 +138,18 @@ class ddegp:
         return_deriv : bool, default=False
             Whether to return derivative predictions.
         derivs_to_predict : list, optional
-            Specific derivatives to predict. Must be subset of training derivatives.
+            Specific derivatives to predict. Can include derivatives not present in the
+            training set — the cross-covariance K_* is constructed from kernel derivatives
+            and does not require the requested derivative to have been observed during
+            training. Each entry must be a valid derivative spec within n_rays and n_order.
+            If None, defaults to all derivatives used in training.
+
+            **DDEGP-specific constraint:** each index must reference a ray that exists
+            in the ``rays`` array passed at construction.  For example, ``[[4, 1]]``
+            requires ``rays`` to have at least 4 columns.  Unlike DEGP — where the OTI
+            space always spans the fixed coordinate axes — the DDEGP OTI space is
+            spanned by the columns of ``rays``, so any direction not included there is
+            inaccessible at prediction time.
 
         Returns
         -------
@@ -148,12 +164,6 @@ class ddegp:
         # Set up derivative prediction configuration
         if return_deriv:
             if derivs_to_predict is not None:
-                invalid_derivs = [d for d in derivs_to_predict if d not in self.flattened_der_indices]
-                if invalid_derivs:
-                    raise ValueError(
-                        f"The following derivative indices are not in the training set: {invalid_derivs}. "
-                        f"Valid derivative indices are: {self.flattened_der_indices}"
-                    )
                 common_derivs = derivs_to_predict
             else:
                 common_derivs = self.flattened_der_indices

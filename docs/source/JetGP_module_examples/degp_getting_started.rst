@@ -1195,3 +1195,208 @@ This example demonstrates **heterogeneous derivative coverage** in DEGP using ``
 - You want to focus derivative information in high-curvature or high-importance regions
 - Boundary conditions provide limited derivative information
 
+---
+
+Example 6: Predicting Untrained Partial Derivatives
+-----------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates that DEGP can **predict partial derivatives that were not observed during training**. The cross-covariance :math:`K_*` is constructed directly from kernel derivatives, so any partial derivative within the ``n_bases``-dimensional OTI space can be predicted regardless of whether training data was provided for it.
+
+We learn :math:`f(x_1, x_2, x_3) = \sin(x_1) + \cos(x_2) + x_3^2` using function values and the first partial derivatives with respect to :math:`x_1` and :math:`x_2` only. At prediction time we also request :math:`\partial f / \partial x_3`, which was never observed.
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   import numpy as np
+   from jetgp.full_degp.degp import degp
+   import matplotlib.pyplot as plt
+
+   print("Modules imported successfully.")
+
+---
+
+Step 2: Define the function and training data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   np.random.seed(42)
+
+   # 3D input — sample a small grid
+   x_vals = np.linspace(0, 1, 4)
+   g = np.array([[x1, x2, x3]
+                 for x1 in x_vals for x2 in x_vals for x3 in x_vals])
+   X_train = g
+
+   def f(X):      return np.sin(X[:, 0]) + np.cos(X[:, 1]) + X[:, 2] ** 2
+   def df_dx1(X): return np.cos(X[:, 0])
+   def df_dx2(X): return -np.sin(X[:, 1])
+   def df_dx3(X): return 2.0 * X[:, 2]   # NOT included in training
+
+   y_func  = f(X_train).reshape(-1, 1)
+   y_dx1   = df_dx1(X_train).reshape(-1, 1)
+   y_dx2   = df_dx2(X_train).reshape(-1, 1)
+   y_train = [y_func, y_dx1, y_dx2]   # df/dx3 deliberately omitted
+
+   print(f"Training points : {X_train.shape[0]}")
+   print(f"Training outputs: f, df/dx1, df/dx2  (df/dx3 NOT provided)")
+
+**Explanation:**
+A 4×4×4 grid of 3D points is used. The training list contains only function values and the first two partial derivatives; :math:`\partial f / \partial x_3` is intentionally left out.
+
+---
+
+Step 3: Define derivative indices and locations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # Only dx1 and dx2 are in the training set
+   der_indices = [[[[1, 1]], [[2, 1]]]]
+
+   n_train = len(X_train)
+   derivative_locations = [
+       list(range(n_train)),   # df/dx1 at all points
+       list(range(n_train)),   # df/dx2 at all points
+   ]
+
+   print("der_indices          :", der_indices)
+   print("derivative_locations : 2 entries, each covering all", n_train, "points")
+
+**Explanation:**
+``der_indices`` lists only :math:`\partial f/\partial x_1` and :math:`\partial f/\partial x_2`. The third coordinate axis is absent from training — but it *exists* in the OTI space because ``n_bases=3`` will span all three coordinate axes.
+
+---
+
+Step 4: Initialize the DEGP model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   # n_bases=3 because the input space is 3-dimensional.
+   # This means the OTI module includes basis units e1, e2, e3
+   # for all three coordinate directions, even though dx3 is not trained.
+   model = degp(
+       X_train, y_train,
+       n_order=1, n_bases=3,
+       der_indices=der_indices,
+       derivative_locations=derivative_locations,
+       normalize=True,
+       kernel="SE", kernel_type="anisotropic"
+   )
+
+   print("DEGP model (3D, training dx1+dx2 only) initialized.")
+
+---
+
+Step 5: Optimize hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   params = model.optimize_hyperparameters(
+       optimizer='powell',
+       n_restart_optimizer=5,
+       debug=False
+   )
+   print("Optimized hyperparameters:", params)
+
+---
+
+Step 6: Predict the untrained derivative
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   np.random.seed(7)
+   X_test = np.random.uniform(0, 1, (50, 3))
+
+   # Request df/dx3 via derivs_to_predict — it was NOT in the training set
+   pred = model.predict(
+       X_test, params,
+       calc_cov=False,
+       return_deriv=True,
+       derivs_to_predict=[[[3, 1]]]   # dx3 only
+   )
+
+   # pred shape: (2, n_test) — row 0 = f, row 1 = df/dx3
+   f_pred   = pred[0, :]
+   dx3_pred = pred[1, :]
+
+   dx3_true = df_dx3(X_test).flatten()
+   f_true   = f(X_test).flatten()
+
+   rmse_f   = float(np.sqrt(np.mean((f_pred - f_true) ** 2)))
+   rmse_dx3 = float(np.sqrt(np.mean((dx3_pred - dx3_true) ** 2)))
+   corr_dx3 = float(np.corrcoef(dx3_pred, dx3_true)[0, 1])
+
+   print(f"Function RMSE            : {rmse_f:.4e}")
+   print(f"df/dx3 RMSE (untrained)  : {rmse_dx3:.4e}")
+   print(f"df/dx3 correlation       : {corr_dx3:.4f}")
+
+**Explanation:**
+``derivs_to_predict=[[[3, 1]]]`` requests the first partial derivative along the third coordinate axis. Because ``n_bases=3``, basis element ``e3`` already exists in the OTI space — the model simply reads the corresponding Taylor coefficient from :math:`\phi_\text{exp}` without needing any observed training data for that direction.
+
+---
+
+Step 7: Visualise the untrained derivative prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+   # Scatter: predicted vs true df/dx3
+   axes[0].scatter(dx3_true, dx3_pred, alpha=0.7, edgecolors='k', linewidths=0.5)
+   lims = [min(dx3_true.min(), dx3_pred.min()) - 0.1,
+           max(dx3_true.max(), dx3_pred.max()) + 0.1]
+   axes[0].plot(lims, lims, 'r--', linewidth=2, label='Perfect prediction')
+   axes[0].set_xlabel(r'True $\partial f / \partial x_3$')
+   axes[0].set_ylabel(r'Predicted $\partial f / \partial x_3$')
+   axes[0].set_title(f'Untrained df/dx3  (r = {corr_dx3:.3f})')
+   axes[0].legend()
+   axes[0].grid(True, alpha=0.3)
+
+   # Sort by x3 for a clean line plot
+   sort_idx = np.argsort(X_test[:, 2])
+   axes[1].plot(X_test[sort_idx, 2], dx3_true[sort_idx],
+                'b-', linewidth=2, label=r'True $2x_3$')
+   axes[1].plot(X_test[sort_idx, 2], dx3_pred[sort_idx],
+                'r--', linewidth=2, label='GP prediction')
+   axes[1].set_xlabel(r'$x_3$')
+   axes[1].set_ylabel(r'$\partial f / \partial x_3$')
+   axes[1].set_title('Predicted vs True along x3 axis')
+   axes[1].legend()
+   axes[1].grid(True, alpha=0.3)
+
+   plt.tight_layout()
+   plt.show()
+
+**Explanation:**
+The scatter plot (left) and line plot (right) both show that the GP successfully recovers :math:`\partial f/\partial x_3 = 2x_3` even though no training data for this derivative was provided. The information propagates through the kernel structure: the GP has learned the length scale along :math:`x_3` from the function values, and the kernel's analytic derivative with respect to :math:`e_3` supplies the required cross-covariance.
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **predicting untrained partial derivatives** in DEGP.
+
+Key takeaways:
+
+- **No extra setup required**: simply pass ``derivs_to_predict`` at prediction time with any index within ``n_bases``
+- **Works because ``n_bases`` spans all coordinate axes**: setting ``n_bases=3`` for a 3D problem ensures :math:`e_1, e_2, e_3` all exist in the OTI space, regardless of which derivatives appear in training
+- **Cross-covariance from kernel derivatives**: :math:`K_*` is built analytically from the kernel, not from observed data, so untrained directions are always accessible
+- **Accuracy depends on function structure**: the prediction quality for the untrained derivative reflects how well the GP has learned the underlying function
+
+**When this feature is useful:**
+
+- Derivative data is expensive and only a subset of directions can be observed during training
+- Post-hoc sensitivity analysis in directions not originally anticipated
+- Exploring gradient information along new axes without retraining
+

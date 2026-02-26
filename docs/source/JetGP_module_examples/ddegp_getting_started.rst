@@ -1103,3 +1103,211 @@ Summary
    * - Use case
      - Full derivative access
      - Limited/regional sensors
+
+---
+
+Example 3: Predicting Along an Untrained Ray Direction
+------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates that DDEGP can **predict derivatives along ray directions that were not observed during training**, as long as those rays were included in the ``rays`` array at construction time.
+
+We define **four** directional rays (45°, 90°, 135°, 180°) but provide training data only for the first three. At prediction time we request the fourth direction (180°) — this was never observed, but because its basis vector ``e4`` was registered in the OTI space at construction, it is fully accessible through the kernel's analytic derivatives.
+
+.. note::
+
+   **DDEGP OTI space constraint.**
+   The ``rays`` array passed to the constructor defines the OTI basis. A direction absent from ``rays`` at construction time cannot be predicted later. Always include every direction you may ever want to query — including directions for which no training data will be provided — in the ``rays`` array upfront.
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import numpy as np
+    from jetgp.full_ddegp.ddegp import ddegp
+    import matplotlib.pyplot as plt
+
+    print("Modules imported successfully.")
+
+---
+
+Step 2: Define the function and directional rays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    np.random.seed(42)
+
+    # Four rays: 45°, 90°, 135°, 180°
+    angles = [np.pi/4, np.pi/2, 3*np.pi/4, np.pi]
+    RAYS = np.array([[np.cos(a) for a in angles],
+                     [np.sin(a) for a in angles]])   # shape (2, 4)
+
+    print("Ray directions (all four must be in 'rays' at construction):")
+    for i, a in enumerate(angles):
+        print(f"  Ray {i+1}: [{RAYS[0,i]:+.4f}, {RAYS[1,i]:+.4f}]  "
+              f"({np.degrees(a):.0f}°)")
+
+    # Simple 2D function: f(x1,x2) = x1^2 + x2^2
+    def f(X):          return X[:, 0]**2 + X[:, 1]**2
+    def grad_f(X):     return np.stack([2*X[:, 0], 2*X[:, 1]], axis=1)
+    def dir_deriv(X, ray):
+        """Exact directional derivative along a unit ray."""
+        g = grad_f(X)                  # (n, 2)
+        return (g @ ray).reshape(-1, 1)
+
+**Explanation:**
+All four rays are collected into a single ``(2, 4)`` array. Even though only rays 1–3 will appear in training, ray 4 (180°) must already be registered here so that its OTI basis element ``e4`` is created when the model is instantiated.
+
+---
+
+Step 3: Generate training data (rays 1–3 only)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    x_vals = np.linspace(-1, 1, 5)
+    X_train = np.array([[x1, x2] for x1 in x_vals for x2 in x_vals])
+    n_train = len(X_train)
+
+    y_func = f(X_train).reshape(-1, 1)
+    # Training derivatives for rays 1, 2, 3 — ray 4 deliberately omitted
+    y_ray1 = dir_deriv(X_train, RAYS[:, 0])
+    y_ray2 = dir_deriv(X_train, RAYS[:, 1])
+    y_ray3 = dir_deriv(X_train, RAYS[:, 2])
+    y_train = [y_func, y_ray1, y_ray2, y_ray3]
+
+    # Only 3 derivative types in training; ray index 4 (column 3) is absent
+    der_indices = [[[[1, 1]], [[2, 1]], [[3, 1]]]]
+    derivative_locations = [list(range(n_train))] * 3
+
+    print(f"Training points : {n_train}")
+    print(f"Trained rays    : 1 (45°), 2 (90°), 3 (135°)")
+    print(f"Untrained ray   : 4 (180°)  — in RAYS array, not in der_indices")
+
+---
+
+Step 4: Initialize the DDEGP model with all four rays
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    # Pass the full RAYS array (all 4 columns) even though only 3 are trained.
+    # This registers e1..e4 in the OTI space, making ray 4 accessible later.
+    model = ddegp(
+        X_train, y_train,
+        n_order=1,
+        der_indices=der_indices,
+        rays=RAYS,                      # <-- all 4 rays
+        derivative_locations=derivative_locations,
+        normalize=True,
+        kernel="SE", kernel_type="anisotropic"
+    )
+
+    print("DDEGP model initialized with n_rays =", model.n_rays)
+
+---
+
+Step 5: Optimize hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    params = model.optimize_hyperparameters(
+        optimizer='powell',
+        n_restart_optimizer=5,
+        debug=False
+    )
+    print("Optimized hyperparameters:", params)
+
+---
+
+Step 6: Predict the untrained ray direction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    np.random.seed(99)
+    X_test = np.random.uniform(-1, 1, (60, 2))
+
+    # Request ray 4 (180°) — index [[4, 1]] in OTI notation
+    pred = model.predict(
+        X_test, params,
+        calc_cov=False,
+        return_deriv=True,
+        derivs_to_predict=[[[4, 1]]]   # ray 4 — not in training set
+    )
+
+    # pred shape: (2, n_test) — row 0 = f, row 1 = directional deriv along ray 4
+    f_pred    = pred[0, :]
+    ray4_pred = pred[1, :]
+
+    ray4_true = dir_deriv(X_test, RAYS[:, 3]).flatten()
+    f_true    = f(X_test).flatten()
+
+    rmse_f    = float(np.sqrt(np.mean((f_pred - f_true) ** 2)))
+    rmse_ray4 = float(np.sqrt(np.mean((ray4_pred - ray4_true) ** 2)))
+    corr_ray4 = float(np.corrcoef(ray4_pred, ray4_true)[0, 1])
+
+    print(f"Function RMSE                : {rmse_f:.4e}")
+    print(f"Ray-4 RMSE (untrained)       : {rmse_ray4:.4e}")
+    print(f"Ray-4 correlation            : {corr_ray4:.4f}")
+
+**Explanation:**
+``derivs_to_predict=[[[4, 1]]]`` requests the first-order derivative along the fourth OTI basis element. Because the model was initialised with all four rays, ``e4`` exists in the OTI space and the kernel's analytic derivative with respect to ``e4`` provides the required cross-covariance — no training data for this direction was needed.
+
+---
+
+Step 7: Visualise the untrained ray prediction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+    # Scatter: predicted vs true ray-4 directional derivative
+    axes[0].scatter(ray4_true, ray4_pred, alpha=0.7, edgecolors='k', linewidths=0.5)
+    lims = [min(ray4_true.min(), ray4_pred.min()) - 0.2,
+            max(ray4_true.max(), ray4_pred.max()) + 0.2]
+    axes[0].plot(lims, lims, 'r--', linewidth=2, label='Perfect prediction')
+    axes[0].set_xlabel(r'True $D_{r_4} f$')
+    axes[0].set_ylabel(r'Predicted $D_{r_4} f$')
+    axes[0].set_title(f'Untrained ray 4 (180°)  (r = {corr_ray4:.3f})')
+    axes[0].legend()
+    axes[0].grid(True, alpha=0.3)
+
+    # Map over x1 axis (with x2 ≈ 0) for a clean line plot
+    x1_line = np.linspace(-1, 1, 80)
+    X_line  = np.column_stack([x1_line, np.zeros(80)])
+    pred_line = model.predict(X_line, params, calc_cov=False,
+                              return_deriv=True, derivs_to_predict=[[[4, 1]]])
+    true_line = dir_deriv(X_line, RAYS[:, 3]).flatten()
+
+    axes[1].plot(x1_line, true_line, 'b-', linewidth=2, label='True')
+    axes[1].plot(x1_line, pred_line[1, :], 'r--', linewidth=2, label='GP prediction')
+    axes[1].set_xlabel(r'$x_1$  (with $x_2 = 0$)')
+    axes[1].set_ylabel(r'$D_{r_4} f$')
+    axes[1].set_title('Untrained ray 4 — slice at x2 = 0')
+    axes[1].legend()
+    axes[1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **predicting along an untrained ray direction** in DDEGP.
+
+Key takeaways:
+
+- **Include all rays at construction time**: the ``rays`` array defines the OTI vocabulary. Every direction you may ever query must appear there, even if its training data will be empty.
+- **Training with a subset is fine**: ``der_indices`` and ``derivative_locations`` control which rays have observed data. Omitting a ray from ``der_indices`` means no training constraint — the ray remains predictable through the kernel alone.
+- **Cross-covariance is analytic**: :math:`K_*` for the untrained ray is derived from the kernel's partial derivative with respect to ``e4``, not from observations.
+- **DDEGP vs DEGP**: In DEGP the OTI space always spans the fixed coordinate axes. In DDEGP the OTI space is spanned by the columns of ``rays``, so the rays array is the sole determinant of what can be predicted.
+

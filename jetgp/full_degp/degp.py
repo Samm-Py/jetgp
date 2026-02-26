@@ -159,7 +159,12 @@ class degp:
         return_deriv : bool, default=False
             Whether to return derivative predictions.
         derivs_to_predict : list, optional
-            Specific derivatives to predict. Must be subset of training derivatives.
+            Specific derivatives to predict. Can include derivatives not present in the
+            training set — the cross-covariance K_* is constructed from kernel derivatives
+            and does not require the requested derivative to have been observed during
+            training. Each entry must be a valid derivative spec within n_bases and n_order
+            (e.g. ``[[3, 1]]`` for df/dx3 in a first-order model).
+            If None, defaults to all derivatives used in training.
 
         Returns
         -------
@@ -174,12 +179,6 @@ class degp:
         # Set up derivative prediction configuration
         if return_deriv:
             if derivs_to_predict is not None:
-                invalid_derivs = [d for d in derivs_to_predict if d not in self.flattened_der_indices]
-                if invalid_derivs:
-                    raise ValueError(
-                        f"The following derivative indices are not in the training set: {invalid_derivs}. "
-                        f"Valid derivative indices are: {self.flattened_der_indices}"
-                    )
                 common_derivs = derivs_to_predict
             else:
                 common_derivs = self.flattened_der_indices
