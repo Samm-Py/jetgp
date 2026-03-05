@@ -1311,3 +1311,243 @@ Key takeaways:
 - **Cross-covariance is analytic**: :math:`K_*` for the untrained ray is derived from the kernel's partial derivative with respect to ``e4``, not from observations.
 - **DDEGP vs DEGP**: In DEGP the OTI space always spans the fixed coordinate axes. In DDEGP the OTI space is spanned by the columns of ``rays``, so the rays array is the sole determinant of what can be predicted.
 
+---
+
+Example 4: 2D Function-Only Training with Derivative Predictions
+-----------------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates DDEGP trained on **function values only** in a 2D input space. Two
+coordinate-aligned rays (:math:`\mathbf{e}_1 = [1,0]^T`, :math:`\mathbf{e}_2 = [0,1]^T`) are
+registered in the OTI space at construction. With ``der_indices=[]`` no derivative observations
+enter the training covariance. At prediction time ``derivs_to_predict`` recovers both partial
+derivatives through the kernel's analytic cross-covariance.
+
+.. note::
+
+   **OTI vocabulary must be declared upfront.** In DDEGP the OTI space is spanned exclusively
+   by the ``rays`` array passed to the constructor. Every direction you may ever want to predict
+   must appear there — even if its training data will be empty. ``der_indices=[]`` omits all
+   derivative observations while preserving the two-ray OTI space needed for prediction.
+
+True function: :math:`f(x_1,x_2) = \sin(x_1)\cos(x_2)`
+
+True partials: :math:`\partial f/\partial x_1 = \cos(x_1)\cos(x_2)`, :math:`\quad\partial f/\partial x_2 = -\sin(x_1)\sin(x_2)`
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import warnings
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from jetgp.full_ddegp.ddegp import ddegp
+
+    print("Modules imported successfully.")
+
+---
+
+Step 2: Define the true function and build training data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    def f(X):
+        return np.sin(X[:, 0]) * np.cos(X[:, 1])
+
+    def df_dx1(X):
+        return np.cos(X[:, 0]) * np.cos(X[:, 1])
+
+    def df_dx2(X):
+        return -np.sin(X[:, 0]) * np.sin(X[:, 1])
+
+    # 5×5 training grid — function values ONLY
+    x1_tr = np.linspace(0, 2 * np.pi, 6)
+    x2_tr = np.linspace(0, 2 * np.pi, 6)
+    G1, G2 = np.meshgrid(x1_tr, x2_tr)
+    X_train = np.column_stack([G1.ravel(), G2.ravel()])  # shape (36, 2)
+    y_func  = f(X_train).reshape(-1, 1)
+    y_train = [y_func]  # no derivative arrays
+
+    print(f"X_train shape : {X_train.shape}")
+    print(f"y_train[0] shape : {y_train[0].shape}")
+
+---
+
+Step 3: Define coordinate-aligned rays and initialise the DDEGP model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    # Two coordinate-aligned unit rays define the full OTI vocabulary.
+    # Ray 1 = [1, 0]  →  x1-direction (gives df/dx1 at prediction time)
+    # Ray 2 = [0, 1]  →  x2-direction (gives df/dx2 at prediction time)
+    rays = np.eye(2)   # shape (2, 2) — one column per ray
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")   # suppress "0 derivatives" notice
+        model = ddegp(
+            X_train, y_train,
+            n_order=1,
+            der_indices=[],
+            rays=rays,
+            derivative_locations=[],
+            normalize=True,
+            kernel="SE", kernel_type="anisotropic",
+        )
+
+    print("DDEGP model (function-only, 2D) initialised.")
+    print(f"  n_rays : {model.n_rays}")
+
+**Explanation:**
+
+- ``rays = np.eye(2)``: registers two coordinate-aligned ray directions in the OTI space
+- ``der_indices=[]``: no derivative observations — training kernel is built from function values only
+- ``derivative_locations=[]``: empty because there are no training derivatives
+
+---
+
+Step 4: Optimise hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    params = model.optimize_hyperparameters(
+        optimizer='pso',
+        pop_size=100,
+        n_generations=15,
+        local_opt_every=15,
+        debug=False,
+    )
+    print("Optimised hyperparameters:", params)
+
+---
+
+Step 5: Predict f, df/dx1, and df/dx2 with uncertainty
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    n_test = 40
+    x1_te = np.linspace(0, 2 * np.pi, n_test)
+    x2_te = np.linspace(0, 2 * np.pi, n_test)
+    G1t, G2t = np.meshgrid(x1_te, x2_te)
+    X_test = np.column_stack([G1t.ravel(), G2t.ravel()])
+
+    # derivs_to_predict: [[1,1]] → 1st-order along ray 1 (= df/dx1)
+    #                    [[2,1]] → 1st-order along ray 2 (= df/dx2)
+    mean, var = model.predict(
+        X_test, params,
+        calc_cov=True,
+        return_deriv=True,
+        derivs_to_predict=[[[1, 1]], [[2, 1]]],
+    )
+
+    # mean shape: (3, n_test²) — rows: [f, df/dx1, df/dx2]
+    shape2d = (n_test, n_test)
+    f_mean_grid   = mean[0, :].reshape(shape2d)
+    dx1_mean_grid = mean[1, :].reshape(shape2d)
+    dx2_mean_grid = mean[2, :].reshape(shape2d)
+
+    f_true_grid   = f(X_test).reshape(shape2d)
+    dx1_true_grid = df_dx1(X_test).reshape(shape2d)
+    dx2_true_grid = df_dx2(X_test).reshape(shape2d)
+
+    print(f"Prediction output shape: {mean.shape}")
+
+**Explanation:**
+``derivs_to_predict=[[[1,1]], [[2,1]]]`` requests the first-order derivative along each
+registered ray. Because the rays are coordinate-aligned, these correspond exactly to the
+standard partial derivatives :math:`\partial f/\partial x_1` and :math:`\partial f/\partial x_2`.
+
+---
+
+Step 6: Accuracy metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    f_rmse   = float(np.sqrt(np.mean((mean[0, :] - f(X_test))      ** 2)))
+    dx1_rmse = float(np.sqrt(np.mean((mean[1, :] - df_dx1(X_test)) ** 2)))
+    dx2_rmse = float(np.sqrt(np.mean((mean[2, :] - df_dx2(X_test)) ** 2)))
+    dx1_corr = float(np.corrcoef(mean[1, :], df_dx1(X_test))[0, 1])
+    dx2_corr = float(np.corrcoef(mean[2, :], df_dx2(X_test))[0, 1])
+
+    print(f"f        RMSE : {f_rmse:.4e}")
+    print(f"df/dx1   RMSE : {dx1_rmse:.4e}   Pearson r: {dx1_corr:.3f}")
+    print(f"df/dx2   RMSE : {dx2_rmse:.4e}   Pearson r: {dx2_corr:.3f}")
+
+---
+
+Step 7: Visualise predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    extent = [0, 2 * np.pi, 0, 2 * np.pi]
+    titles_row = [r"$f(x_1,x_2)$",
+                  r"$\partial f/\partial x_1$",
+                  r"$\partial f/\partial x_2$"]
+    trues = [f_true_grid,   dx1_true_grid,  dx2_true_grid]
+    means = [f_mean_grid,   dx1_mean_grid,  dx2_mean_grid]
+    stds  = [np.sqrt(np.abs(var[r, :])).reshape(shape2d) for r in range(3)]
+
+    fig, axes = plt.subplots(3, 3, figsize=(14, 12))
+    kw = dict(origin="lower", extent=extent, aspect="auto")
+
+    for row, (label, true, gp_mean, gp_std) in enumerate(
+            zip(titles_row, trues, means, stds)):
+        vmin, vmax = true.min(), true.max()
+
+        im0 = axes[row, 0].imshow(true,    **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+        axes[row, 0].set_title(f"True {label}")
+        plt.colorbar(im0, ax=axes[row, 0])
+
+        im1 = axes[row, 1].imshow(gp_mean, **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+        axes[row, 1].set_title(f"GP mean {label}")
+        plt.colorbar(im1, ax=axes[row, 1])
+
+        im2 = axes[row, 2].imshow(gp_std,  **kw, cmap="viridis")
+        axes[row, 2].set_title(f"GP std {label}")
+        plt.colorbar(im2, ax=axes[row, 2])
+
+        for col in range(3):
+            axes[row, col].set_xlabel("$x_1$")
+            axes[row, col].set_ylabel("$x_2$")
+
+    for col in range(2):
+        axes[0, col].scatter(X_train[:, 0], X_train[:, 1],
+                             c="k", s=20, zorder=5, label="Training pts")
+    axes[0, 0].legend(fontsize=8, loc="upper right")
+
+    plt.suptitle(
+        "DDEGP 2D — function-only training, coordinate-axis derivative predictions\n"
+        r"$f(x_1,x_2) = \sin(x_1)\cos(x_2)$",
+        fontsize=13,
+    )
+    plt.tight_layout()
+    plt.show()
+
+**Explanation:**
+The 3×3 grid of contour maps shows true values, GP posterior means, and posterior standard
+deviations for :math:`f`, :math:`\partial f/\partial x_1`, and :math:`\partial f/\partial x_2`.
+Despite training exclusively on function values, DDEGP recovers the gradient structure through
+the kernel's analytic cross-covariance along the registered rays.
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **2D function-only DDEGP** with coordinate-axis derivative predictions.
+
+Key takeaways:
+
+- **Rays define the OTI vocabulary at construction time**: include every direction you may want to predict in ``rays``, even if no training data will be provided for it
+- **``der_indices=[]`` excludes all derivative observations**: the training kernel contains only function-value blocks, yet the OTI space remains intact for cross-covariance prediction
+- **Coordinate-aligned rays reproduce DEGP behaviour**: when ``rays = np.eye(d)``, DDEGP function-only predictions are equivalent to DEGP function-only predictions
+- **Non-coordinate rays work identically**: replace ``np.eye(2)`` with any normalised direction matrix to predict along arbitrary custom directions
+

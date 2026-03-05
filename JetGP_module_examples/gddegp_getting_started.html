@@ -501,6 +501,18 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Summary</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-4-2d-function-only-training-with-derivative-predictions">Example 4: 2D Function-Only Training with Derivative Predictions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-the-true-function-and-build-training-data">Step 2: Define the true function and build training data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-initialise-gddegp-model-for-function-only-training">Step 3: Initialise GDDEGP model for function-only training</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-optimise-hyperparameters">Step 4: Optimise hyperparameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-build-prediction-rays-and-predict-with-uncertainty">Step 5: Build prediction rays and predict with uncertainty</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-accuracy-metrics">Step 6: Accuracy metrics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Step 7: Visualise predictions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Summary</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -882,7 +894,9 @@ The GDDEGP model is initialized with:</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Test grid: 100×100 = 10000 points
 Making predictions...
-
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
 Model Performance:
   NRMSE: 0.000139
   Max absolute error: 0.442734
@@ -2525,33 +2539,29 @@ Optimizing hyperparameters...
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 2: [-0.09053186 -0.73035732  2.0372785  -4.14466991] -90.95112349689443
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 3: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
+New best for swarm at iteration 3: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 3: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
-Best after iteration 4: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 5: [-0.04356421 -0.96136409  1.56891764 -5.61445228] -173.00908140174886
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 4: [-0.12866249 -1.579936    2.78147705 -4.61668253] -153.34386857928973
+New best for swarm at iteration 5: [-0.04356421 -0.96136409  1.56891764 -5.61445228] -173.00908140174886
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gradient refinement improved
 Best after iteration 5: [-0.04356421 -0.96136409  1.56891764 -5.61445228] -173.03036610353809
 Best after iteration 6: [-0.04356421 -0.96136409  1.56891764 -5.61445228] -173.03036610353809
 New best for swarm at iteration 7: [-0.07877426 -1.02990023  1.40743326 -4.92371636] -181.66378975168777
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 7: [-0.07877426 -1.02990023  1.40743326 -4.92371636] -181.66378975168777
+Best after iteration 7: [-0.07877426 -1.02990023  1.40743326 -4.92371636] -181.66378975168777
 New best for swarm at iteration 8: [-0.08279623 -1.01994187  1.57130991 -5.72053014] -190.58397142646163
 New best for swarm at iteration 8: [-0.07117854 -1.16903593  1.73125338 -5.56944702] -191.33563774895657
-New best for swarm at iteration 8: [-0.0597549  -1.01988854  1.39525807 -5.57999052] -192.98021505988152
-Best after iteration 8: [-0.0597549  -1.01988854  1.39525807 -5.57999052] -192.98021505988152
-New best for swarm at iteration 9: [-0.07559563 -1.15968923  1.6416778  -5.86180536] -199.51073980110436
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 9: [-0.09729764 -1.2056485   1.59480109 -6.2405955 ] -202.60952012874878
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 8: [-0.0597549  -1.01988854  1.39525807 -5.57999052] -192.98021505988152
+Best after iteration 8: [-0.0597549  -1.01988854  1.39525807 -5.57999052] -192.98021505988152
+New best for swarm at iteration 9: [-0.07559563 -1.15968923  1.6416778  -5.86180536] -199.51073980110436
+New best for swarm at iteration 9: [-0.09729764 -1.2056485   1.59480109 -6.2405955 ] -202.60952012874878
 Best after iteration 9: [-0.09729764 -1.2056485   1.59480109 -6.2405955 ] -202.60952012874878
 </pre></div>
 </div>
@@ -2562,14 +2572,16 @@ Best after iteration 11: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 12: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.30988802351078
-Best after iteration 13: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.30988802351078
-New best for swarm at iteration 14: [-0.09038285 -1.2103533   1.61639447 -6.38585653] -206.41467065215375
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 14: [-0.08229875 -1.1711397   1.53766027 -6.4899267 ] -206.6592844109254
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 13: [-0.09297468 -1.18673833  1.62110991 -6.27881627] -206.30988802351078
+New best for swarm at iteration 14: [-0.09038285 -1.2103533   1.61639447 -6.38585653] -206.41467065215375
+New best for swarm at iteration 14: [-0.08229875 -1.1711397   1.53766027 -6.4899267 ] -206.6592844109254
 New best for swarm at iteration 14: [-0.09206264 -1.18212303  1.64571202 -6.31287348] -207.39613996845014
 Best after iteration 14: [-0.09206264 -1.18212303  1.64571202 -6.31287348] -207.39613996845014
-New best for swarm at iteration 15: [-0.09490922 -1.18815116  1.65481891 -6.41067959] -207.55676517682167
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 15: [-0.09490922 -1.18815116  1.65481891 -6.41067959] -207.55676517682167
 New best for swarm at iteration 15: [-0.08954146 -1.23323405  1.67759992 -6.39575219] -208.24149233966614
 New best for swarm at iteration 15: [-0.08255124 -1.15831969  1.62441642 -6.62584537] -208.50945196899812
 </pre></div>
@@ -3456,6 +3468,288 @@ df/dr3 (45° diag)         3.4542e-06        1.0000
 <li><p>Combining first- and second-order derivatives in different directions at the same training points</p></li>
 <li><p>Sensor layouts where derivative readings exceed the number of spatial axes</p></li>
 </ul>
+<p>—</p>
+</section>
+</section>
+<section id="example-4-2d-function-only-training-with-derivative-predictions">
+<h2>Example 4: 2D Function-Only Training with Derivative Predictions<a class="headerlink" href="#example-4-2d-function-only-training-with-derivative-predictions" title="Link to this heading">#</a></h2>
+<section id="id17">
+<h3>Overview<a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
+<p>This example demonstrates GDDEGP trained on <strong>function values only</strong> in a 2D input space and
+predicting partial derivatives at test points without any derivative observations during training.
+Because GDDEGP is a <em>pointwise</em> directional model, the prediction directions are supplied
+explicitly at test time via <code class="docutils literal notranslate"><span class="pre">rays_predict</span></code>.</p>
+<p>Since no derivative data is used during training (<code class="docutils literal notranslate"><span class="pre">der_indices=[]</span></code>), the <code class="docutils literal notranslate"><span class="pre">n_bases</span></code> parameter
+must be provided explicitly. For two first-order directional derivatives set <code class="docutils literal notranslate"><span class="pre">n_bases</span> <span class="pre">=</span> <span class="pre">2</span></code>
+(one OTI pair per direction type).</p>
+<p>True function: <span class="math notranslate nohighlight">\(f(x_1,x_2) = \sin(x_1)\cos(x_2)\)</span></p>
+<p>True partials: <span class="math notranslate nohighlight">\(\partial f/\partial x_1 = \cos(x_1)\cos(x_2)\)</span>, <span class="math notranslate nohighlight">\(\quad\partial f/\partial x_2 = -\sin(x_1)\sin(x_2)\)</span></p>
+<p>—</p>
+</section>
+<section id="id18">
+<h3>Step 1: Import required packages<a class="headerlink" href="#id18" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp.gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Modules imported successfully.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Modules imported successfully.
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-2-define-the-true-function-and-build-training-data">
+<h3>Step 2: Define the true function and build training data<a class="headerlink" href="#step-2-define-the-true-function-and-build-training-data" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">df_dx1</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">df_dx2</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="c1"># 5×5 training grid — function values ONLY</span>
+<span class="n">x1_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">x2_tr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">G1</span><span class="p">,</span> <span class="n">G2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1_tr</span><span class="p">,</span> <span class="n">x2_tr</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">G1</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">G2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>  <span class="c1"># shape (36, 2)</span>
+<span class="n">y_func</span>  <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span><span class="n">y_func</span><span class="p">]</span>  <span class="c1"># no derivative arrays</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_train shape : </span><span class="si">{</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>X_train shape : (36, 2)
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-3-initialise-gddegp-model-for-function-only-training">
+<h3>Step 3: Initialise GDDEGP model for function-only training<a class="headerlink" href="#step-3-initialise-gddegp-model-for-function-only-training" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># n_bases must be set explicitly when der_indices=[] because there are no</span>
+<span class="c1"># training derivative types from which to auto-infer the OTI space size.</span>
+<span class="c1"># We plan to predict 2 directional derivatives → n_bases = 2 * 2 = 4.</span>
+<span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">():</span>
+    <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">gddegp</span><span class="p">(</span>
+        <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span>
+        <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">rays_list</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">der_indices</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">derivative_locations</span><span class="o">=</span><span class="p">[],</span>
+        <span class="n">n_bases</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GDDEGP model (function-only, 2D) initialised.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>GDDEGP model (function-only, 2D) initialised.
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">rays_list=[]</span></code>: no per-point ray arrays because there are no derivative observations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">der_indices=[]</span></code>: no derivative data in training</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_bases=4</span></code>: explicitly allocates the OTI space needed for two directional derivatives; the formula is <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">n_prediction_direction_types</span> <span class="pre">=</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">2</span> <span class="pre">=</span> <span class="pre">4</span></code>; <strong>must be set manually</strong> when <code class="docutils literal notranslate"><span class="pre">der_indices</span></code> is empty</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="step-4-optimise-hyperparameters">
+<h3>Step 4: Optimise hyperparameters<a class="headerlink" href="#step-4-optimise-hyperparameters" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimised hyperparameters:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
+Optimised hyperparameters: [-0.01389991  0.04473069  0.44763146 -9.47723439]
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-5-build-prediction-rays-and-predict-with-uncertainty">
+<h3>Step 5: Build prediction rays and predict with uncertainty<a class="headerlink" href="#step-5-build-prediction-rays-and-predict-with-uncertainty" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">n_test</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">x1_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_test</span><span class="p">)</span>
+<span class="n">x2_te</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">n_test</span><span class="p">)</span>
+<span class="n">G1t</span><span class="p">,</span> <span class="n">G2t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1_te</span><span class="p">,</span> <span class="n">x2_te</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">G1t</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">G2t</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+<span class="n">N_test</span> <span class="o">=</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># rays_predict[dir_idx] has shape (d, n_test).</span>
+<span class="c1"># Each column is the unit direction vector at that test point.</span>
+<span class="c1"># Direction 0: [1, 0]  →  x1-axis (gives df/dx1)</span>
+<span class="c1"># Direction 1: [0, 1]  →  x2-axis (gives df/dx2)</span>
+<span class="n">rays_predict</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]]),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N_test</span><span class="p">)),</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">]]),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N_test</span><span class="p">)),</span>
+<span class="p">]</span>
+
+<span class="c1"># derivs_to_predict: [[1,1]] → 1st-order w.r.t. OTI pair 1 (direction 0)</span>
+<span class="c1">#                    [[2,1]] → 1st-order w.r.t. OTI pair 2 (direction 1)</span>
+<span class="n">mean</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+    <span class="n">rays_predict</span><span class="o">=</span><span class="n">rays_predict</span><span class="p">,</span>
+    <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">derivs_to_predict</span><span class="o">=</span><span class="p">[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span>
+<span class="p">)</span>
+
+<span class="n">shape2d</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_test</span><span class="p">)</span>
+<span class="n">f_mean_grid</span>   <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span>
+<span class="n">dx1_mean_grid</span> <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span>
+<span class="n">dx2_mean_grid</span> <span class="o">=</span> <span class="n">mean</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span>
+
+<span class="n">f_true_grid</span>   <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span>
+<span class="n">dx1_true_grid</span> <span class="o">=</span> <span class="n">df_dx1</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span>
+<span class="n">dx2_true_grid</span> <span class="o">=</span> <span class="n">df_dx2</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Prediction output shape: </span><span class="si">{</span><span class="n">mean</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Prediction output shape: (3, 1600)
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+<code class="docutils literal notranslate"><span class="pre">rays_predict</span></code> supplies the physical direction vectors at each test point; <code class="docutils literal notranslate"><span class="pre">derivs_to_predict</span></code>
+selects which OTI-basis derivatives to evaluate. Using coordinate-aligned directions produces the
+standard partial derivatives. Replacing the direction arrays with arbitrary unit vectors would
+predict directional derivatives along those custom directions instead — without retraining.</p>
+<p>—</p>
+</section>
+<section id="step-6-accuracy-metrics">
+<h3>Step 6: Accuracy metrics<a class="headerlink" href="#step-6-accuracy-metrics" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">f_rmse</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">mean</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">f</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>      <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+<span class="n">dx1_rmse</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">mean</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">df_dx1</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+<span class="n">dx2_rmse</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">mean</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span> <span class="o">-</span> <span class="n">df_dx2</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)))</span>
+<span class="n">dx1_corr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">df_dx1</span><span class="p">(</span><span class="n">X_test</span><span class="p">))[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="n">dx2_corr</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">mean</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:],</span> <span class="n">df_dx2</span><span class="p">(</span><span class="n">X_test</span><span class="p">))[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;f        RMSE : </span><span class="si">{</span><span class="n">f_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;df/dx1   RMSE : </span><span class="si">{</span><span class="n">dx1_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">   Pearson r: </span><span class="si">{</span><span class="n">dx1_corr</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;df/dx2   RMSE : </span><span class="si">{</span><span class="n">dx2_rmse</span><span class="si">:</span><span class="s2">.4e</span><span class="si">}</span><span class="s2">   Pearson r: </span><span class="si">{</span><span class="n">dx2_corr</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>f        RMSE : 9.0831e-03
+df/dx1   RMSE : 9.7714e-03   Pearson r: 1.000
+df/dx2   RMSE : 2.8240e-02   Pearson r: 0.998
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="id19">
+<h3>Step 7: Visualise predictions<a class="headerlink" href="#id19" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">]</span>
+<span class="n">titles_row</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s2">&quot;$f(x_1,x_2)$&quot;</span><span class="p">,</span>
+              <span class="sa">r</span><span class="s2">&quot;$\partial f/\partial x_1$&quot;</span><span class="p">,</span>
+              <span class="sa">r</span><span class="s2">&quot;$\partial f/\partial x_2$&quot;</span><span class="p">]</span>
+<span class="n">trues</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_true_grid</span><span class="p">,</span>   <span class="n">dx1_true_grid</span><span class="p">,</span>  <span class="n">dx2_true_grid</span><span class="p">]</span>
+<span class="n">means</span> <span class="o">=</span> <span class="p">[</span><span class="n">f_mean_grid</span><span class="p">,</span>   <span class="n">dx1_mean_grid</span><span class="p">,</span>  <span class="n">dx2_mean_grid</span><span class="p">]</span>
+<span class="n">stds</span>  <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">var</span><span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="p">:]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape2d</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">12</span><span class="p">))</span>
+<span class="n">kw</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">true</span><span class="p">,</span> <span class="n">gp_mean</span><span class="p">,</span> <span class="n">gp_std</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span>
+        <span class="nb">zip</span><span class="p">(</span><span class="n">titles_row</span><span class="p">,</span> <span class="n">trues</span><span class="p">,</span> <span class="n">means</span><span class="p">,</span> <span class="n">stds</span><span class="p">)):</span>
+    <span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="n">true</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">true</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="n">im0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">true</span><span class="p">,</span>    <span class="o">**</span><span class="n">kw</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;True </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">im1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">gp_mean</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;RdBu_r&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GP mean </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">im2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">gp_std</span><span class="p">,</span>  <span class="o">**</span><span class="n">kw</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;viridis&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;GP std </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$x_1$&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;$x_2$&quot;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                         <span class="n">c</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Training pts&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s2">&quot;upper right&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span>
+    <span class="s2">&quot;GDDEGP 2D — function-only training, directional derivative predictions</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="sa">r</span><span class="s2">&quot;$f(x_1,x_2) = \sin(x_1)\cos(x_2)$&quot;</span><span class="p">,</span>
+    <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/gddegp_getting_started_47_0.png" src="../_images/gddegp_getting_started_47_0.png" />
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="id20">
+<h3>Summary<a class="headerlink" href="#id20" title="Link to this heading">#</a></h3>
+<p>This example demonstrates <strong>2D function-only GDDEGP</strong> with pointwise directional derivative predictions.</p>
+<p>Key takeaways:</p>
+<ul class="simple">
+<li><p><strong>``n_bases`` must be set explicitly</strong> when <code class="docutils literal notranslate"><span class="pre">der_indices=[]</span></code>: without training derivative types the OTI space size cannot be inferred automatically; set <code class="docutils literal notranslate"><span class="pre">n_bases</span> <span class="pre">=</span> <span class="pre">2</span> <span class="pre">*</span> <span class="pre">n_direction_types</span></code></p></li>
+<li><p><strong>``rays_predict`` supplies physical direction vectors at test time</strong>: coordinate-aligned vectors give the standard partial derivatives; arbitrary unit vectors give custom directional derivatives — all without retraining</p></li>
+<li><p><strong>``rays_list=[]`` and ``derivative_locations=[]``</strong> are the correct empty inputs when no derivative observations exist</p></li>
+<li><p><strong>Compared with DEGP/DDEGP function-only</strong>: GDDEGP requires a slightly more explicit setup (<code class="docutils literal notranslate"><span class="pre">n_bases</span></code> and <code class="docutils literal notranslate"><span class="pre">rays_predict</span></code>) but gains the ability to query <em>different</em> directions at each individual test point</p></li>
+</ul>
 </section>
 </section>
 </section>
@@ -3562,6 +3856,18 @@ df/dr3 (45° diag)         3.4542e-06        1.0000
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-predict-at-test-points">Step 6: Predict at test points</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-visualise-predictions">Step 7: Visualise predictions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-4-2d-function-only-training-with-derivative-predictions">Example 4: 2D Function-Only Training with Derivative Predictions</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-the-true-function-and-build-training-data">Step 2: Define the true function and build training data</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-initialise-gddegp-model-for-function-only-training">Step 3: Initialise GDDEGP model for function-only training</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-optimise-hyperparameters">Step 4: Optimise hyperparameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-build-prediction-rays-and-predict-with-uncertainty">Step 5: Build prediction rays and predict with uncertainty</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-accuracy-metrics">Step 6: Accuracy metrics</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Step 7: Visualise predictions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Summary</a></li>
 </ul>
 </li>
 </ul>

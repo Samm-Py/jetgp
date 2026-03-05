@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="index.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
-            created at 2026-02-26 12:14 -0600
+            created at 2026-03-05 10:51 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -659,7 +659,7 @@
     <p class="pln"><span class="n"><a id="t577" href="#t577">577</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t578" href="#t578">578</a></span><span class="t">            <span class="com"># Multiply the derivative indices to find the correct flat index</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t579" href="#t579">579</a></span><span class="t">            <span class="nam">imdir1</span> <span class="op">=</span> <span class="nam">der_ind_order_pred</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t580" href="#t580">580</a></span><span class="t">            <span class="nam">imdir2</span> <span class="op">=</span> <span class="nam">der_ind_order</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t580" href="#t580">580</a></span><span class="t">            <span class="nam">imdir2</span> <span class="op">=</span> <span class="nam">der_ind_order_pred</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span> <span class="key">if</span> <span class="nam">calc_cov</span> <span class="key">else</span> <span class="nam">der_ind_order</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t581" href="#t581">581</a></span><span class="t">            <span class="nam">new_idx</span><span class="op">,</span> <span class="nam">new_ord</span> <span class="op">=</span> <span class="nam">dh</span><span class="op">.</span><span class="nam">mult_dir</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t582" href="#t582">582</a></span><span class="t">                <span class="nam">imdir1</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="nam">imdir1</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">,</span> <span class="nam">imdir2</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="nam">imdir2</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t583" href="#t583">583</a></span><span class="t">            <span class="nam">flat_idx</span> <span class="op">=</span> <span class="nam">der_map</span><span class="op">[</span><span class="nam">new_ord</span><span class="op">]</span><span class="op">[</span><span class="nam">new_idx</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
@@ -758,7 +758,7 @@
             <a class="nav" href="index.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
-            created at 2026-02-26 12:14 -0600
+            created at 2026-03-05 10:51 -0600
         </p>
     </div>
 </footer>

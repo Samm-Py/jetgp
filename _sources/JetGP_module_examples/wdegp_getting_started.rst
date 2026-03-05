@@ -2628,3 +2628,240 @@ Key takeaways:
 - Different sensors or simulation runs provide derivative data at different points
 - Submodels are specialised for different regions with different available information
 - Post-hoc exploration of gradient directions not uniformly covered in training
+
+---
+
+Example 8: 2D Function-Only WDEGP with Derivative Predictions
+--------------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates WDEGP trained on **function values only** in a 2D input space and
+predicting both partial derivatives at test points without any derivative observations. A single
+global submodel is used whose training data consists solely of function values. Each submodel
+independently constructs its cross-covariance :math:`K_*` analytically from the kernel, so
+untrained derivatives remain predictable through ``derivs_to_predict``.
+
+True function: :math:`f(x_1,x_2) = \sin(x_1)\cos(x_2)`
+
+True partials: :math:`\partial f/\partial x_1 = \cos(x_1)\cos(x_2)`, :math:`\quad\partial f/\partial x_2 = -\sin(x_1)\sin(x_2)`
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import warnings
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from jetgp.wdegp.wdegp import wdegp
+
+    print("Modules imported successfully.")
+
+---
+
+Step 2: Define the true function and build training data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    def f(X):
+        return np.sin(X[:, 0]) * np.cos(X[:, 1])
+
+    def df_dx1(X):
+        return np.cos(X[:, 0]) * np.cos(X[:, 1])
+
+    def df_dx2(X):
+        return -np.sin(X[:, 0]) * np.sin(X[:, 1])
+
+    # 5×5 training grid — function values ONLY
+    x1_tr = np.linspace(0, 2 * np.pi, 6)
+    x2_tr = np.linspace(0, 2 * np.pi, 6)
+    G1, G2 = np.meshgrid(x1_tr, x2_tr)
+    X_train = np.column_stack([G1.ravel(), G2.ravel()])  # shape (36, 2)
+    y_func  = f(X_train).reshape(-1, 1)
+
+    # WDEGP y_train: list of submodels; each submodel is a list of arrays.
+    # One global submodel with function values only.
+    y_train = [[y_func]]
+
+    print(f"X_train shape       : {X_train.shape}")
+    print(f"Number of submodels : {len(y_train)}")
+    print(f"Submodel 0 data     : {len(y_train[0])} array (function values)")
+
+**Explanation:**
+``y_train = [[y_func]]`` defines one submodel whose data list contains a single array
+(function values). No derivative arrays are included, so no derivative constraints enter the
+training covariance for this submodel.
+
+---
+
+Step 3: Define submodel structure and initialise WDEGP
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    # der_indices[submodel_idx] = derivative specs for that submodel (same format as DEGP der_indices).
+    # [[]] means one submodel with no derivative types.
+    der_indices = [[]]
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model = wdegp(
+            X_train,
+            y_train,
+            n_order=1,
+            n_bases=2,
+            der_indices=der_indices,
+            derivative_locations=None,
+            normalize=True,
+            kernel="SE", kernel_type="anisotropic",
+        )
+
+    print("WDEGP model (function-only, 2D) initialised.")
+
+**Explanation:**
+
+- ``y_train = [[y_func]]``: one submodel with function values only
+- ``der_indices = [[]]``: one submodel, no derivative types — no derivative data enters training
+- ``n_order=1``: enables first-order OTI arithmetic for cross-covariance derivative prediction
+- ``n_bases=2``: one OTI pair per input dimension
+
+---
+
+Step 4: Optimise hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    params = model.optimize_hyperparameters(
+        optimizer='pso',
+        pop_size=100,
+        n_generations=15,
+        local_opt_every=15,
+        debug=False,
+    )
+    print("Optimised hyperparameters:", params)
+
+---
+
+Step 5: Predict f, df/dx1, and df/dx2 with uncertainty
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    n_test = 40
+    x1_te = np.linspace(0, 2 * np.pi, n_test)
+    x2_te = np.linspace(0, 2 * np.pi, n_test)
+    G1t, G2t = np.meshgrid(x1_te, x2_te)
+    X_test = np.column_stack([G1t.ravel(), G2t.ravel()])
+
+    # derivs_to_predict: [[1,1]] → df/dx1  (1st-order w.r.t. basis 1)
+    #                    [[2,1]] → df/dx2  (1st-order w.r.t. basis 2)
+    mean, var = model.predict(
+        X_test, params,
+        calc_cov=True,
+        return_deriv=True,
+        derivs_to_predict=[[[1, 1]], [[2, 1]]],
+    )
+
+    # mean shape: (3, n_test²) — rows: [f, df/dx1, df/dx2]
+    shape2d = (n_test, n_test)
+    f_mean_grid   = mean[0, :].reshape(shape2d)
+    dx1_mean_grid = mean[1, :].reshape(shape2d)
+    dx2_mean_grid = mean[2, :].reshape(shape2d)
+
+    f_true_grid   = f(X_test).reshape(shape2d)
+    dx1_true_grid = df_dx1(X_test).reshape(shape2d)
+    dx2_true_grid = df_dx2(X_test).reshape(shape2d)
+
+    print(f"Prediction output shape: {mean.shape}")
+
+**Explanation:**
+Each submodel independently computes its cross-covariance :math:`K_*` from the kernel's analytic
+derivatives, even when the submodel has no training data for those derivatives. Here the single
+submodel recovers both :math:`\partial f/\partial x_1` and :math:`\partial f/\partial x_2`
+purely through the kernel structure.
+
+---
+
+Step 6: Accuracy metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    f_rmse   = float(np.sqrt(np.mean((mean[0, :] - f(X_test))      ** 2)))
+    dx1_rmse = float(np.sqrt(np.mean((mean[1, :] - df_dx1(X_test)) ** 2)))
+    dx2_rmse = float(np.sqrt(np.mean((mean[2, :] - df_dx2(X_test)) ** 2)))
+    dx1_corr = float(np.corrcoef(mean[1, :], df_dx1(X_test))[0, 1])
+    dx2_corr = float(np.corrcoef(mean[2, :], df_dx2(X_test))[0, 1])
+
+    print(f"f        RMSE : {f_rmse:.4e}")
+    print(f"df/dx1   RMSE : {dx1_rmse:.4e}   Pearson r: {dx1_corr:.3f}")
+    print(f"df/dx2   RMSE : {dx2_rmse:.4e}   Pearson r: {dx2_corr:.3f}")
+
+---
+
+Step 7: Visualise predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    extent = [0, 2 * np.pi, 0, 2 * np.pi]
+    titles_row = [r"$f(x_1,x_2)$",
+                  r"$\partial f/\partial x_1$",
+                  r"$\partial f/\partial x_2$"]
+    trues = [f_true_grid,   dx1_true_grid,  dx2_true_grid]
+    means = [f_mean_grid,   dx1_mean_grid,  dx2_mean_grid]
+    stds  = [np.sqrt(np.abs(var[r, :])).reshape(shape2d) for r in range(3)]
+
+    fig, axes = plt.subplots(3, 3, figsize=(14, 12))
+    kw = dict(origin="lower", extent=extent, aspect="auto")
+
+    for row, (label, true, gp_mean, gp_std) in enumerate(
+            zip(titles_row, trues, means, stds)):
+        vmin, vmax = true.min(), true.max()
+
+        im0 = axes[row, 0].imshow(true,    **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+        axes[row, 0].set_title(f"True {label}")
+        plt.colorbar(im0, ax=axes[row, 0])
+
+        im1 = axes[row, 1].imshow(gp_mean, **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+        axes[row, 1].set_title(f"GP mean {label}")
+        plt.colorbar(im1, ax=axes[row, 1])
+
+        im2 = axes[row, 2].imshow(gp_std,  **kw, cmap="viridis")
+        axes[row, 2].set_title(f"GP std {label}")
+        plt.colorbar(im2, ax=axes[row, 2])
+
+        for col in range(3):
+            axes[row, col].set_xlabel("$x_1$")
+            axes[row, col].set_ylabel("$x_2$")
+
+    for col in range(2):
+        axes[0, col].scatter(X_train[:, 0], X_train[:, 1],
+                             c="k", s=20, zorder=5, label="Training pts")
+    axes[0, 0].legend(fontsize=8, loc="upper right")
+
+    plt.suptitle(
+        "WDEGP 2D — function-only training, derivative predictions\n"
+        r"$f(x_1,x_2) = \sin(x_1)\cos(x_2)$",
+        fontsize=13,
+    )
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **2D function-only WDEGP** with untrained derivative predictions.
+
+Key takeaways:
+
+- **``y_train = [[y_func]]``**: one global submodel whose data contains only function values
+- **``der_indices = [[]]``**: one submodel with no derivative types — no derivative constraints in the training covariance
+- **``derivs_to_predict`` unlocks any derivative within ``n_bases`` and ``n_order``**: the WDEGP cross-covariance is built analytically from the kernel, not from observations
+- **Consistent with DEGP/DDEGP/GDDEGP function-only**: all four modules expose the same ``derivs_to_predict`` mechanism; the WDEGP-specific difference is the per-submodel ``y_train`` and ``der_indices`` structure

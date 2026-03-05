@@ -974,7 +974,7 @@ document.write(`
             
             <span class="c1"># Multiply the derivative indices to find the correct flat index</span>
             <span class="n">imdir1</span> <span class="o">=</span> <span class="n">der_ind_order_pred</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-            <span class="n">imdir2</span> <span class="o">=</span> <span class="n">der_ind_order</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">imdir2</span> <span class="o">=</span> <span class="n">der_ind_order_pred</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="n">der_ind_order</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">new_idx</span><span class="p">,</span> <span class="n">new_ord</span> <span class="o">=</span> <span class="n">dh</span><span class="o">.</span><span class="n">mult_dir</span><span class="p">(</span>
                 <span class="n">imdir1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir2</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
             <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_map</span><span class="p">[</span><span class="n">new_ord</span><span class="p">][</span><span class="n">new_idx</span><span class="p">]</span>

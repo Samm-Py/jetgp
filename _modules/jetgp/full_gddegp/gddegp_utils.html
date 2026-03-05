@@ -1167,6 +1167,8 @@ document.write(`
     <span class="n">der_indices_even</span> <span class="o">=</span> <span class="n">make_first_even</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
     <span class="n">der_indices_odd</span> <span class="o">=</span> <span class="n">make_first_odd</span><span class="p">(</span><span class="n">der_indices</span><span class="p">)</span>
     <span class="n">der_indices_tr_odd</span><span class="p">,</span> <span class="n">der_ind_order_odd</span> <span class="o">=</span> <span class="n">transform_der_indices</span><span class="p">(</span><span class="n">der_indices_odd</span><span class="p">,</span> <span class="n">der_map</span><span class="p">)</span>
+    <span class="n">der_indices_odd_pred</span> <span class="o">=</span> <span class="n">make_first_odd</span><span class="p">(</span><span class="n">common_derivs</span><span class="p">)</span> <span class="k">if</span> <span class="n">common_derivs</span> <span class="k">else</span> <span class="p">[]</span>
+    <span class="n">der_indices_tr_odd_pred</span><span class="p">,</span> <span class="n">der_ind_order_odd_pred</span> <span class="o">=</span> <span class="n">transform_der_indices</span><span class="p">(</span><span class="n">der_indices_odd_pred</span><span class="p">,</span> <span class="n">der_map</span><span class="p">)</span> <span class="k">if</span> <span class="n">common_derivs</span> <span class="k">else</span> <span class="p">([],</span> <span class="p">[])</span>
 
     <span class="c1"># Compute matrix dimensions</span>
     <span class="n">n_rows_func</span> <span class="o">=</span> <span class="n">n_test</span>
@@ -1207,9 +1209,9 @@ document.write(`
         <span class="n">train_locs</span> <span class="o">=</span> <span class="n">index_arrays</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
         <span class="n">col_start</span> <span class="o">=</span> <span class="n">col_offsets</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-        <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_indices_tr_odd</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+        <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_indices_tr_odd_pred</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="n">der_indices_tr_odd</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
         <span class="n">content_full</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">flat_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span>
-        
+
         <span class="c1"># Use numba for efficient row extraction with transpose</span>
         <span class="n">extract_rows_and_assign_transposed</span><span class="p">(</span><span class="n">content_full</span><span class="p">,</span> <span class="n">train_locs</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span>
                                            <span class="mi">0</span><span class="p">,</span> <span class="n">col_start</span><span class="p">,</span> <span class="n">n_test</span><span class="p">)</span>
@@ -1228,7 +1230,7 @@ document.write(`
 
         <span class="n">flat_idx</span> <span class="o">=</span> <span class="n">der_indices_tr_even_pred</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
         <span class="n">content_full</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">flat_idx</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">base_shape</span><span class="p">)</span>
-        
+
         <span class="c1"># Use numba for efficient column extraction with transpose</span>
         <span class="n">extract_cols_and_assign_transposed</span><span class="p">(</span><span class="n">content_full</span><span class="p">,</span> <span class="n">test_locs</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span>
                                            <span class="n">row_start</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">n_train</span><span class="p">)</span>
@@ -1242,7 +1244,7 @@ document.write(`
             <span class="n">train_locs</span> <span class="o">=</span> <span class="n">index_arrays</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
             <span class="n">col_start</span> <span class="o">=</span> <span class="n">col_offsets</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
 
-            <span class="n">imdir_train</span> <span class="o">=</span> <span class="n">der_ind_order_odd</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">imdir_train</span> <span class="o">=</span> <span class="n">der_ind_order_odd_pred</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">calc_cov</span> <span class="k">else</span> <span class="n">der_ind_order_odd</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
             <span class="n">imdir_test</span> <span class="o">=</span> <span class="n">der_ind_order_even_pred</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="n">new_idx</span><span class="p">,</span> <span class="n">new_ord</span> <span class="o">=</span> <span class="n">dh</span><span class="o">.</span><span class="n">mult_dir</span><span class="p">(</span>
                 <span class="n">imdir_train</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">imdir_train</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>

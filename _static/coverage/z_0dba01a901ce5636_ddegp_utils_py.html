@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for jetgp/full_ddegp/ddegp_utils.py: 83%</title>
+    <title>Coverage for jetgp/full_ddegp/ddegp_utils.py: 84%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>jetgp/full_ddegp/ddegp_utils.py</b>:
-            <span class="pc_cov">83%</span>
+            <span class="pc_cov">84%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -55,8 +55,8 @@
         </aside>
         <h2>
             <span class="text">248 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">206<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">42<span class="text"> missing</span></button>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">209<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">39<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">0<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_0dba01a901ce5636_optimizer_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
-            created at 2026-01-12 14:30 -0600
+            created at 2026-03-05 10:51 -0600
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -516,7 +516,7 @@
     <p class="run"><span class="n"><a id="t434" href="#t434">434</a></span><span class="t">    <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">index</span><span class="op">,</span> <span class="nam">list</span><span class="op">)</span> <span class="key">and</span> <span class="nam">len</span><span class="op">(</span><span class="nam">index</span><span class="op">)</span> <span class="op">></span> <span class="num">0</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t435" href="#t435">435</a></span><span class="t">        <span class="nam">index_arrays</span> <span class="op">=</span> <span class="op">[</span><span class="nam">np</span><span class="op">.</span><span class="nam">asarray</span><span class="op">(</span><span class="nam">idx</span><span class="op">,</span> <span class="nam">dtype</span><span class="op">=</span><span class="nam">np</span><span class="op">.</span><span class="nam">int64</span><span class="op">)</span> <span class="key">for</span> <span class="nam">idx</span> <span class="key">in</span> <span class="nam">index</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t436" href="#t436">436</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t437" href="#t437">437</a></span><span class="t">        <span class="nam">index_arrays</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t437" href="#t437">437</a></span><span class="t">        <span class="nam">index_arrays</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t438" href="#t438">438</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t439" href="#t439">439</a></span><span class="t">    <span class="nam">n_pts_with_derivs_cols</span> <span class="op">=</span> <span class="nam">sum</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">idx</span><span class="op">)</span> <span class="key">for</span> <span class="nam">idx</span> <span class="key">in</span> <span class="nam">index_arrays</span><span class="op">)</span> <span class="key">if</span> <span class="nam">index_arrays</span> <span class="key">else</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t440" href="#t440">440</a></span><span class="t">    <span class="nam">n_pts_with_derivs_rows</span> <span class="op">=</span> <span class="nam">n_pts_with_derivs_cols</span>&nbsp;</span><span class="r"></span></p>
@@ -534,7 +534,7 @@
     <p class="pln"><span class="n"><a id="t452" href="#t452">452</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t453" href="#t453">453</a></span><span class="t">    <span class="key">if</span> <span class="key">not</span> <span class="nam">index_arrays</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t454" href="#t454">454</a></span><span class="t">        <span class="com"># No derivative indices provided, return early</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t455" href="#t455">455</a></span><span class="t">        <span class="key">return</span> <span class="nam">K</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t455" href="#t455">455</a></span><span class="t">        <span class="key">return</span> <span class="nam">K</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t456" href="#t456">456</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t457" href="#t457">457</a></span><span class="t">    <span class="com"># First Block-Column: Derivative-Function (K_df)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t458" href="#t458">458</a></span><span class="t">    <span class="nam">row_offset</span> <span class="op">=</span> <span class="nam">n_rows_func</span>&nbsp;</span><span class="r"></span></p>
@@ -669,7 +669,7 @@
     <p class="run"><span class="n"><a id="t587" href="#t587">587</a></span><span class="t">    <span class="key">if</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">index</span><span class="op">,</span> <span class="nam">list</span><span class="op">)</span> <span class="key">and</span> <span class="nam">len</span><span class="op">(</span><span class="nam">index</span><span class="op">)</span> <span class="op">></span> <span class="num">0</span> <span class="key">and</span> <span class="nam">isinstance</span><span class="op">(</span><span class="nam">index</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="op">(</span><span class="nam">list</span><span class="op">,</span> <span class="nam">np</span><span class="op">.</span><span class="nam">ndarray</span><span class="op">)</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t588" href="#t588">588</a></span><span class="t">        <span class="nam">index_arrays</span> <span class="op">=</span> <span class="op">[</span><span class="nam">np</span><span class="op">.</span><span class="nam">asarray</span><span class="op">(</span><span class="nam">idx</span><span class="op">,</span> <span class="nam">dtype</span><span class="op">=</span><span class="nam">np</span><span class="op">.</span><span class="nam">int64</span><span class="op">)</span> <span class="key">for</span> <span class="nam">idx</span> <span class="key">in</span> <span class="nam">index</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t589" href="#t589">589</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t590" href="#t590">590</a></span><span class="t">        <span class="nam">index_arrays</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t590" href="#t590">590</a></span><span class="t">        <span class="nam">index_arrays</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t591" href="#t591">591</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t592" href="#t592">592</a></span><span class="t">    <span class="key">if</span> <span class="nam">return_deriv</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t593" href="#t593">593</a></span><span class="t">        <span class="nam">der_map</span> <span class="op">=</span> <span class="nam">deriv_map</span><span class="op">(</span><span class="nam">n_bases</span><span class="op">,</span> <span class="num">2</span> <span class="op">*</span> <span class="nam">n_order</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -777,7 +777,7 @@
     <p class="pln"><span class="n"><a id="t695" href="#t695">695</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t696" href="#t696">696</a></span><span class="t">            <span class="com"># Multiply derivative indices to find correct flat index</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t697" href="#t697">697</a></span><span class="t">            <span class="nam">imdir1</span> <span class="op">=</span> <span class="nam">der_ind_order_pred</span><span class="op">[</span><span class="nam">j</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t698" href="#t698">698</a></span><span class="t">            <span class="nam">imdir2</span> <span class="op">=</span> <span class="nam">der_ind_order</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t698" href="#t698">698</a></span><span class="t">            <span class="nam">imdir2</span> <span class="op">=</span> <span class="nam">der_ind_order_pred</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span> <span class="key">if</span> <span class="nam">calc_cov</span> <span class="key">else</span> <span class="nam">der_ind_order</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t699" href="#t699">699</a></span><span class="t">            <span class="nam">new_idx</span><span class="op">,</span> <span class="nam">new_ord</span> <span class="op">=</span> <span class="nam">dh</span><span class="op">.</span><span class="nam">mult_dir</span><span class="op">(</span><span class="nam">imdir1</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="nam">imdir1</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">,</span> <span class="nam">imdir2</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">,</span> <span class="nam">imdir2</span><span class="op">[</span><span class="num">1</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t700" href="#t700">700</a></span><span class="t">            <span class="nam">flat_idx</span> <span class="op">=</span> <span class="nam">der_map</span><span class="op">[</span><span class="nam">new_ord</span><span class="op">]</span><span class="op">[</span><span class="nam">new_idx</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t701" href="#t701">701</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -799,7 +799,7 @@
             <a class="nav" href="z_0dba01a901ce5636_optimizer_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
-            created at 2026-01-12 14:30 -0600
+            created at 2026-03-05 10:51 -0600
         </p>
     </div>
 </footer>
