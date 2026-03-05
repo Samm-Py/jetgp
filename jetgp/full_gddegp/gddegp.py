@@ -28,6 +28,11 @@ class gddegp:
         Derivative multi-indices corresponding to each derivative term.
     derivative_locations : list of lists
         Which training points have which derivatives.
+    n_bases : int, optional
+        Override the OTI space size. By default ``2 * n_direction_types`` (inferred
+        from ``der_indices``). Pass explicitly when training on function values only
+        (``der_indices=[]``) and you still want to predict directional derivatives:
+        set ``n_bases = 2 * n_prediction_direction_types``.
     normalize : bool, default=True
         Whether to normalize inputs and outputs.
     sigma_data : float or array-like, optional
@@ -41,8 +46,9 @@ class gddegp:
     """
 
     def __init__(self, x_train, y_train, n_order, rays_list, der_indices,
-                 derivative_locations=None, normalize=True, sigma_data=None,
-                 kernel="SE", kernel_type="anisotropic", smoothness_parameter=None):
+                 derivative_locations=None, n_bases=None, normalize=True,
+                 sigma_data=None, kernel="SE", kernel_type="anisotropic",
+                 smoothness_parameter=None):
 
         if n_order > 0 and derivative_locations is None:
             import warnings
@@ -76,9 +82,14 @@ class gddegp:
 
         # Flatten derivative indices first so we can size the OTI module correctly.
         # GDDEGP needs 2 OTI bases per direction type (one odd tag for X1, one even
-        # tag for X2), so n_bases = 2 * n_direction_types.
+        # tag for X2), so n_bases = 2 * n_direction_types by default.
+        # An explicit n_bases can be passed to support function-only training
+        # (der_indices=[]) while still reserving OTI space for derivative predictions.
         self.flattened_der_indices = utils.flatten_der_indices(der_indices)
-        self.n_bases = 2 * len(self.flattened_der_indices)
+        if n_bases is not None:
+            self.n_bases = n_bases
+        else:
+            self.n_bases = 2 * len(self.flattened_der_indices)
         self.oti = get_oti_module(self.n_bases, n_order)
 
         if normalize:
@@ -246,7 +257,10 @@ class gddegp:
             phi_exp_train = phi_train.real
             phi_exp_train = phi_exp_train[np.newaxis,:,:]
         else:
-            self.n_bases = phi_train.get_active_bases()[-1]
+            # Take the max so that an explicitly-set n_bases (e.g. for function-only
+            # training or for predicting more directions than were observed) is never
+            # silently reduced to the number of bases active in the training kernel.
+            self.n_bases = max(self.n_bases, phi_train.get_active_bases()[-1])
             phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
 
         # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
@@ -370,7 +384,7 @@ class gddegp:
             if return_deriv:
                 f_var = utils.transform_cov_directional(
                     f_cov, self.sigma_y, self.sigmas_x,
-                    self.flattened_der_indices, X_test)
+                    common_derivs, X_test)
             else:
                 f_var = self.sigma_y ** 2 * np.diag(np.abs(f_cov))
         else:

@@ -577,7 +577,7 @@ def rbf_kernel_predictions(
             
             # Multiply the derivative indices to find the correct flat index
             imdir1 = der_ind_order_pred[j]
-            imdir2 = der_ind_order[i]
+            imdir2 = der_ind_order_pred[i] if calc_cov else der_ind_order[i]
             new_idx, new_ord = dh.mult_dir(
                 imdir1[0], imdir1[1], imdir2[0], imdir2[1])
             flat_idx = der_map[new_ord][new_idx]

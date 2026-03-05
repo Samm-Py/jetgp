@@ -293,7 +293,7 @@ class ddegp:
             if return_deriv:
                 f_var = utils.transform_cov_directional(
                     f_cov, self.sigma_y, self.sigmas_x,
-                    self.flattened_der_indices, X_test)
+                    common_derivs, X_test)
             else:
                 f_var = self.sigma_y ** 2 * np.diag(np.abs(f_cov))
         else:

@@ -743,6 +743,8 @@ def rbf_kernel_predictions(
     der_indices_even = make_first_even(der_indices)
     der_indices_odd = make_first_odd(der_indices)
     der_indices_tr_odd, der_ind_order_odd = transform_der_indices(der_indices_odd, der_map)
+    der_indices_odd_pred = make_first_odd(common_derivs) if common_derivs else []
+    der_indices_tr_odd_pred, der_ind_order_odd_pred = transform_der_indices(der_indices_odd_pred, der_map) if common_derivs else ([], [])
 
     # Compute matrix dimensions
     n_rows_func = n_test
@@ -783,9 +785,9 @@ def rbf_kernel_predictions(
         train_locs = index_arrays[j]
         col_start = col_offsets[j + 1]
 
-        flat_idx = der_indices_tr_odd[j]
+        flat_idx = der_indices_tr_odd_pred[j] if calc_cov else der_indices_tr_odd[j]
         content_full = phi_exp[flat_idx].reshape(base_shape)
-        
+
         # Use numba for efficient row extraction with transpose
         extract_rows_and_assign_transposed(content_full, train_locs, K,
                                            0, col_start, n_test)
@@ -804,7 +806,7 @@ def rbf_kernel_predictions(
 
         flat_idx = der_indices_tr_even_pred[i]
         content_full = phi_exp[flat_idx].reshape(base_shape)
-        
+
         # Use numba for efficient column extraction with transpose
         extract_cols_and_assign_transposed(content_full, test_locs, K,
                                            row_start, 0, n_train)
@@ -818,7 +820,7 @@ def rbf_kernel_predictions(
             train_locs = index_arrays[j]
             col_start = col_offsets[j + 1]
 
-            imdir_train = der_ind_order_odd[j]
+            imdir_train = der_ind_order_odd_pred[j] if calc_cov else der_ind_order_odd[j]
             imdir_test = der_ind_order_even_pred[i]
             new_idx, new_ord = dh.mult_dir(
                 imdir_train[0], imdir_train[1],

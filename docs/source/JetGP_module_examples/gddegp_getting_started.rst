@@ -2125,3 +2125,241 @@ Key takeaways:
 - Combining first- and second-order derivatives in different directions at the same training points
 - Sensor layouts where derivative readings exceed the number of spatial axes
 
+---
+
+Example 4: 2D Function-Only Training with Derivative Predictions
+-----------------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates GDDEGP trained on **function values only** in a 2D input space and
+predicting partial derivatives at test points without any derivative observations during training.
+Because GDDEGP is a *pointwise* directional model, the prediction directions are supplied
+explicitly at test time via ``rays_predict``.
+
+Since no derivative data is used during training (``der_indices=[]``), the ``n_bases`` parameter
+must be provided explicitly. For two first-order directional derivatives set ``n_bases = 2``
+(one OTI pair per direction type).
+
+True function: :math:`f(x_1,x_2) = \sin(x_1)\cos(x_2)`
+
+True partials: :math:`\partial f/\partial x_1 = \cos(x_1)\cos(x_2)`, :math:`\quad\partial f/\partial x_2 = -\sin(x_1)\sin(x_2)`
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import warnings
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from jetgp.full_gddegp.gddegp import gddegp
+
+    print("Modules imported successfully.")
+
+---
+
+Step 2: Define the true function and build training data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    def f(X):
+        return np.sin(X[:, 0]) * np.cos(X[:, 1])
+
+    def df_dx1(X):
+        return np.cos(X[:, 0]) * np.cos(X[:, 1])
+
+    def df_dx2(X):
+        return -np.sin(X[:, 0]) * np.sin(X[:, 1])
+
+    # 5×5 training grid — function values ONLY
+    x1_tr = np.linspace(0, 2 * np.pi, 6)
+    x2_tr = np.linspace(0, 2 * np.pi, 6)
+    G1, G2 = np.meshgrid(x1_tr, x2_tr)
+    X_train = np.column_stack([G1.ravel(), G2.ravel()])  # shape (36, 2)
+    y_func  = f(X_train).reshape(-1, 1)
+    y_train = [y_func]  # no derivative arrays
+
+    print(f"X_train shape : {X_train.shape}")
+
+---
+
+Step 3: Initialise GDDEGP model for function-only training
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    # n_bases must be set explicitly when der_indices=[] because there are no
+    # training derivative types from which to auto-infer the OTI space size.
+    # We plan to predict 2 directional derivatives → n_bases = 2 * 2 = 4.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        model = gddegp(
+            X_train, y_train,
+            n_order=1,
+            rays_list=[],
+            der_indices=[],
+            derivative_locations=[],
+            n_bases=4,
+            normalize=True,
+            kernel="SE", kernel_type="anisotropic",
+        )
+
+    print("GDDEGP model (function-only, 2D) initialised.")
+
+**Explanation:**
+
+- ``rays_list=[]``: no per-point ray arrays because there are no derivative observations
+- ``der_indices=[]``: no derivative data in training
+- ``n_bases=4``: explicitly allocates the OTI space needed for two directional derivatives; the formula is ``2 * n_prediction_direction_types = 2 * 2 = 4``; **must be set manually** when ``der_indices`` is empty
+
+---
+
+Step 4: Optimise hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    params = model.optimize_hyperparameters(
+        optimizer='pso',
+        pop_size=100,
+        n_generations=15,
+        local_opt_every=15,
+        debug=False,
+    )
+    print("Optimised hyperparameters:", params)
+
+---
+
+Step 5: Build prediction rays and predict with uncertainty
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    n_test = 40
+    x1_te = np.linspace(0, 2 * np.pi, n_test)
+    x2_te = np.linspace(0, 2 * np.pi, n_test)
+    G1t, G2t = np.meshgrid(x1_te, x2_te)
+    X_test = np.column_stack([G1t.ravel(), G2t.ravel()])
+    N_test = X_test.shape[0]
+
+    # rays_predict[dir_idx] has shape (d, n_test).
+    # Each column is the unit direction vector at that test point.
+    # Direction 0: [1, 0]  →  x1-axis (gives df/dx1)
+    # Direction 1: [0, 1]  →  x2-axis (gives df/dx2)
+    rays_predict = [
+        np.tile(np.array([[1.0], [0.0]]), (1, N_test)),
+        np.tile(np.array([[0.0], [1.0]]), (1, N_test)),
+    ]
+
+    # derivs_to_predict: [[1,1]] → 1st-order w.r.t. OTI pair 1 (direction 0)
+    #                    [[2,1]] → 1st-order w.r.t. OTI pair 2 (direction 1)
+    mean, var = model.predict(
+        X_test, params,
+        rays_predict=rays_predict,
+        calc_cov=True,
+        return_deriv=True,
+        derivs_to_predict=[[[1, 1]], [[2, 1]]],
+    )
+
+    shape2d = (n_test, n_test)
+    f_mean_grid   = mean[0, :].reshape(shape2d)
+    dx1_mean_grid = mean[1, :].reshape(shape2d)
+    dx2_mean_grid = mean[2, :].reshape(shape2d)
+
+    f_true_grid   = f(X_test).reshape(shape2d)
+    dx1_true_grid = df_dx1(X_test).reshape(shape2d)
+    dx2_true_grid = df_dx2(X_test).reshape(shape2d)
+
+    print(f"Prediction output shape: {mean.shape}")
+
+**Explanation:**
+``rays_predict`` supplies the physical direction vectors at each test point; ``derivs_to_predict``
+selects which OTI-basis derivatives to evaluate. Using coordinate-aligned directions produces the
+standard partial derivatives. Replacing the direction arrays with arbitrary unit vectors would
+predict directional derivatives along those custom directions instead — without retraining.
+
+---
+
+Step 6: Accuracy metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    f_rmse   = float(np.sqrt(np.mean((mean[0, :] - f(X_test))      ** 2)))
+    dx1_rmse = float(np.sqrt(np.mean((mean[1, :] - df_dx1(X_test)) ** 2)))
+    dx2_rmse = float(np.sqrt(np.mean((mean[2, :] - df_dx2(X_test)) ** 2)))
+    dx1_corr = float(np.corrcoef(mean[1, :], df_dx1(X_test))[0, 1])
+    dx2_corr = float(np.corrcoef(mean[2, :], df_dx2(X_test))[0, 1])
+
+    print(f"f        RMSE : {f_rmse:.4e}")
+    print(f"df/dx1   RMSE : {dx1_rmse:.4e}   Pearson r: {dx1_corr:.3f}")
+    print(f"df/dx2   RMSE : {dx2_rmse:.4e}   Pearson r: {dx2_corr:.3f}")
+
+---
+
+Step 7: Visualise predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    extent = [0, 2 * np.pi, 0, 2 * np.pi]
+    titles_row = [r"$f(x_1,x_2)$",
+                  r"$\partial f/\partial x_1$",
+                  r"$\partial f/\partial x_2$"]
+    trues = [f_true_grid,   dx1_true_grid,  dx2_true_grid]
+    means = [f_mean_grid,   dx1_mean_grid,  dx2_mean_grid]
+    stds  = [np.sqrt(np.abs(var[r, :])).reshape(shape2d) for r in range(3)]
+
+    fig, axes = plt.subplots(3, 3, figsize=(14, 12))
+    kw = dict(origin="lower", extent=extent, aspect="auto")
+
+    for row, (label, true, gp_mean, gp_std) in enumerate(
+            zip(titles_row, trues, means, stds)):
+        vmin, vmax = true.min(), true.max()
+
+        im0 = axes[row, 0].imshow(true,    **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+        axes[row, 0].set_title(f"True {label}")
+        plt.colorbar(im0, ax=axes[row, 0])
+
+        im1 = axes[row, 1].imshow(gp_mean, **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+        axes[row, 1].set_title(f"GP mean {label}")
+        plt.colorbar(im1, ax=axes[row, 1])
+
+        im2 = axes[row, 2].imshow(gp_std,  **kw, cmap="viridis")
+        axes[row, 2].set_title(f"GP std {label}")
+        plt.colorbar(im2, ax=axes[row, 2])
+
+        for col in range(3):
+            axes[row, col].set_xlabel("$x_1$")
+            axes[row, col].set_ylabel("$x_2$")
+
+    for col in range(2):
+        axes[0, col].scatter(X_train[:, 0], X_train[:, 1],
+                             c="k", s=20, zorder=5, label="Training pts")
+    axes[0, 0].legend(fontsize=8, loc="upper right")
+
+    plt.suptitle(
+        "GDDEGP 2D — function-only training, directional derivative predictions\n"
+        r"$f(x_1,x_2) = \sin(x_1)\cos(x_2)$",
+        fontsize=13,
+    )
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **2D function-only GDDEGP** with pointwise directional derivative predictions.
+
+Key takeaways:
+
+- **``n_bases`` must be set explicitly** when ``der_indices=[]``: without training derivative types the OTI space size cannot be inferred automatically; set ``n_bases = 2 * n_direction_types``
+- **``rays_predict`` supplies physical direction vectors at test time**: coordinate-aligned vectors give the standard partial derivatives; arbitrary unit vectors give custom directional derivatives — all without retraining
+- **``rays_list=[]`` and ``derivative_locations=[]``** are the correct empty inputs when no derivative observations exist
+- **Compared with DEGP/DDEGP function-only**: GDDEGP requires a slightly more explicit setup (``n_bases`` and ``rays_predict``) but gains the ability to query *different* directions at each individual test point
+

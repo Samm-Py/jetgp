@@ -1204,7 +1204,7 @@ Overview
 ~~~~~~~~
 This example demonstrates that DEGP can **predict partial derivatives that were not observed during training**. The cross-covariance :math:`K_*` is constructed directly from kernel derivatives, so any partial derivative within the ``n_bases``-dimensional OTI space can be predicted regardless of whether training data was provided for it.
 
-We learn :math:`f(x_1, x_2, x_3) = \sin(x_1) + \cos(x_2) + x_3^2` using function values and the first partial derivatives with respect to :math:`x_1` and :math:`x_2` only. At prediction time we also request :math:`\partial f / \partial x_3`, which was never observed.
+We learn :math:`f(x_1, x_2) = \sin(x_1) + x_2^2` using function values and the first partial derivative with respect to :math:`x_1` only. At prediction time we also request :math:`\partial f / \partial x_2`, which was never observed.
 
 ---
 
@@ -1228,27 +1228,23 @@ Step 2: Define the function and training data
 
    np.random.seed(42)
 
-   # 3D input — sample a small grid
-   x_vals = np.linspace(0, 1, 4)
-   g = np.array([[x1, x2, x3]
-                 for x1 in x_vals for x2 in x_vals for x3 in x_vals])
-   X_train = g
+   # 2D input — 6×6 training grid
+   x_vals = np.linspace(0, 1, 7)
+   X_train = np.array([[x1, x2] for x1 in x_vals for x2 in x_vals])
 
-   def f(X):      return np.sin(X[:, 0]) + np.cos(X[:, 1]) + X[:, 2] ** 2
+   def f(X):      return np.sin(X[:, 0]) + X[:, 1] ** 2
    def df_dx1(X): return np.cos(X[:, 0])
-   def df_dx2(X): return -np.sin(X[:, 1])
-   def df_dx3(X): return 2.0 * X[:, 2]   # NOT included in training
+   def df_dx2(X): return 2.0 * X[:, 1]   # NOT included in training
 
    y_func  = f(X_train).reshape(-1, 1)
    y_dx1   = df_dx1(X_train).reshape(-1, 1)
-   y_dx2   = df_dx2(X_train).reshape(-1, 1)
-   y_train = [y_func, y_dx1, y_dx2]   # df/dx3 deliberately omitted
+   y_train = [y_func, y_dx1]   # df/dx2 deliberately omitted
 
    print(f"Training points : {X_train.shape[0]}")
-   print(f"Training outputs: f, df/dx1, df/dx2  (df/dx3 NOT provided)")
+   print(f"Training outputs: f, df/dx1  (df/dx2 NOT provided)")
 
 **Explanation:**
-A 4×4×4 grid of 3D points is used. The training list contains only function values and the first two partial derivatives; :math:`\partial f / \partial x_3` is intentionally left out.
+A 6×6 grid of 2D points is used. The training list contains function values and only the first partial derivative; :math:`\partial f / \partial x_2` is intentionally left out.
 
 ---
 
@@ -1257,20 +1253,19 @@ Step 3: Define derivative indices and locations
 
 .. jupyter-execute::
 
-   # Only dx1 and dx2 are in the training set
-   der_indices = [[[[1, 1]], [[2, 1]]]]
+   # Only dx1 is in the training set
+   der_indices = [[[[1, 1]]]]
 
    n_train = len(X_train)
    derivative_locations = [
        list(range(n_train)),   # df/dx1 at all points
-       list(range(n_train)),   # df/dx2 at all points
    ]
 
    print("der_indices          :", der_indices)
-   print("derivative_locations : 2 entries, each covering all", n_train, "points")
+   print("derivative_locations : 1 entry covering all", n_train, "points")
 
 **Explanation:**
-``der_indices`` lists only :math:`\partial f/\partial x_1` and :math:`\partial f/\partial x_2`. The third coordinate axis is absent from training — but it *exists* in the OTI space because ``n_bases=3`` will span all three coordinate axes.
+``der_indices`` lists only :math:`\partial f/\partial x_1`. The second coordinate axis is absent from training — but it *exists* in the OTI space because ``n_bases=2`` spans both coordinate axes.
 
 ---
 
@@ -1279,19 +1274,19 @@ Step 4: Initialize the DEGP model
 
 .. jupyter-execute::
 
-   # n_bases=3 because the input space is 3-dimensional.
-   # This means the OTI module includes basis units e1, e2, e3
-   # for all three coordinate directions, even though dx3 is not trained.
+   # n_bases=2 because the input space is 2-dimensional.
+   # This means the OTI module includes basis units e1, e2
+   # for both coordinate directions, even though dx2 is not trained.
    model = degp(
        X_train, y_train,
-       n_order=1, n_bases=3,
+       n_order=1, n_bases=2,
        der_indices=der_indices,
        derivative_locations=derivative_locations,
        normalize=True,
        kernel="SE", kernel_type="anisotropic"
    )
 
-   print("DEGP model (3D, training dx1+dx2 only) initialized.")
+   print("DEGP model (2D, training f+dx1 only) initialized.")
 
 ---
 
@@ -1315,33 +1310,33 @@ Step 6: Predict the untrained derivative
 .. jupyter-execute::
 
    np.random.seed(7)
-   X_test = np.random.uniform(0, 1, (50, 3))
+   X_test = np.random.uniform(0, 1, (50, 2))
 
-   # Request df/dx3 via derivs_to_predict — it was NOT in the training set
+   # Request df/dx2 via derivs_to_predict — it was NOT in the training set
    pred = model.predict(
        X_test, params,
        calc_cov=False,
        return_deriv=True,
-       derivs_to_predict=[[[3, 1]]]   # dx3 only
+       derivs_to_predict=[[[2, 1]]]   # dx2 only
    )
 
-   # pred shape: (2, n_test) — row 0 = f, row 1 = df/dx3
+   # pred shape: (2, n_test) — row 0 = f, row 1 = df/dx2
    f_pred   = pred[0, :]
-   dx3_pred = pred[1, :]
+   dx2_pred = pred[1, :]
 
-   dx3_true = df_dx3(X_test).flatten()
+   dx2_true = df_dx2(X_test).flatten()
    f_true   = f(X_test).flatten()
 
    rmse_f   = float(np.sqrt(np.mean((f_pred - f_true) ** 2)))
-   rmse_dx3 = float(np.sqrt(np.mean((dx3_pred - dx3_true) ** 2)))
-   corr_dx3 = float(np.corrcoef(dx3_pred, dx3_true)[0, 1])
+   rmse_dx2 = float(np.sqrt(np.mean((dx2_pred - dx2_true) ** 2)))
+   corr_dx2 = float(np.corrcoef(dx2_pred, dx2_true)[0, 1])
 
    print(f"Function RMSE            : {rmse_f:.4e}")
-   print(f"df/dx3 RMSE (untrained)  : {rmse_dx3:.4e}")
-   print(f"df/dx3 correlation       : {corr_dx3:.4f}")
+   print(f"df/dx2 RMSE (untrained)  : {rmse_dx2:.4e}")
+   print(f"df/dx2 correlation       : {corr_dx2:.4f}")
 
 **Explanation:**
-``derivs_to_predict=[[[3, 1]]]`` requests the first partial derivative along the third coordinate axis. Because ``n_bases=3``, basis element ``e3`` already exists in the OTI space — the model simply reads the corresponding Taylor coefficient from :math:`\phi_\text{exp}` without needing any observed training data for that direction.
+``derivs_to_predict=[[[2, 1]]]`` requests the first partial derivative along the second coordinate axis. Because ``n_bases=2``, basis element ``e2`` already exists in the OTI space — the model simply reads the corresponding Taylor coefficient from :math:`\phi_\text{exp}` without needing any observed training data for that direction.
 
 ---
 
@@ -1352,26 +1347,26 @@ Step 7: Visualise the untrained derivative prediction
 
    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
 
-   # Scatter: predicted vs true df/dx3
-   axes[0].scatter(dx3_true, dx3_pred, alpha=0.7, edgecolors='k', linewidths=0.5)
-   lims = [min(dx3_true.min(), dx3_pred.min()) - 0.1,
-           max(dx3_true.max(), dx3_pred.max()) + 0.1]
+   # Scatter: predicted vs true df/dx2
+   axes[0].scatter(dx2_true, dx2_pred, alpha=0.7, edgecolors='k', linewidths=0.5)
+   lims = [min(dx2_true.min(), dx2_pred.min()) - 0.1,
+           max(dx2_true.max(), dx2_pred.max()) + 0.1]
    axes[0].plot(lims, lims, 'r--', linewidth=2, label='Perfect prediction')
-   axes[0].set_xlabel(r'True $\partial f / \partial x_3$')
-   axes[0].set_ylabel(r'Predicted $\partial f / \partial x_3$')
-   axes[0].set_title(f'Untrained df/dx3  (r = {corr_dx3:.3f})')
+   axes[0].set_xlabel(r'True $\partial f / \partial x_2$')
+   axes[0].set_ylabel(r'Predicted $\partial f / \partial x_2$')
+   axes[0].set_title(f'Untrained df/dx2  (r = {corr_dx2:.3f})')
    axes[0].legend()
    axes[0].grid(True, alpha=0.3)
 
-   # Sort by x3 for a clean line plot
-   sort_idx = np.argsort(X_test[:, 2])
-   axes[1].plot(X_test[sort_idx, 2], dx3_true[sort_idx],
-                'b-', linewidth=2, label=r'True $2x_3$')
-   axes[1].plot(X_test[sort_idx, 2], dx3_pred[sort_idx],
+   # Sort by x2 for a clean line plot
+   sort_idx = np.argsort(X_test[:, 1])
+   axes[1].plot(X_test[sort_idx, 1], dx2_true[sort_idx],
+                'b-', linewidth=2, label=r'True $2x_2$')
+   axes[1].plot(X_test[sort_idx, 1], dx2_pred[sort_idx],
                 'r--', linewidth=2, label='GP prediction')
-   axes[1].set_xlabel(r'$x_3$')
-   axes[1].set_ylabel(r'$\partial f / \partial x_3$')
-   axes[1].set_title('Predicted vs True along x3 axis')
+   axes[1].set_xlabel(r'$x_2$')
+   axes[1].set_ylabel(r'$\partial f / \partial x_2$')
+   axes[1].set_title('Predicted vs True along x2 axis')
    axes[1].legend()
    axes[1].grid(True, alpha=0.3)
 
@@ -1379,7 +1374,7 @@ Step 7: Visualise the untrained derivative prediction
    plt.show()
 
 **Explanation:**
-The scatter plot (left) and line plot (right) both show that the GP successfully recovers :math:`\partial f/\partial x_3 = 2x_3` even though no training data for this derivative was provided. The information propagates through the kernel structure: the GP has learned the length scale along :math:`x_3` from the function values, and the kernel's analytic derivative with respect to :math:`e_3` supplies the required cross-covariance.
+The scatter plot (left) and line plot (right) both show that the GP successfully recovers :math:`\partial f/\partial x_2 = 2x_2` even though no training data for this derivative was provided. The information propagates through the kernel structure: the GP has learned the length scale along :math:`x_2` from the function values, and the kernel's analytic derivative with respect to :math:`e_2` supplies the required cross-covariance.
 
 ---
 
@@ -1390,7 +1385,7 @@ This example demonstrates **predicting untrained partial derivatives** in DEGP.
 Key takeaways:
 
 - **No extra setup required**: simply pass ``derivs_to_predict`` at prediction time with any index within ``n_bases``
-- **Works because ``n_bases`` spans all coordinate axes**: setting ``n_bases=3`` for a 3D problem ensures :math:`e_1, e_2, e_3` all exist in the OTI space, regardless of which derivatives appear in training
+- **Works because ``n_bases`` spans all coordinate axes**: setting ``n_bases=2`` for a 2D problem ensures :math:`e_1, e_2` both exist in the OTI space, regardless of which derivatives appear in training
 - **Cross-covariance from kernel derivatives**: :math:`K_*` is built analytically from the kernel, not from observed data, so untrained directions are always accessible
 - **Accuracy depends on function structure**: the prediction quality for the untrained derivative reflects how well the GP has learned the underlying function
 
@@ -1399,4 +1394,233 @@ Key takeaways:
 - Derivative data is expensive and only a subset of directions can be observed during training
 - Post-hoc sensitivity analysis in directions not originally anticipated
 - Exploring gradient information along new axes without retraining
+
+---
+
+Example 7: 2D Function-Only Training with Derivative Predictions
+-----------------------------------------------------------------
+
+Overview
+~~~~~~~~
+This example demonstrates that DEGP can be trained on **function values only** in a 2D input space
+and still predict both partial derivatives with uncertainty at test points. No derivative
+observations are required during training; the cross-covariance :math:`K_*` between :math:`f`
+and its partial derivatives is derived analytically from the kernel.
+
+True function: :math:`f(x_1,x_2) = \sin(x_1)\cos(x_2)`
+
+True partials: :math:`\partial f/\partial x_1 = \cos(x_1)\cos(x_2)`, :math:`\quad\partial f/\partial x_2 = -\sin(x_1)\sin(x_2)`
+
+---
+
+Step 1: Import required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   import warnings
+   import numpy as np
+   import matplotlib.pyplot as plt
+   from jetgp.full_degp.degp import degp
+
+   print("Modules imported successfully.")
+
+---
+
+Step 2: Define the true function and build training data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   def f(X):
+       return np.sin(X[:, 0]) * np.cos(X[:, 1])
+
+   def df_dx1(X):
+       return np.cos(X[:, 0]) * np.cos(X[:, 1])
+
+   def df_dx2(X):
+       return -np.sin(X[:, 0]) * np.sin(X[:, 1])
+
+   # 5×5 training grid — function values ONLY
+   x1_tr = np.linspace(0, 2 * np.pi, 6)
+   x2_tr = np.linspace(0, 2 * np.pi, 6)
+   G1, G2 = np.meshgrid(x1_tr, x2_tr)
+   X_train = np.column_stack([G1.ravel(), G2.ravel()])  # shape (36, 2)
+   y_func  = f(X_train).reshape(-1, 1)
+   y_train = [y_func]  # no derivative arrays
+
+   print(f"X_train shape : {X_train.shape}")
+   print(f"y_train[0] shape : {y_train[0].shape}")
+
+**Explanation:**
+A sparse 5×5 grid provides 25 training locations. ``y_train`` contains only function values;
+no derivative arrays are included. Setting ``der_indices=[]`` at construction tells DEGP that
+the training covariance is built from function values alone.
+
+---
+
+Step 3: Initialise DEGP model for function-only training
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   with warnings.catch_warnings():
+       warnings.simplefilter("ignore")   # suppress "0 derivatives" notice
+       model = degp(
+           X_train, y_train,
+           n_order=1, n_bases=2,
+           der_indices=[],
+           normalize=True,
+           kernel="SE", kernel_type="anisotropic",
+       )
+
+   print("DEGP model (function-only, 2D) initialised.")
+
+**Explanation:**
+
+- ``n_order=1``: enables first-order OTI arithmetic, required to form the kernel cross-derivatives
+- ``n_bases=2``: one OTI pair per input dimension (x1, x2)
+- ``der_indices=[]``: no derivative observations — training kernel is built from function values only
+
+---
+
+Step 4: Optimise hyperparameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   params = model.optimize_hyperparameters(
+       optimizer='pso',
+       pop_size=100,
+       n_generations=15,
+       local_opt_every=15,
+       debug=False,
+   )
+   print("Optimised hyperparameters:", params)
+
+---
+
+Step 5: Predict f, df/dx1, and df/dx2 with uncertainty
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   n_test = 40
+   x1_te = np.linspace(0, 2 * np.pi, n_test)
+   x2_te = np.linspace(0, 2 * np.pi, n_test)
+   G1t, G2t = np.meshgrid(x1_te, x2_te)
+   X_test = np.column_stack([G1t.ravel(), G2t.ravel()])
+
+   # derivs_to_predict: [[1,1]] → df/dx1  (1st-order w.r.t. basis 1)
+   #                    [[2,1]] → df/dx2  (1st-order w.r.t. basis 2)
+   mean, var = model.predict(
+       X_test, params,
+       calc_cov=True,
+       return_deriv=True,
+       derivs_to_predict=[[[1, 1]], [[2, 1]]],
+   )
+
+   # mean shape: (3, n_test²) — rows: [f, df/dx1, df/dx2]
+   shape2d = (n_test, n_test)
+   f_mean_grid   = mean[0, :].reshape(shape2d)
+   dx1_mean_grid = mean[1, :].reshape(shape2d)
+   dx2_mean_grid = mean[2, :].reshape(shape2d)
+
+   f_true_grid   = f(X_test).reshape(shape2d)
+   dx1_true_grid = df_dx1(X_test).reshape(shape2d)
+   dx2_true_grid = df_dx2(X_test).reshape(shape2d)
+
+   print(f"Prediction output shape: {mean.shape}")
+
+**Explanation:**
+``derivs_to_predict=[[[1,1]], [[2,1]]]`` requests the first-order partial derivative with
+respect to each input dimension. Both derivatives were **never observed during training**; they
+are recovered through the kernel's analytic cross-covariance.
+
+---
+
+Step 6: Accuracy metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   f_rmse   = float(np.sqrt(np.mean((mean[0, :] - f(X_test))      ** 2)))
+   dx1_rmse = float(np.sqrt(np.mean((mean[1, :] - df_dx1(X_test)) ** 2)))
+   dx2_rmse = float(np.sqrt(np.mean((mean[2, :] - df_dx2(X_test)) ** 2)))
+   dx1_corr = float(np.corrcoef(mean[1, :], df_dx1(X_test))[0, 1])
+   dx2_corr = float(np.corrcoef(mean[2, :], df_dx2(X_test))[0, 1])
+
+   print(f"f        RMSE : {f_rmse:.4e}")
+   print(f"df/dx1   RMSE : {dx1_rmse:.4e}   Pearson r: {dx1_corr:.3f}")
+   print(f"df/dx2   RMSE : {dx2_rmse:.4e}   Pearson r: {dx2_corr:.3f}")
+
+---
+
+Step 7: Visualise predictions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+   extent = [0, 2 * np.pi, 0, 2 * np.pi]
+   titles_row = [r"$f(x_1,x_2)$",
+                 r"$\partial f/\partial x_1$",
+                 r"$\partial f/\partial x_2$"]
+   trues = [f_true_grid,   dx1_true_grid,  dx2_true_grid]
+   means = [f_mean_grid,   dx1_mean_grid,  dx2_mean_grid]
+   stds  = [np.sqrt(np.abs(var[r, :])).reshape(shape2d) for r in range(3)]
+
+   fig, axes = plt.subplots(3, 3, figsize=(14, 12))
+   kw = dict(origin="lower", extent=extent, aspect="auto")
+
+   for row, (label, true, gp_mean, gp_std) in enumerate(
+           zip(titles_row, trues, means, stds)):
+       vmin, vmax = true.min(), true.max()
+
+       im0 = axes[row, 0].imshow(true,    **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+       axes[row, 0].set_title(f"True {label}")
+       plt.colorbar(im0, ax=axes[row, 0])
+
+       im1 = axes[row, 1].imshow(gp_mean, **kw, vmin=vmin, vmax=vmax, cmap="RdBu_r")
+       axes[row, 1].set_title(f"GP mean {label}")
+       plt.colorbar(im1, ax=axes[row, 1])
+
+       im2 = axes[row, 2].imshow(gp_std,  **kw, cmap="viridis")
+       axes[row, 2].set_title(f"GP std {label}")
+       plt.colorbar(im2, ax=axes[row, 2])
+
+       for col in range(3):
+           axes[row, col].set_xlabel("$x_1$")
+           axes[row, col].set_ylabel("$x_2$")
+
+   for col in range(2):
+       axes[0, col].scatter(X_train[:, 0], X_train[:, 1],
+                            c="k", s=20, zorder=5, label="Training pts")
+   axes[0, 0].legend(fontsize=8, loc="upper right")
+
+   plt.suptitle(
+       "DEGP 2D — function-only training, derivative predictions\n"
+       r"$f(x_1,x_2) = \sin(x_1)\cos(x_2)$",
+       fontsize=13,
+   )
+   plt.tight_layout()
+   plt.show()
+
+**Explanation:**
+The 3×3 grid shows true values, GP posterior means, and posterior standard deviations for
+:math:`f`, :math:`\partial f/\partial x_1`, and :math:`\partial f/\partial x_2`. Despite
+training exclusively on function values, DEGP recovers the gradient structure through the
+kernel's analytic cross-covariance.
+
+---
+
+Summary
+~~~~~~~
+This example demonstrates **2D function-only DEGP** with untrained derivative predictions.
+
+Key takeaways:
+
+- **Zero derivative observations required**: ``der_indices=[]`` excludes all derivative data from training; partial derivatives remain predictable via ``derivs_to_predict`` at test time
+- **``n_bases`` spans all coordinate axes automatically**: for a 2D problem, ``n_bases=2`` ensures :math:`e_1, e_2` both exist in the OTI space
+- **Uncertainty is meaningful**: the GP standard deviation captures where derivative predictions carry most uncertainty (sparse training regions)
+- **Same API as untrained single-direction prediction** (Example 6): the only difference is that here *all* directions are untrained and we predict over a 2D grid
 
