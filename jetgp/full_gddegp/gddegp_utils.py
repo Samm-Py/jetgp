@@ -455,6 +455,20 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     """
     Compute dimension-wise differences with OTI tagging on both X1 and X2.
 
+    GDDEGP uses a dual-tag OTI scheme: X1 points are tagged with odd bases
+    (e_1, e_3, e_5, ...) and X2 points with even bases (e_2, e_4, e_6, ...).
+    This requires ``n_bases = 2 * n_direction_types``.
+
+    The dual-tag approach is necessary because each point can have a unique
+    directional ray, and the kernel matrix requires derivatives with respect to
+    *both* sets of directions simultaneously. In the difference X1 - X2, the
+    OTI coefficient for basis e_i at position (a, b) encodes only the ray of
+    the point that was tagged with e_i. A single-tag scheme (tagging both X1
+    and X2 with the same basis) would conflate the two rays in the difference,
+    making it impossible to recover the correct cross-derivative
+    ``v_i(a)^T H v_j(b)`` needed for K_dd blocks, and producing an asymmetric
+    K_fd block when rays vary per point.
+
     Parameters
     ----------
     X1 : ndarray of shape (n1, d)
