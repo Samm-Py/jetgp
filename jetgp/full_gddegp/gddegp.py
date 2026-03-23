@@ -242,13 +242,46 @@ class gddegp:
             if derivs_to_predict is not None:
                 common_derivs = derivs_to_predict
             else:
+                if self.n_order == 0:
+                    raise ValueError(
+                        "derivs_to_predict must be provided when predicting derivatives "
+                        "from a model trained with n_order=0 (no derivative training data)."
+                    )
                 common_derivs = self.flattened_der_indices
                 print(
                     f"Note: derivs_to_predict is None. Predictions will include all derivatives "
                     f"used in training: {self.flattened_der_indices}"
                 )
+
+            # Determine prediction order from requested derivatives
+            required_order = max(
+                sum(pair[1] for pair in deriv_spec)
+                for deriv_spec in common_derivs
+            )
+            predict_order = max(required_order, self.n_order)
+
+            if predict_order > self.n_order:
+                predict_oti = get_oti_module(self.n_bases, predict_order)
+                smoothness_param = getattr(self.kernel_factory, 'alpha', None)
+                predict_kernel_factory = KernelFactory(
+                    dim=self.dim,
+                    normalize=self.normalize,
+                    differences_by_dim=self.differences_by_dim,
+                    n_order=predict_order,
+                    smoothness_parameter=smoothness_param,
+                    oti_module=predict_oti
+                )
+                predict_kernel_func = predict_kernel_factory.create_kernel(
+                    kernel_name=self.kernel, kernel_type=self.kernel_type
+                )
+            else:
+                predict_oti = self.oti
+                predict_kernel_func = self.kernel_func
         else:
             common_derivs = []
+            predict_order = self.n_order
+            predict_oti = self.oti
+            predict_kernel_func = self.kernel_func
 
         # Build training kernel matrix
         phi_train = self.kernel_func(self.differences_by_dim, length_scales)
@@ -304,22 +337,22 @@ class gddegp:
             self.x_train, X_test,
             self.rays_list, rays_test,
             self.derivative_locations, derivative_locations_test,
-            self.n_order,self.oti, return_deriv=return_deriv
+            predict_order, predict_oti, return_deriv=return_deriv
         )
 
         # Compute train-test kernel
-        phi_train_test = self.kernel_func(diff_x_train_x_test, length_scales)
-        if self.n_order > 0:
+        phi_train_test = predict_kernel_func(diff_x_train_x_test, length_scales)
+        if predict_order > 0:
             if return_deriv:
-                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, 2 * predict_order)
             else:
-                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, self.n_order)
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases, predict_order)
         else:
             phi_exp_train_test = phi_train_test.real
             phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
         K_s = gddegp_utils.rbf_kernel_predictions(
-            phi_train_test, phi_exp_train_test, self.n_order, self.n_bases,
-            self.flattened_der_indices, 
+            phi_train_test, phi_exp_train_test, predict_order, self.n_bases,
+            self.flattened_der_indices,
             return_deriv=return_deriv,
             index=self.derivative_locations,
             common_derivs=common_derivs
@@ -352,19 +385,19 @@ class gddegp:
             X_test, X_test,
             rays_test, rays_test,
             derivative_locations_test, derivative_locations_test,
-            self.n_order,self.oti, return_deriv=return_deriv
+            predict_order, predict_oti, return_deriv=return_deriv
         )
 
         # Compute test-test kernel
-        phi_test_test = self.kernel_func(diff_x_test_x_test, length_scales)
-        if self.n_order > 0:
-            phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * self.n_order)
+        phi_test_test = predict_kernel_func(diff_x_test_x_test, length_scales)
+        if predict_order > 0:
+            phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases, 2 * predict_order)
         else:
             phi_exp_test_test = phi_test_test.real
             phi_exp_test_test = phi_exp_test_test[np.newaxis, :, :]
 
         K_ss = gddegp_utils.rbf_kernel_predictions(
-            phi_test_test, phi_exp_test_test, self.n_order, self.n_bases,
+            phi_test_test, phi_exp_test_test, predict_order, self.n_bases,
             self.flattened_der_indices,
             return_deriv=return_deriv,
             index=derivative_locations_test,

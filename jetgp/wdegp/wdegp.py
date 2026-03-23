@@ -527,14 +527,51 @@ class wdegp:
             if derivs_to_predict is not None:
                 common_derivs = derivs_to_predict
             else:
+                if self.n_order == 0:
+                    raise ValueError(
+                        "derivs_to_predict must be provided when predicting derivatives "
+                        "from a model trained with n_order=0 (no derivative training data)."
+                    )
                 common = gp_utils.find_common_derivatives(self.flattened_der_indices)
                 common_derivs = [gp_utils.to_list(d) for d in common]
                 print('Making predictions for all derivatives that are common among submodels')
+
+            # Determine prediction order from requested derivatives
+            required_order = max(
+                sum(pair[1] for pair in deriv_spec)
+                for deriv_spec in common_derivs
+            )
+            predict_order = max(required_order, self.n_order)
+
+            if predict_order > self.n_order:
+                if self.submodel_type == 'degp' or self.submodel_type == 'ddegp':
+                    predict_oti = get_oti_module(self.n_bases, predict_order)
+                elif self.submodel_type == 'gddegp':
+                    predict_oti = get_oti_module(2 * self.n_bases, predict_order)
+                smoothness_param = getattr(self.kernel_factory, 'alpha', None)
+                predict_kernel_factory = KernelFactory(
+                    dim=self.dim,
+                    normalize=self.normalize,
+                    differences_by_dim=self.differences_by_dim,
+                    n_order=predict_order,
+                    smoothness_parameter=smoothness_param,
+                    oti_module=predict_oti
+                )
+                predict_kernel_func = predict_kernel_factory.create_kernel(
+                    kernel_name=self.kernel, kernel_type=self.kernel_type
+                )
+            else:
+                predict_oti = self.oti
+                predict_kernel_func = self.kernel_func
+
             self.powers_predict = utils.build_companion_array_predict(
-                self.n_bases, self.n_order, common_derivs)
+                self.n_bases, predict_order, common_derivs)
         else:
             common_derivs = []
             self.powers_predict = None
+            predict_order = self.n_order
+            predict_oti = self.oti
+            predict_kernel_func = self.kernel_func
     
         y_val = 0
         y_var = 0
@@ -595,23 +632,24 @@ class wdegp:
     
             # Compute train-test differences
             diffs_train_test = self._compute_train_test_differences(
-                x_train, X_test_norm, return_deriv, rays_predict
+                x_train, X_test_norm, return_deriv, rays_predict,
+                predict_order=predict_order, predict_oti=predict_oti
             )
-    
+
             # Compute train-test kernel
-            phi_train_test = self.kernel_func(diffs_train_test, ell)
-            if self.n_order > 0:
+            phi_train_test = predict_kernel_func(diffs_train_test, ell)
+            if predict_order > 0:
                 if return_deriv:
-                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * predict_order)
                 else:
-                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, self.n_order)
+                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, predict_order)
             else:
                 phi_exp_train_test = phi_train_test.real
                 phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
             K_s = gp_utils.rbf_kernel_predictions(
-                phi_train_test, phi_exp_train_test, self.n_order, self.n_bases_rays,
+                phi_train_test, phi_exp_train_test, predict_order, self.n_bases_rays,
                 self.flattened_der_indices[i], self.powers[i],
-                return_deriv=return_deriv, 
+                return_deriv=return_deriv,
                 index=deriv_locs_i,
                 common_derivs=common_derivs,
                 powers_predict=self.powers_predict
@@ -675,10 +713,12 @@ class wdegp:
             # Compute covariance if requested
             if calc_cov:
                 f_var = self._compute_predictive_variance(
-                    X_test_norm, deriv_locs_i, common_derivs, self.powers_predict, 
+                    X_test_norm, deriv_locs_i, common_derivs, self.powers_predict,
                     ell, i, K, K_s, L if not cho_solve_failed else None,
                     low if not cho_solve_failed else None, cho_solve_failed,
-                    return_deriv, rays_predict
+                    return_deriv, rays_predict,
+                    predict_order=predict_order, predict_oti=predict_oti,
+                    predict_kernel_func=predict_kernel_func
                 )
                 
                 if self.num_submodels > 1:
@@ -707,37 +747,37 @@ class wdegp:
                     return (y_val, y_var ** 2)
                 return y_val
 
-    def _compute_train_test_differences(self, x_train, X_test, return_deriv, rays_predict, submodel_idx=0):
+    def _compute_train_test_differences(self, x_train, X_test, return_deriv, rays_predict,
+                                         submodel_idx=0, predict_order=None, predict_oti=None):
         """Compute train-test differences based on submodel_type."""
+        p_order = predict_order if predict_order is not None else self.n_order
+        p_oti = predict_oti if predict_oti is not None else self.oti
         if self.submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
             return wdegp_utils.differences_by_dim_func(
-                x_train, X_test, self.n_order,self.oti, return_deriv=return_deriv
+                x_train, X_test, p_order, p_oti, return_deriv=return_deriv
             )
         elif self.submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
-            # For test points, derivative_locations is all test points if return_deriv
             deriv_locs_test = [list(range(len(X_test)))] * self.rays.shape[1] if return_deriv else None
             return wddegp_utils.differences_by_dim_func(
                 x_train, X_test,
                 self.rays,
-                self.n_order,
-                self.oti,
+                p_order,
+                p_oti,
                 return_deriv=return_deriv
             )
         elif self.submodel_type == 'gddegp':
             from jetgp.full_gddegp import gddegp_utils
-            # Use global rays structure for train side
             n_dirs = len(self.global_rays)
-            # For test points, use rays_predict if provided
             rays_test = rays_predict if return_deriv and rays_predict is not None else None
             deriv_locs_test = [list(range(len(X_test)))] * n_dirs if return_deriv else None
             return gddegp_utils.differences_by_dim_func(
                 x_train, X_test,
                 self.global_rays, rays_test,
                 self.global_derivative_locations, deriv_locs_test,
-                self.n_order,
-                self.oti,
+                p_order,
+                p_oti,
                 return_deriv=return_deriv
             )
 
@@ -758,36 +798,39 @@ class wdegp:
             )
 
     def _compute_predictive_variance(
-        self, X_test,deriv_locs_i,common_derivs,powers_predict, ell, submodel_idx, K, K_s, L, low, cho_solve_failed,
-        return_deriv, rays_predict
+        self, X_test, deriv_locs_i, common_derivs, powers_predict, ell, submodel_idx, K, K_s, L, low, cho_solve_failed,
+        return_deriv, rays_predict, predict_order=None, predict_oti=None, predict_kernel_func=None
     ):
         """Compute predictive variance for a submodel."""
         gp_utils = self._get_utils_module()
-        
+        p_order = predict_order if predict_order is not None else self.n_order
+        p_kernel_func = predict_kernel_func if predict_kernel_func is not None else self.kernel_func
+
         # Compute test-test differences
         diffs_test_test = self._compute_test_test_differences(
-            X_test, return_deriv, rays_predict, submodel_idx=submodel_idx
+            X_test, return_deriv, rays_predict, submodel_idx=submodel_idx,
+            predict_order=p_order, predict_oti=predict_oti
         )
-        
-        phi_test_test = self.kernel_func(diffs_test_test, ell)
-        
-        if self.n_order == 0:
+
+        phi_test_test = p_kernel_func(diffs_test_test, ell)
+
+        if p_order == 0:
             n_bases = 0
             phi_exp_test_test = phi_test_test.real
             phi_exp_test_test  =    phi_exp_test_test [np.newaxis, :, :]
         else:
             bases = phi_test_test.get_active_bases()
             n_bases = bases[-1]
-            phi_exp_test_test = phi_test_test.get_all_derivs( n_bases, 2 * self.n_order)
-        
+            phi_exp_test_test = phi_test_test.get_all_derivs(n_bases, 2 * p_order)
+
         deriv_locs_test = [list(range(len(X_test)))] * len(self.derivative_locations[submodel_idx]) if return_deriv else None
-        
+
         K_ss = gp_utils.rbf_kernel_predictions(
-            phi_test_test, phi_exp_test_test, self.n_order, self.n_bases_rays,
+            phi_test_test, phi_exp_test_test, p_order, self.n_bases_rays,
             self.flattened_der_indices[submodel_idx], self.powers[submodel_idx],
             return_deriv=return_deriv,
-            index= deriv_locs_test,
-            common_derivs = common_derivs,
+            index=deriv_locs_test,
+            common_derivs=common_derivs,
             calc_cov=True,
             powers_predict=powers_predict
         )
@@ -816,26 +859,28 @@ class wdegp:
         
         return np.sqrt(f_var)
 
-    def _compute_test_test_differences(self, X_test, return_deriv, rays_predict, submodel_idx=0):
+    def _compute_test_test_differences(self, X_test, return_deriv, rays_predict,
+                                        submodel_idx=0, predict_order=None, predict_oti=None):
         """Compute test-test differences for covariance."""
+        p_order = predict_order if predict_order is not None else self.n_order
+        p_oti = predict_oti if predict_oti is not None else self.oti
         if self.submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
             return wdegp_utils.differences_by_dim_func(
-                X_test, X_test, self.n_order,self.oti, return_deriv=return_deriv
+                X_test, X_test, p_order, p_oti, return_deriv=return_deriv
             )
         elif self.submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
             deriv_locs = [list(range(len(X_test)))] * self.rays.shape[1] if return_deriv else None
             return wddegp_utils.differences_by_dim_func(
                 X_test, X_test,
-                self.rays, 
-                self.n_order,
-                self.oti,
+                self.rays,
+                p_order,
+                p_oti,
                 return_deriv=return_deriv
             )
         elif self.submodel_type == 'gddegp':
             from jetgp.full_gddegp import wgddegp_utils
-            # For test-test, use rays_predict if provided
             rays_test = rays_predict if return_deriv else None
             n_dirs = len(self.global_rays) if rays_test is None else len(rays_test)
             deriv_locs = [list(range(len(X_test)))] * n_dirs if return_deriv else None
@@ -843,7 +888,7 @@ class wdegp:
                 X_test, X_test,
                 rays_test, rays_test,
                 deriv_locs, deriv_locs,
-                self.n_order,
-                self.oti,
+                p_order,
+                p_oti,
                 return_deriv=return_deriv
             )
