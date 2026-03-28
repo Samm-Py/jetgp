@@ -2021,8 +2021,10 @@ Step 5: Optimize hyperparameters
 .. jupyter-execute::
 
     params = model.optimize_hyperparameters(
-        optimizer='powell',
-        n_restart_optimizer=5,
+        optimizer='pso',
+        pop_size=100,
+        n_generations=30,
+        local_opt_every=30,
         debug=False
     )
     print("Optimized hyperparameters:", params)
