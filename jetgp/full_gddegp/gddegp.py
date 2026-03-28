@@ -407,7 +407,8 @@ class gddegp:
 
         # Compute predictive covariance
         if cho_solve_failed:
-            f_cov = K_ss - K_s @ np.linalg.inv(K) @ K_s.T
+            v_fallback = np.linalg.solve(K, K_s.T)
+            f_cov = K_ss - K_s @ v_fallback
         else:
             v = solve_triangular(L, K_s.T, lower=low)
             f_cov = K_ss - v.T @ v

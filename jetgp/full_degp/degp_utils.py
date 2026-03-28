@@ -1,5 +1,4 @@
 import numpy as np
-import pyoti.static.onumm4n2 as oti
 import pyoti.core as coti
 from line_profiler import profile
 import numba
@@ -13,7 +12,7 @@ import numba
 def extract_rows(content_full, row_indices, n_cols):
     """
     Extract rows from content_full at specified indices.
-    
+
     Parameters
     ----------
     content_full : ndarray of shape (n_rows_full, n_cols)
@@ -22,7 +21,7 @@ def extract_rows(content_full, row_indices, n_cols):
         Row indices to extract.
     n_cols : int
         Number of columns.
-        
+
     Returns
     -------
     result : ndarray of shape (len(row_indices), n_cols)
@@ -41,7 +40,7 @@ def extract_rows(content_full, row_indices, n_cols):
 def extract_cols(content_full, col_indices, n_rows):
     """
     Extract columns from content_full at specified indices.
-    
+
     Parameters
     ----------
     content_full : ndarray of shape (n_rows, n_cols_full)
@@ -50,7 +49,7 @@ def extract_cols(content_full, col_indices, n_rows):
         Column indices to extract.
     n_rows : int
         Number of rows.
-        
+
     Returns
     -------
     result : ndarray of shape (n_rows, len(col_indices))
@@ -69,7 +68,7 @@ def extract_submatrix(content_full, row_indices, col_indices):
     """
     Extract submatrix from content_full at specified row and column indices.
     Replaces the expensive np.ix_ operation.
-    
+
     Parameters
     ----------
     content_full : ndarray of shape (n_rows_full, n_cols_full)
@@ -78,7 +77,7 @@ def extract_submatrix(content_full, row_indices, col_indices):
         Row indices to extract.
     col_indices : ndarray of int64
         Column indices to extract.
-        
+
     Returns
     -------
     result : ndarray of shape (len(row_indices), len(col_indices))
@@ -95,12 +94,12 @@ def extract_submatrix(content_full, row_indices, col_indices):
 
 
 @numba.jit(nopython=True, cache=True, parallel=False)
-def extract_and_assign(content_full, row_indices, col_indices, K, 
+def extract_and_assign(content_full, row_indices, col_indices, K,
                        row_start, col_start, sign):
     """
     Extract submatrix and assign directly to K with sign multiplication.
     Combines extraction and assignment in one pass for better performance.
-    
+
     Parameters
     ----------
     content_full : ndarray of shape (n_rows_full, n_cols_full)
@@ -127,11 +126,11 @@ def extract_and_assign(content_full, row_indices, col_indices, K,
 
 
 @numba.jit(nopython=True, cache=True)
-def extract_rows_and_assign(content_full, row_indices, K, 
+def extract_rows_and_assign(content_full, row_indices, K,
                             row_start, col_start, n_cols, sign):
     """
     Extract rows and assign directly to K with sign multiplication.
-    
+
     Parameters
     ----------
     content_full : ndarray of shape (n_rows_full, n_cols)
@@ -157,11 +156,11 @@ def extract_rows_and_assign(content_full, row_indices, K,
 
 
 @numba.jit(nopython=True, cache=True)
-def extract_cols_and_assign(content_full, col_indices, K, 
+def extract_cols_and_assign(content_full, col_indices, K,
                             row_start, col_start, n_rows, sign):
     """
     Extract columns and assign directly to K with sign multiplication.
-    
+
     Parameters
     ----------
     content_full : ndarray of shape (n_rows, n_cols_full)
@@ -246,7 +245,8 @@ def differences_by_dim_func(X1, X2, n_order, oti_module, return_deriv=True):
             diffs_k = oti_module.zeros((n1, n2))
             for i in range(n1):
                 diffs_k[i, :] = X1[i, k] - (X2[:, k].T)
-            differences_by_dim.append(diffs_k + oti_module.e(k + 1, order=2 * n_order))
+            differences_by_dim.append(
+                diffs_k + oti_module.e(k + 1, order=2 * n_order))
 
     return differences_by_dim
 
@@ -258,14 +258,14 @@ def differences_by_dim_func(X1, X2, n_order, oti_module, return_deriv=True):
 def deriv_map(nbases, order):
     """
     Create mapping from (order, index) to flattened index.
-    
+
     Parameters
     ----------
     nbases : int
         Number of base dimensions.
     order : int
         Maximum derivative order.
-        
+
     Returns
     -------
     map_deriv : list of lists
@@ -286,14 +286,14 @@ def deriv_map(nbases, order):
 def transform_der_indices(der_indices, der_map):
     """
     Transform derivative indices to flattened format.
-    
+
     Parameters
     ----------
     der_indices : list
         User-facing derivative specifications.
     der_map : list of lists
         Derivative mapping from deriv_map().
-        
+
     Returns
     -------
     deriv_ind_transf : list
@@ -327,10 +327,10 @@ def rbf_kernel(
 ):
     """
     Compute the derivative-enhanced RBF kernel matrix (optimized version).
-    
+
     This version uses Numba-accelerated functions for efficient matrix slicing,
     replacing expensive np.ix_ operations.
-    
+
     Parameters
     ----------
     phi : OTI array
@@ -348,7 +348,7 @@ def rbf_kernel(
     index : list of lists or None, optional
         If empty list, assumes uniform blocks.
         If provided, specifies which training point indices have each derivative type.
-        
+
     Returns
     -------
     K : ndarray
@@ -369,7 +369,8 @@ def rbf_kernel(
     # CASE 1: Uniform blocks (original behavior) - index is None or empty
     # =========================================================================
     if index is None or len(index) == 0:
-        K = np.zeros((n_rows_func * (n_deriv_types + 1), n_cols_func * (n_deriv_types + 1)))
+        K = np.zeros((n_rows_func * (n_deriv_types + 1),
+                     n_cols_func * (n_deriv_types + 1)))
         outer_loop_index = n_deriv_types + 1
 
         for j in range(outer_loop_index):
@@ -407,7 +408,7 @@ def rbf_kernel(
         content_full = phi_exp[flat_idx].reshape(base_shape)
         row_indices = index_arrays[i]
         n_pts_this_order = len(row_indices)
-        
+
         # Use numba for efficient row extraction and assignment
         extract_rows_and_assign(content_full, row_indices, K,
                                 row_offset, 0, n_cols_func, signs[0])
@@ -420,7 +421,7 @@ def rbf_kernel(
         content_full = phi_exp[flat_idx].reshape(base_shape)
         col_indices = index_arrays[j]
         n_pts_this_order = len(col_indices)
-        
+
         # Use numba for efficient column extraction and assignment
         extract_cols_and_assign(content_full, col_indices, K,
                                 0, col_offset, n_rows_func, signs[j + 1])
@@ -439,13 +440,14 @@ def rbf_kernel(
 
             imdir1 = der_ind_order[j]
             imdir2 = der_ind_order[i]
-            new_idx, new_ord = dh.mult_dir(imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+            new_idx, new_ord = dh.mult_dir(
+                imdir1[0], imdir1[1], imdir2[0], imdir2[1])
             flat_idx = der_map[new_ord][new_idx]
             content_full = phi_exp[flat_idx].reshape(base_shape)
 
             # Use numba for direct extraction and assignment (replaces np.ix_)
             extract_and_assign(content_full, row_indices, col_indices, K,
-                              row_offset, col_offset, signs[j + 1])
+                               row_offset, col_offset, signs[j + 1])
 
             col_offset += n_pts_col
         row_offset += n_pts_row
@@ -468,7 +470,7 @@ def rbf_kernel_predictions(
 ):
     """
     Constructs the RBF kernel matrix for predictions with derivative entries.
-    
+
     This version uses Numba-accelerated functions for efficient matrix slicing.
 
     Parameters
@@ -514,7 +516,8 @@ def rbf_kernel_predictions(
     # Pre-compute signs
     signs = np.array([(-1.0) ** p for p in powers], dtype=np.float64)
     if powers_predict is not None:
-        signs_predict = np.array([(-1.0) ** p for p in powers_predict], dtype=np.float64)
+        signs_predict = np.array(
+            [(-1.0) ** p for p in powers_predict], dtype=np.float64)
     else:
         signs_predict = signs
 
@@ -527,14 +530,17 @@ def rbf_kernel_predictions(
             n_deriv_types = n_deriv_types_pred
             n_pts_with_derivs_rows = n_deriv_types * n_cols_func
         else:
-            n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index) if index else 0
+            n_pts_with_derivs_rows = sum(len(order_indices)
+                                         for order_indices in index) if index else 0
     else:
         der_map = deriv_map(n_bases, n_order)
         index_2 = np.array([], dtype=np.int64)
-        n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index) if index else 0
+        n_pts_with_derivs_rows = sum(len(order_indices)
+                                     for order_indices in index) if index else 0
 
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
-    der_indices_tr_pred, der_ind_order_pred = transform_der_indices(common_derivs, der_map) if common_derivs else ([], [])
+    der_indices_tr_pred, der_ind_order_pred = transform_der_indices(
+        common_derivs, der_map) if common_derivs else ([], [])
     n_pts_with_derivs_cols = n_deriv_types_pred * len(index_2)
 
     total_rows = n_rows_func + n_pts_with_derivs_rows
@@ -624,14 +630,15 @@ def rbf_kernel_predictions(
 
             imdir1 = der_ind_order_pred[j]
             imdir2 = der_ind_order_pred[i] if calc_cov else der_ind_order[i]
-            new_idx, new_ord = dh.mult_dir(imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+            new_idx, new_ord = dh.mult_dir(
+                imdir1[0], imdir1[1], imdir2[0], imdir2[1])
             flat_idx = der_map[new_ord][new_idx]
 
             content_full = phi_exp[flat_idx].reshape(base_shape)
 
             # Use numba for efficient submatrix extraction and assignment (replaces np.ix_)
             extract_and_assign(content_full, row_indices, index_2, K,
-                              row_offset, col_offset, signs_predict[j + 1])
+                               row_offset, col_offset, signs_predict[j + 1])
             col_offset += n_pts_col
         row_offset += n_pts_row
 

@@ -8,12 +8,12 @@ import os
 import warnings
 
 
-def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_sparse = False):
+def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None, use_sparse=False):
     """
     Dynamically import the correct PyOTI static library.
     If the module doesn't exist and auto_compile=True, attempts to compile it.
     Falls back to pyoti.sparse if compilation fails or is disabled.
-    
+
     Parameters
     ----------
     n_bases : int
@@ -25,7 +25,7 @@ def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_s
         Requires jetgp.cmod_writer and jetgp.build_static to be available.
     otilib_path : str, optional
         Path to otilib-master directory. If None, attempts auto-detection.
-        
+
     -------
     module
         The appropriate pyoti.static.onummXnY module, or pyoti.sparse as fallback.
@@ -33,7 +33,7 @@ def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_s
     if n_order == 0:
         module_name = "pyoti.real"
         return importlib.import_module(module_name)
-    
+
     oti_order = 2 * n_order
     module_name = f"pyoti.static.onumm{n_bases}n{oti_order}"
     if use_sparse:
@@ -53,7 +53,7 @@ def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_s
                 UserWarning
             )
             return importlib.import_module("pyoti.sparse")
-        
+
         # Check if auto-compile tools are available
         try:
             from jetgp.cmod_writer import writer
@@ -71,15 +71,15 @@ def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_s
                 UserWarning
             )
             return importlib.import_module("pyoti.sparse")
-        
+
         print(f"Module '{module_name}' not found. Attempting to compile...")
-        
+
         try:
             _compile_oti_module(n_bases, oti_order, otilib_path)
-            
+
             # Clear import caches and retry
             importlib.invalidate_caches()
-            
+
             return importlib.import_module(module_name)
         except Exception as e:
             warnings.warn(
@@ -94,15 +94,16 @@ def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_s
             )
             return importlib.import_module("pyoti.sparse")
 
+
 def _get_otilib_path(otilib_path=None):
     """
     Auto-detect otilib path from the installed pyoti package location.
-    
+
     Parameters
     ----------
     otilib_path : str, optional
         Override path to otilib-master directory.
-        
+
     Returns
     -------
     otilib_path : str
@@ -113,18 +114,18 @@ def _get_otilib_path(otilib_path=None):
         if not os.path.isdir(otilib_path):
             raise RuntimeError(f"otilib path does not exist: {otilib_path}")
         return otilib_path
-    
+
     # Check environment variable
     otilib_path = os.environ.get('OTILIB_PATH')
     if otilib_path is not None:
         if not os.path.isdir(otilib_path):
             raise RuntimeError(f"OTILIB_PATH does not exist: {otilib_path}")
         return otilib_path
-    
+
     # Auto-detect from installed pyoti
     try:
         import pyoti
-        
+
         # Get the pyoti package location
         if hasattr(pyoti, '__path__'):
             pyoti_install_path = pyoti.__path__[0]
@@ -132,30 +133,30 @@ def _get_otilib_path(otilib_path=None):
             pyoti_install_path = os.path.dirname(pyoti.__file__)
         else:
             raise AttributeError("Cannot determine pyoti installation path")
-        
+
         # Navigate up from pyoti to find otilib root
         # Typical structure: otilib-master/src/python/pyoti/pyoti/__init__.py
         current = pyoti_install_path
         for _ in range(6):  # Navigate up to 6 levels
             parent = os.path.dirname(current)
-            
+
             # Check if this looks like otilib root
             # Must have BOTH CMakeLists.txt AND src/ directory (not just build dir)
             potential_cmake = os.path.join(parent, 'CMakeLists.txt')
             potential_src = os.path.join(parent, 'src')
             potential_include = os.path.join(parent, 'include')
-            
-            if (os.path.isfile(potential_cmake) and 
-                os.path.isdir(potential_src) and 
-                os.path.isdir(potential_include)):
+
+            if (os.path.isfile(potential_cmake) and
+                os.path.isdir(potential_src) and
+                    os.path.isdir(potential_include)):
                 otilib_path = parent
                 break
-            
+
             current = parent
-                
+
     except ImportError:
         pass
-    
+
     # Final validation
     if otilib_path is None:
         raise RuntimeError(
@@ -164,17 +165,17 @@ def _get_otilib_path(otilib_path=None):
             "  2. Pass otilib_path explicitly to get_oti_module()\n"
             "  3. Ensure pyoti is installed from the otilib source tree"
         )
-    
+
     if not os.path.isdir(otilib_path):
         raise RuntimeError(f"otilib path does not exist: {otilib_path}")
-    
+
     return otilib_path
 
 
 def _compile_oti_module(n_bases, oti_order, otilib_path=None):
     """
     Compile a PyOTI static module.
-    
+
     Parameters
     ----------
     n_bases : int
@@ -186,37 +187,37 @@ def _compile_oti_module(n_bases, oti_order, otilib_path=None):
     """
     # Auto-detect path
     otilib_path = _get_otilib_path(otilib_path)
-    
+
     build_dir = os.path.join(otilib_path, 'build')
     module_target = f"m{n_bases}n{oti_order}"
-    
+
     print(f"Compiling OTI module: {module_target}")
     print(f"  otilib_path: {otilib_path}")
     print(f"  build_dir: {build_dir}")
-    
+
     # Step 1: Generate C code using cmod_writer (from jetgp)
     print(f"Step 1/4: Generating C code for m={n_bases}, n={oti_order}...")
     _run_cmod_writer(n_bases, oti_order, otilib_path)
-    
+
     # Step 2: Run cmake (if needed)
     print("Step 2/4: Running cmake...")
     _run_cmake(build_dir)
-    
+
     # Step 3: Run make
     print(f"Step 3/4: Compiling {module_target}...")
     _run_make(build_dir, module_target)
-    
+
     # Step 4: Build and install Python module
     print(f"Step 4/4: Building Python module...")
     _run_build_static(build_dir, module_target, otilib_path)
-    
+
     print(f"Successfully compiled {module_target}")
 
 
 def _run_cmod_writer(n_bases, oti_order, otilib_path):
     """Generate C code using cmod_writer from jetgp."""
     from jetgp.cmod_writer import writer
-    
+
     w = writer(nbases=n_bases, order=oti_order)
     w.write_files(base_dir=otilib_path)
 
@@ -224,14 +225,14 @@ def _run_cmod_writer(n_bases, oti_order, otilib_path):
 def _run_cmake(build_dir):
     """Run cmake in the build directory."""
     os.makedirs(build_dir, exist_ok=True)
-    
+
     result = subprocess.run(
         ['cmake', '..'],
         cwd=build_dir,
         capture_output=True,
         text=True
     )
-    
+
     if result.returncode != 0:
         raise RuntimeError(
             f"cmake failed with return code {result.returncode}.\n"
@@ -248,7 +249,7 @@ def _run_make(build_dir, module_target, n_jobs=8):
         capture_output=True,
         text=True
     )
-    
+
     if result.returncode != 0:
         raise RuntimeError(
             f"make failed with return code {result.returncode}.\n"
@@ -260,9 +261,10 @@ def _run_make(build_dir, module_target, n_jobs=8):
 def _run_build_static(build_dir, module_target, otilib_path):
     """Build and install the Python module using jetgp's build_static."""
     from jetgp.build_static import build_module
-    
+
     build_module(module_target, otilib_path=otilib_path, build_dir=build_dir)
-        
+
+
 class KernelFactory:
     """
     Factory for generating different kernel functions (SE, RQ, SineExp, Matérn)
@@ -286,7 +288,7 @@ class KernelFactory:
         Order of derivatives for kernel smoothness.
     """
 
-    def __init__(self, dim,normalize, differences_by_dim, n_order, 
+    def __init__(self, dim, normalize, differences_by_dim, n_order,
                  true_noise_std=None, smoothness_parameter=None, oti_module=None):
         self.dim = dim
         self.normalize = normalize
@@ -297,9 +299,12 @@ class KernelFactory:
         if smoothness_parameter is not None:
             self.alpha = smoothness_parameter
             self.nu = smoothness_parameter + 0.5
+        else:
+            self.alpha = 1
+            self.nu = 1.5
         self.n_order = n_order
         # Dynamic OTI import
-        
+
         # Initialize caching infrastructure
         self._init_caches()
 
@@ -314,7 +319,7 @@ class KernelFactory:
         self._tmp1 = None
         self._tmp2 = None
         self._sqdist = None
-        
+
         # Hyperparameter cache
         self._cached_length_scales = None
         self._cached_ell = None
@@ -330,12 +335,12 @@ class KernelFactory:
     def _ensure_temp_arrays(self, shape):
         """
         Ensure temporary arrays exist with correct shape.
-        
+
         Parameters
         ----------
         shape : tuple
             Required shape for temporary arrays.
-            
+
         Returns
         -------
         tuple
@@ -493,7 +498,7 @@ class KernelFactory:
         """
         # Clear caches when creating a new kernel
         self.clear_caches()
-        
+
         if not self.normalize:
             self.get_bounds_from_data()
 
@@ -526,11 +531,13 @@ class KernelFactory:
             return self.sine_exp_kernel_anisotropic
         elif kernel == "Matern":
             self._add_bounds([(-1, 5), sigma_n_bound])
-            self.matern_kernel_prebuild = jetgp.utils.matern_kernel_builder(self.nu, oti_module=self.oti)
+            self.matern_kernel_prebuild = jetgp.utils.matern_kernel_builder(
+                self.nu, oti_module=self.oti)
             return self.matern_kernel_anisotropic
         elif kernel == "SI":
             self._add_bounds([(-5, 5), sigma_n_bound])
-            self.SI_kernel_prebuild = jetgp.utils.generate_bernoulli_lambda(self.alpha)
+            self.SI_kernel_prebuild = jetgp.utils.generate_bernoulli_lambda(
+                self.alpha)
             return self.SI_kernel_anisotropic
         else:
             raise NotImplementedError("Anisotropic kernel not implemented")
@@ -566,11 +573,13 @@ class KernelFactory:
             return self.sine_exp_kernel_isotropic
         elif kernel == "Matern":
             self.bounds = core_bounds + [(-1, 5), sigma_n_bound]
-            self.matern_kernel_prebuild = jetgp.utils.matern_kernel_builder(self.nu,oti_module=self.oti)
+            self.matern_kernel_prebuild = jetgp.utils.matern_kernel_builder(
+                self.nu, oti_module=self.oti)
             return self.matern_kernel_isotropic
         elif kernel == "SI":
             self.bounds = core_bounds + [(-5, 5), sigma_n_bound]
-            self.SI_kernel_prebuild = jetgp.utils.generate_bernoulli_lambda(self.alpha)
+            self.SI_kernel_prebuild = jetgp.utils.generate_bernoulli_lambda(
+                self.alpha)
             return self.SI_kernel_isotropic
         else:
             raise NotImplementedError("Isotropic kernel not implemented")
@@ -611,7 +620,8 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_se_params_aniso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -622,7 +632,6 @@ class KernelFactory:
         self.oti.exp((-0.5) * sqdist, out=tmp1)
         self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
         return tmp2
-
 
     def rq_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
@@ -641,7 +650,8 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, alpha, sigma_f_sq = self._cache_rq_params_aniso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -673,8 +683,10 @@ class KernelFactory:
         ndarray
             Kernel matrix values.
         """
-        ell, pi_over_p, sigma_f_sq = self._cache_sine_exp_params_aniso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        ell, pi_over_p, sigma_f_sq = self._cache_sine_exp_params_aniso(
+            length_scales)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -706,11 +718,14 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_matern_params_aniso(length_scales)
-        
-        # Compute scaled distance
+
+        # Compute scaled distance — regularise r directly (not each diff)
+        # so that r.e([d]) = 0 at training-point diagonals, preserving
+        # correct OTI derivative structure for the covariance blocks.
+        _eps = 1e-10
         sqdist = self.oti.sqrt(
-            sum((ell[i] * (differences_by_dim[i] + 1e-16)) ** 2 
-                for i in range(self.dim))
+            sum((ell[i] * differences_by_dim[i]) ** 2
+                for i in range(self.dim)) + _eps ** 2
         )
         return sigma_f_sq * self.matern_kernel_prebuild(sqdist)
 
@@ -731,10 +746,11 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_si_params_aniso(length_scales)
-        
+
         val = 1
         for i in range(self.dim):
-            val = val * (1 + ell[i] * self.SI_kernel_prebuild(differences_by_dim[i]))
+            val = val * \
+                (1 + ell[i] * self.SI_kernel_prebuild(differences_by_dim[i]))
         return sigma_f_sq * val
 
     # -------------------------------------------------------------------
@@ -758,7 +774,8 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_se_params_iso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -787,7 +804,8 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, alpha, sigma_f_sq = self._cache_rq_params_iso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -819,8 +837,10 @@ class KernelFactory:
         ndarray
             Kernel matrix values.
         """
-        ell, pi_over_p, sigma_f_sq = self._cache_sine_exp_params_iso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        ell, pi_over_p, sigma_f_sq = self._cache_sine_exp_params_iso(
+            length_scales)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -852,11 +872,12 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_matern_params_iso(length_scales)
-        
-        # Compute scaled distance
+
+        # Compute scaled distance — regularise r directly (not each diff)
+        _eps = 1e-10
         sqdist = self.oti.sqrt(
-            sum((ell * (differences_by_dim[i] + 1e-16)) ** 2 
-                for i in range(self.dim))
+            sum((ell * differences_by_dim[i]) ** 2
+                for i in range(self.dim)) + _eps ** 2
         )
         return sigma_f_sq * self.matern_kernel_prebuild(sqdist)
 
@@ -877,8 +898,9 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_si_params_iso(length_scales)
-        
+
         val = 1
         for i in range(self.dim):
-            val = val * (1 + ell * self.SI_kernel_prebuild(differences_by_dim[i]))
+            val = val * \
+                (1 + ell * self.SI_kernel_prebuild(differences_by_dim[i]))
         return sigma_f_sq * val
