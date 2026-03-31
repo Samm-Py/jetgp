@@ -1196,7 +1196,7 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
          pop_size=100, n_generations=100, p=0.1, c=0.1,
          minstep=1e-6, stagnation_limit=15, debug=False,
          local_opt_every=15, initial_positions=None, seed=42,
-         local_optimizer=None, grad_func=None):
+         local_optimizer=None, func_and_grad=None, grad_func=None):
     """
     JADE (Adaptive Differential Evolution) with optional local refinement
     and stagnation-based stopping criterion.
@@ -1359,6 +1359,9 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         if local_opt_every is not None and gen % local_opt_every == 0:
             if local_optimizer is not None:
                 res = local_optimizer(func, g_best, lb, ub)
+            elif callable(func_and_grad):
+                res = minimize(func_and_grad, g_best, args=args, method="L-BFGS-B",
+                               jac=True, bounds=np.stack((lb, ub), axis=1))
             elif callable(grad_func):
                 def _fg(x): return func(x), grad_func(x)
                 res = minimize(_fg, g_best, args=args, method="L-BFGS-B",
@@ -1396,7 +1399,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         pop_size=100, omega=0.5, phip=0.5, phig=0.5, n_generations=100,
         minstep=1e-6, minfunc=1e-6, debug=False, seed=42,
         local_opt_every=15, initial_positions=None, local_optimizer=None,
-        grad_func=None):
+        func_and_grad=None, grad_func=None):
     """
     Particle Swarm Optimization with periodic local refinement
     R. C. Eberhart, Y. Shi and J. Kennedy, Swarm Intelligence, CA, San Mateo:Morgan Kaufmann, 2001.
@@ -1541,6 +1544,13 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         elif it % local_opt_every == 0:
             if local_optimizer is not None:
                 local_res = local_optimizer(func, g, lb, ub)
+            elif callable(func_and_grad):
+                bounds = list(zip(lb, ub))
+                local_res = minimize(func_and_grad, g, args=args, method="L-BFGS-B",
+                                     jac=True, bounds=bounds,
+                                     options={"maxiter": 1000, "gtol": 1e-7})
+                if not hasattr(local_res, 'recovered_from_abnormal'):
+                    local_res.recovered_from_abnormal = False
             elif callable(grad_func):
                 bounds = list(zip(lb, ub))
                 def _fg(x): return func(x), grad_func(x)

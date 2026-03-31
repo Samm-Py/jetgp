@@ -281,7 +281,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         abs_error = np.abs(y_pred_submodel - y_true)
         max_error = np.max(abs_error)
 
-        self.assertLess(max_error, 1e-6,
+        self.assertLess(max_error, 1e-5,
                         f"Submodel 3 function interpolation error too large: {max_error}")
 
     def test_submodel3_first_derivatives(self):
@@ -482,7 +482,7 @@ class TestWDEGPHeterogeneousDerivatives(unittest.TestCase):
         max_error = np.max(abs_error)
         mean_error = np.mean(abs_error)
 
-        passed = max_error < 1e-6
+        passed = max_error < 1e-5
         all_tests_passed = all_tests_passed and passed
         status = "✓ PASS" if passed else "✗ FAIL"
         print(

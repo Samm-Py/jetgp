@@ -177,18 +177,21 @@ When multiple submodels are used, derivative predictions are available if all su
    # return_deriv=True works even with different indices!
    y_pred, y_cov = gp_model.predict(X_test, params, calc_cov=True, return_deriv=True)
 
-**When ``return_deriv=True`` is NOT available:**
+**Predicting derivatives with different specifications:**
 
-If submodels have **different derivative specifications**, ``return_deriv=True`` cannot be used:
+Even when submodels have **different derivative specifications**, derivatives can still be predicted by passing ``derivs_to_predict`` explicitly. Each submodel handles the request independently using the analytic kernel cross-covariance:
 
 .. code-block:: python
 
-   # Different derivative specs - return_deriv NOT available
+   # Different derivative specs - use derivs_to_predict to request any derivative
    derivative_specs = [
        [[[[1, 1]]]],              # Submodel 0: only 1st order
        [[[[1, 2]]]]               # Submodel 1: only 2nd order
    ]
-   # Must use finite differences or access individual submodels
+   # Can still predict any derivative order using derivs_to_predict
+   y_pred = gp_model.predict(X_test, params, calc_cov=False,
+                              return_deriv=True,
+                              derivs_to_predict=[[[1, 1]], [[1, 2]]])
 
 **Verification approaches:**
 
@@ -760,14 +763,12 @@ Step 10: Verify interpolation using direct derivative predictions
        print(f"  Point {global_idx} (x={X_train[global_idx, 0]:.3f}): Pred={predicted:.6f}, Analytic={analytic:.6f}, Rel Error={rel_error:.2e}")
    
    print("\n" + "=" * 70)
-   print("Note: Derivative predictions are only available at points where derivatives")
-   print("      were used in training. For other points, use finite differences.")
+   print("Note: Derivative predictions can be obtained at any test point using")
+   print("      return_deriv=True or derivs_to_predict, not just training points.")
    print("=" * 70)
 
-**Explanation:**  
-Since this is a single submodel, we can use ``return_deriv=True`` to directly obtain derivative predictions. The derivatives are predicted at the same points where they were provided during training.
-
-For points without derivative training data, derivative predictions would need to use finite differences on the function predictions.
+**Explanation:**
+Since this is a single submodel, we can use ``return_deriv=True`` to directly obtain derivative predictions. Derivatives can be predicted at **any** test point—not just those where derivative training data was provided—using the analytic kernel cross-covariance.
 
 ---
 
@@ -1386,12 +1387,12 @@ This tutorial demonstrates **heterogeneous derivative indices** within submodels
 4. **Flexible design**: Mix and match derivative orders and locations as needed
 
 
-Example 5: When ``return_deriv=True`` is NOT Available
-------------------------------------------------------
+Example 5: WDEGP with Different Derivative Specifications per Submodel
+----------------------------------------------------------------------
 
 Overview
 ~~~~~~~~
-This example demonstrates a case where ``return_deriv=True`` is **NOT available** because submodels have **different derivative specifications**. In this case, derivative verification requires finite differences or accessing individual submodels.
+This example demonstrates **WDEGP with submodels that have different derivative specifications**. Even though the submodels carry different derivative types, derivatives can still be predicted at any test point by passing ``derivs_to_predict`` explicitly — each submodel responds independently using the analytic kernel cross-covariance.
 
 ---
 
@@ -1445,9 +1446,7 @@ Step 5: Define submodels with DIFFERENT derivative specs
     print("Submodel structure with DIFFERENT derivative specs:")
     print(f"  Submodel 0: {derivative_specs[0]} at {submodel_indices[0][0]}")
     print(f"  Submodel 1: {derivative_specs[1]} at {submodel_indices[1][0]}")
-    print(f"\nWARNING: No shared derivatives - return_deriv=True NOT available!")
-    print("Must use finite differences for derivative verification on weighted model,")
-    print("or access individual submodels via return_submodels=True.")
+    print("\nNote: Even with different specs, derivatives can be predicted using derivs_to_predict.")
 
 ---
 
@@ -1483,62 +1482,43 @@ Step 6: Build model and prepare data
 
 ---
 
-Step 7: Verify using finite differences (required when no shared derivs)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Step 7: Verify derivatives using ``derivs_to_predict``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. jupyter-execute::
 
     print("=" * 70)
-    print("Verification using FINITE DIFFERENCES (return_deriv not available)")
+    print("Derivative verification using derivs_to_predict")
     print("=" * 70)
-    
-    h = 1e-6
-    
-    # Verify 1st derivatives on Submodel 0 points using individual submodel
-    print("\nSubmodel 0 - 1st derivative verification (via individual submodel):")
+
+    # Predict 1st derivatives at Submodel 0 training points
+    X_sm0 = X_train[submodel_indices[0][0]]
+    pred_d1 = gp_model.predict(
+        X_sm0, params, calc_cov=False,
+        return_deriv=True, derivs_to_predict=[[[1, 1]]]
+    )
+    print("\nSubmodel 0 points — 1st derivative (predicted vs analytic):")
     for local_idx, global_idx in enumerate(submodel_indices[0][0]):
-        x_pt = X_train[global_idx, 0]
-        
-        X_plus = np.array([[x_pt + h]])
-        X_minus = np.array([[x_pt - h]])
-        
-        _, sm_plus = gp_model.predict(X_plus, params, return_submodels=True)
-        _, sm_minus = gp_model.predict(X_minus, params, return_submodels=True)
-        
-        # Use Submodel 0 predictions
-        fd_d1 = (sm_plus[0][0, 0] - sm_minus[0][0, 0]) / (2 * h)
-        analytic_d1 = d1_submodel0[local_idx, 0]
-        rel_error = abs(fd_d1 - analytic_d1) / abs(analytic_d1) if analytic_d1 != 0 else abs(fd_d1 - analytic_d1)
-        
-        print(f"  Point {global_idx}: FD={fd_d1:.6f}, Analytic={analytic_d1:.6f}, Rel Error={rel_error:.2e}")
-    
-    # Verify 2nd derivatives on Submodel 1 points using individual submodel
-    print("\nSubmodel 1 - 2nd derivative verification (via individual submodel):")
+        p = pred_d1[1, local_idx]
+        a = d1_submodel0[local_idx, 0]
+        rel_err = abs(p - a) / abs(a) if a != 0 else abs(p - a)
+        print(f"  Point {global_idx}: Predicted={p:.6f}, Analytic={a:.6f}, Rel Error={rel_err:.2e}")
+
+    # Predict 2nd derivatives at Submodel 1 training points
+    X_sm1 = X_train[submodel_indices[1][0]]
+    pred_d2 = gp_model.predict(
+        X_sm1, params, calc_cov=False,
+        return_deriv=True, derivs_to_predict=[[[1, 2]]]
+    )
+    print("\nSubmodel 1 points — 2nd derivative (predicted vs analytic):")
     for local_idx, global_idx in enumerate(submodel_indices[1][0]):
-        x_pt = X_train[global_idx, 0]
-        
-        X_plus = np.array([[x_pt + h]])
-        X_minus = np.array([[x_pt - h]])
-        X_center = np.array([[x_pt]])
-        
-        _, sm_plus = gp_model.predict(X_plus, params, return_submodels=True)
-        _, sm_minus = gp_model.predict(X_minus, params, return_submodels=True)
-        _, sm_center = gp_model.predict(X_center, params, return_submodels=True)
-        
-        # Use Submodel 1 predictions
-        fd_d2 = (sm_plus[1][0, 0] - 2*sm_center[1][0, 0] + sm_minus[1][0, 0]) / (h**2)
-        analytic_d2 = d2_submodel1[local_idx, 0]
-        rel_error = abs(fd_d2 - analytic_d2) / abs(analytic_d2) if analytic_d2 != 0 else abs(fd_d2 - analytic_d2)
-        
-        print(f"  Point {global_idx}: FD={fd_d2:.6f}, Analytic={analytic_d2:.6f}, Rel Error={rel_error:.2e}")
+        p = pred_d2[1, local_idx]
+        a = d2_submodel1[local_idx, 0]
+        rel_err = abs(p - a) / abs(a) if a != 0 else abs(p - a)
+        print(f"  Point {global_idx}: Predicted={p:.6f}, Analytic={a:.6f}, Rel Error={rel_err:.2e}")
 
-**Explanation:**  
-When submodels have different derivative specifications (Submodel 0 has only 1st order, Submodel 1 has only 2nd order), there are no shared derivatives and ``return_deriv=True`` cannot be used on the weighted model.
-
-To verify derivatives, we must either:
-
-1. Use finite differences on the weighted prediction
-2. Access individual submodels via ``return_submodels=True`` and verify each submodel's derivatives separately
+**Explanation:**
+Even though Submodel 0 only carries 1st-order derivatives and Submodel 1 only carries 2nd-order derivatives, both can be predicted directly from the weighted ensemble by passing ``derivs_to_predict``. Each submodel responds independently using the analytic kernel cross-covariance — no finite differences required.
 
 ---
 
@@ -1562,7 +1542,7 @@ Step 8: Visualize
                 color='green', s=100, marker='o', label='SM0 (1st order only)', zorder=5)
     plt.scatter(X_train[submodel_indices[1][0]], y_function_values[submodel_indices[1][0]],
                 color='purple', s=100, marker='s', label='SM1 (2nd order only)', zorder=5)
-    plt.title("WDEGP with Different Derivative Specs (return_deriv NOT available)")
+    plt.title("WDEGP with Different Derivative Specs (use derivs_to_predict)")
     plt.xlabel("x")
     plt.ylabel("f(x)")
     plt.legend()
@@ -1573,14 +1553,14 @@ Step 8: Visualize
 
 Summary
 ~~~~~~~
-This example demonstrates the limitations of ``return_deriv=True``:
+This example demonstrates WDEGP with submodels carrying different derivative specifications:
 
 **Key takeaways:**
 
-1. **Shared derivative types required**: ``return_deriv=True`` only works when ALL submodels have the same derivative specifications
-2. **Finite differences fallback**: When derivatives aren't shared, use finite differences
-3. **Individual submodel access**: Use ``return_submodels=True`` to verify each submodel's derivatives separately
-4. **Design consideration**: If you need direct derivative predictions, ensure all submodels use the same derivative types
+1. **Heterogeneous specs supported**: Submodels can carry different derivative types (1st order in one, 2nd order in another)
+2. **``derivs_to_predict``**: Pass this explicitly to predict any derivative order at test points, even if not all submodels were trained on it — each submodel handles the request via the analytic kernel cross-covariance
+3. **Individual submodel access**: Use ``return_submodels=True`` to inspect each submodel's predictions separately
+4. **Flexible prediction**: Derivative predictions are not restricted to derivatives present in training
 
 
 

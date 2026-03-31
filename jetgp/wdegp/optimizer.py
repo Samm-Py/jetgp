@@ -342,6 +342,10 @@ class Optimizer:
 
         return grad
 
+    def nll_and_grad(self, x0):
+        """Return (NLL, gradient) in one call for use with func_and_grad interface."""
+        return self.nll_wrapper(x0), self.nll_grad(x0)
+
     def optimize_hyperparameters(
         self,
         optimizer="pso",
@@ -376,8 +380,8 @@ class Optimizer:
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
 
-        if optimizer in ('lbfgs', 'jade', 'pso') and 'grad_func' not in kwargs:
-            kwargs['grad_func'] = self.nll_grad
+        if optimizer in ('lbfgs', 'jade', 'pso') and 'func_and_grad' not in kwargs and 'grad_func' not in kwargs:
+            kwargs['func_and_grad'] = self.nll_and_grad
 
         best_x, best_val = optimizer_fn(self.nll_wrapper, lb, ub, **kwargs)
 

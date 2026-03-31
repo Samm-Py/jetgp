@@ -104,75 +104,22 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
-    def nll_grad(self, x0):
+    def _compute_grad(self, x0, W, phi, n_bases, oti, diffs):
         """
-        Analytic gradient of the NLL w.r.t. log10-scaled hyperparameters.
+        Compute the NLL gradient given pre-factorised W = K^{-1} - α α^T.
 
-        Uses the standard GP closed form:
-            dNLL/dθ_i = 0.5 * tr(W * dK/dθ_i)   where W = K^{-1} - α α^T
-
-        Supports all kernel types: SE, RQ, SineExp, Matern, SI
-        in both anisotropic and isotropic forms.
-
-        Parameters
-        ----------
-        x0 : ndarray
-            Log10-scaled hyperparameter vector. Layout depends on kernel:
-              SE/Matern/SI aniso : [log_ell_1..D, log_sf, log_sn]
-              SE/Matern/SI iso   : [log_ell, log_sf, log_sn]
-              RQ aniso           : [log_ell_1..D, log_alpha, log_sf, log_sn]
-              RQ iso             : [log_ell, log_alpha, log_sf, log_sn]
-              SineExp aniso      : [log_ell_1..D, log_p_1..D, log_sf, log_sn]
-              SineExp iso        : [log_ell, log_p, log_sf, log_sn]
-
-        Returns
-        -------
-        grad : ndarray
-            Gradient of the NLL, same shape as x0.
+        Factoring this out allows nll_grad and nll_and_grad to share the
+        expensive Cholesky decomposition instead of each rebuilding it.
         """
-        ln10 = np.log(10.0)
-
+        ln10        = np.log(10.0)
         kernel      = self.model.kernel
         kernel_type = self.model.kernel_type
-        D           = len(self.model.differences_by_dim)
-
-        sigma_n_log = x0[-1]
-        sigma_n_sq  = (10.0 ** sigma_n_log) ** 2
-
-        diffs = self.model.differences_by_dim
-        oti   = self.model.kernel_factory.oti
-
-        # kernel_func expects everything except log_sn
-        phi = self.model.kernel_func(diffs, x0[:-1])
-        if self.model.n_order == 0:
-            n_bases = 0
-            phi_exp = phi.real[np.newaxis, :, :]
-        else:
-            n_bases = phi.get_active_bases()[-1]
-            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
-
-        K = utils.rbf_kernel(
-            phi, phi_exp,
-            self.model.n_order, n_bases,
-            self.model.flattened_der_indices, self.model.powers,
-            index=self.model.derivative_locations,
-        )
-        K.flat[::K.shape[0] + 1] += sigma_n_sq
-        K += self.model.sigma_data ** 2
-
-        try:
-            L, low  = cho_factor(K)
-            alpha_v = cho_solve((L, low), self.model.y_train)
-            N       = len(self.model.y_train)
-            K_inv   = cho_solve((L, low), np.eye(N))
-            W       = K_inv - np.outer(alpha_v, alpha_v)   # dNLL/dθ = ½ tr(W dK/dθ)
-        except Exception:
-            return np.zeros(len(x0))
+        D           = len(diffs)
+        sigma_n_sq  = (10.0 ** x0[-1]) ** 2
 
         grad = np.zeros(len(x0))
 
         def _assemble_dK(dphi_oti):
-            """Build dK/dθ from OTI-valued d(phi)/d(theta)."""
             if self.model.n_order == 0:
                 dphi_exp = dphi_oti.real[np.newaxis, :, :]
             else:
@@ -185,7 +132,6 @@ class Optimizer:
             )
 
         def _gc(dphi):
-            """Gradient contribution: 0.5 * tr(W * dK/dθ)."""
             return 0.5 * np.sum(W * _assemble_dK(dphi))
 
         # ── signal variance (common: d phi/d log_sf = 2*ln10 * phi) ──────
@@ -384,6 +330,87 @@ class Optimizer:
 
         return grad
 
+    def nll_grad(self, x0):
+        """Analytic gradient of the NLL (separate Cholesky from nll_wrapper)."""
+        diffs = self.model.differences_by_dim
+        oti   = self.model.kernel_factory.oti
+        sigma_n_sq = (10.0 ** x0[-1]) ** 2
+
+        phi = self.model.kernel_func(diffs, x0[:-1])
+        if self.model.n_order == 0:
+            n_bases = 0
+            phi_exp = phi.real[np.newaxis, :, :]
+        else:
+            n_bases = phi.get_active_bases()[-1]
+            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+
+        K = utils.rbf_kernel(
+            phi, phi_exp,
+            self.model.n_order, n_bases,
+            self.model.flattened_der_indices, self.model.powers,
+            index=self.model.derivative_locations,
+        )
+        K.flat[::K.shape[0] + 1] += sigma_n_sq
+        K += self.model.sigma_data ** 2
+
+        try:
+            L, low  = cho_factor(K)
+            alpha_v = cho_solve((L, low), self.model.y_train)
+            N       = len(self.model.y_train)
+            K_inv   = cho_solve((L, low), np.eye(N))
+            W       = K_inv - np.outer(alpha_v, alpha_v)
+        except Exception:
+            return np.zeros(len(x0))
+
+        return self._compute_grad(x0, W, phi, n_bases, oti, diffs)
+
+    def nll_and_grad(self, x0):
+        """
+        Compute NLL and its gradient in a single pass, sharing one Cholesky.
+
+        Returns
+        -------
+        nll : float
+        grad : ndarray
+        """
+        diffs = self.model.differences_by_dim
+        oti   = self.model.kernel_factory.oti
+        sigma_n_sq = (10.0 ** x0[-1]) ** 2
+
+        phi = self.model.kernel_func(diffs, x0[:-1])
+        if self.model.n_order == 0:
+            n_bases = 0
+            phi_exp = phi.real[np.newaxis, :, :]
+        else:
+            n_bases = phi.get_active_bases()[-1]
+            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+
+        K = utils.rbf_kernel(
+            phi, phi_exp,
+            self.model.n_order, n_bases,
+            self.model.flattened_der_indices, self.model.powers,
+            index=self.model.derivative_locations,
+        )
+        K.flat[::K.shape[0] + 1] += sigma_n_sq
+        K += self.model.sigma_data ** 2
+
+        try:
+            L, low  = cho_factor(K)
+            alpha_v = cho_solve((L, low), self.model.y_train)
+            N       = len(self.model.y_train)
+
+            nll = (0.5 * np.dot(self.model.y_train, alpha_v)
+                   + np.sum(np.log(np.diag(L)))
+                   + 0.5 * N * np.log(2 * np.pi))
+
+            K_inv = cho_solve((L, low), np.eye(N))
+            W     = K_inv - np.outer(alpha_v, alpha_v)
+        except Exception:
+            return 1e6, np.zeros(len(x0))
+
+        grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
+        return float(nll), grad
+
     def optimize_hyperparameters(self,
     optimizer="pso",
     **kwargs):
@@ -418,9 +445,9 @@ class Optimizer:
         lb = [b[0] for b in bounds]
         ub = [b[1] for b in bounds]
 
-        # Pass analytic gradient automatically when not explicitly overridden
-        if optimizer in ('lbfgs', 'jade', 'pso') and 'grad_func' not in kwargs:
-            kwargs['grad_func'] = self.nll_grad
+        # Inject nll_and_grad (single Cholesky per step) for all gradient-aware optimizers.
+        if optimizer in ('lbfgs', 'jade', 'pso') and 'func_and_grad' not in kwargs and 'grad_func' not in kwargs:
+            kwargs['func_and_grad'] = self.nll_and_grad
 
         best_x, best_val = optimizer_fn(self.nll_wrapper, lb, ub, **kwargs)
 
