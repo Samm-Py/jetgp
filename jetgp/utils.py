@@ -1361,15 +1361,17 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                 res = local_optimizer(func, g_best, lb, ub)
             elif callable(func_and_grad):
                 res = minimize(func_and_grad, g_best, args=args, method="L-BFGS-B",
-                               jac=True, bounds=np.stack((lb, ub), axis=1))
+                               jac=True, bounds=np.stack((lb, ub), axis=1),
+                               options={"maxiter": 50})
             elif callable(grad_func):
                 def _fg(x): return func(x), grad_func(x)
                 res = minimize(_fg, g_best, args=args, method="L-BFGS-B",
-                               jac=True, bounds=np.stack((lb, ub), axis=1))
+                               jac=True, bounds=np.stack((lb, ub), axis=1),
+                               options={"maxiter": 50})
             else:
                 res = minimize(func, g_best, args=args,
                                bounds=np.stack((lb, ub), axis=1),
-                               options={"maxiter": 20})
+                               options={"maxiter":50})
             if is_feasible(res.x) and res.fun < f_best:
                 g_best = res.x.copy()
                 f_best = res.fun
@@ -1548,7 +1550,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                 bounds = list(zip(lb, ub))
                 local_res = minimize(func_and_grad, g, args=args, method="L-BFGS-B",
                                      jac=True, bounds=bounds,
-                                     options={"maxiter": 1000, "gtol": 1e-7})
+                                     options={"maxiter": 20})
                 if not hasattr(local_res, 'recovered_from_abnormal'):
                     local_res.recovered_from_abnormal = False
             elif callable(grad_func):
@@ -1556,7 +1558,7 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                 def _fg(x): return func(x), grad_func(x)
                 local_res = minimize(_fg, g, args=args, method="L-BFGS-B",
                                      jac=True, bounds=bounds,
-                                     options={"maxiter": 1000, "gtol": 1e-7})
+                                     options={"maxiter": 20})
                 if not hasattr(local_res, 'recovered_from_abnormal'):
                     local_res.recovered_from_abnormal = False
             else:

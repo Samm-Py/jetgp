@@ -1218,8 +1218,8 @@ Step 5: Optimize hyperparameters
 .. jupyter-execute::
 
     params = model.optimize_hyperparameters(
-        optimizer='powell',
-        n_restart_optimizer=5,
+        optimizer='lbfgs',
+        n_restart_optimizer=10,
         debug=False
     )
     print("Optimized hyperparameters:", params)
