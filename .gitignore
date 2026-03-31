@@ -49,6 +49,7 @@ tests/*
 # Local scripts (benchmarking, verification, utilities)
 benchmark_optimizers.py
 benchmark_optimizers_10d.py
+benchmark_lbfgs_grad.py
 verify_wdegp_grad.py
 verify_degp_grad.py
 utils.py
