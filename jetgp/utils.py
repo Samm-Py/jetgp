@@ -1022,8 +1022,39 @@ def matern_kernel_builder(nu, oti_module=None):
         matern_kernel_func = sp.lambdify(r, expr, modules=[custom_dict, "numpy"])
     else:
         matern_kernel_func = sp.lambdify(r, expr, modules=["numpy"])
-    
+
     return matern_kernel_func
+
+
+def matern_kernel_grad_builder(nu, oti_module=None):
+    """
+    Builds the derivative df/dr of the Matérn kernel function with given smoothness ν.
+
+    Parameters
+    ----------
+    nu : float
+        Smoothness parameter of the Matérn kernel (half-integer, e.g. 0.5, 1.5, 2.5).
+    oti_module : module, optional
+        The PyOTI static module to use for exp. If None, uses numpy.
+
+    Returns
+    -------
+    callable
+        A lambdified function evaluating df/dr as a function of scaled distance r.
+    """
+    r = sp.symbols('r')
+    nu = sp.Rational(2 * nu, 2)
+    prefactor = (2 ** (1 - nu)) / sp.gamma(nu)
+    z = sp.sqrt(2 * nu) * r
+    k_r = prefactor * z**nu * sp.simplify(sp.besselk(nu, z))
+    dk_dr = sp.diff(sp.simplify(k_r), r)
+    dk_dr = sp.simplify(dk_dr)
+
+    if oti_module is not None:
+        custom_dict = {"exp": oti_module.exp}
+        return sp.lambdify(r, dk_dr, modules=[custom_dict, "numpy"])
+    else:
+        return sp.lambdify(r, dk_dr, modules=["numpy"])
 
 
 
@@ -1164,7 +1195,8 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
 def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
          pop_size=100, n_generations=100, p=0.1, c=0.1,
          minstep=1e-6, stagnation_limit=15, debug=False,
-         local_opt_every=15, initial_positions=None, seed=42):
+         local_opt_every=15, initial_positions=None, seed=42,
+         local_optimizer=None, grad_func=None):
     """
     JADE (Adaptive Differential Evolution) with optional local refinement
     and stagnation-based stopping criterion.
@@ -1325,9 +1357,16 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 
         # Periodic local refinement
         if local_opt_every is not None and gen % local_opt_every == 0:
-            res = minimize(func, g_best, args=args,
-                           bounds=np.stack((lb, ub), axis=1),
-                           options={"maxiter": 20})
+            if local_optimizer is not None:
+                res = local_optimizer(func, g_best, lb, ub)
+            elif callable(grad_func):
+                def _fg(x): return func(x), grad_func(x)
+                res = minimize(_fg, g_best, args=args, method="L-BFGS-B",
+                               jac=True, bounds=np.stack((lb, ub), axis=1))
+            else:
+                res = minimize(func, g_best, args=args,
+                               bounds=np.stack((lb, ub), axis=1),
+                               options={"maxiter": 20})
             if is_feasible(res.x) and res.fun < f_best:
                 g_best = res.x.copy()
                 f_best = res.fun
@@ -1356,7 +1395,8 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         pop_size=100, omega=0.5, phip=0.5, phig=0.5, n_generations=100,
         minstep=1e-6, minfunc=1e-6, debug=False, seed=42,
-        local_opt_every=15, initial_positions=None):
+        local_opt_every=15, initial_positions=None, local_optimizer=None,
+        grad_func=None):
     """
     Particle Swarm Optimization with periodic local refinement
     R. C. Eberhart, Y. Shi and J. Kennedy, Swarm Intelligence, CA, San Mateo:Morgan Kaufmann, 2001.
@@ -1495,13 +1535,24 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                     g = x[i].copy()
                     fg = fx
 
-        # Periodic local refinement - CLEANED UP VERSION
+        # Periodic local refinement
         if local_opt_every is None:
             pass
         elif it % local_opt_every == 0:
-            local_res = robust_local_optimization(
-                func, g, args=args, lb=lb, ub=ub, debug=False
-            )
+            if local_optimizer is not None:
+                local_res = local_optimizer(func, g, lb, ub)
+            elif callable(grad_func):
+                bounds = list(zip(lb, ub))
+                def _fg(x): return func(x), grad_func(x)
+                local_res = minimize(_fg, g, args=args, method="L-BFGS-B",
+                                     jac=True, bounds=bounds,
+                                     options={"maxiter": 1000, "gtol": 1e-7})
+                if not hasattr(local_res, 'recovered_from_abnormal'):
+                    local_res.recovered_from_abnormal = False
+            else:
+                local_res = robust_local_optimization(
+                    func, g, args=args, lb=lb, ub=ub, debug=False
+                )
 
             if should_accept_local_result(local_res, fg, is_feasible, debug):
                 if debug:

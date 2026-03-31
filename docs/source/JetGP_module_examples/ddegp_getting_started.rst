@@ -63,7 +63,7 @@ Step 2: Set configuration parameters
     n_bases = 2
     num_training_pts = 16
     domain_bounds = ((-5.0, 10.0), (0.0, 15.0))
-    test_grid_resolution = 50
+    test_grid_resolution = 25
 
     # Global set of directional rays (45°, 90°, 135°)
     rays = np.array([
@@ -597,7 +597,7 @@ Step 2: Set configuration parameters
     n_bases = 2
     num_training_pts = 20
     domain_bounds = ((-5.0, 10.0), (0.0, 15.0))
-    test_grid_resolution = 50
+    test_grid_resolution = 25
 
     # Global set of directional rays (45°, 90°, 135°)
     rays = np.array([
@@ -1432,7 +1432,7 @@ Step 5: Predict f, df/dx1, and df/dx2 with uncertainty
 
 .. jupyter-execute::
 
-    n_test = 40
+    n_test = 20
     x1_te = np.linspace(0, 2 * np.pi, n_test)
     x2_te = np.linspace(0, 2 * np.pi, n_test)
     G1t, G2t = np.meshgrid(x1_te, x2_te)

@@ -1816,19 +1816,19 @@ Step 9: Evaluate model performance
 .. jupyter-execute::
 
    # Create test grid
-   x1_test = np.linspace(-1, 1, 50)
-   x2_test = np.linspace(-1, 1, 50)
+   x1_test = np.linspace(-1, 1, 25)
+   x2_test = np.linspace(-1, 1, 25)
    X1_test, X2_test = np.meshgrid(x1_test, x2_test)
    X_test = np.column_stack([X1_test.ravel(), X2_test.ravel()])
-   
+
    # Predict
-   y_pred, y_cov = gp_model.predict(X_test, params, calc_cov=True)
+   y_pred = gp_model.predict(X_test, params, calc_cov=False)
    y_true = f_2d(X_test)
-   
+
    # Compute error
    nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_true.min())
    max_error = np.max(np.abs(y_true - y_pred.flatten()))
-   
+
    print(f"NRMSE: {nrmse:.6f}")
    print(f"Max absolute error: {max_error:.6e}")
 
@@ -1891,15 +1891,15 @@ Step 11: Visualize results
 .. jupyter-execute::
 
    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-   
+
    # Reshape for plotting
-   y_true_grid = y_true.reshape(50, 50)
-   y_pred_grid = y_pred.reshape(50, 50)
+   y_true_grid = y_true.reshape(25, 25)
+   y_pred_grid = y_pred.reshape(25, 25)
    error_grid = np.abs(y_true_grid - y_pred_grid)
-   
+
    # True function
    im0 = axes[0].contourf(X1_test, X2_test, y_true_grid, levels=30, cmap='viridis')
-   axes[0].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1], 
+   axes[0].scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1],
                    c='red', s=80, marker='o', label='SM1 (inner)', edgecolors='white')
    axes[0].scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1], 
                    c='blue', s=80, marker='s', label='SM2 (outer)', edgecolors='white')
@@ -2245,19 +2245,19 @@ Step 10: Evaluate model performance
 .. jupyter-execute::
 
    # Create test grid
-   x1_test = np.linspace(-1.5, 1.5, 50)
-   x2_test = np.linspace(-0.5, 2.0, 50)
+   x1_test = np.linspace(-1.5, 1.5, 25)
+   x2_test = np.linspace(-0.5, 2.0, 25)
    X1_test, X2_test = np.meshgrid(x1_test, x2_test)
    X_test = np.column_stack([X1_test.ravel(), X2_test.ravel()])
-   
+
    # Predict
-   y_pred, y_cov = gp_model.predict(X_test, params, calc_cov=True)
+   y_pred = gp_model.predict(X_test, params, calc_cov=False)
    y_true = f_2d(X_test)
-   
+
    # Compute error
    nrmse = np.sqrt(np.mean((y_true - y_pred.flatten())**2)) / (y_true.max() - y_true.min())
    max_error = np.max(np.abs(y_true - y_pred.flatten()))
-   
+
    print(f"NRMSE: {nrmse:.6f}")
    print(f"Max absolute error: {max_error:.6e}")
 
@@ -2336,10 +2336,10 @@ Step 12: Visualize results with point-wise rays
 .. jupyter-execute::
 
    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
-   
+
    # Reshape for plotting
-   y_true_grid = y_true.reshape(50, 50)
-   y_pred_grid = y_pred.reshape(50, 50)
+   y_true_grid = y_true.reshape(25, 25)
+   y_pred_grid = y_pred.reshape(25, 25)
    error_grid = np.abs(y_true_grid - y_pred_grid)
    
    # True function with training points and rays
@@ -2753,7 +2753,7 @@ Step 5: Predict f, df/dx1, and df/dx2 with uncertainty
 
 .. jupyter-execute::
 
-    n_test = 40
+    n_test = 20
     x1_te = np.linspace(0, 2 * np.pi, n_test)
     x2_te = np.linspace(0, 2 * np.pi, n_test)
     G1t, G2t = np.meshgrid(x1_te, x2_te)

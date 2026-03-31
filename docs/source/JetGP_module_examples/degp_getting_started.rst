@@ -1505,7 +1505,7 @@ Step 5: Predict f, df/dx1, and df/dx2 with uncertainty
 
 .. jupyter-execute::
 
-   n_test = 40
+   n_test = 20
    x1_te = np.linspace(0, 2 * np.pi, n_test)
    x2_te = np.linspace(0, 2 * np.pi, n_test)
    G1t, G2t = np.meshgrid(x1_te, x2_te)

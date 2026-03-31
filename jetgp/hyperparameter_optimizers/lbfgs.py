@@ -38,6 +38,7 @@ def lbfgs_smart(func, lb, ub, **kwargs):
     gtol = kwargs.pop("gtol", 1e-8)
     debug = kwargs.pop("debug", False)
     disp = kwargs.pop("disp", False)
+    grad_func = kwargs.pop("grad_func", None)
     
     lb = np.array(lb, dtype=float)
     ub = np.array(ub, dtype=float)
@@ -74,14 +75,21 @@ def lbfgs_smart(func, lb, ub, **kwargs):
         else:  # random
             x_init = np.random.uniform(lb, ub)
         
-        # Run optimization
-        res = minimize(
-            func,
-            x_init,
-            method="L-BFGS-B",
-            bounds=list(zip(lb, ub)),
-            options={"maxiter": maxiter, "ftol": ftol, "gtol": gtol, "disp": disp}
-        )
+        # Run optimization — use analytic gradient if provided and callable
+        if callable(grad_func):
+            def func_and_grad(x):
+                return func(x), grad_func(x)
+            res = minimize(
+                func_and_grad, x_init, method="L-BFGS-B", jac=True,
+                bounds=list(zip(lb, ub)),
+                options={"maxiter": maxiter, "ftol": ftol, "gtol": gtol, "disp": disp}
+            )
+        else:
+            res = minimize(
+                func, x_init, method="L-BFGS-B",
+                bounds=list(zip(lb, ub)),
+                options={"maxiter": maxiter, "ftol": ftol, "gtol": gtol, "disp": disp}
+            )
         
         # Store optimum (normalized)
         x_opt_norm = (res.x - lb) / scale

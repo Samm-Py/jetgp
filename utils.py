@@ -1162,7 +1162,8 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
 def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
          pop_size=100, n_generations=100, p=0.1, c=0.1,
          minfunc=1e-6, minstep=1e-6, debug=False,
-         local_opt_every=15, initial_positions=None, seed=42):
+         local_opt_every=15, initial_positions=None, seed=42,
+         local_optimizer=None):
     """
     JADE (Adaptive Differential Evolution) with optional local refinement
     and minstep stopping criterion applied only when g_best improves.
@@ -1285,7 +1286,10 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         if local_opt_every is None:
             pass
         elif gen % local_opt_every == 0:
-            res = minimize(func, g_best, args=args, bounds=np.stack((lb, ub), axis=1))
+            if local_optimizer is not None:
+                res = local_optimizer(func, g_best, lb, ub)
+            else:
+                res = minimize(func, g_best, args=args, bounds=np.stack((lb, ub), axis=1))
             if is_feasible(res.x) and res.fun < f_best:
                 g_best = res.x.copy()
                 f_best = res.fun
@@ -1309,7 +1313,7 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
         pop_size=100, omega=0.5, phip=0.5, phig=0.5, n_generations=100,
         minstep=1e-6, minfunc=1e-6, debug=False, seed=42,
-        local_opt_every=15, initial_positions=None):
+        local_opt_every=15, initial_positions=None, local_optimizer=None):
     """
     Particle Swarm Optimization with periodic local refinement
     R. C. Eberhart, Y. Shi and J. Kennedy, Swarm Intelligence, CA, San Mateo:Morgan Kaufmann, 2001.
@@ -1448,13 +1452,16 @@ def pso(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                     g = x[i].copy()
                     fg = fx
 
-        # Periodic local refinement - CLEANED UP VERSION
+        # Periodic local refinement
         if local_opt_every is None:
             pass
         elif it % local_opt_every == 0:
-            local_res = robust_local_optimization(
-                func, g, args=args, lb=lb, ub=ub, debug=False
-            )
+            if local_optimizer is not None:
+                local_res = local_optimizer(func, g, lb, ub)
+            else:
+                local_res = robust_local_optimization(
+                    func, g, args=args, lb=lb, ub=ub, debug=False
+                )
 
             if should_accept_local_result(local_res, fg, is_feasible, debug):
                 if debug:

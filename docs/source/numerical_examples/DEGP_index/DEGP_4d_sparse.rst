@@ -157,9 +157,9 @@ is available.
         )
         params = gp_model.optimize_hyperparameters(
             optimizer='pso',
-            pop_size=200,
-            n_generations=15,
-            local_opt_every=15,
+            pop_size=250,
+            n_generations=30,
+            local_opt_every=30,
             debug=True
         )
         return gp_model, params
