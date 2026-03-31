@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_a3399dc1b65fd9b1_utils_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
-            created at 2026-02-26 12:14 -0600
+            created at 2026-03-26 20:27 -0500
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -90,7 +90,7 @@
     <p class="run"><span class="n"><a id="t8" href="#t8">8</a></span><span class="t"><span class="key">import</span> <span class="nam">warnings</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t9" href="#t9">9</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t10" href="#t10">10</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">def</span> <span class="nam">get_oti_module</span><span class="op">(</span><span class="nam">n_bases</span><span class="op">,</span> <span class="nam">n_order</span><span class="op">,</span> <span class="nam">auto_compile</span><span class="op">=</span><span class="key">False</span><span class="op">,</span> <span class="nam">otilib_path</span><span class="op">=</span><span class="key">None</span><span class="op">,</span> <span class="nam">use_sparse</span> <span class="op">=</span> <span class="key">False</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t11" href="#t11">11</a></span><span class="t"><span class="key">def</span> <span class="nam">get_oti_module</span><span class="op">(</span><span class="nam">n_bases</span><span class="op">,</span> <span class="nam">n_order</span><span class="op">,</span> <span class="nam">auto_compile</span><span class="op">=</span><span class="key">True</span><span class="op">,</span> <span class="nam">otilib_path</span><span class="op">=</span><span class="key">None</span><span class="op">,</span> <span class="nam">use_sparse</span> <span class="op">=</span> <span class="key">False</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t12" href="#t12">12</a></span><span class="t">    <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t13" href="#t13">13</a></span><span class="t"><span class="str">    Dynamically import the correct PyOTI static library.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t14" href="#t14">14</a></span><span class="t"><span class="str">    If the module doesn't exist and auto_compile=True, attempts to compile it.</span>&nbsp;</span><span class="r"></span></p>
@@ -667,7 +667,7 @@
     <p class="pln"><span class="n"><a id="t585" href="#t585">585</a></span><span class="t"><span class="str">            Bounds to append, where each tuple is a (min, max) pair in log10 scale.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t586" href="#t586">586</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t587" href="#t587">587</a></span><span class="t">        <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">normalize</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t588" href="#t588">588</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">bounds</span> <span class="op">=</span> <span class="op">[</span><span class="op">(</span><span class="op">-</span><span class="num">3</span><span class="op">,</span> <span class="num">3</span><span class="op">)</span><span class="op">]</span> <span class="op">*</span> <span class="nam">self</span><span class="op">.</span><span class="nam">dim</span> <span class="op">+</span> <span class="nam">extra_bounds</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t588" href="#t588">588</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">bounds</span> <span class="op">=</span> <span class="op">[</span><span class="op">(</span><span class="op">-</span><span class="num">2</span><span class="op">,</span> <span class="num">1</span><span class="op">)</span><span class="op">]</span> <span class="op">*</span> <span class="nam">self</span><span class="op">.</span><span class="nam">dim</span> <span class="op">+</span> <span class="nam">extra_bounds</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t589" href="#t589">589</a></span><span class="t">        <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t590" href="#t590">590</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">bounds</span> <span class="op">+=</span> <span class="nam">extra_bounds</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t591" href="#t591">591</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -973,7 +973,7 @@
             <a class="nav" href="z_a3399dc1b65fd9b1_utils_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.7">coverage.py v7.10.7</a>,
-            created at 2026-02-26 12:14 -0600
+            created at 2026-03-26 20:27 -0500
         </p>
     </div>
 </footer>

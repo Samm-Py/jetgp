@@ -33,7 +33,7 @@ def lbfgs_smart(func, lb, ub, **kwargs):
     strategy = kwargs.pop("strategy", "lhs")
     exclusion_radius = kwargs.pop("exclusion_radius", 0.1)
     max_rejection = kwargs.pop("max_rejection", 100)
-    maxiter = kwargs.pop("maxiter", 100)
+    maxiter = kwargs.pop("maxiter", 200)
     ftol = kwargs.pop("ftol", 1e-8)
     gtol = kwargs.pop("gtol", 1e-8)
     debug = kwargs.pop("debug", False)

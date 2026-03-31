@@ -63,7 +63,14 @@ class Optimizer:
         noise_var = (10 ** sigma_n) ** 2
         K.flat[::K.shape[0] + 1] += noise_var
         K += self.model.sigma_data**2
-
+        
+        # Debug: check kernel matrix sparsity
+        # near_zero = np.sum(np.abs(K) < 1e-10)
+        # total = K.size
+        # sparsity = near_zero / total
+        # if sparsity > 0.5:
+        #     print(f"  WARNING: K is {sparsity*100:.1f}% sparse | ell={10**np.array(ell)} | sigma_n={10**sigma_n:.2e} | cond={np.linalg.cond(K.real):.2e}")
+        #     input('i')
         try:
             L, low = cho_factor(K)
             alpha = cho_solve(

@@ -1159,17 +1159,53 @@ def should_accept_local_result(local_res, current_best_f, is_feasible, debug=Fal
 
     return True
 
+
+
 def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
          pop_size=100, n_generations=100, p=0.1, c=0.1,
-         minfunc=1e-6, minstep=1e-6, debug=False,
+         minstep=1e-6, stagnation_limit=15, debug=False,
          local_opt_every=15, initial_positions=None, seed=42):
     """
     JADE (Adaptive Differential Evolution) with optional local refinement
-    and minstep stopping criterion applied only when g_best improves.
+    and stagnation-based stopping criterion.
     
     JADE: Adaptive Differential Evolution With Optional External Archive
     https://ieeexplore.ieee.org/abstract/document/5208221
     
+    Parameters
+    ----------
+    func : callable
+        Objective function to minimize.
+    lb, ub : array-like
+        Lower and upper bounds.
+    ieqcons : list
+        List of inequality constraint functions.
+    f_ieqcons : callable or None
+        Single function returning array of constraint values.
+    args : tuple
+        Extra arguments passed to func.
+    kwargs : dict
+        Extra keyword arguments passed to func.
+    pop_size : int
+        Population size.
+    n_generations : int
+        Maximum number of generations.
+    p : float
+        Fraction of top individuals for p-best selection.
+    c : float
+        Learning rate for parameter adaptation.
+    minstep : float
+        Minimum position change to accept a new best (when improving).
+    stagnation_limit : int
+        Stop if no improvement for this many consecutive generations.
+    debug : bool
+        Print debug information.
+    local_opt_every : int or None
+        Run local optimization every this many generations. None to disable.
+    initial_positions : array-like or None
+        Initial positions to seed the population.
+    seed : int
+        Random seed.
     """
 
     lb = np.asarray(lb)
@@ -1201,7 +1237,7 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
     feasible = np.array([is_feasible(ind) for ind in pop])
 
     # Initialize global best
-    g_idx = np.argmin(fitness * feasible + (~feasible)*1e10)
+    g_idx = np.argmin(fitness * feasible + (~feasible) * 1e10)
     g_best = pop[g_idx].copy()
     f_best = fitness[g_idx]
 
@@ -1211,9 +1247,13 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
 
     # Store previous best for minstep comparison
     prev_g_best = g_best.copy()
-    f_prev_best = f_best
 
-    for gen in range(1, n_generations+1):
+    # Stagnation counter
+    stagnation_count = 0
+
+    for gen in range(1, n_generations + 1):
+        f_prev_gen = f_best
+
         new_pop = np.zeros_like(pop)
         new_fitness = np.zeros(pop_size)
         new_F_list = []
@@ -1227,19 +1267,22 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
             CR = np.clip(CR, 0, 1)
 
             # p-best selection
-            p_num = max(2, int(np.ceil(p*pop_size)))
+            p_num = max(2, int(np.ceil(p * pop_size)))
             pbest_idx = np.random.choice(np.argsort(fitness)[:p_num])
             x_pbest = pop[pbest_idx]
 
             # Mutation: current-to-pbest
             idxs = [idx for idx in range(pop_size) if idx != i]
             r1, r2 = np.random.choice(idxs, 2, replace=False)
-            x_mut = pop[i] + F*(x_pbest - pop[i]) + F*(pop[r1] - pop[r2])
+            x_mut = pop[i] + F * (x_pbest - pop[i]) + F * (pop[r1] - pop[r2])
             x_mut = np.clip(x_mut, lb, ub)
 
             # Crossover
             jrand = np.random.randint(D)
-            trial = np.array([x_mut[j] if np.random.rand() < CR or j == jrand else pop[i][j] for j in range(D)])
+            trial = np.array([
+                x_mut[j] if np.random.rand() < CR or j == jrand
+                else pop[i][j] for j in range(D)
+            ])
             trial = np.clip(trial, lb, ub)
 
             f_trial = func(trial, *args, **kwargs)
@@ -1274,34 +1317,38 @@ def jade(func, lb, ub, ieqcons=[], f_ieqcons=None, args=(), kwargs={},
                 g_best = pop[idx_best].copy()
                 f_best = fitness[idx_best]
                 prev_g_best = g_best.copy()
-                f_prev_best = f_best
 
         # Adapt F and CR
         if new_F_list:
-            mu_F = (1-c)*mu_F + c*np.mean(new_F_list)
-            mu_CR = (1-c)*mu_CR + c*np.mean(new_CR_list)
+            mu_F = (1 - c) * mu_F + c * np.mean(new_F_list)
+            mu_CR = (1 - c) * mu_CR + c * np.mean(new_CR_list)
 
         # Periodic local refinement
-        if local_opt_every is None:
-            pass
-        elif gen % local_opt_every == 0:
-            res = minimize(func, g_best, args=args, bounds=np.stack((lb, ub), axis=1))
+        if local_opt_every is not None and gen % local_opt_every == 0:
+            res = minimize(func, g_best, args=args,
+                           bounds=np.stack((lb, ub), axis=1),
+                           options={"maxiter": 20})
             if is_feasible(res.x) and res.fun < f_best:
                 g_best = res.x.copy()
                 f_best = res.fun
                 prev_g_best = g_best.copy()
-                f_prev_best = f_best
                 if debug:
-                    print(f"Local refinement improved at gen {gen}: f={f_best}")
+                    print(f"Local refinement at gen {gen}: nit={res.nit}, nfev={res.nfev}, "
+                          f"f={res.fun:.6e}, success={res.success}, message={res.message}")
 
         # Debug print
         if debug:
             print(f"Gen {gen}: best f={f_best}")
 
-        # Check minfunc stopping criterion
-        if f_best <= minfunc:
+        # Check stagnation stopping criterion
+        if f_best < f_prev_gen:
+            stagnation_count = 0
+        else:
+            stagnation_count += 1
+
+        if stagnation_count >= stagnation_limit:
             if debug:
-                print(f"Stopping: Objective improvement < {minfunc} at generation {gen}")
+                print(f"Stopping: No improvement for {stagnation_limit} generations at gen {gen}")
             break
 
     return g_best, f_best

@@ -8,7 +8,7 @@ import os
 import warnings
 
 
-def get_oti_module(n_bases, n_order, auto_compile=False, otilib_path=None, use_sparse = False):
+def get_oti_module(n_bases, n_order, auto_compile=True, otilib_path=None, use_sparse = False):
     """
     Dynamically import the correct PyOTI static library.
     If the module doesn't exist and auto_compile=True, attempts to compile it.
@@ -585,7 +585,7 @@ class KernelFactory:
             Bounds to append, where each tuple is a (min, max) pair in log10 scale.
         """
         if self.normalize:
-            self.bounds = [(-3, 3)] * self.dim + extra_bounds
+            self.bounds = [(-2, 1)] * self.dim + extra_bounds
         else:
             self.bounds += extra_bounds
 

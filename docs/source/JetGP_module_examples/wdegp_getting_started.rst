@@ -398,7 +398,7 @@ Step 8: Optimize hyperparameters
         optimizer='pso',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 15,
         debug = False
         )
    print("Optimized hyperparameters:", params)
@@ -977,7 +977,7 @@ Step 8: Optimize hyperparameters
         optimizer='jade',
         pop_size = 100,
         n_generations = 15,
-        local_opt_every = None,
+        local_opt_every = 15,
         debug = False
         )
     print("Optimized hyperparameters:", params)
@@ -1289,6 +1289,7 @@ Step 7: Build and optimize GP
         optimizer='jade',
         pop_size=100,
         n_generations=15,
+        local_opt_every=15,
         debug=False
     )
     print("Optimized hyperparameters:", params)
@@ -1477,7 +1478,7 @@ Step 6: Build model and prepare data
     )
     
     params = gp_model.optimize_hyperparameters(
-        optimizer='jade', pop_size=100, n_generations=15, debug=False
+        optimizer='jade', pop_size=100, n_generations=15,local_opt_every=15, debug=False
     )
 
 ---
