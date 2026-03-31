@@ -249,8 +249,166 @@ class Optimizer:
         return grad
 
     def nll_and_grad(self, x0):
-        """Return (NLL, gradient) in one call for use with func_and_grad interface."""
-        return self.nll_wrapper(x0), self.nll_grad(x0)
+        """Compute NLL and its gradient in a single pass, sharing one Cholesky."""
+        ln10 = np.log(10.0)
+
+        kernel      = self.model.kernel
+        kernel_type = self.model.kernel_type
+        D           = len(self.model.differences_by_dim)
+        sigma_n_sq  = (10.0 ** x0[-1]) ** 2
+        diffs       = self.model.differences_by_dim
+        oti         = self.model.kernel_factory.oti
+
+        # --- shared kernel computation (done ONCE) ---
+        phi = self.model.kernel_func(diffs, x0[:-1])
+        if self.model.n_order == 0:
+            n_bases = 0
+            phi_exp = phi.real[np.newaxis, :, :]
+        else:
+            n_bases = phi.get_active_bases()[-1]
+            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+
+        K = utils.rbf_kernel(
+            phi, phi_exp,
+            self.model.n_order, n_bases,
+            self.model.flattened_der_indices,
+            index=self.model.derivative_locations,
+        )
+        K.flat[::K.shape[0] + 1] += sigma_n_sq
+        K += self.model.sigma_data ** 2
+
+        try:
+            L, low  = cho_factor(K)
+            alpha_v = cho_solve((L, low), self.model.y_train)
+            N       = len(self.model.y_train)
+
+            # NLL
+            nll = (0.5 * np.dot(self.model.y_train, alpha_v)
+                   + np.sum(np.log(np.diag(L)))
+                   + 0.5 * N * np.log(2 * np.pi))
+
+            # W matrix for gradient (reuse same Cholesky)
+            K_inv = cho_solve((L, low), np.eye(N))
+            W     = K_inv - np.outer(alpha_v, alpha_v)
+        except Exception:
+            return 1e6, np.zeros(len(x0))
+
+        # --- gradient from W (no second kernel build / Cholesky) ---
+        grad = np.zeros(len(x0))
+
+        def _assemble_dK(dphi_oti):
+            if self.model.n_order == 0:
+                dphi_exp = dphi_oti.real[np.newaxis, :, :]
+            else:
+                dphi_exp = dphi_oti.get_all_derivs(n_bases, 2 * self.model.n_order)
+            return utils.rbf_kernel(
+                dphi_oti, dphi_exp,
+                self.model.n_order, n_bases,
+                self.model.flattened_der_indices,
+                index=self.model.derivative_locations,
+            )
+
+        def _gc(dphi):
+            return 0.5 * np.sum(W * _assemble_dK(dphi))
+
+        grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
+        grad[-1] = ln10 * sigma_n_sq * np.trace(W)
+
+        if kernel == 'SE':
+            if kernel_type == 'anisotropic':
+                ell = 10.0 ** x0[:D]
+                for d in range(D):
+                    grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
+                                          oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
+            else:
+                ell    = 10.0 ** float(x0[0])
+                sum_sq = oti.mul(diffs[0], diffs[0])
+                for d in range(1, D):
+                    sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                grad[0] = _gc(oti.mul(-ln10 * ell ** 2, oti.mul(sum_sq, phi)))
+
+        elif kernel == 'RQ':
+            if kernel_type == 'anisotropic':
+                ell = 10.0 ** x0[:D]; alpha_rq = 10.0 ** float(x0[D]); alpha_idx = D
+            else:
+                ell = np.full(D, 10.0 ** float(x0[0]))
+                alpha_rq = np.exp(float(x0[1])); alpha_idx = 1
+            r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
+            for d in range(1, D):
+                td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
+            base = oti.sum(1.0, oti.mul(r2, 1.0 / (2.0 * alpha_rq)))
+            inv_base = oti.pow(base, -1)
+            phi_over_base = oti.mul(phi, inv_base)
+            if kernel_type == 'anisotropic':
+                for d in range(D):
+                    grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
+                                          oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
+            else:
+                sum_sq = oti.mul(diffs[0], diffs[0])
+                for d in range(1, D):
+                    sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                grad[0] = _gc(oti.mul(-ln10 * ell[0] ** 2, oti.mul(sum_sq, phi_over_base)))
+            log_base = oti.log(base)
+            term = oti.sum(oti.mul(-1.0, log_base), oti.sum(1.0, oti.mul(-1.0, inv_base)))
+            alpha_factor = ln10 * alpha_rq if kernel_type == 'anisotropic' else alpha_rq
+            grad[alpha_idx] = _gc(oti.mul(alpha_factor, oti.mul(phi, term)))
+
+        elif kernel == 'SineExp':
+            if kernel_type == 'anisotropic':
+                ell = 10.0 ** x0[:D]; p = 10.0 ** x0[D:2*D]
+                pip = np.pi / p; p_start = D
+            else:
+                ell = np.full(D, 10.0 ** float(x0[0]))
+                pip = np.full(D, np.pi / 10.0 ** float(x0[1])); p_start = 1
+            sin_d = [oti.sin(oti.mul(pip[d], diffs[d])) for d in range(D)]
+            cos_d = [oti.cos(oti.mul(pip[d], diffs[d])) for d in range(D)]
+            if kernel_type == 'anisotropic':
+                for d in range(D):
+                    grad[d] = _gc(oti.mul(-4.0 * ln10 * ell[d] ** 2,
+                                          oti.mul(oti.mul(sin_d[d], sin_d[d]), phi)))
+                for d in range(D):
+                    sc = oti.mul(sin_d[d], oti.mul(cos_d[d], diffs[d]))
+                    grad[p_start + d] = _gc(oti.mul(4.0 * ln10 * ell[d] ** 2 * pip[d],
+                                                     oti.mul(sc, phi)))
+            else:
+                ss = oti.mul(sin_d[0], sin_d[0])
+                for d in range(1, D):
+                    ss = oti.sum(ss, oti.mul(sin_d[d], sin_d[d]))
+                grad[0] = _gc(oti.mul(-4.0 * ln10 * ell[0] ** 2, oti.mul(ss, phi)))
+                scd = oti.mul(sin_d[0], oti.mul(cos_d[0], diffs[0]))
+                for d in range(1, D):
+                    scd = oti.sum(scd, oti.mul(sin_d[d], oti.mul(cos_d[d], diffs[d])))
+                grad[p_start] = _gc(oti.mul(4.0 * ln10 * ell[0] ** 2 * pip[0],
+                                            oti.mul(scd, phi)))
+
+        elif kernel == 'Matern':
+            kf = self.model.kernel_factory
+            if not hasattr(kf, '_matern_grad_prebuild'):
+                kf._matern_grad_prebuild = matern_kernel_grad_builder(getattr(kf, "nu", 1.5), oti_module=oti)
+            ell = (10.0 ** x0[:D] if kernel_type == 'anisotropic'
+                   else np.full(D, 10.0 ** float(x0[0])))
+            sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
+            _eps = 1e-10
+            r_oti = oti.sqrt(sum((ell[d] * diffs[d]) ** 2 for d in range(D)) + _eps ** 2)
+            f_prime_r = kf._matern_grad_prebuild(r_oti)
+            inv_r = oti.pow(r_oti, -1)
+            if kernel_type == 'anisotropic':
+                for d in range(D):
+                    d_sq = oti.mul(diffs[d], diffs[d])
+                    grad[d] = _gc(oti.mul(sigma_f_sq,
+                                          oti.mul(f_prime_r,
+                                                  oti.mul(ln10 * ell[d] ** 2,
+                                                          oti.mul(d_sq, inv_r)))))
+            else:
+                sum_dsq = oti.mul(diffs[0], diffs[0])
+                for d in range(1, D):
+                    sum_dsq = oti.sum(sum_dsq, oti.mul(diffs[d], diffs[d]))
+                grad[0] = _gc(oti.mul(sigma_f_sq,
+                                      oti.mul(f_prime_r,
+                                              oti.mul(ln10 * ell[0] ** 2,
+                                                      oti.mul(sum_dsq, inv_r)))))
+
+        return float(nll), grad
 
     def optimize_hyperparameters(    self,
     optimizer="pso",
