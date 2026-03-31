@@ -20,7 +20,36 @@ class Optimizer:
 
     def __init__(self, model):
         self.model = model
-    
+        self._kernel_plan = None
+
+    def _ensure_kernel_plan(self, n_bases):
+        """Lazily precompute kernel plan (once per n_bases)."""
+        if self._kernel_plan is not None and self._kernel_plan_n_bases == n_bases:
+            return
+        if not hasattr(utils, 'precompute_kernel_plan'):
+            self._kernel_plan = None
+            return
+        self._kernel_plan = utils.precompute_kernel_plan(
+            self.model.n_order, n_bases,
+            self.model.flattened_der_indices,
+            None,  # GDDEGP uses even/odd bases, not powers
+            self.model.derivative_locations,
+        )
+        self._kernel_plan_n_bases = n_bases
+
+    def _build_K(self, phi_exp, phi, n_bases):
+        """Build kernel matrix using fast path if available."""
+        self._ensure_kernel_plan(n_bases)
+        if self._kernel_plan is not None:
+            base_shape = phi.shape
+            phi_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
+            return utils.rbf_kernel_fast(phi_3d, self._kernel_plan)
+        return utils.rbf_kernel(
+            phi, phi_exp, self.model.n_order, n_bases,
+            self.model.flattened_der_indices,
+            index=self.model.derivative_locations,
+        )
+
     @profile
     def negative_log_marginal_likelihood(self, x0):
         """
@@ -52,14 +81,7 @@ class Optimizer:
         
         # Extract ALL derivative components into a single flat array (highly efficient)
             phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
-        K = utils.rbf_kernel(
-            phi,
-            phi_exp,
-            self.model.n_order,
-            n_bases,
-            self.model.flattened_der_indices,
-            index = self.model.derivative_locations,
-        )
+        K = self._build_K(phi_exp, phi, n_bases)
         K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
         K += self.model.sigma_data**2
 
@@ -114,12 +136,7 @@ class Optimizer:
             n_bases = phi.get_active_bases()[-1]
             phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
 
-        K = utils.rbf_kernel(
-            phi, phi_exp,
-            self.model.n_order, n_bases,
-            self.model.flattened_der_indices,
-            index=self.model.derivative_locations,
-        )
+        K = self._build_K(phi_exp, phi, n_bases)
         K.flat[::K.shape[0] + 1] += sigma_n_sq
         K += self.model.sigma_data ** 2
 
@@ -133,21 +150,24 @@ class Optimizer:
             return np.zeros(len(x0))
 
         grad = np.zeros(len(x0))
-
-        def _assemble_dK(dphi_oti):
-            if self.model.n_order == 0:
-                dphi_exp = dphi_oti.real[np.newaxis, :, :]
-            else:
-                dphi_exp = dphi_oti.get_all_derivs(n_bases, 2 * self.model.n_order)
-            return utils.rbf_kernel(
-                dphi_oti, dphi_exp,
-                self.model.n_order, n_bases,
-                self.model.flattened_der_indices,
-                index=self.model.derivative_locations,
-            )
+        use_fast = self._kernel_plan is not None
+        base_shape = phi.shape
 
         def _gc(dphi):
-            return 0.5 * np.sum(W * _assemble_dK(dphi))
+            if self.model.n_order == 0:
+                dphi_exp = dphi.real[np.newaxis, :, :]
+            else:
+                dphi_exp = dphi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            if use_fast:
+                dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
+                dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan)
+            else:
+                dK = utils.rbf_kernel(
+                    dphi, dphi_exp, self.model.n_order, n_bases,
+                    self.model.flattened_der_indices,
+                    index=self.model.derivative_locations,
+                )
+            return 0.5 * np.sum(W * dK)
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)
@@ -268,12 +288,7 @@ class Optimizer:
             n_bases = phi.get_active_bases()[-1]
             phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
 
-        K = utils.rbf_kernel(
-            phi, phi_exp,
-            self.model.n_order, n_bases,
-            self.model.flattened_der_indices,
-            index=self.model.derivative_locations,
-        )
+        K = self._build_K(phi_exp, phi, n_bases)
         K.flat[::K.shape[0] + 1] += sigma_n_sq
         K += self.model.sigma_data ** 2
 
@@ -295,21 +310,24 @@ class Optimizer:
 
         # --- gradient from W (no second kernel build / Cholesky) ---
         grad = np.zeros(len(x0))
-
-        def _assemble_dK(dphi_oti):
-            if self.model.n_order == 0:
-                dphi_exp = dphi_oti.real[np.newaxis, :, :]
-            else:
-                dphi_exp = dphi_oti.get_all_derivs(n_bases, 2 * self.model.n_order)
-            return utils.rbf_kernel(
-                dphi_oti, dphi_exp,
-                self.model.n_order, n_bases,
-                self.model.flattened_der_indices,
-                index=self.model.derivative_locations,
-            )
+        use_fast = self._kernel_plan is not None
+        base_shape = phi.shape
 
         def _gc(dphi):
-            return 0.5 * np.sum(W * _assemble_dK(dphi))
+            if self.model.n_order == 0:
+                dphi_exp = dphi.real[np.newaxis, :, :]
+            else:
+                dphi_exp = dphi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            if use_fast:
+                dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
+                dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan)
+            else:
+                dK = utils.rbf_kernel(
+                    dphi, dphi_exp, self.model.n_order, n_bases,
+                    self.model.flattened_der_indices,
+                    index=self.model.derivative_locations,
+                )
+            return 0.5 * np.sum(W * dK)
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)

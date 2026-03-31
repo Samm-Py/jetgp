@@ -455,6 +455,166 @@ def rbf_kernel(
     return K
 
 
+@numba.jit(nopython=True, cache=True)
+def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
+                           fd_flat_indices, df_flat_indices, dd_flat_indices,
+                           idx_flat, idx_offsets, idx_sizes,
+                           signs, n_deriv_types, row_offsets, col_offsets):
+    """
+    Fused numba kernel that assembles the entire K matrix in a single call.
+    Handles ff, fd, df, and dd blocks without Python-level loop overhead.
+    """
+    # Block (0,0): Function-Function
+    s0 = signs[0]
+    for r in range(n_rows_func):
+        for c in range(n_cols_func):
+            K[r, c] = phi_exp_3d[0, r, c] * s0
+
+    # First Block-Row: Function-Derivative (fd)
+    for j in range(n_deriv_types):
+        fi = fd_flat_indices[j]
+        sj = signs[j + 1]
+        co = col_offsets[j]
+        off_j = idx_offsets[j]
+        sz_j = idx_sizes[j]
+        for r in range(n_rows_func):
+            for k in range(sz_j):
+                ci = idx_flat[off_j + k]
+                K[r, co + k] = phi_exp_3d[fi, r, ci] * sj
+
+    # First Block-Column: Derivative-Function (df)
+    for i in range(n_deriv_types):
+        fi = df_flat_indices[i]
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for k in range(sz_i):
+            ri = idx_flat[off_i + k]
+            for c in range(n_cols_func):
+                K[ro + k, c] = phi_exp_3d[fi, ri, c] * s0
+
+    # Inner Blocks: Derivative-Derivative (dd)
+    for i in range(n_deriv_types):
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for j in range(n_deriv_types):
+            fi = dd_flat_indices[i, j]
+            sj = signs[j + 1]
+            co = col_offsets[j]
+            off_j = idx_offsets[j]
+            sz_j = idx_sizes[j]
+            for ki in range(sz_i):
+                ri = idx_flat[off_i + ki]
+                for kj in range(sz_j):
+                    ci = idx_flat[off_j + kj]
+                    K[ro + ki, co + kj] = phi_exp_3d[fi, ri, ci] * sj
+
+
+def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
+    """
+    Precompute all structural information needed by rbf_kernel so it can be
+    reused across repeated calls with different phi_exp values.
+
+    Returns a dict containing flat indices, signs, index arrays, precomputed
+    offsets/sizes, and mult_dir results for the dd block.
+    """
+    dh = coti.get_dHelp()
+    der_map = deriv_map(n_bases, 2 * n_order)
+    der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
+
+    n_deriv_types = len(der_indices)
+    signs = np.array([(-1.0) ** p for p in powers], dtype=np.float64)
+    index_arrays = [np.asarray(idx, dtype=np.int64) for idx in index]
+
+    # Precompute sizes and offsets
+    index_sizes = np.array([len(idx) for idx in index_arrays], dtype=np.int64)
+    n_pts_with_derivs = int(index_sizes.sum())
+
+    # Pack all index arrays into a single flat array with offsets
+    idx_flat = np.concatenate(index_arrays) if n_deriv_types > 0 else np.array([], dtype=np.int64)
+    idx_offsets = np.zeros(n_deriv_types, dtype=np.int64)
+    for i in range(1, n_deriv_types):
+        idx_offsets[i] = idx_offsets[i - 1] + index_sizes[i - 1]
+
+    # Precompute row/col offsets in K for each deriv type
+    row_offsets = np.zeros(n_deriv_types, dtype=np.int64)
+    col_offsets = np.zeros(n_deriv_types, dtype=np.int64)
+    # Note: n_rows_func == n_cols_func for training kernel, but we store
+    # offsets relative to n_rows_func which is added at call time
+    cumsum = 0
+    for i in range(n_deriv_types):
+        row_offsets[i] = cumsum  # relative to n_rows_func
+        col_offsets[i] = cumsum  # relative to n_cols_func
+        cumsum += index_sizes[i]
+
+    # Precompute mult_dir results for dd blocks
+    dd_flat_indices = np.empty((n_deriv_types, n_deriv_types), dtype=np.int64)
+    for i in range(n_deriv_types):
+        for j in range(n_deriv_types):
+            imdir1 = der_ind_order[j]
+            imdir2 = der_ind_order[i]
+            new_idx, new_ord = dh.mult_dir(
+                imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+            dd_flat_indices[i, j] = der_map[new_ord][new_idx]
+
+    # fd and df flat indices as arrays
+    fd_flat_indices = np.array(der_indices_tr, dtype=np.int64)
+    df_flat_indices = np.array(der_indices_tr, dtype=np.int64)
+
+    return {
+        'der_indices_tr': der_indices_tr,
+        'signs': signs,
+        'index_arrays': index_arrays,
+        'index_sizes': index_sizes,
+        'n_pts_with_derivs': n_pts_with_derivs,
+        'dd_flat_indices': dd_flat_indices,
+        'n_deriv_types': n_deriv_types,
+        # Fused kernel data
+        'idx_flat': idx_flat,
+        'idx_offsets': idx_offsets,
+        'row_offsets': row_offsets,
+        'col_offsets': col_offsets,
+        'fd_flat_indices': fd_flat_indices,
+        'df_flat_indices': df_flat_indices,
+    }
+
+
+def rbf_kernel_fast(phi_exp_3d, plan):
+    """
+    Fast kernel assembly using a precomputed plan and fused numba kernel.
+
+    Parameters
+    ----------
+    phi_exp_3d : ndarray of shape (n_derivs, n_rows_func, n_cols_func)
+        Pre-reshaped expanded derivative array.
+    plan : dict
+        Precomputed plan from precompute_kernel_plan().
+
+    Returns
+    -------
+    K : ndarray
+        Full kernel matrix.
+    """
+    n_rows_func = phi_exp_3d.shape[1]
+    n_cols_func = phi_exp_3d.shape[2]
+    total = n_rows_func + plan['n_pts_with_derivs']
+    K = np.empty((total, total))
+
+    # Offset row_offsets and col_offsets by n_rows_func / n_cols_func
+    row_off = plan['row_offsets'] + n_rows_func
+    col_off = plan['col_offsets'] + n_cols_func
+
+    _assemble_kernel_numba(
+        phi_exp_3d, K, n_rows_func, n_cols_func,
+        plan['fd_flat_indices'], plan['df_flat_indices'], plan['dd_flat_indices'],
+        plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+        plan['signs'], plan['n_deriv_types'], row_off, col_off,
+    )
+
+    return K
+
+
 def rbf_kernel_predictions(
     phi,
     phi_exp,

@@ -686,6 +686,130 @@ def rbf_kernel(
     return K
 
 
+@numba.jit(nopython=True, cache=True)
+def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
+                           fd_flat_indices, df_flat_indices, dd_flat_indices,
+                           idx_flat, idx_offsets, idx_sizes,
+                           n_deriv_types, row_offsets, col_offsets):
+    """Fused numba kernel for GDDEGP K matrix assembly (no signs, even/odd bases)."""
+    # ff block
+    for r in range(n_rows_func):
+        for c in range(n_cols_func):
+            K[r, c] = phi_exp_3d[0, r, c]
+    # fd block (even indices)
+    for j in range(n_deriv_types):
+        fi = fd_flat_indices[j]
+        co = col_offsets[j]
+        off_j = idx_offsets[j]
+        sz_j = idx_sizes[j]
+        for r in range(n_rows_func):
+            for k in range(sz_j):
+                ci = idx_flat[off_j + k]
+                K[r, co + k] = phi_exp_3d[fi, r, ci]
+    # df block (odd indices)
+    for i in range(n_deriv_types):
+        fi = df_flat_indices[i]
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for k in range(sz_i):
+            ri = idx_flat[off_i + k]
+            for c in range(n_cols_func):
+                K[ro + k, c] = phi_exp_3d[fi, ri, c]
+    # dd block (even × odd)
+    for i in range(n_deriv_types):
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for j in range(n_deriv_types):
+            fi = dd_flat_indices[i, j]
+            co = col_offsets[j]
+            off_j = idx_offsets[j]
+            sz_j = idx_sizes[j]
+            for ki in range(sz_i):
+                ri = idx_flat[off_i + ki]
+                for kj in range(sz_j):
+                    ci = idx_flat[off_j + kj]
+                    K[ro + ki, co + kj] = phi_exp_3d[fi, ri, ci]
+
+
+def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
+    """Precompute structural info for rbf_kernel_fast (GDDEGP even/odd variant)."""
+    dh = coti.get_dHelp()
+    assert n_bases % 2 == 0, "n_bases must be an even number."
+    der_map = deriv_map(n_bases, 2 * n_order)
+
+    n_deriv_types = len(der_indices)
+    index_arrays = [np.asarray(idx, dtype=np.int64) for idx in index]
+
+    index_sizes = np.array([len(idx) for idx in index_arrays], dtype=np.int64)
+    n_pts_with_derivs = int(index_sizes.sum())
+
+    idx_flat = np.concatenate(index_arrays) if n_deriv_types > 0 else np.array([], dtype=np.int64)
+    idx_offsets = np.zeros(n_deriv_types, dtype=np.int64)
+    for i in range(1, n_deriv_types):
+        idx_offsets[i] = idx_offsets[i - 1] + index_sizes[i - 1]
+
+    row_offsets = np.zeros(n_deriv_types, dtype=np.int64)
+    col_offsets = np.zeros(n_deriv_types, dtype=np.int64)
+    cumsum = 0
+    for i in range(n_deriv_types):
+        row_offsets[i] = cumsum
+        col_offsets[i] = cumsum
+        cumsum += index_sizes[i]
+
+    # Even/odd derivative transforms
+    der_indices_even = make_first_even(der_indices)
+    der_indices_odd = make_first_odd(der_indices)
+    der_indices_tr_even, der_ind_order_even = transform_der_indices(der_indices_even, der_map)
+    der_indices_tr_odd, der_ind_order_odd = transform_der_indices(der_indices_odd, der_map)
+
+    fd_flat_indices = np.array(der_indices_tr_even, dtype=np.int64)
+    df_flat_indices = np.array(der_indices_tr_odd, dtype=np.int64)
+
+    dd_flat_indices = np.empty((n_deriv_types, n_deriv_types), dtype=np.int64)
+    for i in range(n_deriv_types):
+        for j in range(n_deriv_types):
+            imdir1 = der_ind_order_even[j]
+            imdir2 = der_ind_order_odd[i]
+            new_idx, new_ord = dh.mult_dir(imdir1[0], imdir1[1], imdir2[0], imdir2[1])
+            dd_flat_indices[i, j] = der_map[new_ord][new_idx]
+
+    return {
+        'signs': np.ones(n_deriv_types + 1, dtype=np.float64),  # unused, kept for API
+        'index_arrays': index_arrays,
+        'index_sizes': index_sizes,
+        'n_pts_with_derivs': n_pts_with_derivs,
+        'dd_flat_indices': dd_flat_indices,
+        'n_deriv_types': n_deriv_types,
+        'idx_flat': idx_flat,
+        'idx_offsets': idx_offsets,
+        'row_offsets': row_offsets,
+        'col_offsets': col_offsets,
+        'fd_flat_indices': fd_flat_indices,
+        'df_flat_indices': df_flat_indices,
+    }
+
+
+def rbf_kernel_fast(phi_exp_3d, plan):
+    """Fast kernel assembly using precomputed plan and fused numba kernel."""
+    n_rows_func = phi_exp_3d.shape[1]
+    n_cols_func = phi_exp_3d.shape[2]
+    total = n_rows_func + plan['n_pts_with_derivs']
+    K = np.empty((total, total))
+
+    row_off = plan['row_offsets'] + n_rows_func
+    col_off = plan['col_offsets'] + n_cols_func
+
+    _assemble_kernel_numba(
+        phi_exp_3d, K, n_rows_func, n_cols_func,
+        plan['fd_flat_indices'], plan['df_flat_indices'], plan['dd_flat_indices'],
+        plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+        plan['n_deriv_types'], row_off, col_off,
+    )
+    return K
+
+
 @profile
 def rbf_kernel_predictions(
     phi,

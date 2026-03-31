@@ -29,9 +29,12 @@ class Optimizer:
             and other model-specific structures required for kernel computation.
         """
         self.model = model
-        
+
         # Import the appropriate utils module based on submodel_type
         self._setup_utils()
+
+        # Precompute kernel plans (structural info that never changes)
+        self._kernel_plans = None  # lazily initialized on first NLL call
 
     def _setup_utils(self):
         """Set up the correct utils module based on submodel_type."""
@@ -50,6 +53,26 @@ class Optimizer:
             # Default to degp
             from jetgp.wdegp import wdegp_utils
             self.utils = wdegp_utils
+
+    def _ensure_kernel_plans(self, n_bases):
+        """Lazily precompute kernel plans for all submodels (once per n_bases)."""
+        if self._kernel_plans is not None and self._kernel_plans_n_bases == n_bases:
+            return
+        if not hasattr(self.utils, 'precompute_kernel_plan'):
+            self._kernel_plans = None
+            return
+        plans = []
+        index = self.model.derivative_locations
+        for i in range(len(index)):
+            plan = self.utils.precompute_kernel_plan(
+                self.model.n_order, n_bases,
+                self.model.flattened_der_indices[i],
+                self.model.powers[i],
+                index[i],
+            )
+            plans.append(plan)
+        self._kernel_plans = plans
+        self._kernel_plans_n_bases = n_bases
 
     @profile
     def negative_log_marginal_likelihood(
@@ -107,40 +130,29 @@ class Optimizer:
         
             # Extract ALL derivative components into a single flat array (highly efficient)
             phi_exp = phi.get_all_derivs(n_bases, 2 * n_order)
-        
-        submodel_type = getattr(self.model, 'submodel_type', 'degp')
-        
+
+        # Ensure kernel plans are precomputed
+        self._ensure_kernel_plans(n_bases)
+        use_fast = self._kernel_plans is not None
+
+        # Pre-reshape phi_exp to 3D once
+        if use_fast:
+            base_shape = phi.shape
+            phi_exp_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
+
         for i in range(len(index)):
             y_train_sub = y_train[i]
-            der_indices_sub = self.model.flattened_der_indices[i]
-            powers = self.model.powers[i]
-            idx = index[i]
 
-            # Build kernel matrix using the appropriate function based on submodel_type
-            if submodel_type == 'degp':
-                K = self.utils.rbf_kernel(
-                    phi, phi_exp, n_order, n_bases,
-                    der_indices_sub, powers, index=idx
-                )
-            elif submodel_type == 'ddegp':
-                K = self.utils.rbf_kernel(
-                    phi, phi_exp, n_order, n_bases,
-                    der_indices_sub, powers, index=idx
-                )
-            elif submodel_type == 'gddegp':
-                K = self.utils.rbf_kernel(
-                    phi, phi_exp, n_order, n_bases,
-                    der_indices_sub, powers, index=idx
-                )
+            if use_fast:
+                K = self.utils.rbf_kernel_fast(phi_exp_3d, self._kernel_plans[i])
             else:
-                # Default to degp
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, n_order, n_bases,
-                    der_indices_sub, powers, index=idx
+                    self.model.flattened_der_indices[i],
+                    self.model.powers[i], index=index[i]
                 )
-            
+
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
-            # K += self.model.sigma_data[i]**2
 
             try:
                 L, low = cho_factor(K)
@@ -203,17 +215,27 @@ class Optimizer:
             n_bases = phi.get_active_bases()[-1]
             phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
 
+        # Ensure kernel plans are precomputed
+        self._ensure_kernel_plans(n_bases)
+        use_fast = self._kernel_plans is not None
+
+        # Pre-reshape phi_exp to 3D once
+        if use_fast:
+            base_shape = phi.shape
+            phi_exp_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
+
         # Build per-submodel W matrices
         W_list = []
         for i in range(len(index)):
             y_train_sub = self.model.y_train_normalized[i]
-            der_indices_sub = self.model.flattened_der_indices[i]
-            powers = self.model.powers[i]
-            idx = index[i]
-            K = self.utils.rbf_kernel(
-                phi, phi_exp, self.model.n_order, n_bases,
-                der_indices_sub, powers, index=idx
-            )
+            if use_fast:
+                K = self.utils.rbf_kernel_fast(phi_exp_3d, self._kernel_plans[i])
+            else:
+                K = self.utils.rbf_kernel(
+                    phi, phi_exp, self.model.n_order, n_bases,
+                    self.model.flattened_der_indices[i],
+                    self.model.powers[i], index=index[i]
+                )
             K.flat[::K.shape[0] + 1] += sigma_n_sq
             try:
                 L, low  = cho_factor(K)
@@ -226,22 +248,27 @@ class Optimizer:
 
         grad = np.zeros(len(x0))
 
-        def _assemble_dK(dphi_oti, i):
-            if self.model.n_order == 0:
-                dphi_exp = dphi_oti.real[np.newaxis, :, :]
-            else:
-                dphi_exp = dphi_oti.get_all_derivs(n_bases, 2 * self.model.n_order)
-            return self.utils.rbf_kernel(
-                dphi_oti, dphi_exp,
-                self.model.n_order, n_bases,
-                self.model.flattened_der_indices[i],
-                self.model.powers[i],
-                index=index[i],
-            )
-
         def _gc(dphi):
-            return 0.5 * sum(np.sum(W_list[i] * _assemble_dK(dphi, i))
-                             for i in range(len(index)))
+            if self.model.n_order == 0:
+                dphi_exp = dphi.real[np.newaxis, :, :]
+            else:
+                dphi_exp = dphi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            if use_fast:
+                dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
+            total = 0.0
+            for i in range(len(index)):
+                if use_fast:
+                    dK = self.utils.rbf_kernel_fast(dphi_3d, self._kernel_plans[i])
+                else:
+                    dK = self.utils.rbf_kernel(
+                        dphi, dphi_exp,
+                        self.model.n_order, n_bases,
+                        self.model.flattened_der_indices[i],
+                        self.model.powers[i],
+                        index=index[i],
+                    )
+                total += np.sum(W_list[i] * dK)
+            return 0.5 * total
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * sum(np.trace(W) for W in W_list)
@@ -363,19 +390,29 @@ class Optimizer:
             n_bases = phi.get_active_bases()[-1]
             phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
 
+        # Ensure kernel plans are precomputed
+        self._ensure_kernel_plans(n_bases)
+        use_fast = self._kernel_plans is not None
+
+        # Pre-reshape phi_exp to 3D once
+        if use_fast:
+            base_shape = phi.shape
+            phi_exp_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
+
         # --- single loop: compute NLL and W_list simultaneously ---
         llhood = 0.0
         W_list = []
         for i in range(len(index)):
             y_train_sub = self.model.y_train_normalized[i]
-            der_indices_sub = self.model.flattened_der_indices[i]
-            powers = self.model.powers[i]
-            idx = index[i]
 
-            K = self.utils.rbf_kernel(
-                phi, phi_exp, self.model.n_order, n_bases,
-                der_indices_sub, powers, index=idx
-            )
+            if use_fast:
+                K = self.utils.rbf_kernel_fast(phi_exp_3d, self._kernel_plans[i])
+            else:
+                K = self.utils.rbf_kernel(
+                    phi, phi_exp, self.model.n_order, n_bases,
+                    self.model.flattened_der_indices[i],
+                    self.model.powers[i], index=index[i]
+                )
             K.flat[::K.shape[0] + 1] += sigma_n_sq
 
             try:
@@ -398,23 +435,30 @@ class Optimizer:
 
         # --- gradient from W_list (no second kernel build / Cholesky) ---
         grad = np.zeros(len(x0))
-
-        def _assemble_dK(dphi_oti, i):
-            if self.model.n_order == 0:
-                dphi_exp = dphi_oti.real[np.newaxis, :, :]
-            else:
-                dphi_exp = dphi_oti.get_all_derivs(n_bases, 2 * self.model.n_order)
-            return self.utils.rbf_kernel(
-                dphi_oti, dphi_exp,
-                self.model.n_order, n_bases,
-                self.model.flattened_der_indices[i],
-                self.model.powers[i],
-                index=index[i],
-            )
+        n_sub = len(index)
 
         def _gc(dphi):
-            return 0.5 * sum(np.sum(W_list[i] * _assemble_dK(dphi, i))
-                             for i in range(len(index)))
+            # Precompute dphi_exp ONCE, reshape to 3D
+            if self.model.n_order == 0:
+                dphi_exp = dphi.real[np.newaxis, :, :]
+            else:
+                dphi_exp = dphi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            if use_fast:
+                dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
+            total = 0.0
+            for i in range(n_sub):
+                if use_fast:
+                    dK = self.utils.rbf_kernel_fast(dphi_3d, self._kernel_plans[i])
+                else:
+                    dK = self.utils.rbf_kernel(
+                        dphi, dphi_exp,
+                        self.model.n_order, n_bases,
+                        self.model.flattened_der_indices[i],
+                        self.model.powers[i],
+                        index=index[i],
+                    )
+                total += np.sum(W_list[i] * dK)
+            return 0.5 * total
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * sum(np.trace(W) for W in W_list)
