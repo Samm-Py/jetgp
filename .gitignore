@@ -13,6 +13,9 @@ __pycache__/*
 #Ignore .coverage files
 *.coverage
 
+# Personal notes
+docs/notes/
+
 
 # Cython generated files.
 modules/*.c
