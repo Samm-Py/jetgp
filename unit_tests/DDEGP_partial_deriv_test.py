@@ -72,7 +72,7 @@ class TestDDEGPUntrainedRay(unittest.TestCase):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             cls.params = cls.model.optimize_hyperparameters(
-                optimizer="powell", n_restart_optimizer=5, debug=False
+                optimizer="powell", n_restart_optimizer=10, debug=False
             )
 
         np.random.seed(99)

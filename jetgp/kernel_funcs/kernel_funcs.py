@@ -328,6 +328,10 @@ class KernelFactory:
         self._cached_p = None
         self._cached_pi_over_p = None
 
+        # Fused sqdist cache
+        self._cached_ell_sq = None
+        self._has_fused_sqdist = None
+
     def clear_caches(self):
         """Clear all caches. Call when training data changes."""
         self._init_caches()
@@ -365,6 +369,35 @@ class KernelFactory:
         else:
             # Fallback: multiply by zero
             self.oti.mul(0.0, self._sqdist, out=self._sqdist)
+
+    def _compute_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
+        """Compute sqdist = Σ ell[i]² * diff[i]², using fused C kernel when available."""
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        if self._has_fused_sqdist:
+            ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist(differences_by_dim, ell_sq)
+        else:
+            self._reset_sqdist()
+            for i in range(self.dim):
+                self.oti.mul(ell[i], differences_by_dim[i], out=tmp1)
+                self.oti.mul(tmp1, tmp1, out=tmp2)
+                self.oti.sum(sqdist, tmp2, out=sqdist)
+
+    def _compute_sqdist_iso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
+        """Compute sqdist = Σ ell² * diff[i]², using fused C kernel when available."""
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        if self._has_fused_sqdist:
+            ell_sq_val = float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist(differences_by_dim, ell_sq)
+        else:
+            self._reset_sqdist()
+            for i in range(self.dim):
+                self.oti.mul(ell, differences_by_dim[i], out=tmp1)
+                self.oti.mul(tmp1, tmp1, out=tmp2)
+                self.oti.sum(sqdist, tmp2, out=sqdist)
 
     # -------------------------------------------------------------------
     # Hyperparameter Caching Methods
@@ -622,12 +655,7 @@ class KernelFactory:
         ell, sigma_f_sq = self._cache_se_params_aniso(length_scales)
         tmp1, tmp2, sqdist = self._ensure_temp_arrays(
             differences_by_dim[0].shape)
-        self._reset_sqdist()
-
-        for i in range(self.dim):
-            self.oti.mul(ell[i], differences_by_dim[i], out=tmp1)
-            self.oti.mul(tmp1, tmp1, out=tmp2)
-            self.oti.sum(sqdist, tmp2, out=sqdist)
+        self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
         self.oti.exp((-0.5) * sqdist, out=tmp1)
         self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
@@ -652,12 +680,7 @@ class KernelFactory:
         ell, alpha, sigma_f_sq = self._cache_rq_params_aniso(length_scales)
         tmp1, tmp2, sqdist = self._ensure_temp_arrays(
             differences_by_dim[0].shape)
-        self._reset_sqdist()
-
-        for i in range(self.dim):
-            self.oti.mul(ell[i], differences_by_dim[i], out=tmp1)
-            self.oti.mul(tmp1, tmp1, out=tmp2)
-            self.oti.sum(sqdist, tmp2, out=sqdist)
+        self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
         # (1 + sqdist / (2 * alpha))^(-alpha)
         inv_2alpha = 1.0 / (2 * alpha)
@@ -776,12 +799,7 @@ class KernelFactory:
         ell, sigma_f_sq = self._cache_se_params_iso(length_scales)
         tmp1, tmp2, sqdist = self._ensure_temp_arrays(
             differences_by_dim[0].shape)
-        self._reset_sqdist()
-
-        for i in range(self.dim):
-            self.oti.mul(ell, differences_by_dim[i], out=tmp1)
-            self.oti.mul(tmp1, tmp1, out=tmp2)
-            self.oti.sum(sqdist, tmp2, out=sqdist)
+        self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
         self.oti.exp((-0.5) * sqdist, out=tmp1)
         self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
@@ -806,12 +824,7 @@ class KernelFactory:
         ell, alpha, sigma_f_sq = self._cache_rq_params_iso(length_scales)
         tmp1, tmp2, sqdist = self._ensure_temp_arrays(
             differences_by_dim[0].shape)
-        self._reset_sqdist()
-
-        for i in range(self.dim):
-            self.oti.mul(ell, differences_by_dim[i], out=tmp1)
-            self.oti.mul(tmp1, tmp1, out=tmp2)
-            self.oti.sum(sqdist, tmp2, out=sqdist)
+        self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
         # (1 + sqdist / (2 * alpha))^(-alpha)
         inv_2alpha = 1.0 / (2 * alpha)

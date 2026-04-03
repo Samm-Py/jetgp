@@ -546,15 +546,22 @@ def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
     }
 
 
-def rbf_kernel_fast(phi_exp_3d, plan):
+def rbf_kernel_fast(phi_exp_3d, plan, out=None):
     """Fast kernel assembly using precomputed plan and fused numba kernel."""
     n_rows_func = phi_exp_3d.shape[1]
     n_cols_func = phi_exp_3d.shape[2]
     total = n_rows_func + plan['n_pts_with_derivs']
-    K = np.empty((total, total))
+    if out is not None:
+        K = out
+    else:
+        K = np.empty((total, total))
 
-    row_off = plan['row_offsets'] + n_rows_func
-    col_off = plan['col_offsets'] + n_cols_func
+    if 'row_offsets_abs' in plan:
+        row_off = plan['row_offsets_abs']
+        col_off = plan['col_offsets_abs']
+    else:
+        row_off = plan['row_offsets'] + n_rows_func
+        col_off = plan['col_offsets'] + n_cols_func
 
     _assemble_kernel_numba(
         phi_exp_3d, K, n_rows_func, n_cols_func,

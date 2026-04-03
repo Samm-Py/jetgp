@@ -21,6 +21,75 @@ class Optimizer:
     def __init__(self, model):
         self.model = model
         self._kernel_plan = None
+        self._deriv_buf = None
+        self._deriv_buf_shape = None
+        self._deriv_factors = None
+        self._deriv_factors_key = None
+        self._K_buf = None
+        self._dK_buf = None
+        self._kernel_buf_size = None
+
+    def _get_deriv_buf(self, phi, n_bases, order):
+        from math import comb
+        ndir = comb(n_bases + order, order)
+        shape = (ndir, phi.shape[0], phi.shape[1])
+        if self._deriv_buf is None or self._deriv_buf_shape != shape:
+            self._deriv_buf = np.zeros(shape, dtype=np.float64)
+            self._deriv_buf_shape = shape
+        return self._deriv_buf
+
+    @staticmethod
+    def _enum_factors(max_basis, ordi):
+        from math import factorial
+        from collections import Counter
+        if ordi == 1:
+            for _ in range(max_basis):
+                yield 1.0
+            return
+        for last in range(1, max_basis + 1):
+            if ordi == 2:
+                for i in range(1, last + 1):
+                    counts = Counter((i, last))
+                    f = 1
+                    for c in counts.values():
+                        f *= factorial(c)
+                    yield float(f)
+            else:
+                for _, prefix_counts in Optimizer._enum_factors_with_counts(last, ordi - 1):
+                    counts = dict(prefix_counts)
+                    counts[last] = counts.get(last, 0) + 1
+                    f = 1
+                    for c in counts.values():
+                        f *= factorial(c)
+                    yield float(f)
+
+    @staticmethod
+    def _enum_factors_with_counts(max_basis, ordi):
+        from math import factorial
+        from collections import Counter
+        if ordi == 1:
+            for i in range(1, max_basis + 1):
+                yield 1.0, {i: 1}
+            return
+        for last in range(1, max_basis + 1):
+            for _, prefix_counts in Optimizer._enum_factors_with_counts(last, ordi - 1):
+                counts = dict(prefix_counts)
+                counts[last] = counts.get(last, 0) + 1
+                f = 1
+                for c in counts.values():
+                    f *= factorial(c)
+                yield float(f), counts
+
+    def _get_deriv_factors(self, n_bases, order):
+        key = (n_bases, order)
+        if self._deriv_factors is not None and self._deriv_factors_key == key:
+            return self._deriv_factors
+        factors = [1.0]
+        for ordi in range(1, order + 1):
+            factors.extend(self._enum_factors(n_bases, ordi))
+        self._deriv_factors = np.array(factors, dtype=np.float64)
+        self._deriv_factors_key = key
+        return self._deriv_factors
 
     def _ensure_kernel_plan(self, n_bases):
         """Lazily precompute kernel plan (once per n_bases)."""
@@ -36,14 +105,31 @@ class Optimizer:
             self.model.derivative_locations,
         )
         self._kernel_plan_n_bases = n_bases
+        self._K_buf = None
+        self._dK_buf = None
+        self._kernel_buf_size = None
+
+    def _ensure_kernel_bufs(self, n_rows_func):
+        """Pre-allocate reusable K and dK buffers (avoids repeated malloc)."""
+        if self._kernel_plan is None:
+            return
+        total = n_rows_func + self._kernel_plan['n_pts_with_derivs']
+        if self._kernel_buf_size != total:
+            self._K_buf = np.empty((total, total))
+            self._dK_buf = np.empty((total, total))
+            self._kernel_buf_size = total
+            if 'row_offsets_abs' not in self._kernel_plan:
+                self._kernel_plan['row_offsets_abs'] = self._kernel_plan['row_offsets'] + n_rows_func
+                self._kernel_plan['col_offsets_abs'] = self._kernel_plan['col_offsets'] + n_rows_func
 
     def _build_K(self, phi_exp, phi, n_bases):
         """Build kernel matrix using fast path if available."""
         self._ensure_kernel_plan(n_bases)
         if self._kernel_plan is not None:
             base_shape = phi.shape
+            self._ensure_kernel_bufs(base_shape[0])
             phi_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
-            return utils.rbf_kernel_fast(phi_3d, self._kernel_plan)
+            return utils.rbf_kernel_fast(phi_3d, self._kernel_plan, out=self._K_buf)
         return utils.rbf_kernel(
             phi, phi_exp, self.model.n_order, n_bases,
             self.model.flattened_der_indices,
@@ -79,8 +165,11 @@ class Optimizer:
         else:
             n_bases = phi.get_active_bases()[-1]
         
-        # Extract ALL derivative components into a single flat array (highly efficient)
-            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+        # Extract ALL derivative components via fast struct cast
+            deriv_order = 2 * self.model.n_order
+            buf = self._get_deriv_buf(phi, n_bases, deriv_order)
+            factors = self._get_deriv_factors(n_bases, deriv_order)
+            phi_exp = phi.get_all_derivs_fast(factors, buf)
         K = self._build_K(phi_exp, phi, n_bases)
         K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
         K += self.model.sigma_data**2
@@ -134,7 +223,10 @@ class Optimizer:
             phi_exp = phi.real[np.newaxis, :, :]
         else:
             n_bases = phi.get_active_bases()[-1]
-            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            deriv_order = 2 * self.model.n_order
+            buf = self._get_deriv_buf(phi, n_bases, deriv_order)
+            factors = self._get_deriv_factors(n_bases, deriv_order)
+            phi_exp = phi.get_all_derivs_fast(factors, buf)
 
         K = self._build_K(phi_exp, phi, n_bases)
         K.flat[::K.shape[0] + 1] += sigma_n_sq
@@ -152,22 +244,25 @@ class Optimizer:
         grad = np.zeros(len(x0))
         use_fast = self._kernel_plan is not None
         base_shape = phi.shape
+        deriv_order_gc = 2 * self.model.n_order
+        deriv_factors_gc = self._get_deriv_factors(n_bases, deriv_order_gc) if self.model.n_order != 0 else None
 
         def _gc(dphi):
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:
-                dphi_exp = dphi.get_all_derivs(n_bases, 2 * self.model.n_order)
+                buf_gc = self._get_deriv_buf(dphi, n_bases, deriv_order_gc)
+                dphi_exp = dphi.get_all_derivs_fast(deriv_factors_gc, buf_gc)
             if use_fast:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
-                dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan)
+                dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan, out=self._dK_buf)
             else:
                 dK = utils.rbf_kernel(
                     dphi, dphi_exp, self.model.n_order, n_bases,
                     self.model.flattened_der_indices,
                     index=self.model.derivative_locations,
                 )
-            return 0.5 * np.sum(W * dK)
+            return 0.5 * np.vdot(W, dK)
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)
@@ -175,14 +270,24 @@ class Optimizer:
         if kernel == 'SE':
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                for d in range(D):
-                    grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
-                                          oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
+                if hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], phi, -ln10 * ell[d] ** 2)
+                        grad[d] = _gc(dphi_buf)
+                else:
+                    for d in range(D):
+                        grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
+                                              oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
             else:
                 ell    = 10.0 ** float(x0[0])
-                sum_sq = oti.mul(diffs[0], diffs[0])
-                for d in range(1, D):
-                    sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                if hasattr(phi, 'fused_sum_sq'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq(diffs)
+                else:
+                    sum_sq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
                 grad[0] = _gc(oti.mul(-ln10 * ell ** 2, oti.mul(sum_sq, phi)))
 
         elif kernel == 'RQ':
@@ -191,23 +296,38 @@ class Optimizer:
             else:
                 ell = np.full(D, 10.0 ** float(x0[0]))
                 alpha_rq = np.exp(float(x0[1])); alpha_idx = 1
-            r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
-            for d in range(1, D):
-                td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
+            if hasattr(phi, 'fused_sqdist'):
+                r2 = oti.zeros(phi.shape)
+                ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+                r2.fused_sqdist(diffs, ell_sq)
+            else:
+                r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
+                for d in range(1, D):
+                    td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
             base = oti.sum(1.0, oti.mul(r2, 1.0 / (2.0 * alpha_rq)))
             inv_base = oti.pow(base, -1)
             phi_over_base = oti.mul(phi, inv_base)
             if kernel_type == 'anisotropic':
-                for d in range(D):
-                    grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
-                                          oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
+                if hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], phi_over_base, -ln10 * ell[d] ** 2)
+                        grad[d] = _gc(dphi_buf)
+                else:
+                    for d in range(D):
+                        grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
+                                              oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
             else:
-                sum_sq = oti.mul(diffs[0], diffs[0])
-                for d in range(1, D):
-                    sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                if hasattr(phi, 'fused_sum_sq'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq(diffs)
+                else:
+                    sum_sq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
                 grad[0] = _gc(oti.mul(-ln10 * ell[0] ** 2, oti.mul(sum_sq, phi_over_base)))
             log_base = oti.log(base)
-            term = oti.sum(oti.mul(-1.0, log_base), oti.sum(1.0, oti.mul(-1.0, inv_base)))
+            term = oti.sub(oti.sub(1.0, inv_base), log_base)
             alpha_factor = ln10 * alpha_rq if kernel_type == 'anisotropic' else alpha_rq
             grad[alpha_idx] = _gc(oti.mul(alpha_factor, oti.mul(phi, term)))
 
@@ -286,7 +406,10 @@ class Optimizer:
             phi_exp = phi.real[np.newaxis, :, :]
         else:
             n_bases = phi.get_active_bases()[-1]
-            phi_exp = phi.get_all_derivs(n_bases, 2 * self.model.n_order)
+            deriv_order = 2 * self.model.n_order
+            buf = self._get_deriv_buf(phi, n_bases, deriv_order)
+            factors = self._get_deriv_factors(n_bases, deriv_order)
+            phi_exp = phi.get_all_derivs_fast(factors, buf)
 
         K = self._build_K(phi_exp, phi, n_bases)
         K.flat[::K.shape[0] + 1] += sigma_n_sq
@@ -312,22 +435,25 @@ class Optimizer:
         grad = np.zeros(len(x0))
         use_fast = self._kernel_plan is not None
         base_shape = phi.shape
+        deriv_order_gc = 2 * self.model.n_order
+        deriv_factors_gc = self._get_deriv_factors(n_bases, deriv_order_gc) if self.model.n_order != 0 else None
 
         def _gc(dphi):
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:
-                dphi_exp = dphi.get_all_derivs(n_bases, 2 * self.model.n_order)
+                buf_gc = self._get_deriv_buf(dphi, n_bases, deriv_order_gc)
+                dphi_exp = dphi.get_all_derivs_fast(deriv_factors_gc, buf_gc)
             if use_fast:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
-                dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan)
+                dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan, out=self._dK_buf)
             else:
                 dK = utils.rbf_kernel(
                     dphi, dphi_exp, self.model.n_order, n_bases,
                     self.model.flattened_der_indices,
                     index=self.model.derivative_locations,
                 )
-            return 0.5 * np.sum(W * dK)
+            return 0.5 * np.vdot(W, dK)
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)
@@ -335,14 +461,24 @@ class Optimizer:
         if kernel == 'SE':
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                for d in range(D):
-                    grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
-                                          oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
+                if hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], phi, -ln10 * ell[d] ** 2)
+                        grad[d] = _gc(dphi_buf)
+                else:
+                    for d in range(D):
+                        grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
+                                              oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
             else:
                 ell    = 10.0 ** float(x0[0])
-                sum_sq = oti.mul(diffs[0], diffs[0])
-                for d in range(1, D):
-                    sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                if hasattr(phi, 'fused_sum_sq'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq(diffs)
+                else:
+                    sum_sq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
                 grad[0] = _gc(oti.mul(-ln10 * ell ** 2, oti.mul(sum_sq, phi)))
 
         elif kernel == 'RQ':
@@ -351,23 +487,38 @@ class Optimizer:
             else:
                 ell = np.full(D, 10.0 ** float(x0[0]))
                 alpha_rq = np.exp(float(x0[1])); alpha_idx = 1
-            r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
-            for d in range(1, D):
-                td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
+            if hasattr(phi, 'fused_sqdist'):
+                r2 = oti.zeros(phi.shape)
+                ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+                r2.fused_sqdist(diffs, ell_sq)
+            else:
+                r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
+                for d in range(1, D):
+                    td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
             base = oti.sum(1.0, oti.mul(r2, 1.0 / (2.0 * alpha_rq)))
             inv_base = oti.pow(base, -1)
             phi_over_base = oti.mul(phi, inv_base)
             if kernel_type == 'anisotropic':
-                for d in range(D):
-                    grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
-                                          oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
+                if hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], phi_over_base, -ln10 * ell[d] ** 2)
+                        grad[d] = _gc(dphi_buf)
+                else:
+                    for d in range(D):
+                        grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
+                                              oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
             else:
-                sum_sq = oti.mul(diffs[0], diffs[0])
-                for d in range(1, D):
-                    sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                if hasattr(phi, 'fused_sum_sq'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq(diffs)
+                else:
+                    sum_sq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
                 grad[0] = _gc(oti.mul(-ln10 * ell[0] ** 2, oti.mul(sum_sq, phi_over_base)))
             log_base = oti.log(base)
-            term = oti.sum(oti.mul(-1.0, log_base), oti.sum(1.0, oti.mul(-1.0, inv_base)))
+            term = oti.sub(oti.sub(1.0, inv_base), log_base)
             alpha_factor = ln10 * alpha_rq if kernel_type == 'anisotropic' else alpha_rq
             grad[alpha_idx] = _gc(oti.mul(alpha_factor, oti.mul(phi, term)))
 
