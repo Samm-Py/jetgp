@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://claude.ai/chat/c18a7e0c-a4ec-4e66-9f9c-469ef8c60cff
+HostUrl=https://claude.ai/api/organizations/703bfe97-9157-4337-b2fb-56c1ef80a35f/conversations/c18a7e0c-a4ec-4e66-9f9c-469ef8c60cff/wiggle/download-file?path=%2Fmnt%2Fuser-data%2Foutputs%2Fgpflow_borehole.py

@@ -1,0 +1,243 @@
+"""
+Illustrative example for JetGP paper - Section: Illustrative Examples
+Demonstrates using derivative-enhanced GPs with adjoint-style derivatives
+obtained via automatic differentiation (JAX) through a numerical PDE solver.
+
+Problem: 2D Poisson equation with a Gaussian heat source
+  -∇²u = f(x, y; x_s, y_s)   on [0,1]²
+  u = 0                        on ∂Ω (Dirichlet BCs)
+
+where f(x, y; x_s, y_s) = A * exp(-((x-x_s)² + (y-y_s)²) / (2σ²))
+
+The quantity of interest (QoI) is the peak temperature:
+  T_peak(x_s, y_s) = max(u)
+
+We build a surrogate of T_peak as a function of source location (x_s, y_s),
+using derivatives dT_peak/dx_s and dT_peak/dy_s obtained via JAX autodiff
+through the finite difference solver.
+
+Two JetGP models are compared:
+  1. DEGP with full gradient (dT/dx_s, dT/dy_s)
+  2. DEGP with selective derivatives (dT/dx_s only)
+"""
+
+import numpy as np
+import jax
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+from jetgp.full_degp.degp import degp
+
+# ── PDE solver ────────────────────────────────────────────────────────────────
+def build_laplacian(n):
+    """Build 2D Laplacian matrix via finite differences on n x n interior grid."""
+    N = n * n
+    # 1D second difference operator
+    e = jnp.ones(n)
+    T = jnp.diag(-2 * e) + jnp.diag(e[:-1], 1) + jnp.diag(e[:-1], -1)
+    I = jnp.eye(n)
+    # 2D Laplacian via Kronecker product
+    L = jnp.kron(I, T) + jnp.kron(T, I)
+    return L
+
+def solve_poisson(source_params, n=30, A=10.0, sigma=0.1):
+    """
+    Solve -∇²u = f on [0,1]² with homogeneous Dirichlet BCs.
+    
+    Parameters
+    ----------
+    source_params : array [x_s, y_s]
+        Location of the Gaussian heat source.
+    n : int
+        Number of interior grid points per dimension.
+    A : float
+        Source amplitude.
+    sigma : float
+        Source width.
+        
+    Returns
+    -------
+    float
+        Peak temperature max(u).
+    """
+    x_s, y_s = source_params[0], source_params[1]
+    h = 1.0 / (n + 1)
+    
+    # Interior grid points
+    x = jnp.linspace(h, 1 - h, n)
+    y = jnp.linspace(h, 1 - h, n)
+    X, Y = jnp.meshgrid(x, y)
+    
+    # Gaussian forcing function
+    f = A * jnp.exp(-((X - x_s)**2 + (Y - y_s)**2) / (2 * sigma**2))
+    f_flat = f.flatten()
+    
+    # Assemble and solve linear system: (1/h²) * L * u = f
+    L = build_laplacian(n)
+    A_mat = L / h**2
+    u = jnp.linalg.solve(A_mat, f_flat)
+    
+    return jnp.max(u)
+
+# JIT compile solver and its gradient
+solve_jit = jax.jit(solve_poisson)
+grad_solve = jax.jit(jax.grad(solve_poisson))
+
+# ── Training data ─────────────────────────────────────────────────────────────
+np.random.seed(42)
+n_train = 16
+
+# Sample source locations from interior of domain (avoid boundaries)
+X_train = np.random.uniform(0.2, 0.8, (n_train, 2))
+
+print("Computing training function values and gradients via JAX autodiff...")
+y_vals   = np.array([solve_jit(X_train[i]) for i in range(n_train)])
+grads    = np.array([grad_solve(X_train[i]) for i in range(n_train)])
+dy_dxs   = grads[:, 0]   # dT_peak / dx_s
+dy_dys   = grads[:, 1]   # dT_peak / dy_s
+print("Done.")
+
+# ── Model 1: DEGP with full gradient ─────────────────────────────────────────
+y_train_full = [
+    y_vals.reshape(-1, 1),
+    dy_dxs.reshape(-1, 1),
+    dy_dys.reshape(-1, 1)
+]
+der_indices_full = [[[[1, 1]], [[2, 1]]]]  # df/dx_s, df/dy_s
+
+model_full = degp(
+    X_train, y_train_full,
+    n_order=1, n_bases=2,
+    der_indices=der_indices_full,
+    normalize=True,
+    kernel="SE", kernel_type="anisotropic"
+)
+params_full = model_full.optimize_hyperparameters(
+    optimizer='lbfgs', n_restart_optimizer=10
+)
+
+# ── Model 2: DEGP with selective derivatives (x_s only) ──────────────────────
+y_train_sel = [
+    y_vals.reshape(-1, 1),
+    dy_dxs.reshape(-1, 1)   # only dT/dx_s
+]
+der_indices_sel = [[[[1, 1]]]]  # df/dx_s only
+
+model_sel = degp(
+    X_train, y_train_sel,
+    n_order=1, n_bases=2,
+    der_indices=der_indices_sel,
+    normalize=True,
+    kernel="SE", kernel_type="anisotropic"
+)
+params_sel = model_sel.optimize_hyperparameters(
+    optimizer='lbfgs', n_restart_optimizer=10
+)
+
+# ── Test data ─────────────────────────────────────────────────────────────────
+n_test = 20
+X_test = np.random.uniform(0.2, 0.8, (n_test, 2))
+
+print("Computing test reference values...")
+y_test = np.array([solve_jit(X_test[i]) for i in range(n_test)])
+print("Done.")
+
+y_pred_full, y_var_full = model_full.predict(X_test, params_full, calc_cov=True)
+y_pred_sel,  y_var_sel  = model_sel.predict(X_test, params_sel,  calc_cov=True)
+
+# Extract function value predictions (row 0)
+mu_full = y_pred_full[0, :]
+mu_sel  = y_pred_sel[0,  :]
+std_full = np.sqrt(np.maximum(y_var_full[0, :], 0))
+std_sel  = np.sqrt(np.maximum(y_var_sel[0,  :], 0))
+
+rmse_full = np.sqrt(np.mean((mu_full - y_test)**2))
+rmse_sel  = np.sqrt(np.mean((mu_sel  - y_test)**2))
+print(f"RMSE - Full gradient DEGP:      {rmse_full:.4f}")
+print(f"RMSE - Selective derivative DEGP: {rmse_sel:.4f}")
+
+# ── Prediction grid for surface plots ─────────────────────────────────────────
+xs = np.linspace(0.2, 0.8, 40)
+ys = np.linspace(0.2, 0.8, 40)
+XS, YS = np.meshgrid(xs, ys)
+X_grid = np.column_stack([XS.flatten(), YS.flatten()])
+
+# ── Plot ──────────────────────────────────────────────────────────────────────
+fig, axes = plt.subplots(2, 3, figsize=(14, 9))
+fig.suptitle("DEGP with adjoint-style derivatives: Poisson equation\n"
+             "QoI = peak temperature, inputs = source location $(x_s, y_s)$",
+             fontsize=11)
+
+# Compute true T_peak and both model predictions on the grid
+print("Computing true T_peak on grid for plotting...")
+y_true_grid = np.array([float(solve_jit(X_grid[i])) for i in range(len(X_grid))])
+Z_true = y_true_grid.reshape(40, 40)
+
+y_grid_full, _ = model_full.predict(X_grid, params_full, calc_cov=True)
+y_grid_sel,  _ = model_sel.predict(X_grid,  params_sel,  calc_cov=True)
+Z_full = y_grid_full[0, :].reshape(40, 40)
+Z_sel  = y_grid_sel[0,  :].reshape(40, 40)
+Z_err_full = np.abs(Z_full - Z_true)
+Z_err_sel  = np.abs(Z_sel  - Z_true)
+print("Done.")
+
+vmin = Z_true.min()
+vmax = Z_true.max()
+
+# Row 1: True surface | Full gradient prediction | Selective prediction
+ax = axes[0, 0]
+cp = ax.contourf(XS, YS, Z_true, levels=20, cmap='viridis', vmin=vmin, vmax=vmax)
+fig.colorbar(cp, ax=ax)
+ax.scatter(X_train[:, 0], X_train[:, 1], c='r', s=30, zorder=5, label='training pts')
+ax.set_title("True $T_{\\mathrm{peak}}$")
+ax.set_xlabel("$x_s$"); ax.set_ylabel("$y_s$")
+ax.legend(fontsize=8)
+
+ax = axes[0, 1]
+cp = ax.contourf(XS, YS, Z_full, levels=20, cmap='viridis', vmin=vmin, vmax=vmax)
+fig.colorbar(cp, ax=ax)
+ax.scatter(X_train[:, 0], X_train[:, 1], c='r', s=30, zorder=5)
+ax.set_title("DEGP full gradient\nPredicted $T_{\\mathrm{peak}}$")
+ax.set_xlabel("$x_s$"); ax.set_ylabel("$y_s$")
+
+ax = axes[0, 2]
+cp = ax.contourf(XS, YS, Z_sel, levels=20, cmap='viridis', vmin=vmin, vmax=vmax)
+fig.colorbar(cp, ax=ax)
+ax.scatter(X_train[:, 0], X_train[:, 1], c='r', s=30, zorder=5)
+ax.set_title("DEGP selective ($\\partial/\\partial x_s$ only)\nPredicted $T_{\\mathrm{peak}}$")
+ax.set_xlabel("$x_s$"); ax.set_ylabel("$y_s$")
+
+# Row 2: Predicted vs true | Full gradient error | Selective error
+ax = axes[1, 0]
+ax.scatter(y_test, mu_full, c='steelblue', s=40,
+           label=f'Full gradient (RMSE={rmse_full:.3f})')
+ax.scatter(y_test, mu_sel, c='tomato', s=40, marker='^',
+           label=f'Selective (RMSE={rmse_sel:.3f})')
+lims = [min(y_test.min(), mu_full.min(), mu_sel.min()) * 0.95,
+        max(y_test.max(), mu_full.max(), mu_sel.max()) * 1.05]
+ax.plot(lims, lims, 'k--', lw=1)
+ax.set_xlim(lims); ax.set_ylim(lims)
+ax.set_xlabel("True $T_{\\mathrm{peak}}$")
+ax.set_ylabel("Predicted $T_{\\mathrm{peak}}$")
+ax.set_title("Predicted vs. true")
+ax.legend(fontsize=8)
+
+emax = max(Z_err_full.max(), Z_err_sel.max())
+
+ax = axes[1, 1]
+cp = ax.contourf(XS, YS, Z_err_full, levels=20, cmap='Reds', vmin=0, vmax=emax)
+fig.colorbar(cp, ax=ax)
+ax.scatter(X_train[:, 0], X_train[:, 1], c='k', s=30, zorder=5)
+ax.set_title("DEGP full gradient\nAbsolute error")
+ax.set_xlabel("$x_s$"); ax.set_ylabel("$y_s$")
+
+ax = axes[1, 2]
+cp = ax.contourf(XS, YS, Z_err_sel, levels=20, cmap='Reds', vmin=0, vmax=emax)
+fig.colorbar(cp, ax=ax)
+ax.scatter(X_train[:, 0], X_train[:, 1], c='k', s=30, zorder=5)
+ax.set_title("DEGP selective ($\\partial/\\partial x_s$ only)\nAbsolute error")
+ax.set_xlabel("$x_s$"); ax.set_ylabel("$y_s$")
+
+plt.tight_layout()
+plt.savefig("adjoint_degp_example.pdf", bbox_inches='tight')
+plt.savefig("adjoint_degp_example.png", dpi=150, bbox_inches='tight')
+print("Figures saved.")

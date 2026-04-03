@@ -72,7 +72,7 @@ other hyperparameters.
     n_bases = 2
     n_order = 1  # First-order derivatives only
     grid_size = 5  # 5x5 grid = 25 points
-    test_resolution = 50
+    test_resolution = 20
     lower_bounds = [-3.0, -3.0]
     upper_bounds = [3.0, 3.0]
     normalize_data = True
@@ -262,9 +262,9 @@ is available.
         
         params = gp_model.optimize_hyperparameters(
             optimizer='pso',
-            pop_size=150,
-            n_generations=15,
-            local_opt_every=15,
+            pop_size=200,
+            n_generations=30,
+            local_opt_every=10,
             debug=True
         )
         

@@ -209,10 +209,10 @@ Train GDDEGP Model
         
         print("Optimizing hyperparameters...")
         params = gp_model.optimize_hyperparameters(
-        optimizer='jade',
+        optimizer='pso',
         pop_size = 100,
-        n_generations = 15,
-        local_opt_every = 5,
+        n_generations = 30,
+        local_opt_every = 30,
         debug = True
         )
         return gp_model, params

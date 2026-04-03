@@ -1,0 +1,137 @@
+{
+  "borehole_m8n2": {
+    "get_all_derivs": {
+      "ncalls": 430,
+      "tottime": 0.611,
+      "cumtime": 0.611
+    },
+    "_gc": {
+      "ncalls": 189,
+      "tottime": 0.4828,
+      "cumtime": 1.4285
+    },
+    "nll_and_grad": {
+      "ncalls": 21,
+      "tottime": 0.1227,
+      "cumtime": 5.1159
+    },
+    "cholesky": {
+      "ncalls": 241,
+      "tottime": 92.5689,
+      "cumtime": 92.7438
+    },
+    "cho_solve": {
+      "ncalls": 260,
+      "tottime": 0.8595,
+      "cumtime": 1.1609
+    },
+    "sum": {
+      "ncalls": 428,
+      "tottime": 0.0073,
+      "cumtime": 0.0771
+    },
+    "_assemble_kernel_numba": {
+      "ncalls": 430,
+      "tottime": 1.6692,
+      "cumtime": 1.6692
+    },
+    "rbf_kernel_fast": {
+      "ncalls": 430,
+      "tottime": 0.0584,
+      "cumtime": 3.8946
+    },
+    "_wall_time": 106.256,
+    "_dim": 8,
+    "_n_train": 80
+  },
+  "otl_circuit_m6n2": {
+    "get_all_derivs": {
+      "ncalls": 388,
+      "tottime": 0.0545,
+      "cumtime": 0.0545
+    },
+    "_gc": {
+      "ncalls": 147,
+      "tottime": 0.0353,
+      "cumtime": 0.1965
+    },
+    "nll_and_grad": {
+      "ncalls": 21,
+      "tottime": 0.0314,
+      "cumtime": 0.8915
+    },
+    "cholesky": {
+      "ncalls": 241,
+      "tottime": 0.405,
+      "cumtime": 0.4304
+    },
+    "cho_solve": {
+      "ncalls": 249,
+      "tottime": 0.3251,
+      "cumtime": 0.3623
+    },
+    "sum": {
+      "ncalls": 375,
+      "tottime": 0.0019,
+      "cumtime": 0.0616
+    },
+    "_assemble_kernel_numba": {
+      "ncalls": 388,
+      "tottime": 0.1878,
+      "cumtime": 0.1878
+    },
+    "rbf_kernel_fast": {
+      "ncalls": 388,
+      "tottime": 0.0159,
+      "cumtime": 0.2049
+    },
+    "_wall_time": 1.968,
+    "_dim": 6,
+    "_n_train": 60
+  },
+  "active_subspace_m10n2": {
+    "get_all_derivs": {
+      "ncalls": 472,
+      "tottime": 0.1396,
+      "cumtime": 0.1396
+    },
+    "_gc": {
+      "ncalls": 231,
+      "tottime": 0.1287,
+      "cumtime": 0.4966
+    },
+    "nll_and_grad": {
+      "ncalls": 21,
+      "tottime": 0.0853,
+      "cumtime": 1.7775
+    },
+    "cholesky": {
+      "ncalls": 241,
+      "tottime": 0.8175,
+      "cumtime": 0.861
+    },
+    "cho_solve": {
+      "ncalls": 262,
+      "tottime": 0.4804,
+      "cumtime": 0.5477
+    },
+    "sum": {
+      "ncalls": 472,
+      "tottime": 0.003,
+      "cumtime": 0.0491
+    },
+    "_assemble_kernel_numba": {
+      "ncalls": 472,
+      "tottime": 0.4499,
+      "cumtime": 0.4499
+    },
+    "rbf_kernel_fast": {
+      "ncalls": 472,
+      "tottime": 0.0217,
+      "cumtime": 0.4733
+    },
+    "_wall_time": 4.253,
+    "_dim": 10,
+    "_n_train": 50
+  }
+}

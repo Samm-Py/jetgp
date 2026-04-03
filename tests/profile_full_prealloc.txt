@@ -1,0 +1,219 @@
+
+============================================================
+  borehole_m8n2
+============================================================
+         470221 function calls (464140 primitive calls) in 13.536 seconds
+
+   Ordered by: internal time
+   List reduced from 1930 to 60 due to restriction <60>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      890    3.704    0.004    3.704    0.004 {method 'get_all_derivs_into' of 'pyoti.static.onumm8n2.omatm8n2' objects}
+     6841    2.535    0.000    2.535    0.000 {built-in method pyoti.static.onumm8n2.mul}
+      890    1.447    0.002    1.447    0.002 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/degp_utils.py:458(_assemble_kernel_numba)
+      603    1.054    0.002    4.874    0.008 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:157(_gc)
+      287    0.727    0.003    0.811    0.003 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:13(_cholesky)
+      352    0.706    0.002    0.908    0.003 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:158(cho_solve)
+      220    0.461    0.002    4.947    0.022 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:52(negative_log_marginal_likelihood)
+     2296    0.381    0.000    0.381    0.000 {built-in method pyoti.static.onumm8n2.sum}
+      287    0.351    0.001    0.351    0.001 {built-in method pyoti.static.onumm8n2.exp}
+       67    0.334    0.005    8.277    0.124 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:412(nll_and_grad)
+      287    0.268    0.001    2.572    0.009 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:605(se_kernel_anisotropic)
+      991    0.249    0.000    0.280    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/function_base.py:564(asarray_chkfinite)
+       67    0.211    0.003    6.064    0.091 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:138(_compute_grad)
+     2945    0.190    0.000    0.190    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+      220    0.130    0.001    5.077    0.023 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:122(nll_wrapper)
+       67    0.110    0.002    0.110    0.002 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/numeric.py:841(outer)
+      134    0.101    0.001    8.380    0.063 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_optimize.py:70(_compute_if_needed)
+      171    0.046    0.000    0.046    0.000 {built-in method numpy.zeros}
+      890    0.043    0.000    1.783    0.002 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/degp_utils.py:583(rbf_kernel_fast)
+     2498    0.038    0.000    0.038    0.000 {built-in method __new__ of type object at 0x570500c043e0}
+       67    0.031    0.000    0.076    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/twodim_base.py:158(eye)
+      287    0.018    0.000    0.018    0.000 {method 'get_active_bases' of 'pyoti.static.onumm8n2.omatm8n2' objects}
+  307/306    0.015    0.000    0.018    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/llvmlite/binding/ffi.py:190(__call__)
+        1    0.014    0.014   13.536   13.536 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1195(jade)
+       85    0.012    0.000    0.012    0.000 {built-in method marshal.loads}
+      890    0.011    0.000    0.014    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:27(_get_deriv_buf)
+     1849    0.011    0.000    0.178    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:71(_wrapreduction)
+      400    0.009    0.000    0.014    0.000 {method 'choice' of 'numpy.random.mtrand.RandomState' objects}
+      892    0.009    0.000    0.009    0.000 {built-in method numpy.empty}
+      331    0.009    0.000    0.009    0.000 {built-in method builtins.dir}
+      287    0.007    0.000    0.009    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:373(_cache_se_params_aniso)
+      888    0.007    0.000    0.177    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:2177(sum)
+   2223/9    0.006    0.000    0.065    0.007 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/typing/context.py:428(install_registry)
+    30355    0.006    0.000    0.006    0.000 {method 'match' of 're.Pattern' objects}
+      330    0.006    0.000    0.020    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/configparser.py:1320(__init__)
+     1552    0.005    0.000    0.006    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/types/functions.py:245(__init__)
+    16549    0.005    0.000    0.010    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/utils.py:515(stream_list)
+     1006    0.005    0.000    0.044    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/typing/templates.py:879(make_overload_template)
+      421    0.004    0.000    0.009    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1256(is_feasible)
+    20772    0.004    0.000    0.017    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/typing/templates.py:1314(new_registrations)
+      801    0.004    0.000    0.004    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/_methods.py:90(_clip)
+    11841    0.004    0.000    0.004    0.000 {built-in method builtins.getattr}
+       17    0.004    0.000    0.004    0.000 {method 'decompress' of 'zlib.Decompress' objects}
+      246    0.004    0.000    0.005    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/typing/templates.py:1158(make_overload_attribute_template)
+    25843    0.004    0.000    0.005    0.000 {built-in method builtins.isinstance}
+     1976    0.004    0.000    0.018    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/base.py:352(install_registry)
+      330    0.003    0.000    0.008    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/configparser.py:996(_read)
+4678/4465    0.003    0.000    0.130    0.000 <frozen importlib._bootstrap>:1033(_handle_fromlist)
+     1315    0.003    0.000    0.003    0.000 {built-in method _abc._abc_init}
+    16549    0.003    0.000    0.004    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/utils.py:524(sublist_iterator)
+      639    0.003    0.000    0.004    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/blas.py:384(getter)
+      330    0.003    0.000    0.003    0.000 {built-in method posix.open}
+      469    0.003    0.000    0.008    0.000 {built-in method builtins.__build_class__}
+      247    0.003    0.000    0.154    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/cpu.py:60(load_additional_registries)
+     1006    0.003    0.000    0.058    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/extending.py:129(decorate)
+      895    0.003    0.000    0.003    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+     8925    0.003    0.000    0.005    0.000 {method 'get' of 'dict' objects}
+1867/1865    0.003    0.000    0.017    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numba/core/types/abstract.py:61(__call__)
+      662    0.003    0.000    0.005    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/pathlib.py:58(parse_parts)
+18493/18481    0.003    0.000    0.013    0.000 {built-in method builtins.next}
+
+
+
+
+============================================================
+  otl_circuit_m6n2
+============================================================
+         57660 function calls (57644 primitive calls) in 2.777 seconds
+
+   Ordered by: internal time
+   List reduced from 282 to 60 due to restriction <60>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      708    0.949    0.001    0.949    0.001 {method 'get_all_derivs_into' of 'pyoti.static.onumm6n2.omatm6n2' objects}
+     5093    0.458    0.000    0.458    0.000 {built-in method pyoti.static.onumm6n2.mul}
+      708    0.300    0.000    0.300    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/degp_utils.py:458(_assemble_kernel_numba)
+      281    0.186    0.001    0.209    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:13(_cholesky)
+      330    0.146    0.000    0.182    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:158(cho_solve)
+      427    0.107    0.000    1.052    0.002 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:157(_gc)
+      281    0.092    0.000    0.092    0.000 {built-in method pyoti.static.onumm6n2.exp}
+     1686    0.075    0.000    0.075    0.000 {built-in method pyoti.static.onumm6n2.sum}
+       61    0.065    0.001    1.783    0.029 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:412(nll_and_grad)
+     2685    0.052    0.000    0.052    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+      220    0.051    0.000    0.920    0.004 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:52(negative_log_marginal_likelihood)
+     1647    0.045    0.000    0.045    0.000 {method 'items' of 'dict' objects}
+      941    0.043    0.000    0.056    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/function_base.py:564(asarray_chkfinite)
+      281    0.026    0.000    0.520    0.002 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:605(se_kernel_anisotropic)
+      708    0.022    0.000    0.325    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/degp_utils.py:583(rbf_kernel_fast)
+      122    0.019    0.000    1.804    0.015 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_optimize.py:70(_compute_if_needed)
+       61    0.015    0.000    0.016    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/numeric.py:841(outer)
+      281    0.014    0.000    0.014    0.000 {method 'get_active_bases' of 'pyoti.static.onumm6n2.omatm6n2' objects}
+      159    0.011    0.000    0.011    0.000 {built-in method numpy.zeros}
+        1    0.010    0.010    2.777    2.777 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1195(jade)
+       61    0.008    0.000    1.202    0.020 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:138(_compute_grad)
+      400    0.007    0.000    0.011    0.000 {method 'choice' of 'numpy.random.mtrand.RandomState' objects}
+     1645    0.006    0.000    0.094    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:71(_wrapreduction)
+      281    0.006    0.000    0.007    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:373(_cache_se_params_aniso)
+      708    0.005    0.000    0.007    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:27(_get_deriv_buf)
+      696    0.004    0.000    0.092    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:2177(sum)
+      801    0.003    0.000    0.003    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/_methods.py:90(_clip)
+      421    0.003    0.000    0.005    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1256(is_feasible)
+        1    0.002    0.002    1.814    1.814 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_lbfgsb_py.py:250(_minimize_lbfgsb)
+      710    0.002    0.000    0.002    0.000 {built-in method numpy.empty}
+      611    0.002    0.000    0.002    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/blas.py:384(getter)
+     2248    0.002    0.000    0.002    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:375(<genexpr>)
+     1050    0.002    0.000    0.002    0.000 {built-in method numpy.array}
+      713    0.001    0.000    0.001    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+     1645    0.001    0.000    0.001    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:72(<dictcomp>)
+      200    0.001    0.000    0.001    0.000 {method 'randint' of 'numpy.random.mtrand.RandomState' objects}
+     1015    0.001    0.000    0.012    0.000 {method 'all' of 'numpy.ndarray' objects}
+      708    0.001    0.000    0.001    0.000 {built-in method math.comb}
+     1012    0.001    0.000    0.007    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:53(_wrapfunc)
+      282    0.001    0.000    0.001    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/shape_base.py:81(atleast_2d)
+      200    0.001    0.000    0.002    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1314(<listcomp>)
+      220    0.001    0.000    0.921    0.004 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:122(nll_wrapper)
+      269    0.001    0.000    0.003    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/twodim_base.py:234(diag)
+       61    0.001    0.000    0.012    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/twodim_base.py:158(eye)
+      200    0.001    0.000    0.001    0.000 {method 'standard_cauchy' of 'numpy.random.mtrand.RandomState' objects}
+      801    0.001    0.000    0.007    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:2100(clip)
+     1600    0.001    0.000    0.001    0.000 {method 'rand' of 'numpy.random.mtrand.RandomState' objects}
+       61    0.001    0.000    0.001    0.000 {method 'trace' of 'numpy.ndarray' objects}
+     1340    0.001    0.000    0.001    0.000 {built-in method builtins.isinstance}
+      220    0.001    0.000    0.002    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:40(_wrapit)
+     1582    0.001    0.000    0.001    0.000 {built-in method numpy.asarray}
+      200    0.001    0.000    0.001    0.000 {method 'argsort' of 'numpy.ndarray' objects}
+      545    0.001    0.000    0.004    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:2421(all)
+        3    0.001    0.000    0.001    0.000 {built-in method pyoti.static.onumm6n2.zeros}
+     1015    0.001    0.000    0.011    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/_methods.py:61(_all)
+       61    0.001    0.000    1.804    0.030 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_differentiable_functions.py:140(fun_wrapped)
+       61    0.001    0.000    0.003    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_differentiable_functions.py:170(grad_wrapped)
+      646    0.001    0.000    0.001    0.000 {built-in method builtins.hasattr}
+      281    0.001    0.000    0.210    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:93(cho_factor)
+       61    0.001    0.000    0.001    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/_lib/array_api_compat/common/_aliases.py:270(_asarray)
+
+
+
+
+============================================================
+  active_subspace_m10n2
+============================================================
+         52897 function calls (52881 primitive calls) in 4.992 seconds
+
+   Ordered by: internal time
+   List reduced from 282 to 60 due to restriction <60>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      508    1.468    0.003    1.468    0.003 {method 'get_all_derivs_into' of 'pyoti.static.onumm10n2.omatm10n2' objects}
+     6112    1.158    0.000    1.158    0.000 {built-in method pyoti.static.onumm10n2.mul}
+      244    0.456    0.002    0.496    0.002 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:13(_cholesky)
+      508    0.452    0.001    0.452    0.001 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/degp_utils.py:458(_assemble_kernel_numba)
+      268    0.240    0.001    0.293    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:158(cho_solve)
+     2440    0.209    0.000    0.209    0.000 {built-in method pyoti.static.onumm10n2.sum}
+      264    0.205    0.001    1.487    0.006 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:157(_gc)
+      244    0.171    0.001    0.171    0.001 {built-in method pyoti.static.onumm10n2.exp}
+      220    0.126    0.001    2.393    0.011 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:52(negative_log_marginal_likelihood)
+       24    0.094    0.004    2.507    0.104 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:412(nll_and_grad)
+      780    0.071    0.000    0.088    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/function_base.py:564(asarray_chkfinite)
+     2212    0.067    0.000    0.067    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+      244    0.045    0.000    1.350    0.006 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:605(se_kernel_anisotropic)
+       85    0.034    0.000    0.034    0.000 {built-in method numpy.zeros}
+       48    0.033    0.001    2.540    0.053 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_optimize.py:70(_compute_if_needed)
+      508    0.024    0.000    0.479    0.001 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/degp_utils.py:583(rbf_kernel_fast)
+       24    0.015    0.001    0.015    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/numeric.py:841(outer)
+      244    0.013    0.000    0.013    0.000 {method 'get_active_bases' of 'pyoti.static.onumm10n2.omatm10n2' objects}
+        1    0.012    0.012    4.992    4.992 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1195(jade)
+      400    0.009    0.000    0.013    0.000 {method 'choice' of 'numpy.random.mtrand.RandomState' objects}
+       24    0.009    0.000    1.739    0.072 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:138(_compute_grad)
+      508    0.006    0.000    0.008    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:27(_get_deriv_buf)
+     1383    0.006    0.000    0.062    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:71(_wrapreduction)
+      244    0.005    0.000    0.007    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:373(_cache_se_params_aniso)
+      508    0.004    0.000    0.060    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:2177(sum)
+      801    0.004    0.000    0.004    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/_methods.py:90(_clip)
+      421    0.003    0.000    0.007    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1256(is_feasible)
+      510    0.003    0.000    0.003    0.000 {built-in method numpy.empty}
+       24    0.003    0.000    0.037    0.002 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/twodim_base.py:158(eye)
+      512    0.002    0.000    0.003    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/blas.py:384(getter)
+      513    0.002    0.000    0.002    0.000 {method 'reshape' of 'numpy.ndarray' objects}
+     2928    0.002    0.000    0.002    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/kernel_funcs/kernel_funcs.py:375(<genexpr>)
+      939    0.002    0.000    0.002    0.000 {built-in method numpy.array}
+      200    0.002    0.000    0.002    0.000 {method 'randint' of 'numpy.random.mtrand.RandomState' objects}
+      200    0.002    0.000    0.003    0.000 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/utils.py:1314(<listcomp>)
+      804    0.001    0.000    0.016    0.000 {method 'all' of 'numpy.ndarray' objects}
+     1012    0.001    0.000    0.009    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:53(_wrapfunc)
+      508    0.001    0.000    0.001    0.000 {built-in method math.comb}
+      245    0.001    0.000    0.002    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/shape_base.py:81(atleast_2d)
+      220    0.001    0.000    2.395    0.011 /home/sam/research_head/Research/github_oti_gp/jetgp/jetgp/full_degp/optimizer.py:122(nll_wrapper)
+        1    0.001    0.001    2.545    2.545 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/optimize/_lbfgsb_py.py:250(_minimize_lbfgsb)
+      200    0.001    0.000    0.001    0.000 {method 'standard_cauchy' of 'numpy.random.mtrand.RandomState' objects}
+     1383    0.001    0.000    0.001    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:72(<dictcomp>)
+     2400    0.001    0.000    0.001    0.000 {method 'rand' of 'numpy.random.mtrand.RandomState' objects}
+      244    0.001    0.000    0.003    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/lib/twodim_base.py:234(diag)
+      801    0.001    0.000    0.008    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:2100(clip)
+     1164    0.001    0.000    0.001    0.000 {built-in method numpy.asarray}
+      200    0.001    0.000    0.001    0.000 {method 'argsort' of 'numpy.ndarray' objects}
+      220    0.001    0.000    0.002    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:40(_wrapit)
+      958    0.001    0.000    0.001    0.000 {built-in method builtins.isinstance}
+      244    0.001    0.000    0.497    0.002 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/linalg/_decomp_cholesky.py:93(cho_factor)
+      804    0.001    0.000    0.014    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/_methods.py:61(_all)
+        1    0.001    0.001    0.001    0.001 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/scipy/stats/_qmc.py:1706(_scramble)
+      535    0.001    0.000    0.001    0.000 {built-in method builtins.hasattr}
+     1638    0.001    0.000    0.001    0.000 {built-in method builtins.getattr}
+      244    0.001    0.000    0.002    0.000 /home/sam/anaconda3/envs/pyoti_2/lib/python3.9/site-packages/numpy/core/fromnumeric.py:1565(diagonal)
+      572    0.001    0.000    0.001    0.000 {method 'get' of 'dict' objects}
+      180    0.001    0.000    0.002    0.000 {method 'clip' of 'numpy.generic' objects}
+      200    0.001    0.000    0.001    0.000 {method 'normal' of 'numpy.random.mtrand.RandomState' objects}
+      244    0.001    0.000    0.001    0.000 {method 'diagonal' of 'numpy.ndarray' objects}
+
+
+

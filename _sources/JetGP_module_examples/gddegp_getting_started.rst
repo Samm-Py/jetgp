@@ -73,7 +73,7 @@ Step 2: Set configuration parameters
     n_bases = 2
     num_training_pts = 20
     domain_bounds = ((-5.0, 10.0), (0.0, 15.0))
-    test_grid_resolution = 100
+    test_grid_resolution = 25
     normalize_data = True
     kernel = "SE"
     kernel_type = "anisotropic"
@@ -576,7 +576,7 @@ Step 2: Set configuration parameters
     num_directions_per_point = 2
     num_training_pts = 10
     domain_bounds = ((-5.0, 10.0), (0.0, 15.0))
-    test_grid_resolution = 50
+    test_grid_resolution = 25
     normalize_data = True
     kernel = "SE"
     kernel_type = "anisotropic"
@@ -1194,7 +1194,7 @@ Step 2: Set configuration parameters
    n_bases = 2
    num_training_pts = 25
    domain_bounds = ((-5.0, 10.0), (0.0, 15.0))
-   test_grid_resolution = 50
+   test_grid_resolution = 25
 
    normalize_data = True
    kernel = "SE"
@@ -2021,8 +2021,10 @@ Step 5: Optimize hyperparameters
 .. jupyter-execute::
 
     params = model.optimize_hyperparameters(
-        optimizer='powell',
-        n_restart_optimizer=5,
+        optimizer='pso',
+        pop_size=100,
+        n_generations=30,
+        local_opt_every=30,
         debug=False
     )
     print("Optimized hyperparameters:", params)
@@ -2239,7 +2241,7 @@ Step 5: Build prediction rays and predict with uncertainty
 
 .. jupyter-execute::
 
-    n_test = 40
+    n_test = 20
     x1_te = np.linspace(0, 2 * np.pi, n_test)
     x2_te = np.linspace(0, 2 * np.pi, n_test)
     G1t, G2t = np.meshgrid(x1_te, x2_te)
