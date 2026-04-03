@@ -41,6 +41,8 @@ class Optimizer:
         self._deriv_factors_key = None
         self._K_bufs = None   # per-submodel pre-allocated K buffers
         self._dK_bufs = None  # per-submodel pre-allocated dK buffers
+        self._W_proj_buf = None
+        self._W_proj_shape = None
 
     def _get_deriv_buf(self, phi, n_bases, order):
         from math import comb
@@ -115,20 +117,24 @@ class Optimizer:
     def _setup_utils(self):
         """Set up the correct utils module based on submodel_type."""
         submodel_type = getattr(self.model, 'submodel_type', 'degp')
-        
+
         if submodel_type == 'degp':
             from jetgp.wdegp import wdegp_utils
             self.utils = wdegp_utils
+            self._uses_signs = True
         elif submodel_type == 'ddegp':
             from jetgp.full_ddegp import wddegp_utils
             self.utils = wddegp_utils
+            self._uses_signs = True
         elif submodel_type == 'gddegp':
             from jetgp.full_gddegp import wgddegp_utils
             self.utils = wgddegp_utils
+            self._uses_signs = False
         else:
             # Default to degp
             from jetgp.wdegp import wdegp_utils
             self.utils = wdegp_utils
+            self._uses_signs = True
 
     def _ensure_kernel_plans(self, n_bases):
         """Lazily precompute kernel plans for all submodels (once per n_bases)."""
@@ -347,18 +353,52 @@ class Optimizer:
 
         grad = np.zeros(len(x0))
 
+        # Precompute W projected into phi_exp space (sum over submodels)
+        W_proj = None
+        if use_fast and self.model.n_order > 0:
+            from math import comb
+            ndir = comb(n_bases + deriv_order, deriv_order)
+            proj_shape = (ndir, base_shape[0], base_shape[1])
+            if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
+                self._W_proj_buf = np.empty(proj_shape)
+                self._W_proj_shape = proj_shape
+            W_proj = self._W_proj_buf
+            W_proj[:] = 0.0
+            tmp_proj = np.empty_like(W_proj)
+            for i in range(len(index)):
+                plan = self._kernel_plans[i]
+                row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
+                col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
+                args = [
+                    W_list[i], tmp_proj, base_shape[0], base_shape[1],
+                    plan['fd_flat_indices'], plan['df_flat_indices'],
+                    plan['dd_flat_indices'],
+                    plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+                ]
+                if self._uses_signs:
+                    args.append(plan['signs'])
+                args.extend([plan['n_deriv_types'], row_off, col_off])
+                self.utils._project_W_to_phi_space(*args)
+                W_proj += tmp_proj
+
         def _gc(dphi):
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:
                 dphi_exp = self._expand_derivs(dphi, n_bases, deriv_order)
-            if use_fast:
+            if W_proj is not None:
+                dphi_3d = dphi_exp.reshape(W_proj.shape)
+                return 0.5 * np.vdot(W_proj, dphi_3d)
+            elif use_fast:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
-            total = 0.0
-            for i in range(len(index)):
-                if use_fast:
+                total = 0.0
+                for i in range(len(index)):
                     dK = self.utils.rbf_kernel_fast(dphi_3d, self._kernel_plans[i], out=self._dK_bufs[i])
-                else:
+                    total += np.vdot(W_list[i], dK)
+                return 0.5 * total
+            else:
+                total = 0.0
+                for i in range(len(index)):
                     dK = self.utils.rbf_kernel(
                         dphi, dphi_exp,
                         self.model.n_order, n_bases,
@@ -366,8 +406,8 @@ class Optimizer:
                         self.model.powers[i],
                         index=index[i],
                     )
-                total += np.vdot(W_list[i], dK)
-            return 0.5 * total
+                    total += np.vdot(W_list[i], dK)
+                return 0.5 * total
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * sum(np.trace(W) for W in W_list)
@@ -588,19 +628,53 @@ class Optimizer:
         grad = np.zeros(len(x0))
         n_sub = len(index)
 
+        # Precompute W projected into phi_exp space (sum over submodels)
+        W_proj = None
+        if use_fast and self.model.n_order > 0:
+            from math import comb
+            ndir = comb(n_bases + deriv_order, deriv_order)
+            proj_shape = (ndir, base_shape[0], base_shape[1])
+            if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
+                self._W_proj_buf = np.empty(proj_shape)
+                self._W_proj_shape = proj_shape
+            W_proj = self._W_proj_buf
+            W_proj[:] = 0.0
+            tmp_proj = np.empty_like(W_proj)
+            for i in range(n_sub):
+                plan = self._kernel_plans[i]
+                row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
+                col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
+                args = [
+                    W_list[i], tmp_proj, base_shape[0], base_shape[1],
+                    plan['fd_flat_indices'], plan['df_flat_indices'],
+                    plan['dd_flat_indices'],
+                    plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+                ]
+                if self._uses_signs:
+                    args.append(plan['signs'])
+                args.extend([plan['n_deriv_types'], row_off, col_off])
+                self.utils._project_W_to_phi_space(*args)
+                W_proj += tmp_proj
+
         def _gc(dphi):
             # Precompute dphi_exp ONCE, reshape to 3D
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:
                 dphi_exp = self._expand_derivs(dphi, n_bases, deriv_order)
-            if use_fast:
+            if W_proj is not None:
+                dphi_3d = dphi_exp.reshape(W_proj.shape)
+                return 0.5 * np.vdot(W_proj, dphi_3d)
+            elif use_fast:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
-            total = 0.0
-            for i in range(n_sub):
-                if use_fast:
+                total = 0.0
+                for i in range(n_sub):
                     dK = self.utils.rbf_kernel_fast(dphi_3d, self._kernel_plans[i], out=self._dK_bufs[i])
-                else:
+                    total += np.vdot(W_list[i], dK)
+                return 0.5 * total
+            else:
+                total = 0.0
+                for i in range(n_sub):
                     dK = self.utils.rbf_kernel(
                         dphi, dphi_exp,
                         self.model.n_order, n_bases,
@@ -608,8 +682,8 @@ class Optimizer:
                         self.model.powers[i],
                         index=index[i],
                     )
-                total += np.vdot(W_list[i], dK)
-            return 0.5 * total
+                    total += np.vdot(W_list[i], dK)
+                return 0.5 * total
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * sum(np.trace(W) for W in W_list)

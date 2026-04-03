@@ -29,6 +29,8 @@ class Optimizer:
         self._K_buf = None
         self._dK_buf = None
         self._kernel_buf_size = None
+        self._W_proj_buf = None
+        self._W_proj_shape = None
 
     def _get_deriv_buf(self, phi, n_bases, order):
         from math import comb
@@ -241,18 +243,42 @@ class Optimizer:
         use_fast = self._kernel_plan is not None
         base_shape = phi.shape
 
+        W_proj = None
+        if use_fast:
+            from math import comb
+            ndir = comb(n_bases + deriv_order, deriv_order)
+            proj_shape = (ndir, base_shape[0], base_shape[1])
+            if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
+                self._W_proj_buf = np.empty(proj_shape)
+                self._W_proj_shape = proj_shape
+            W_proj = self._W_proj_buf
+            plan = self._kernel_plan
+            row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
+            col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
+            utils._project_W_to_phi_space(
+                W, W_proj, base_shape[0], base_shape[1],
+                plan['fd_flat_indices'], plan['df_flat_indices'],
+                plan['dd_flat_indices'],
+                plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+                plan['signs'], plan['n_deriv_types'], row_off, col_off,
+            )
+
         def _gc(dphi):
             dphi_exp = self._expand_derivs(dphi, n_bases, deriv_order)
-            if use_fast:
+            if W_proj is not None:
+                dphi_3d = dphi_exp.reshape(W_proj.shape)
+                return 0.5 * np.vdot(W_proj, dphi_3d)
+            elif use_fast:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
                 dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan, out=self._dK_buf)
+                return 0.5 * np.vdot(W, dK)
             else:
                 dK = utils.rbf_kernel(
                     dphi, dphi_exp, self.model.n_order, n_bases,
                     self.model.flattened_der_indices, self.model.powers,
                     self.model.derivative_locations,
                 )
-            return 0.5 * np.vdot(W, dK)
+                return 0.5 * np.vdot(W, dK)
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)
@@ -449,23 +475,46 @@ class Optimizer:
         use_fast = self._kernel_plan is not None
         base_shape = phi.shape
         deriv_order_gc = 2 * self.model.n_order
-        deriv_factors_gc = self._get_deriv_factors(n_bases, deriv_order_gc) if self.model.n_order != 0 else None
+
+        W_proj = None
+        if use_fast and self.model.n_order > 0:
+            from math import comb
+            ndir = comb(n_bases + deriv_order_gc, deriv_order_gc)
+            proj_shape = (ndir, base_shape[0], base_shape[1])
+            if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
+                self._W_proj_buf = np.empty(proj_shape)
+                self._W_proj_shape = proj_shape
+            W_proj = self._W_proj_buf
+            plan = self._kernel_plan
+            row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
+            col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
+            utils._project_W_to_phi_space(
+                W, W_proj, base_shape[0], base_shape[1],
+                plan['fd_flat_indices'], plan['df_flat_indices'],
+                plan['dd_flat_indices'],
+                plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+                plan['signs'], plan['n_deriv_types'], row_off, col_off,
+            )
 
         def _gc(dphi):
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:
                 dphi_exp = self._expand_derivs(dphi, n_bases, deriv_order_gc)
-            if use_fast:
+            if W_proj is not None:
+                dphi_3d = dphi_exp.reshape(W_proj.shape)
+                return 0.5 * np.vdot(W_proj, dphi_3d)
+            elif use_fast:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
                 dK = utils.rbf_kernel_fast(dphi_3d, self._kernel_plan, out=self._dK_buf)
+                return 0.5 * np.vdot(W, dK)
             else:
                 dK = utils.rbf_kernel(
                     dphi, dphi_exp, self.model.n_order, n_bases,
                     self.model.flattened_der_indices, self.model.powers,
                     self.model.derivative_locations,
                 )
-            return 0.5 * np.vdot(W, dK)
+                return 0.5 * np.vdot(W, dK)
 
         grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)

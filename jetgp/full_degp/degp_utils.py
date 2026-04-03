@@ -511,6 +511,72 @@ def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
                     K[ro + ki, co + kj] = phi_exp_3d[fi, ri, ci] * sj
 
 
+@numba.jit(nopython=True, cache=True)
+def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
+                             fd_flat_indices, df_flat_indices, dd_flat_indices,
+                             idx_flat, idx_offsets, idx_sizes,
+                             signs, n_deriv_types, row_offsets, col_offsets):
+    """
+    Reverse of _assemble_kernel_numba: project W from K-space back into
+    phi_exp-space so that vdot(W, assemble(dphi_exp)) == vdot(W_proj, dphi_exp).
+
+    This allows computing gradient contributions without materialising the
+    full dK matrix for each hyperparameter dimension.
+    """
+    # Zero out W_proj
+    for d in range(W_proj.shape[0]):
+        for r in range(W_proj.shape[1]):
+            for c in range(W_proj.shape[2]):
+                W_proj[d, r, c] = 0.0
+
+    s0 = signs[0]
+
+    # ff block: K[r, c] = phi_exp[0, r, c] * s0
+    for r in range(n_rows_func):
+        for c in range(n_cols_func):
+            W_proj[0, r, c] += s0 * W[r, c]
+
+    # fd blocks: K[r, co+k] = phi_exp[fi, r, idx[k]] * sj
+    for j in range(n_deriv_types):
+        fi = fd_flat_indices[j]
+        sj = signs[j + 1]
+        co = col_offsets[j]
+        off_j = idx_offsets[j]
+        sz_j = idx_sizes[j]
+        for r in range(n_rows_func):
+            for k in range(sz_j):
+                ci = idx_flat[off_j + k]
+                W_proj[fi, r, ci] += sj * W[r, co + k]
+
+    # df blocks: K[ro+k, c] = phi_exp[fi, idx[k], c] * s0
+    for i in range(n_deriv_types):
+        fi = df_flat_indices[i]
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for k in range(sz_i):
+            ri = idx_flat[off_i + k]
+            for c in range(n_cols_func):
+                W_proj[fi, ri, c] += s0 * W[ro + k, c]
+
+    # dd blocks: K[ro+ki, co+kj] = phi_exp[dd_fi[i,j], idx_i[ki], idx_j[kj]] * sj
+    for i in range(n_deriv_types):
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for j in range(n_deriv_types):
+            fi = dd_flat_indices[i, j]
+            sj = signs[j + 1]
+            co = col_offsets[j]
+            off_j = idx_offsets[j]
+            sz_j = idx_sizes[j]
+            for ki in range(sz_i):
+                ri = idx_flat[off_i + ki]
+                for kj in range(sz_j):
+                    ci = idx_flat[off_j + kj]
+                    W_proj[fi, ri, ci] += sj * W[ro + ki, co + kj]
+
+
 def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
     """
     Precompute all structural information needed by rbf_kernel so it can be
