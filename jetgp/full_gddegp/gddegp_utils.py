@@ -914,8 +914,12 @@ def rbf_kernel_predictions(
             row_offsets.append(row_offsets[-1] + len(derivative_locations_test[i]))
 
     col_offsets = [0, n_train]
-    for i in range(n_deriv_types):
-        col_offsets.append(col_offsets[-1] + len(index[i]))
+    if return_deriv and calc_cov:
+        for i in range(n_deriv_types):
+            col_offsets.append(col_offsets[-1] + len(derivative_locations_test[i]))
+    else:
+        for i in range(n_deriv_types):
+            col_offsets.append(col_offsets[-1] + len(index[i]))
 
     # Allocate output matrix
     K = np.zeros((total_rows, total_cols))
@@ -927,14 +931,14 @@ def rbf_kernel_predictions(
 
     # First Block-Row: Function-Derivative (K_fd)
     for j in range(n_deriv_types):
-        train_locs = index_arrays[j]
+        col_locs = derivative_locations_test[j] if (return_deriv and calc_cov) else index_arrays[j]
         col_start = col_offsets[j + 1]
 
         flat_idx = der_indices_tr_odd_pred[j] if calc_cov else der_indices_tr_odd[j]
         content_full = phi_exp[flat_idx].reshape(base_shape)
 
         # Use numba for efficient row extraction with transpose
-        extract_rows_and_assign_transposed(content_full, train_locs, K,
+        extract_rows_and_assign_transposed(content_full, col_locs, K,
                                            0, col_start, n_test)
 
     if not return_deriv:
@@ -962,7 +966,7 @@ def rbf_kernel_predictions(
         row_start = row_offsets[i + 1]
 
         for j in range(n_deriv_types):
-            train_locs = index_arrays[j]
+            col_locs = derivative_locations_test[j] if (return_deriv and calc_cov) else index_arrays[j]
             col_start = col_offsets[j + 1]
 
             imdir_train = der_ind_order_odd_pred[j] if calc_cov else der_ind_order_odd[j]
@@ -974,9 +978,9 @@ def rbf_kernel_predictions(
             flat_idx = der_map[new_ord][new_idx]
 
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            
+
             # Use numba for efficient submatrix extraction with transpose (replaces np.ix_ + .T)
-            extract_and_assign_transposed(content_full, train_locs, test_locs, K,
+            extract_and_assign_transposed(content_full, col_locs, test_locs, K,
                                           row_start, col_start)
 
     return K

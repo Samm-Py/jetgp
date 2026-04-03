@@ -293,7 +293,8 @@ class gddegp:
             # Take the max so that an explicitly-set n_bases (e.g. for function-only
             # training or for predicting more directions than were observed) is never
             # silently reduced to the number of bases active in the training kernel.
-            self.n_bases = max(self.n_bases, phi_train.get_active_bases()[-1])
+            active = phi_train.get_active_bases()
+            self.n_bases = max(self.n_bases, active[-1] if active else 0)
             phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
 
         # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
