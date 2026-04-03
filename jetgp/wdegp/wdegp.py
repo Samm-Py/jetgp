@@ -595,9 +595,18 @@ class wdegp:
                 diffs_train_for_weights, diffs_for_weights, ell, self.kernel_func, sigma_n
             )
     
-        # --- Shared OTI computations (done ONCE, reused by all submodels) ---
+        # Hoist shared computations out of the submodel loop.
+        # OTI kernel_func reuses internal buffers, so a second call corrupts
+        # the imaginary parts of previously returned OTI objects.  We use
+        # .copy() to snapshot each phi into independent memory before the
+        # next kernel_func call overwrites the shared buffer.
         diffs_train_train = self.differences_by_dim
-        phi_train_train = self.kernel_func(diffs_train_train, ell)
+        diffs_train_test = self._compute_train_test_differences(
+            x_train, X_test_norm, return_deriv, rays_predict,
+            predict_order=predict_order, predict_oti=predict_oti
+        )
+
+        phi_train_train = self.kernel_func(diffs_train_train, ell).copy()
         if self.n_order == 0:
             self.n_bases_rays = 0
             phi_exp_train_train = phi_train_train.real
@@ -606,11 +615,7 @@ class wdegp:
             self.n_bases_rays = phi_train_train.get_active_bases()[-1]
             phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
 
-        diffs_train_test = self._compute_train_test_differences(
-            x_train, X_test_norm, return_deriv, rays_predict,
-            predict_order=predict_order, predict_oti=predict_oti
-        )
-        phi_train_test = predict_kernel_func(diffs_train_test, ell)
+        phi_train_test = predict_kernel_func(diffs_train_test, ell).copy()
         if predict_order > 0:
             if return_deriv:
                 phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * predict_order)
@@ -620,7 +625,7 @@ class wdegp:
             phi_exp_train_test = phi_train_test.real
             phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
 
-        # Pre-compute test-test kernel once if covariance is requested
+        # Pre-compute test-test kernel if covariance is requested
         phi_test_test = None
         phi_exp_test_test = None
         if calc_cov:
@@ -628,7 +633,7 @@ class wdegp:
                 X_test_norm, return_deriv, rays_predict,
                 predict_order=predict_order, predict_oti=predict_oti
             )
-            phi_test_test = predict_kernel_func(diffs_test_test, ell)
+            phi_test_test = predict_kernel_func(diffs_test_test, ell).copy()
             if predict_order == 0:
                 phi_exp_test_test = phi_test_test.real[np.newaxis, :, :]
             else:
@@ -828,7 +833,7 @@ class wdegp:
                 X_test, return_deriv, rays_predict, submodel_idx=submodel_idx,
                 predict_order=p_order, predict_oti=predict_oti
             )
-            phi_test_test = p_kernel_func(diffs_test_test, ell)
+            phi_test_test = p_kernel_func(diffs_test_test, ell).copy()
             if p_order == 0:
                 phi_exp_test_test = phi_test_test.real[np.newaxis, :, :]
             else:
