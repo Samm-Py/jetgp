@@ -741,16 +741,18 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_matern_params_aniso(length_scales)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
 
-        # Compute scaled distance — regularise r directly (not each diff)
+        # Compute scaled squared distance using fused op if available
+        self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
+
+        # r = sqrt(sqdist + eps²) — regularise r directly (not each diff)
         # so that r.e([d]) = 0 at training-point diagonals, preserving
         # correct OTI derivative structure for the covariance blocks.
         _eps = 1e-10
-        sqdist = self.oti.sqrt(
-            sum((ell[i] * differences_by_dim[i]) ** 2
-                for i in range(self.dim)) + _eps ** 2
-        )
-        return sigma_f_sq * self.matern_kernel_prebuild(sqdist)
+        r = self.oti.sqrt(self.oti.sum(sqdist, _eps ** 2))
+        return sigma_f_sq * self.matern_kernel_prebuild(r)
 
     def SI_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
@@ -885,14 +887,16 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_matern_params_iso(length_scales)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
+            differences_by_dim[0].shape)
 
-        # Compute scaled distance — regularise r directly (not each diff)
+        # Compute scaled squared distance using fused op if available
+        self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
+
+        # r = sqrt(sqdist + eps²) — regularise r directly
         _eps = 1e-10
-        sqdist = self.oti.sqrt(
-            sum((ell * differences_by_dim[i]) ** 2
-                for i in range(self.dim)) + _eps ** 2
-        )
-        return sigma_f_sq * self.matern_kernel_prebuild(sqdist)
+        r = self.oti.sqrt(self.oti.sum(sqdist, _eps ** 2))
+        return sigma_f_sq * self.matern_kernel_prebuild(r)
 
     def SI_kernel_isotropic(self, differences_by_dim, length_scales):
         """

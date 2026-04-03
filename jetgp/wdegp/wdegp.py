@@ -595,31 +595,57 @@ class wdegp:
                 diffs_train_for_weights, diffs_for_weights, ell, self.kernel_func, sigma_n
             )
     
+        # --- Shared OTI computations (done ONCE, reused by all submodels) ---
+        diffs_train_train = self.differences_by_dim
+        phi_train_train = self.kernel_func(diffs_train_train, ell)
+        if self.n_order == 0:
+            self.n_bases_rays = 0
+            phi_exp_train_train = phi_train_train.real
+            phi_exp_train_train = phi_exp_train_train[np.newaxis, :, :]
+        else:
+            self.n_bases_rays = phi_train_train.get_active_bases()[-1]
+            phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
+
+        diffs_train_test = self._compute_train_test_differences(
+            x_train, X_test_norm, return_deriv, rays_predict,
+            predict_order=predict_order, predict_oti=predict_oti
+        )
+        phi_train_test = predict_kernel_func(diffs_train_test, ell)
+        if predict_order > 0:
+            if return_deriv:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * predict_order)
+            else:
+                phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, predict_order)
+        else:
+            phi_exp_train_test = phi_train_test.real
+            phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
+
+        # Pre-compute test-test kernel once if covariance is requested
+        phi_test_test = None
+        phi_exp_test_test = None
+        if calc_cov:
+            diffs_test_test = self._compute_test_test_differences(
+                X_test_norm, return_deriv, rays_predict,
+                predict_order=predict_order, predict_oti=predict_oti
+            )
+            phi_test_test = predict_kernel_func(diffs_test_test, ell)
+            if predict_order == 0:
+                phi_exp_test_test = phi_test_test.real[np.newaxis, :, :]
+            else:
+                phi_exp_test_test = phi_test_test.get_all_derivs(self.n_bases_rays, 2 * predict_order)
+
         # Loop over submodels
         for i in range(self.num_submodels):
             deriv_locs_i = self.derivative_locations[i]
-            
-            # Get train-train differences (single global structure for all modes)
-            diffs_train_train = self.differences_by_dim
-            
-            # Compute kernel on train-train
-            phi_train_train = self.kernel_func(diffs_train_train, ell)
-            if self.n_order == 0:
-                self.n_bases_rays = 0
-                phi_exp_train_train = phi_train_train.real
-                phi_exp_train_train = phi_exp_train_train [np.newaxis, :, :]
-            else:
-                self.n_bases_rays = phi_train_train.get_active_bases()[-1]
-                phi_exp_train_train = phi_train_train.get_all_derivs(self.n_bases_rays, 2 * self.n_order)
-            
-            # Build training kernel matrix
+
+            # Build training kernel matrix (per-submodel: different indices/powers)
             K = gp_utils.rbf_kernel(
                 phi_train_train, phi_exp_train_train, self.n_order, self.n_bases,
-                self.flattened_der_indices[i], self.powers[i], 
+                self.flattened_der_indices[i], self.powers[i],
                 index=deriv_locs_i
             )
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
-            
+
             # Solve linear system
             try:
                 cho_solve_failed = False
@@ -629,23 +655,7 @@ class wdegp:
                 cho_solve_failed = True
                 alpha = np.linalg.solve(K, self.y_train_normalized[i])
                 print('Warning: Cholesky decomposition failed, using standard solve.')
-    
-            # Compute train-test differences
-            diffs_train_test = self._compute_train_test_differences(
-                x_train, X_test_norm, return_deriv, rays_predict,
-                predict_order=predict_order, predict_oti=predict_oti
-            )
 
-            # Compute train-test kernel
-            phi_train_test = predict_kernel_func(diffs_train_test, ell)
-            if predict_order > 0:
-                if return_deriv:
-                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, 2 * predict_order)
-                else:
-                    phi_exp_train_test = phi_train_test.get_all_derivs(self.n_bases_rays, predict_order)
-            else:
-                phi_exp_train_test = phi_train_test.real
-                phi_exp_train_test = phi_exp_train_test[np.newaxis, :, :]
             K_s = gp_utils.rbf_kernel_predictions(
                 phi_train_test, phi_exp_train_test, predict_order, self.n_bases_rays,
                 self.flattened_der_indices[i], self.powers[i],
@@ -718,7 +728,9 @@ class wdegp:
                     low if not cho_solve_failed else None, cho_solve_failed,
                     return_deriv, rays_predict,
                     predict_order=predict_order, predict_oti=predict_oti,
-                    predict_kernel_func=predict_kernel_func
+                    predict_kernel_func=predict_kernel_func,
+                    phi_test_test_cached=phi_test_test,
+                    phi_exp_test_test_cached=phi_exp_test_test
                 )
                 
                 if self.num_submodels > 1:
@@ -799,29 +811,30 @@ class wdegp:
 
     def _compute_predictive_variance(
         self, X_test, deriv_locs_i, common_derivs, powers_predict, ell, submodel_idx, K, K_s, L, low, cho_solve_failed,
-        return_deriv, rays_predict, predict_order=None, predict_oti=None, predict_kernel_func=None
+        return_deriv, rays_predict, predict_order=None, predict_oti=None, predict_kernel_func=None,
+        phi_test_test_cached=None, phi_exp_test_test_cached=None
     ):
         """Compute predictive variance for a submodel."""
         gp_utils = self._get_utils_module()
         p_order = predict_order if predict_order is not None else self.n_order
-        p_kernel_func = predict_kernel_func if predict_kernel_func is not None else self.kernel_func
 
-        # Compute test-test differences
-        diffs_test_test = self._compute_test_test_differences(
-            X_test, return_deriv, rays_predict, submodel_idx=submodel_idx,
-            predict_order=p_order, predict_oti=predict_oti
-        )
-
-        phi_test_test = p_kernel_func(diffs_test_test, ell)
-
-        if p_order == 0:
-            n_bases = 0
-            phi_exp_test_test = phi_test_test.real
-            phi_exp_test_test  =    phi_exp_test_test [np.newaxis, :, :]
+        # Use pre-computed test-test kernel if available, otherwise compute
+        if phi_test_test_cached is not None:
+            phi_test_test = phi_test_test_cached
+            phi_exp_test_test = phi_exp_test_test_cached
         else:
-            bases = phi_test_test.get_active_bases()
-            n_bases = bases[-1]
-            phi_exp_test_test = phi_test_test.get_all_derivs(n_bases, 2 * p_order)
+            p_kernel_func = predict_kernel_func if predict_kernel_func is not None else self.kernel_func
+            diffs_test_test = self._compute_test_test_differences(
+                X_test, return_deriv, rays_predict, submodel_idx=submodel_idx,
+                predict_order=p_order, predict_oti=predict_oti
+            )
+            phi_test_test = p_kernel_func(diffs_test_test, ell)
+            if p_order == 0:
+                phi_exp_test_test = phi_test_test.real[np.newaxis, :, :]
+            else:
+                bases = phi_test_test.get_active_bases()
+                n_bases = bases[-1]
+                phi_exp_test_test = phi_test_test.get_all_derivs(n_bases, 2 * p_order)
 
         deriv_locs_test = [list(range(len(X_test)))] * len(self.derivative_locations[submodel_idx]) if return_deriv else None
 

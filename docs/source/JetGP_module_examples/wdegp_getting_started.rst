@@ -1783,7 +1783,7 @@ Step 8: Optimize hyperparameters
 
    params = gp_model.optimize_hyperparameters(
        optimizer='lbfgs',
-       n_restart_optimizer=10,
+       n_restart_optimizer=20,
        debug=False
    )
    print("Optimized hyperparameters:", params)
