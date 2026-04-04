@@ -330,6 +330,7 @@ class KernelFactory:
 
         # Fused sqdist cache
         self._cached_ell_sq = None
+        self._has_fused_sqdist_sparse = None
         self._has_fused_sqdist = None
 
     def clear_caches(self):
@@ -372,9 +373,14 @@ class KernelFactory:
 
     def _compute_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell[i]² * diff[i]², using fused C kernel when available."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = hasattr(sqdist, 'fused_sqdist_sparse')
         if self._has_fused_sqdist is None:
             self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
-        if self._has_fused_sqdist:
+        if self._has_fused_sqdist_sparse:
+            ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist:
             ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist(differences_by_dim, ell_sq)
         else:
@@ -386,9 +392,15 @@ class KernelFactory:
 
     def _compute_sqdist_iso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell² * diff[i]², using fused C kernel when available."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = hasattr(sqdist, 'fused_sqdist_sparse')
         if self._has_fused_sqdist is None:
             self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
-        if self._has_fused_sqdist:
+        if self._has_fused_sqdist_sparse:
+            ell_sq_val = float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist:
             ell_sq_val = float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
             sqdist.fused_sqdist(differences_by_dim, ell_sq)
