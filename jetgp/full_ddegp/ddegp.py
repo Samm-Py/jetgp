@@ -107,7 +107,8 @@ class ddegp:
             n_order=self.n_order,
             differences_by_dim=self.differences_by_dim,
             smoothness_parameter=smoothness_parameter,
-            oti_module=self.oti
+            oti_module=self.oti,
+            sparse_diffs=False
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -193,7 +194,8 @@ class ddegp:
                     differences_by_dim=self.differences_by_dim,
                     n_order=predict_order,
                     smoothness_parameter=smoothness_param,
-                    oti_module=predict_oti
+                    oti_module=predict_oti,
+                    sparse_diffs=False
                 )
                 predict_kernel_func = predict_kernel_factory.create_kernel(
                     kernel_name=self.kernel, kernel_type=self.kernel_type

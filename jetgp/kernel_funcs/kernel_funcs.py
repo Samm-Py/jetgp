@@ -289,13 +289,15 @@ class KernelFactory:
     """
 
     def __init__(self, dim, normalize, differences_by_dim, n_order,
-                 true_noise_std=None, smoothness_parameter=None, oti_module=None):
+                 true_noise_std=None, smoothness_parameter=None, oti_module=None,
+                 sparse_diffs=True):
         self.dim = dim
         self.normalize = normalize
         self.differences_by_dim = differences_by_dim
         self.true_noise_std = true_noise_std
         self.bounds = []
         self.oti = oti_module
+        self.sparse_diffs = sparse_diffs
         if smoothness_parameter is not None:
             self.alpha = smoothness_parameter
             self.nu = smoothness_parameter + 0.5
@@ -374,7 +376,7 @@ class KernelFactory:
     def _compute_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell[i]² * diff[i]², using fused C kernel when available."""
         if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = hasattr(sqdist, 'fused_sqdist_sparse')
+            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
         if self._has_fused_sqdist is None:
             self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
         if self._has_fused_sqdist_sparse:
@@ -393,7 +395,7 @@ class KernelFactory:
     def _compute_sqdist_iso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell² * diff[i]², using fused C kernel when available."""
         if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = hasattr(sqdist, 'fused_sqdist_sparse')
+            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
         if self._has_fused_sqdist is None:
             self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
         if self._has_fused_sqdist_sparse:

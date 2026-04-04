@@ -33,6 +33,9 @@ class Optimizer:
         # Import the appropriate utils module based on submodel_type
         self._setup_utils()
 
+        # Sparse fused OTI functions only valid for DEGP (axis-aligned diffs)
+        self._sparse_safe = getattr(self.model, 'submodel_type', 'degp') == 'degp'
+
         # Precompute kernel plans (structural info that never changes)
         self._kernel_plans = None  # lazily initialized on first NLL call
         self._deriv_buf = None
@@ -415,7 +418,7 @@ class Optimizer:
         if kernel == 'SE':
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi, -ln10 * ell[d] ** 2, d)
@@ -431,7 +434,7 @@ class Optimizer:
                                               oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
             else:
                 ell    = 10.0 ** float(x0[0])
-                if hasattr(phi, 'fused_sum_sq_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_sum_sq_sparse'):
                     sum_sq = oti.zeros(phi.shape)
                     sum_sq.fused_sum_sq_sparse(diffs)
                 elif hasattr(phi, 'fused_sum_sq'):
@@ -449,7 +452,7 @@ class Optimizer:
             else:
                 ell = np.full(D, 10.0 ** float(x0[0]))
                 alpha_rq = np.exp(float(x0[1])); alpha_idx = 1
-            if hasattr(phi, 'fused_sqdist_sparse'):
+            if self._sparse_safe and hasattr(phi, 'fused_sqdist_sparse'):
                 r2 = oti.zeros(phi.shape)
                 ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
                 r2.fused_sqdist_sparse(diffs, ell_sq)
@@ -465,7 +468,7 @@ class Optimizer:
             inv_base = oti.pow(base, -1)
             phi_over_base = oti.mul(phi, inv_base)
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi_over_base, -ln10 * ell[d] ** 2, d)
@@ -480,7 +483,7 @@ class Optimizer:
                         grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
                                               oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
             else:
-                if hasattr(phi, 'fused_sum_sq_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_sum_sq_sparse'):
                     sum_sq = oti.zeros(phi.shape)
                     sum_sq.fused_sum_sq_sparse(diffs)
                 elif hasattr(phi, 'fused_sum_sq'):
@@ -542,7 +545,7 @@ class Optimizer:
                    else np.full(D, 10.0 ** float(x0[0])))
             sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
             _eps = 1e-10
-            if hasattr(phi, 'fused_sqdist_sparse'):
+            if self._sparse_safe and hasattr(phi, 'fused_sqdist_sparse'):
                 r2 = oti.zeros(phi.shape)
                 ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
                 r2.fused_sqdist_sparse(diffs, ell_sq)
@@ -559,7 +562,7 @@ class Optimizer:
             inv_r = oti.pow(r_oti, -1)
             base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], base_matern, ln10 * ell[d] ** 2, d)
@@ -575,7 +578,7 @@ class Optimizer:
                         dphi_d = oti.mul(ln10 * ell[d] ** 2, oti.mul(d_sq, base_matern))
                         grad[d] = _gc(dphi_d)
             else:
-                if hasattr(phi, 'fused_sum_sq_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_sum_sq_sparse'):
                     sum_dsq = oti.zeros(phi.shape)
                     sum_dsq.fused_sum_sq_sparse(diffs)
                 elif hasattr(phi, 'fused_sum_sq'):
@@ -723,7 +726,7 @@ class Optimizer:
         if kernel == 'SE':
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi, -ln10 * ell[d] ** 2, d)
@@ -739,7 +742,7 @@ class Optimizer:
                                               oti.mul(oti.mul(diffs[d], diffs[d]), phi)))
             else:
                 ell    = 10.0 ** float(x0[0])
-                if hasattr(phi, 'fused_sum_sq_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_sum_sq_sparse'):
                     sum_sq = oti.zeros(phi.shape)
                     sum_sq.fused_sum_sq_sparse(diffs)
                 elif hasattr(phi, 'fused_sum_sq'):
@@ -757,7 +760,7 @@ class Optimizer:
             else:
                 ell = np.full(D, 10.0 ** float(x0[0]))
                 alpha_rq = np.exp(float(x0[1])); alpha_idx = 1
-            if hasattr(phi, 'fused_sqdist_sparse'):
+            if self._sparse_safe and hasattr(phi, 'fused_sqdist_sparse'):
                 r2 = oti.zeros(phi.shape)
                 ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
                 r2.fused_sqdist_sparse(diffs, ell_sq)
@@ -773,7 +776,7 @@ class Optimizer:
             inv_base = oti.pow(base, -1)
             phi_over_base = oti.mul(phi, inv_base)
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi_over_base, -ln10 * ell[d] ** 2, d)
@@ -788,7 +791,7 @@ class Optimizer:
                         grad[d] = _gc(oti.mul(-ln10 * ell[d] ** 2,
                                               oti.mul(oti.mul(diffs[d], diffs[d]), phi_over_base)))
             else:
-                if hasattr(phi, 'fused_sum_sq_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_sum_sq_sparse'):
                     sum_sq = oti.zeros(phi.shape)
                     sum_sq.fused_sum_sq_sparse(diffs)
                 elif hasattr(phi, 'fused_sum_sq'):
@@ -850,7 +853,7 @@ class Optimizer:
                    else np.full(D, 10.0 ** float(x0[0])))
             sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
             _eps = 1e-10
-            if hasattr(phi, 'fused_sqdist_sparse'):
+            if self._sparse_safe and hasattr(phi, 'fused_sqdist_sparse'):
                 r2 = oti.zeros(phi.shape)
                 ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
                 r2.fused_sqdist_sparse(diffs, ell_sq)
@@ -867,7 +870,7 @@ class Optimizer:
             inv_r = oti.pow(r_oti, -1)
             base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], base_matern, ln10 * ell[d] ** 2, d)
@@ -883,7 +886,7 @@ class Optimizer:
                         dphi_d = oti.mul(ln10 * ell[d] ** 2, oti.mul(d_sq, base_matern))
                         grad[d] = _gc(dphi_d)
             else:
-                if hasattr(phi, 'fused_sum_sq_sparse'):
+                if self._sparse_safe and hasattr(phi, 'fused_sum_sq_sparse'):
                     sum_dsq = oti.zeros(phi.shape)
                     sum_dsq.fused_sum_sq_sparse(diffs)
                 elif hasattr(phi, 'fused_sum_sq'):

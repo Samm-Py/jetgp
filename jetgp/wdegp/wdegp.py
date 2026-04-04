@@ -136,7 +136,8 @@ class wdegp:
             n_order=self.n_order,
             differences_by_dim=self.differences_by_dim,
             smoothness_parameter=smoothness_parameter,
-            oti_module=self.oti
+            oti_module=self.oti,
+            sparse_diffs=(self.submodel_type == 'degp')
         )
         self.kernel_func = self.kernel_factory.create_kernel(
             kernel_name=self.kernel,
@@ -555,7 +556,8 @@ class wdegp:
                     differences_by_dim=self.differences_by_dim,
                     n_order=predict_order,
                     smoothness_parameter=smoothness_param,
-                    oti_module=predict_oti
+                    oti_module=predict_oti,
+                    sparse_diffs=(self.submodel_type == 'degp')
                 )
                 predict_kernel_func = predict_kernel_factory.create_kernel(
                     kernel_name=self.kernel, kernel_type=self.kernel_type
