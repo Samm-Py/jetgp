@@ -273,7 +273,13 @@ class Optimizer:
                 plan['n_deriv_types'], row_off, col_off,
             )
 
+        _use_vdot_fused = W_proj is not None and hasattr(phi, 'vdot_expand_fast')
+        if _use_vdot_fused:
+            _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
+
         def _gc(dphi):
+            if _use_vdot_fused:
+                return 0.5 * dphi.vdot_expand_fast(_vdot_factors, W_proj)
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:
@@ -509,7 +515,13 @@ class Optimizer:
                 plan['n_deriv_types'], row_off, col_off,
             )
 
+        _use_vdot_fused = W_proj is not None and hasattr(phi, 'vdot_expand_fast')
+        if _use_vdot_fused:
+            _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
+
         def _gc(dphi):
+            if _use_vdot_fused:
+                return 0.5 * dphi.vdot_expand_fast(_vdot_factors, W_proj)
             if self.model.n_order == 0:
                 dphi_exp = dphi.real[np.newaxis, :, :]
             else:

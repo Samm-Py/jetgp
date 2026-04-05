@@ -10,18 +10,9 @@ echo "============================================"
 echo "  GPyTorch Benchmarks (2000 iters)"
 echo "============================================"
 
-for NITER in 2000; do
+for NITER in 100 200 500 1000 2000; do
   echo ""
-  echo "--- GPyTorch Borehole (${NITER} iters) ---"
-  python gpytorch_borehole.py $NITER
-
-  echo "--- GPyTorch OTL Circuit (${NITER} iters) ---"
-  python gpytorch_otl_circuit.py $NITER
-
-  echo "--- GPyTorch Morris (${NITER} iters) ---"
-  python gpytorch_morris.py $NITER
-
-  echo "--- GPyTorch Active Subspace (${NITER} iters) ---"
+  echo "--- GPyTorch Active Subspace 10D (${NITER} iters) ---"
   python gpytorch_active_subspace.py $NITER
 done
 
@@ -47,6 +38,9 @@ python jetgp_gddegp_morris.py
 
 echo "--- JetGP WDEGP Morris ---"
 python jetgp_wdegp_morris.py
+
+echo "--- JetGP WDEGP Grouped Morris ---"
+python jetgp_wdegp_grouped_morris.py
 
 echo "--- JetGP DEGP Morris ---"
 python jetgp_morris.py

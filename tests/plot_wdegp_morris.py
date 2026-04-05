@@ -52,22 +52,24 @@ DIM          = 20
 SAMPLE_SIZES = [DIM, 5 * DIM, 10 * DIM]
 SHOW_ITERS   = [100, 200, 500, 1000, 2000]
 
-DEGP_FILE        = 'results_jetgp_morris.json'
-WDEGP_FILE       = 'results_wdegp_morris.json'
-GEKPLS_FILE      = 'results_gekpls_morris.json'
-GEKPLS_NDIM_FILE = 'results_gekpls_ndim_morris.json'
-GPT_FILES        = {it: f'results_gpytorch_morris_{it}iter.json' for it in SHOW_ITERS}
+DEGP_FILE          = 'results_jetgp_morris.json'
+WDEGP_FILE         = 'results_wdegp_morris.json'
+WDEGP_GROUPED_FILE = 'results_wdegp_grouped_morris.json'
+GEKPLS_FILE        = 'results_gekpls_morris.json'
+GEKPLS_NDIM_FILE   = 'results_gekpls_ndim_morris.json'
+GPT_FILES          = {it: f'results_gpytorch_morris_{it}iter.json' for it in SHOW_ITERS}
 
 COLORS = {
-    'WDEGP':           '#2171B5',
-    'DEGP':            '#1D9E75',
-    'GEKPLS':          '#D85A30',
-    'GEKPLS (ndim)':   '#E8944A',
-    'GPyTorch (100)':  '#C6DCEF',
-    'GPyTorch (200)':  '#9ECAE1',
-    'GPyTorch (500)':  '#6BAED6',
-    'GPyTorch (1000)': '#2171B5',
-    'GPyTorch (2000)': '#084594',
+    'WDEGP':             '#2171B5',
+    'WDEGP (optimal)':   '#4A0E6B',
+    'DEGP':              '#1D9E75',
+    'GEKPLS':            '#D85A30',
+    'GEKPLS (ndim)':     '#E8944A',
+    'GPyTorch (100)':    '#C6DCEF',
+    'GPyTorch (200)':    '#9ECAE1',
+    'GPyTorch (500)':    '#6BAED6',
+    'GPyTorch (1000)':   '#2171B5',
+    'GPyTorch (2000)':   '#084594',
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -101,6 +103,12 @@ def build_summary(metric):
     # WDEGP
     for n, v in get_agg(load(WDEGP_FILE), metric).items():
         if n in summary: summary[n]['WDEGP'] = v
+
+    # WDEGP (optimal grouping)
+    wdegp_grouped_recs = load(WDEGP_GROUPED_FILE)
+    if wdegp_grouped_recs is not None:
+        for n, v in get_agg(wdegp_grouped_recs, metric).items():
+            if n in summary: summary[n]['WDEGP (optimal)'] = v
 
     # DEGP
     for n, v in get_agg(load(DEGP_FILE), metric).items():
