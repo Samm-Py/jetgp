@@ -71,7 +71,7 @@ class TestDEGP2DSecondOrder(unittest.TestCase):
             pop_size=100,
             n_generations=15,
             local_opt_every=15,
-            debug=False
+            debug=True
         )
 
         # Get predictions at training points

@@ -367,13 +367,12 @@ class Optimizer:
                 self._W_proj_shape = proj_shape
             W_proj = self._W_proj_buf
             W_proj[:] = 0.0
-            tmp_proj = np.empty_like(W_proj)
             for i in range(len(index)):
                 plan = self._kernel_plans[i]
                 row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
                 col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
                 args = [
-                    W_list[i], tmp_proj, base_shape[0], base_shape[1],
+                    W_list[i], W_proj, base_shape[0], base_shape[1],
                     plan['fd_flat_indices'], plan['df_flat_indices'],
                     plan['dd_flat_indices'],
                     plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
@@ -381,8 +380,7 @@ class Optimizer:
                 if self._uses_signs:
                     args.append(plan['signs'])
                 args.extend([plan['n_deriv_types'], row_off, col_off])
-                self.utils._project_W_to_phi_space(*args)
-                W_proj += tmp_proj
+                self.utils._project_W_to_phi_space_accum(*args)
 
         def _gc(dphi):
             if self.model.n_order == 0:
@@ -674,13 +672,12 @@ class Optimizer:
                 self._W_proj_shape = proj_shape
             W_proj = self._W_proj_buf
             W_proj[:] = 0.0
-            tmp_proj = np.empty_like(W_proj)
             for i in range(n_sub):
                 plan = self._kernel_plans[i]
                 row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
                 col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
                 args = [
-                    W_list[i], tmp_proj, base_shape[0], base_shape[1],
+                    W_list[i], W_proj, base_shape[0], base_shape[1],
                     plan['fd_flat_indices'], plan['df_flat_indices'],
                     plan['dd_flat_indices'],
                     plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
@@ -688,8 +685,7 @@ class Optimizer:
                 if self._uses_signs:
                     args.append(plan['signs'])
                 args.extend([plan['n_deriv_types'], row_off, col_off])
-                self.utils._project_W_to_phi_space(*args)
-                W_proj += tmp_proj
+                self.utils._project_W_to_phi_space_accum(*args)
 
         def _gc(dphi):
             # Precompute dphi_exp ONCE, reshape to 3D

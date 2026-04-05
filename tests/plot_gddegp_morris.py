@@ -47,6 +47,7 @@ DIM          = 20
 SAMPLE_SIZES = [DIM, 5 * DIM, 10 * DIM]
 SHOW_ITERS   = [100, 200, 500, 1000, 2000]
 
+degp_file = 'results_jetgp_morris.json'
 gddegp_files = {
     k: f'results_jetgp_gddegp_{k}dirs_morris.json' for k in [1, 2, 3]
 }
@@ -55,6 +56,7 @@ gekpls_ndim_file = 'results_gekpls_ndim_morris.json'
 gpt_files   = {it: f'results_gpytorch_morris_{it}iter.json' for it in SHOW_ITERS}
 
 COLORS = {
+    'DEGP':            '#1D9E75',
     'GDDEGP (1 dir)':  '#A8DDB5',
     'GDDEGP (2 dirs)': '#43A96D',
     'GDDEGP (3 dirs)': '#1D6B3A',
@@ -94,6 +96,9 @@ def get_agg(records, metric):
 
 def build_summary(metric):
     summary = {n: {} for n in SAMPLE_SIZES}
+
+    for n, v in get_agg(load(degp_file), metric).items():
+        if n in summary: summary[n]['DEGP'] = v
 
     for k in [1, 2, 3]:
         label = f'GDDEGP ({k} dir{"s" if k > 1 else ""})'

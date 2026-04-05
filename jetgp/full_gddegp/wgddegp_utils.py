@@ -790,6 +790,53 @@ def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
                     W_proj[fi, ri, ci] += W[ro + ki, co + kj]
 
 
+@numba.jit(nopython=True, cache=True)
+def _project_W_to_phi_space_accum(W, W_proj, n_rows_func, n_cols_func,
+                                   fd_flat_indices, df_flat_indices, dd_flat_indices,
+                                   idx_flat, idx_offsets, idx_sizes,
+                                   n_deriv_types, row_offsets, col_offsets):
+    """
+    Like _project_W_to_phi_space but accumulates into W_proj without zeroing.
+    Caller must zero W_proj before the first call.
+    No-signs variant for WGDDEGP even/odd bases.
+    """
+    for r in range(n_rows_func):
+        for c in range(n_cols_func):
+            W_proj[0, r, c] += W[r, c]
+    for j in range(n_deriv_types):
+        fi = fd_flat_indices[j]
+        co = col_offsets[j]
+        off_j = idx_offsets[j]
+        sz_j = idx_sizes[j]
+        for r in range(n_rows_func):
+            for k in range(sz_j):
+                ci = idx_flat[off_j + k]
+                W_proj[fi, r, ci] += W[r, co + k]
+    for i in range(n_deriv_types):
+        fi = df_flat_indices[i]
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for k in range(sz_i):
+            ri = idx_flat[off_i + k]
+            for c in range(n_cols_func):
+                W_proj[fi, ri, c] += W[ro + k, c]
+    for i in range(n_deriv_types):
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for j in range(n_deriv_types):
+            fi = dd_flat_indices[i, j]
+            co = col_offsets[j]
+            off_j = idx_offsets[j]
+            sz_j = idx_sizes[j]
+            for ki in range(sz_i):
+                ri = idx_flat[off_i + ki]
+                for kj in range(sz_j):
+                    ci = idx_flat[off_j + kj]
+                    W_proj[fi, ri, ci] += W[ro + ki, co + kj]
+
+
 def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
     """Precompute structural info for rbf_kernel_fast (GDDEGP even/odd variant)."""
     dh = coti.get_dHelp()

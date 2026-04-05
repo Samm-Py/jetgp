@@ -7,36 +7,7 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$DIR"
 
 echo "============================================"
-echo "  GEKPLS Benchmarks"
-echo "============================================"
-
-echo "--- GEKPLS Borehole (n_comp=1) ---"
-python gekpls_borehole.py
-
-echo "--- GEKPLS Borehole (n_comp=DIM) ---"
-python gekpls_borehole_ndim.py
-
-echo "--- GEKPLS OTL Circuit (n_comp=1) ---"
-python gekpls_otl_circuit.py
-
-echo "--- GEKPLS OTL Circuit (n_comp=DIM) ---"
-python gekpls_otl_circuit_ndim.py
-
-echo "--- GEKPLS Morris (n_comp=1) ---"
-python gekpls_morris.py
-
-echo "--- GEKPLS Morris (n_comp=DIM) ---"
-python gekpls_morris_ndim.py
-
-echo "--- GEKPLS Active Subspace (n_comp=1) ---"
-python gekpls_active_subspace.py
-
-echo "--- GEKPLS Active Subspace (n_comp=DIM) ---"
-python gekpls_active_subspace_ndim.py
-
-echo ""
-echo "============================================"
-echo "  GPyTorch Benchmarks (100/200/500/1000/2000 iters)"
+echo "  GPyTorch Benchmarks (2000 iters)"
 echo "============================================"
 
 for NITER in 2000; do

@@ -151,7 +151,7 @@ def log_tick_formatter(val, pos):
 
 # ── Main plot function ────────────────────────────────────────────────────────
 def make_grid(metric, ylabel, fname, invert=True):
-    funcs = ['otl_circuit', 'borehole']  # morris excluded: DEGP/WDEGP results not yet available
+    funcs = ['otl_circuit', 'borehole', 'morris']
     col_labels = [r'$n = d$', r'$n = 5d$', r'$n = 10d$']
 
     fig, axes = plt.subplots(len(funcs), 3, figsize=(15, 5 * len(funcs)))
