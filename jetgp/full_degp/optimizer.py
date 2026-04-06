@@ -198,11 +198,17 @@ class Optimizer:
         #     print(f"  WARNING: K is {sparsity*100:.1f}% sparse | ell={10**np.array(ell)} | sigma_n={10**sigma_n:.2e} | cond={np.linalg.cond(K.real):.2e}")
         #     input('i')
         try:
-            L, low = cho_factor(K)
+            L, low = cho_factor(K, lower=True)
             alpha = cho_solve(
                 (L, low),
                 self.model.y_train
             )
+
+            # Cache for fast prediction
+            self.model._cached_L = L
+            self.model._cached_low = low
+            self.model._cached_alpha = alpha
+            self.model._cached_params = x0.copy()
 
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
             log_det_K = np.sum(np.log(np.diag(L)))
@@ -609,7 +615,7 @@ class Optimizer:
         K += self.model.sigma_data ** 2
 
         try:
-            L, low  = cho_factor(K)
+            L, low  = cho_factor(K, lower=True)
             alpha_v = cho_solve((L, low), self.model.y_train)
             N       = len(self.model.y_train)
             K_inv   = cho_solve((L, low), np.eye(N))
@@ -657,7 +663,7 @@ class Optimizer:
         K += self.model.sigma_data ** 2
 
         try:
-            L, low  = cho_factor(K)
+            L, low  = cho_factor(K, lower=True)
             alpha_v = cho_solve((L, low), self.model.y_train)
             N       = len(self.model.y_train)
 
@@ -669,6 +675,12 @@ class Optimizer:
             W     = K_inv - np.outer(alpha_v, alpha_v)
         except Exception:
             return 1e6, np.zeros(len(x0))
+
+        # Cache for fast prediction (reused by degp.predict)
+        self.model._cached_L = L
+        self.model._cached_low = low
+        self.model._cached_alpha = alpha_v
+        self.model._cached_params = x0.copy()
 
         grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
         return float(nll), grad

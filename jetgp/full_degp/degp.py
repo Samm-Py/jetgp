@@ -226,32 +226,45 @@ class degp:
             predict_oti = self.oti
             predict_kernel_func = self.kernel_func
 
-        # Build training kernel matrix
-        phi_train = self.kernel_func(self.differences_by_dim, length_scales)
-        
-        if self.n_order > 0:
-            phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
-        else:
-            phi_exp_train = phi_train.real
-            phi_exp_train = phi_exp_train[np.newaxis, :, :]
-
-        K = degp_utils.rbf_kernel(
-            phi_train, phi_exp_train, self.n_order, self.n_bases,
-            self.flattened_der_indices, self.powers,
-            index=self.derivative_locations
+        # Reuse cached Cholesky + alpha from optimizer if available
+        _cache_hit = (
+            hasattr(self, '_cached_params')
+            and self._cached_params is not None
+            and np.array_equal(self._cached_params, params)
         )
-        K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
-        K += self.sigma_data ** 2
 
-        # Solve linear system
-        try:
+        if _cache_hit:
+            L = self._cached_L
+            low = self._cached_low
+            alpha = self._cached_alpha
             cho_solve_failed = False
-            L, low = cho_factor(K, lower=True)
-            alpha = cho_solve((L, low), self.y_train)
-        except:
-            cho_solve_failed = True
-            alpha = np.linalg.solve(K, self.y_train)
-            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+        else:
+            # Build training kernel matrix (no cache available)
+            phi_train = self.kernel_func(self.differences_by_dim, length_scales)
+
+            if self.n_order > 0:
+                phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
+            else:
+                phi_exp_train = phi_train.real
+                phi_exp_train = phi_exp_train[np.newaxis, :, :]
+
+            K = degp_utils.rbf_kernel(
+                phi_train, phi_exp_train, self.n_order, self.n_bases,
+                self.flattened_der_indices, self.powers,
+                index=self.derivative_locations
+            )
+            K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
+            K += self.sigma_data ** 2
+
+            # Solve linear system
+            try:
+                cho_solve_failed = False
+                L, low = cho_factor(K, lower=True)
+                alpha = cho_solve((L, low), self.y_train)
+            except:
+                cho_solve_failed = True
+                alpha = np.linalg.solve(K, self.y_train)
+                print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
 
         # Normalize test inputs
         if self.normalize:

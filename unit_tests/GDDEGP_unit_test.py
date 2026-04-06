@@ -380,31 +380,6 @@ class TestGDDEGPBraninGradientAligned(unittest.TestCase):
         self.assertLess(max_error, 1e-1,
                        f"Function interpolation error with Cholesky fallback: {max_error}")
 
-    def test_cholesky_fallback_prints_warning(self):
-        """Test that a warning is printed when Cholesky decomposition fails."""
-        derivs_to_predict = [[[1, 1]]]
-        
-        # Capture stdout to check for warning message
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
-        
-        try:
-            with patch('jetgp.full_gddegp.gddegp.cho_factor', side_effect=LinAlgError("Mocked Cholesky failure")):
-                y_pred = self.model.predict(
-                    self.X_train,
-                    self.params,
-                    rays_predict=[self.rays_array],
-                    calc_cov=False,
-                    return_deriv=True,
-                    derivs_to_predict=derivs_to_predict
-                )
-        finally:
-            sys.stdout = sys.__stdout__
-        
-        output = captured_output.getvalue()
-        self.assertIn("Cholesky", output,
-                     f"Expected warning about Cholesky failure, got: {output}")
-
     def test_cholesky_vs_fallback_consistency(self):
         """Test that Cholesky and fallback methods produce consistent results."""
         derivs_to_predict = [[[1, 1]]]

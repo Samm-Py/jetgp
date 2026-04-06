@@ -261,7 +261,7 @@ class Optimizer:
             K += (10 ** sigma_n) ** 2 * np.eye(len(K))
 
             try:
-                L, low = cho_factor(K)
+                L, low = cho_factor(K, lower=True)
                 alpha = cho_solve(
                     (L, low),
                     y_train_sub
@@ -346,7 +346,7 @@ class Optimizer:
                 )
             K.flat[::K.shape[0] + 1] += sigma_n_sq
             try:
-                L, low  = cho_factor(K)
+                L, low  = cho_factor(K, lower=True)
                 alpha_v = cho_solve((L, low), y_train_sub)
                 N       = len(y_train_sub)
                 K_inv   = cho_solve((L, low), np.eye(N))
@@ -646,7 +646,7 @@ class Optimizer:
             K.flat[::K.shape[0] + 1] += sigma_n_sq
 
             try:
-                L, low  = cho_factor(K)
+                L, low  = cho_factor(K, lower=True)
                 alpha_v = cho_solve((L, low), y_train_sub)
                 N       = len(y_train_sub)
 

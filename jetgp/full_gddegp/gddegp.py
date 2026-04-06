@@ -285,40 +285,54 @@ class gddegp:
             predict_oti = self.oti
             predict_kernel_func = self.kernel_func
 
-        # Build training kernel matrix
-        phi_train = self.kernel_func(self.differences_by_dim, length_scales)
-        if self.n_order == 0:
-            self.n_bases = 0
-            phi_exp_train = phi_train.real
-            phi_exp_train = phi_exp_train[np.newaxis,:,:]
-        else:
-            # Take the max so that an explicitly-set n_bases (e.g. for function-only
-            # training or for predicting more directions than were observed) is never
-            # silently reduced to the number of bases active in the training kernel.
-            active = phi_train.get_active_bases()
-            self.n_bases = max(self.n_bases, active[-1] if active else 0)
-            phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
-
-        # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
-        powers = [0] * (len(self.flattened_der_indices) + 1)
-
-        K = gddegp_utils.rbf_kernel(
-            phi_train, phi_exp_train, self.n_order, self.n_bases,
-            self.flattened_der_indices, 
-            index=self.derivative_locations
+        # Check for cached Cholesky from optimizer
+        _cache_hit = (
+            hasattr(self, '_cached_params')
+            and self._cached_params is not None
+            and np.array_equal(self._cached_params, params)
         )
-        K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
-        K += self.sigma_data ** 2
-        self.K_train = K
-        # Solve linear system
-        try:
+
+        if _cache_hit:
+            L = self._cached_L
+            low = self._cached_low
+            alpha = self._cached_alpha
+            self.n_bases = self._cached_n_bases
             cho_solve_failed = False
-            L, low = cho_factor(K, lower=True)
-            alpha = cho_solve((L, low), self.y_train)
-        except:
-            cho_solve_failed = True
-            alpha = np.linalg.solve(K, self.y_train)
-            print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
+        else:
+            # Build training kernel matrix
+            phi_train = self.kernel_func(self.differences_by_dim, length_scales)
+            if self.n_order == 0:
+                self.n_bases = 0
+                phi_exp_train = phi_train.real
+                phi_exp_train = phi_exp_train[np.newaxis,:,:]
+            else:
+                # Take the max so that an explicitly-set n_bases (e.g. for function-only
+                # training or for predicting more directions than were observed) is never
+                # silently reduced to the number of bases active in the training kernel.
+                active = phi_train.get_active_bases()
+                self.n_bases = max(self.n_bases, active[-1] if active else 0)
+                phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
+
+            # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
+            powers = [0] * (len(self.flattened_der_indices) + 1)
+
+            K = gddegp_utils.rbf_kernel(
+                phi_train, phi_exp_train, self.n_order, self.n_bases,
+                self.flattened_der_indices,
+                index=self.derivative_locations
+            )
+            K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
+            K += self.sigma_data ** 2
+            self.K_train = K
+            # Solve linear system
+            try:
+                cho_solve_failed = False
+                L, low = cho_factor(K, lower=True)
+                alpha = cho_solve((L, low), self.y_train)
+            except:
+                cho_solve_failed = True
+                alpha = np.linalg.solve(K, self.y_train)
+                print('Warning: Cholesky decomposition failed via scipy, using standard np solve instead.')
 
         # Normalize test inputs and rays
         rays_test = rays_predict
