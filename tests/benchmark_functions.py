@@ -599,6 +599,58 @@ def compute_metrics(y_true, y_pred):
 
 
 # ============================================================================
+# Hessian diagonal (d²f/dxi²) via central finite differences on gradient
+# ============================================================================
+
+def hessian_diagonal_fd(grad_func, X, dim, eps=1e-5):
+    """
+    Compute diagonal of the Hessian (d²f/dxi²) via central finite
+    differences on the analytical gradient.
+
+    Parameters
+    ----------
+    grad_func : callable
+        Gradient function mapping (n, d) -> (n, d).
+    X : ndarray of shape (n, d)
+        Input points in [0, 1]^d.
+    dim : int
+        Input dimension.
+    eps : float
+        Finite difference step size.
+
+    Returns
+    -------
+    hess_diag : ndarray of shape (n, d)
+        Diagonal Hessian entries d²f/dxi² for each point and dimension.
+    """
+    hess_diag = np.zeros_like(X)
+    for j in range(dim):
+        X_plus = X.copy()
+        X_minus = X.copy()
+        X_plus[:, j] += eps
+        X_minus[:, j] -= eps
+        grad_plus = grad_func(X_plus)
+        grad_minus = grad_func(X_minus)
+        hess_diag[:, j] = (grad_plus[:, j] - grad_minus[:, j]) / (2 * eps)
+    return hess_diag
+
+
+def borehole_hessian_diag(X_unit):
+    """Diagonal of the Hessian for the borehole function."""
+    return hessian_diagonal_fd(borehole_gradient, X_unit, 8)
+
+
+def otl_circuit_hessian_diag(X_unit):
+    """Diagonal of the Hessian for the OTL circuit function."""
+    return hessian_diagonal_fd(otl_circuit_gradient, X_unit, 6)
+
+
+def morris_hessian_diag(X_unit):
+    """Diagonal of the Hessian for the Morris function."""
+    return hessian_diagonal_fd(morris_gradient, X_unit, 20)
+
+
+# ============================================================================
 # Verification
 # ============================================================================
 
