@@ -75,6 +75,50 @@ class GPModel2ndOrder(gpytorch.models.ExactGP):
         return gpytorch.distributions.MultitaskMultivariateNormal(mean_x, covar_x)
 
 
+def _manual_cross_covariance(X_test, X_train, lengthscale, outputscale, dim):
+    """
+    Compute cross-covariance between function values at test points and
+    [function values, gradients, Hessian diag] at training points.
+
+    Returns k_star of shape (n_test, n_train * (1 + 2*D)).
+
+    SE kernel: k(x,x') = s^2 * exp(-0.5 * sum_d (x_d - x'_d)^2 / l_d^2)
+    dk/dx'_d  = k * (x_d - x'_d) / l_d^2
+    d2k/dx'^2_d = k * ((x_d - x'_d)^2 / l_d^4 - 1/l_d^2)
+    """
+    n_test = X_test.shape[0]
+    n_train = X_train.shape[0]
+    n_tasks = 1 + 2 * dim
+
+    # Scaled differences: (n_test, n_train, dim)
+    diff = X_test[:, None, :] - X_train[None, :, :]  # (n_test, n_train, dim)
+    l = lengthscale  # (dim,)
+    scaled_diff = diff / l[None, None, :]  # (n_test, n_train, dim)
+
+    # Base kernel: (n_test, n_train)
+    sq_dist = (scaled_diff ** 2).sum(dim=-1)
+    K_base = outputscale * torch.exp(-0.5 * sq_dist)
+
+    # Build full cross-covariance: (n_test, n_train, n_tasks)
+    k_star = torch.zeros(n_test, n_train, n_tasks, dtype=X_test.dtype)
+
+    # Task 0: function values
+    k_star[:, :, 0] = K_base
+
+    # Tasks 1..D: first derivatives w.r.t. x'_d
+    for d in range(dim):
+        k_star[:, :, 1 + d] = K_base * diff[:, :, d] / (l[d] ** 2)
+
+    # Tasks D+1..2D: second derivatives w.r.t. x'_d^2
+    for d in range(dim):
+        k_star[:, :, 1 + dim + d] = K_base * (
+            diff[:, :, d] ** 2 / l[d] ** 4 - 1.0 / l[d] ** 2
+        )
+
+    # Reshape to (n_test, n_train * n_tasks) matching the flattened training vector
+    return k_star.reshape(n_test, n_train * n_tasks)
+
+
 def run_single(func_name, n_train, seed):
     cfg = BENCHMARKS[func_name]
     dim = cfg['dim']
@@ -132,20 +176,41 @@ def run_single(func_name, n_train, seed):
 
     t_train = time.perf_counter() - t_start
 
-    # Prediction
+    # Manual prediction (RBFKernelGradGrad has a bug in cross-covariance)
     model.eval()
     likelihood.eval()
 
     t_pred_start = time.perf_counter()
-    with torch.no_grad(), gpytorch.settings.fast_computations(
-        log_prob=False, covar_root_decomposition=False
-    ):
-        predictions = likelihood(model(test_x))
-        mean = predictions.mean
+    with torch.no_grad():
+        # Build K_train using the model's kernel (square — works fine)
+        K_train = model.covar_module(train_x).evaluate()
+
+        # Add noise
+        noise_diag = likelihood.task_noises.repeat(n_train)
+        K_train += torch.diag(noise_diag)
+
+        # Flatten training targets to match K_train layout
+        # GPyTorch interleaves: [y0_task0, y0_task1, ..., y1_task0, y1_task1, ...]
+        y_flat = train_y.reshape(-1)
+
+        # Solve K_train @ alpha = y_flat
+        L = torch.linalg.cholesky(K_train)
+        alpha = torch.cholesky_solve(y_flat.unsqueeze(-1), L).squeeze(-1)
+
+        # Manual cross-covariance for function values at test points
+        lengthscale = model.covar_module.base_kernel.lengthscale.detach().squeeze()
+        outputscale = model.covar_module.outputscale.detach().item()
+        k_star = _manual_cross_covariance(
+            test_x, train_x, lengthscale, outputscale, dim
+        )
+
+        # Predict: y_pred = k_star @ alpha
+        y_pred_std = (k_star @ alpha).cpu().numpy()
+
     t_pred = time.perf_counter() - t_pred_start
 
-    # Denormalize (first task column is function values)
-    y_pred = mean[:, 0].cpu().numpy() * y_std + y_mean
+    # Denormalize
+    y_pred = y_pred_std * y_std + y_mean
 
     metrics = compute_metrics(y_test, y_pred)
     metrics['train_time'] = t_train
