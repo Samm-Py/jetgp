@@ -211,10 +211,42 @@ def differences_by_dim_func(X1, X2, n_order, oti_module, return_deriv=True):
         A list where each element is an array of shape (n1, n2), containing the differences
         between corresponding dimensions of X1 and X2, augmented with hypercomplex units.
     """
-    X1 = oti_module.array(X1)
-    X2 = oti_module.array(X2)
-    n1, d = X1.shape
-    n2, d = X2.shape
+    # Keep numpy copies for fused path
+    X1_np = np.asarray(X1, dtype=np.float64)
+    X2_np = np.asarray(X2, dtype=np.float64)
+    n1, d = X1_np.shape
+    n2 = X2_np.shape[0]
+
+    # Check if the fused C-level function is available
+    _use_fused = hasattr(oti_module.zeros((1, 1)), 'fused_from_real_with_perturbations')
+
+    if _use_fused and n_order > 0:
+        # --- Fused path: numpy broadcast for real part, C-level OTI fill ---
+        differences_by_dim = []
+        perturb2 = oti_module.zeros((n2, 1))  # X2 has no perturbation in WDEGP
+
+        if return_deriv:
+            hc_order = 2 * n_order
+        else:
+            hc_order = n_order
+
+        for k in range(d):
+            # Real differences via numpy broadcasting (fast)
+            real_diffs = np.ascontiguousarray(
+                X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+            )
+            # Perturbation: e_{k+1} broadcast to all n1 points
+            perturb1 = oti_module.zeros((n1, 1)) + oti_module.e(k + 1, order=hc_order)
+            # Fused fill: out[i,j].real = real_diffs[i,j], out[i,j].im = perturb1[i] - 0
+            diffs_k = oti_module.zeros((n1, n2))
+            diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+            differences_by_dim.append(diffs_k)
+
+        return differences_by_dim
+
+    # --- Fallback: original Python loop path ---
+    X1 = oti_module.array(X1_np)
+    X2 = oti_module.array(X2_np)
 
     differences_by_dim = []
 

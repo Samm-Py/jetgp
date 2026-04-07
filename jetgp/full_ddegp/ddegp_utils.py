@@ -246,64 +246,92 @@ def differences_by_dim_func(X1, X2, rays, n_order, oti_module, return_deriv=True
     >>> diffs[0].shape
     (2, 2)
     """
-    X1 = oti_module.array(X1)
-    X2 = oti_module.array(X2)
-    n1, d = X1.shape
-    n2, _ = X2.shape
+    # Keep numpy copies for fused path
+    X1_np = np.asarray(X1, dtype=np.float64)
+    X2_np = np.asarray(X2, dtype=np.float64)
+    n1, d = X1_np.shape
+    n2 = X2_np.shape[0]
     n_rays = rays.shape[1]
-    
+
+    # Check if the fused C-level function is available
+    _use_fused = hasattr(oti_module.zeros((1, 1)), 'fused_from_real_with_perturbations')
+
     differences_by_dim = []
-    
+
     # Case 1: n_order == 0 (no hypercomplex perturbation)
     if n_order == 0:
+        X1_oti = oti_module.array(X1_np)
+        X2_oti = oti_module.array(X2_np)
         for k in range(d):
             diffs_k = oti_module.zeros((n1, n2))
             for i in range(n1):
-                diffs_k[i, :] = X1[i, k] - oti_module.transpose(X2[:, k])
+                diffs_k[i, :] = X1_oti[i, k] - oti_module.transpose(X2_oti[:, k])
             differences_by_dim.append(diffs_k)
         return differences_by_dim
-    
+
     # Determine the order for hypercomplex units based on return_deriv
     if return_deriv:
         hc_order = 2 * n_order
     else:
         hc_order = n_order
-    
+
     # Pre-calculate the perturbation vector using directional rays
     e_bases = [oti_module.e(i + 1, order=hc_order) for i in range(n_rays)]
     perts = np.dot(rays, e_bases)
-    
+
+    if _use_fused and n_order > 0:
+        # --- Fused path: numpy broadcast for real part, C-level OTI fill ---
+        perturb2 = oti_module.zeros((n2, 1))  # X2 has no perturbation in DDEGP
+
+        for k in range(d):
+            # Real differences via numpy broadcasting (fast)
+            real_diffs = np.ascontiguousarray(
+                X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+            )
+            # Perturbation: perts[k] (ray-projected) broadcast to all n1 points
+            perturb1 = oti_module.zeros((n1, 1)) + perts[k]
+            # Fused fill: out[i,j].real = real_diffs[i,j], out[i,j].im = perturb1[i] - 0
+            diffs_k = oti_module.zeros((n1, n2))
+            diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+            differences_by_dim.append(diffs_k)
+
+        return differences_by_dim
+
+    # --- Fallback: original Python loop path ---
+    X1 = oti_module.array(X1_np)
+    X2 = oti_module.array(X2_np)
+
     # Case 2: return_deriv=False (prediction without derivative outputs)
     if not return_deriv:
         for k in range(d):
             # Add the pre-calculated perturbation for the current dimension to all points in X1
             X1_k_tagged = X1[:, k] + perts[k]
             X2_k = X2[:, k]
-            
+
             # Pre-allocate the result matrix for this dimension
             diffs_k = oti_module.zeros((n1, n2))
-            
+
             # Use an efficient single loop for subtraction
             for i in range(n1):
                 diffs_k[i, :] = X1_k_tagged[i, 0] - X2_k[:, 0].T
-            
+
             differences_by_dim.append(diffs_k)
-    
+
     # Case 3: return_deriv=True (training kernel with derivative-derivative blocks)
     else:
         for k in range(d):
             X2_k = X2[:, k]
-            
+
             # Pre-allocate the result matrix for this dimension
             diffs_k = oti_module.zeros((n1, n2))
-            
+
             # Compute differences without perturbation first
             for i in range(n1):
                 diffs_k[i, :] = X1[i, k] - X2_k[:, 0].T
-            
+
             # Add perturbation to the entire matrix (more efficient)
             differences_by_dim.append(diffs_k + perts[k])
-    
+
     return differences_by_dim
 
 # =============================================================================

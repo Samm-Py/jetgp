@@ -385,7 +385,8 @@ def make_first_even(der_indices):
 # =============================================================================
 def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
                                   derivative_locations_X1, derivative_locations_X2,
-                                  e_tags_1, e_tags_2, oti_module):
+                                  e_tags_1, e_tags_2, oti_module,
+                                  X1_np=None, X2_np=None, use_fused=False):
     """
     Compute differences for a single dimension k.
     Only perturbs points at specified derivative_locations with their corresponding rays.
@@ -394,8 +395,8 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
     ----------
     k : int
         Dimension index.
-    X1, X2 : oti.array
-        Input point arrays of shape (n1, d) and (n2, d).
+    X1, X2 : oti.array or None
+        Input point arrays of shape (n1, d) and (n2, d). Can be None if use_fused=True.
     n1, n2 : int
         Number of points in X1, X2.
     rays_X1 : list of ndarray or None
@@ -410,6 +411,10 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
         OTI basis elements for each direction.
     oti_module : module
         The PyOTI static module.
+    X1_np, X2_np : ndarray or None
+        Numpy arrays of shape (n1, d) and (n2, d). Required if use_fused=True.
+    use_fused : bool
+        If True, use fused_from_real_with_perturbations C-level function.
 
     Returns
     -------
@@ -438,6 +443,19 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
     perturb_X1 = oti_module.array(perturb_X1_values)
     perturb_X2 = oti_module.array(perturb_X2_values)
 
+    if use_fused:
+        # --- Fused path ---
+        real_diffs = np.ascontiguousarray(
+            X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+        )
+        # Reshape perturbations from (n,) to (n, 1) for fused function
+        perturb1 = oti_module.zeros((n1, 1)) + perturb_X1
+        perturb2 = oti_module.zeros((n2, 1)) + perturb_X2
+        diffs_k = oti_module.zeros((n1, n2))
+        diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+        return diffs_k
+
+    # --- Fallback path ---
     # Tag coordinates
     X1_k_tagged = X1[:, k] + perturb_X1
     X2_k_tagged = X2[:, k] + perturb_X2
@@ -495,10 +513,13 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     differences_by_dim : list of oti.array
         List of length d, each element is an (n1, n2) OTI array.
     """
-    X1 = oti_module.array(X1)
-    X2 = oti_module.array(X2)
-    n1, d = X1.shape
-    n2, _ = X2.shape
+    X1_np = np.asarray(X1, dtype=np.float64)
+    X2_np = np.asarray(X2, dtype=np.float64)
+    n1, d = X1_np.shape
+    n2 = X2_np.shape[0]
+
+    # Check if the fused C-level function is available
+    _use_fused = hasattr(oti_module.zeros((1, 1)), 'fused_from_real_with_perturbations')
 
     # Determine number of derivative directions
     m1 = len(rays_X1) if rays_X1 is not None else 0
@@ -521,13 +542,23 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
             e_tags_1.append(oti_module.e((2 * i + 1), order=2 * n_order))
             e_tags_2.append(oti_module.e((2 * i + 2), order=2 * n_order))
 
+    # Only convert to OTI arrays if using fallback path
+    if _use_fused and n_order > 0:
+        X1_oti = None
+        X2_oti = None
+    else:
+        X1_oti = oti_module.array(X1_np)
+        X2_oti = oti_module.array(X2_np)
+
     # Compute differences for each dimension
     differences_by_dim = []
     for k in range(d):
         diffs_k = compute_dimension_differences(
-            k, X1, X2, n1, n2, rays_X1, rays_X2,
+            k, X1_oti, X2_oti, n1, n2, rays_X1, rays_X2,
             derivative_locations_X1, derivative_locations_X2,
-            e_tags_1, e_tags_2, oti_module
+            e_tags_1, e_tags_2, oti_module,
+            X1_np=X1_np, X2_np=X2_np,
+            use_fused=(_use_fused and n_order > 0)
         )
         differences_by_dim.append(diffs_k)
 
