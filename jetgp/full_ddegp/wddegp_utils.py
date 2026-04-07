@@ -222,33 +222,53 @@ def differences_by_dim_func(X1, X2, rays, n_order,oti_module, return_deriv=True)
         the differences between corresponding dimensions of X1 and X2, 
         augmented with directional hypercomplex perturbations.
     """
-    X1 = oti_module.array(X1)
-    X2 = oti_module.array(X2)
-    n1, d = X1.shape
-    n2, _ = X2.shape
+    X1_np = np.asarray(X1, dtype=np.float64)
+    X2_np = np.asarray(X2, dtype=np.float64)
+    n1, d = X1_np.shape
+    n2 = X2_np.shape[0]
     n_rays = rays.shape[1]
-    
+
+    # Check if the fused C-level function is available
+    _use_fused = hasattr(oti_module.zeros((1, 1)), 'fused_from_real_with_perturbations')
+
     differences_by_dim = []
-    
+
     # Case 1: n_order == 0 (no hypercomplex perturbation)
     if n_order == 0:
-        for k in range(d):
-            diffs_k = oti_module.zeros((n1, n2))
-            for i in range(n1):
-                diffs_k[i, :] = X1[i, k] - X2[:, k].T
-            differences_by_dim.append(diffs_k)
+        if _use_fused:
+            perturb1 = oti_module.zeros((n1, 1))
+            perturb2 = oti_module.zeros((n2, 1))
+            for k in range(d):
+                real_diffs = np.ascontiguousarray(
+                    X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+                )
+                diffs_k = oti_module.empty((n1, n2))
+                diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+                differences_by_dim.append(diffs_k)
+        else:
+            X1 = oti_module.array(X1_np)
+            X2 = oti_module.array(X2_np)
+            for k in range(d):
+                diffs_k = oti_module.zeros((n1, n2))
+                for i in range(n1):
+                    diffs_k[i, :] = X1[i, k] - X2[:, k].T
+                differences_by_dim.append(diffs_k)
         return differences_by_dim
     
+    # Convert to OTI arrays for non-fused paths
+    X1 = oti_module.array(X1_np)
+    X2 = oti_module.array(X2_np)
+
     # Determine the order for hypercomplex units based on return_deriv
     if return_deriv:
         hc_order = 2 * n_order
     else:
         hc_order = n_order
-    
+
     # Pre-calculate the perturbation vector using directional rays
     e_bases = [oti_module.e(i + 1, order=hc_order) for i in range(n_rays)]
     perts = np.dot(rays, e_bases)
-    
+
     # Case 2: return_deriv=False (prediction without derivative outputs)
     if not return_deriv:
         for k in range(d):

@@ -226,27 +226,38 @@ def differences_by_dim_func(X1, X2, n_order, oti_module, return_deriv=True):
     # Check if the fused C-level function is available
     _use_fused = hasattr(oti_module.zeros((1, 1)), 'fused_from_real_with_perturbations')
 
-    if _use_fused and n_order > 0:
+    if _use_fused:
         # --- Fused path: numpy broadcast for real part, C-level OTI fill ---
         differences_by_dim = []
         perturb2 = oti_module.zeros((n2, 1))  # X2 has no perturbation in DEGP
 
-        if return_deriv:
-            hc_order = 2 * n_order
+        if n_order == 0:
+            # No perturbation needed — just real differences
+            perturb1 = oti_module.zeros((n1, 1))
+            for k in range(d):
+                real_diffs = np.ascontiguousarray(
+                    X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+                )
+                diffs_k = oti_module.empty((n1, n2))
+                diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+                differences_by_dim.append(diffs_k)
         else:
-            hc_order = n_order
+            if return_deriv:
+                hc_order = 2 * n_order
+            else:
+                hc_order = n_order
 
-        for k in range(d):
-            # Real differences via numpy broadcasting (fast)
-            real_diffs = np.ascontiguousarray(
-                X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
-            )
-            # Perturbation: e_{k+1} broadcast to all n1 points
-            perturb1 = oti_module.zeros((n1, 1)) + oti_module.e(k + 1, order=hc_order)
-            # Fused fill: out[i,j].real = real_diffs[i,j], out[i,j].im = perturb1[i] - 0
-            diffs_k = oti_module.zeros((n1, n2))
-            diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
-            differences_by_dim.append(diffs_k)
+            for k in range(d):
+                # Real differences via numpy broadcasting (fast)
+                real_diffs = np.ascontiguousarray(
+                    X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+                )
+                # Perturbation: e_{k+1} broadcast to all n1 points
+                perturb1 = oti_module.zeros((n1, 1)) + oti_module.e(k + 1, order=hc_order)
+                # Fused fill: out[i,j].real = real_diffs[i,j], out[i,j].im = perturb1[i] - 0
+                diffs_k = oti_module.empty((n1, n2))
+                diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+                differences_by_dim.append(diffs_k)
 
         return differences_by_dim
 

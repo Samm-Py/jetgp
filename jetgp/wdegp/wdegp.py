@@ -528,14 +528,17 @@ class wdegp:
             if derivs_to_predict is not None:
                 common_derivs = derivs_to_predict
             else:
-                if self.n_order == 0:
+                if self.submodel_type in ('gddegp', 'wgddegp'):
                     raise ValueError(
-                        "derivs_to_predict must be provided when predicting derivatives "
-                        "from a model trained with n_order=0 (no derivative training data)."
+                        "derivs_to_predict and rays_predict must be provided explicitly "
+                        "for WDEGP with GDDEGP submodels when return_deriv=True, "
+                        "because the length of rays_predict must match derivs_to_predict."
                     )
-                common = gp_utils.find_common_derivatives(self.flattened_der_indices)
-                common_derivs = [gp_utils.to_list(d) for d in common]
-                print('Making predictions for all derivatives that are common among submodels')
+                # Default: predict all derivatives within n_bases and n_order,
+                # deterministically sorted by total derivative order
+                common_derivs = utils.flatten_der_indices(
+                    utils.gen_OTI_indices(self.n_bases, self.n_order)
+                )
 
             # Determine prediction order from requested derivatives
             required_order = max(

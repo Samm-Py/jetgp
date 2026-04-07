@@ -451,7 +451,7 @@ def compute_dimension_differences(k, X1, X2, n1, n2, rays_X1, rays_X2,
         # Reshape perturbations from (n,) to (n, 1) for fused function
         perturb1 = oti_module.zeros((n1, 1)) + perturb_X1
         perturb2 = oti_module.zeros((n2, 1)) + perturb_X2
-        diffs_k = oti_module.zeros((n1, n2))
+        diffs_k = oti_module.empty((n1, n2))
         diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
         return diffs_k
 
@@ -543,7 +543,9 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
             e_tags_2.append(oti_module.e((2 * i + 2), order=2 * n_order))
 
     # Only convert to OTI arrays if using fallback path
-    if _use_fused and n_order > 0:
+    _use_fused_path = _use_fused and n_order > 0
+    _use_fused_n0 = _use_fused and n_order == 0
+    if _use_fused_path or _use_fused_n0:
         X1_oti = None
         X2_oti = None
     else:
@@ -552,13 +554,27 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
 
     # Compute differences for each dimension
     differences_by_dim = []
+
+    if _use_fused_n0:
+        # n_order == 0: no perturbation, just real differences via fused path
+        perturb1 = oti_module.zeros((n1, 1))
+        perturb2 = oti_module.zeros((n2, 1))
+        for k in range(d):
+            real_diffs = np.ascontiguousarray(
+                X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+            )
+            diffs_k = oti_module.empty((n1, n2))
+            diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+            differences_by_dim.append(diffs_k)
+        return differences_by_dim
+
     for k in range(d):
         diffs_k = compute_dimension_differences(
             k, X1_oti, X2_oti, n1, n2, rays_X1, rays_X2,
             derivative_locations_X1, derivative_locations_X2,
             e_tags_1, e_tags_2, oti_module,
             X1_np=X1_np, X2_np=X2_np,
-            use_fused=(_use_fused and n_order > 0)
+            use_fused=_use_fused_path
         )
         differences_by_dim.append(diffs_k)
 

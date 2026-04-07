@@ -457,20 +457,40 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
     differences_by_dim : list of oti.array
         List of length d, each element is an (n1, n2) OTI array of differences for that dimension
     """
-    X1 = oti_module.array(X1)
-    X2 = oti_module.array(X2)
-    n1, d = X1.shape
-    n2, _ = X2.shape
-    
+    X1_np = np.asarray(X1, dtype=np.float64)
+    X2_np = np.asarray(X2, dtype=np.float64)
+    n1, d = X1_np.shape
+    n2 = X2_np.shape[0]
+
+    # Check if the fused C-level function is available
+    _use_fused = hasattr(oti_module.zeros((1, 1)), 'fused_from_real_with_perturbations')
+
+    # Fast path for n_order == 0: no perturbation, just real differences
+    if n_order == 0 and _use_fused:
+        perturb1 = oti_module.zeros((n1, 1))
+        perturb2 = oti_module.zeros((n2, 1))
+        differences_by_dim = []
+        for k in range(d):
+            real_diffs = np.ascontiguousarray(
+                X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+            )
+            diffs_k = oti_module.empty((n1, n2))
+            diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+            differences_by_dim.append(diffs_k)
+        return differences_by_dim
+
+    X1 = oti_module.array(X1_np)
+    X2 = oti_module.array(X2_np)
+
     # Determine number of derivative directions from rays arrays
     m1 = len(rays_X1) if rays_X1 is not None else 0
     m2 = len(rays_X2) if rays_X2 is not None else 0
     m = max(m1, m2)
-    
+
     # Pre-compute OTI basis elements
     e_tags_1 = []
     e_tags_2 = []
-    
+
     if n_order == 0:
         e_tags_1 = [0] * m
         e_tags_2 = [0] * m
@@ -482,17 +502,17 @@ def differences_by_dim_func(X1, X2, rays_X1, rays_X2, derivative_locations_X1, d
         for i in range(m):
             e_tags_1.append(oti_module.e((2 * i + 1), order=2 * n_order))
             e_tags_2.append(oti_module.e((2 * i + 2), order=2 * n_order))
-    
+
     # Compute differences for each dimension
     differences_by_dim = []
     for k in range(d):
         diffs_k = compute_dimension_differences(
-            k, X1, X2, n1, n2, rays_X1, rays_X2, 
+            k, X1, X2, n1, n2, rays_X1, rays_X2,
             derivative_locations_X1, derivative_locations_X2,
             e_tags_1, e_tags_2, oti_module
         )
         differences_by_dim.append(diffs_k)
-    
+
     return differences_by_dim
 # =============================================================================
 # Derivative index transformation utilities

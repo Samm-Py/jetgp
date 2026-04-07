@@ -148,9 +148,10 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             cls.params,
             rays_predict=cls.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-    
+
     def test_submodels_are_disjoint(self):
         """Test that submodel derivative locations are disjoint."""
         overlap = set(self.sm1_indices) & set(self.sm2_indices)
@@ -326,9 +327,10 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=False,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Should return function + 2 derivative outputs
         self.assertEqual(y_pred.shape[0], 3,
                         f"Expected 3 output rows (func + 2 derivs), got {y_pred.shape[0]}")
@@ -380,7 +382,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         # Predictions should still work via fallback
@@ -408,7 +411,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=False,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         # Predictions should still work via fallback
@@ -425,9 +429,10 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Get predictions with fallback (mocked Cholesky failure)
         with patch('jetgp.wdegp.wdegp.cho_factor', side_effect=LinAlgError("Mocked Cholesky failure")):
             y_pred_fallback, cov_fallback = self.model.predict(
@@ -435,7 +440,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         # Results should be very similar (within numerical tolerance)
@@ -633,7 +639,8 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             cls.params,
             rays_predict=cls.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
     
     def test_submodels_are_disjoint(self):
@@ -754,14 +761,15 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=False,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Function values should be accurate
         y_func_pred = y_pred[0, :].flatten()
         abs_error = np.abs(y_func_pred - self.y_func_all)
         max_error = np.max(abs_error)
-        
+
         self.assertLess(max_error, 1e-6,
                        f"Function interpolation error (with deriv, no cov): {max_error}")
 
@@ -777,7 +785,8 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         # Predictions should still work

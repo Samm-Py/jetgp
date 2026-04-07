@@ -260,13 +260,24 @@ def differences_by_dim_func(X1, X2, rays, n_order, oti_module, return_deriv=True
 
     # Case 1: n_order == 0 (no hypercomplex perturbation)
     if n_order == 0:
-        X1_oti = oti_module.array(X1_np)
-        X2_oti = oti_module.array(X2_np)
-        for k in range(d):
-            diffs_k = oti_module.zeros((n1, n2))
-            for i in range(n1):
-                diffs_k[i, :] = X1_oti[i, k] - oti_module.transpose(X2_oti[:, k])
-            differences_by_dim.append(diffs_k)
+        if _use_fused:
+            perturb1 = oti_module.zeros((n1, 1))
+            perturb2 = oti_module.zeros((n2, 1))
+            for k in range(d):
+                real_diffs = np.ascontiguousarray(
+                    X1_np[:, k:k+1] - X2_np[:, k:k+1].T, dtype=np.float64
+                )
+                diffs_k = oti_module.empty((n1, n2))
+                diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
+                differences_by_dim.append(diffs_k)
+        else:
+            X1_oti = oti_module.array(X1_np)
+            X2_oti = oti_module.array(X2_np)
+            for k in range(d):
+                diffs_k = oti_module.zeros((n1, n2))
+                for i in range(n1):
+                    diffs_k[i, :] = X1_oti[i, k] - oti_module.transpose(X2_oti[:, k])
+                differences_by_dim.append(diffs_k)
         return differences_by_dim
 
     # Determine the order for hypercomplex units based on return_deriv
@@ -279,7 +290,7 @@ def differences_by_dim_func(X1, X2, rays, n_order, oti_module, return_deriv=True
     e_bases = [oti_module.e(i + 1, order=hc_order) for i in range(n_rays)]
     perts = np.dot(rays, e_bases)
 
-    if _use_fused and n_order > 0:
+    if _use_fused:
         # --- Fused path: numpy broadcast for real part, C-level OTI fill ---
         perturb2 = oti_module.zeros((n2, 1))  # X2 has no perturbation in DDEGP
 
@@ -291,7 +302,7 @@ def differences_by_dim_func(X1, X2, rays, n_order, oti_module, return_deriv=True
             # Perturbation: perts[k] (ray-projected) broadcast to all n1 points
             perturb1 = oti_module.zeros((n1, 1)) + perts[k]
             # Fused fill: out[i,j].real = real_diffs[i,j], out[i,j].im = perturb1[i] - 0
-            diffs_k = oti_module.zeros((n1, n2))
+            diffs_k = oti_module.empty((n1, n2))
             diffs_k.fused_from_real_with_perturbations(real_diffs, perturb1, perturb2)
             differences_by_dim.append(diffs_k)
 

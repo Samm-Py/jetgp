@@ -146,9 +146,10 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             cls.params,
             rays_predict=cls.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-    
+
     def test_submodels_are_disjoint(self):
         """Test that submodel derivative locations are disjoint."""
         overlap = set(self.sm1_indices) & set(self.sm2_indices)
@@ -324,20 +325,21 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=False,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Should return function + 2 derivative outputs
         self.assertEqual(y_pred.shape[0], 3,
                         f"Expected 3 output rows (func + 2 derivs), got {y_pred.shape[0]}")
         self.assertEqual(y_pred.shape[1], self.n_train,
                         f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
-        
+
         # Function values should be accurate
         y_func_pred = y_pred[0, :].flatten()
         abs_error = np.abs(y_func_pred - self.y_func_all)
         max_error = np.max(abs_error)
-        
+
         self.assertLess(max_error, 1e-6,
                        f"Function interpolation error (with deriv, no cov): {max_error}")
 
@@ -353,7 +355,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=True,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
         
         # Should return (y_val, y_var, submodel_vals, submodel_cov)
@@ -396,19 +399,20 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=False,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Should return (y_val, submodel_vals)
         self.assertEqual(len(result), 2,
                         f"Expected 2 return values, got {len(result)}")
-        
+
         y_val, submodel_vals = result
-        
+
         # Check main predictions
         self.assertEqual(y_val.shape[0], 3,
                         f"Expected 3 output rows, got {y_val.shape[0]}")
-        
+
         # Check submodel_vals structure
         self.assertEqual(len(submodel_vals), 2,
                         f"Expected 2 submodel predictions, got {len(submodel_vals)}")
@@ -448,7 +452,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=False,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
         
         y_val, submodel_vals = result
@@ -495,23 +500,24 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
-        
+
         # Predictions should still work via fallback
         self.assertEqual(y_pred.shape[0], 3,
                         f"Expected 3 output rows, got {y_pred.shape[0]}")
         self.assertEqual(y_pred.shape[1], self.n_train,
                         f"Expected {self.n_train} prediction points, got {y_pred.shape[1]}")
-        
+
         # Covariance should still be computed
         self.assertIsNotNone(cov, "Covariance should be returned even with Cholesky fallback")
-        
+
         # Function values should still be reasonably accurate
         y_func_pred = y_pred[0, :].flatten()
         abs_error = np.abs(y_func_pred - self.y_func_all)
         max_error = np.max(abs_error)
-        
+
         self.assertLess(max_error, 1e-1,
                        f"Function interpolation error with Cholesky fallback: {max_error}")
 
@@ -523,9 +529,10 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=False,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
-        
+
         # Predictions should still work via fallback
         self.assertEqual(y_pred.shape[0], 3,
                         f"Expected 3 output rows, got {y_pred.shape[0]}")
@@ -540,9 +547,10 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Get predictions with fallback (mocked Cholesky failure)
         with patch('jetgp.wdegp.wdegp.cho_factor', side_effect=LinAlgError("Mocked Cholesky failure")):
             y_pred_fallback, cov_fallback = self.model.predict(
@@ -550,7 +558,8 @@ class TestWDEGPWithGDDEGPSubmodels(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         # Results should be very similar (within numerical tolerance)
@@ -723,9 +732,10 @@ class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
             cls.params,
             rays_predict=cls.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-    
+
     def test_normalize_is_false(self):
         """Verify that normalize=False is correctly set."""
         self.assertFalse(self.model.normalize, "Model should have normalize=False")
@@ -796,9 +806,10 @@ class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=False,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         self.assertEqual(y_pred.shape[0], 3)
         self.assertEqual(y_pred.shape[1], self.n_train)
 
@@ -810,7 +821,8 @@ class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=True,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
         
         self.assertEqual(len(result), 4)
@@ -831,7 +843,8 @@ class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=False,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
         
         self.assertEqual(len(result), 2)
@@ -849,7 +862,8 @@ class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         self.assertEqual(y_pred.shape[0], 3)
@@ -863,16 +877,18 @@ class TestWDEGPWithGDDEGPNoNormalize(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         with patch('jetgp.wdegp.wdegp.cho_factor', side_effect=LinAlgError("Mocked")):
             y_pred_fallback, _ = self.model.predict(
                 self.X_train,
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         np.testing.assert_array_almost_equal(
@@ -1063,7 +1079,8 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             cls.params,
             rays_predict=cls.rays_predict,
             calc_cov=True,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
     
     def test_submodels_are_disjoint(self):
@@ -1184,14 +1201,15 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             self.params,
             rays_predict=self.rays_predict,
             calc_cov=False,
-            return_deriv=True
+            return_deriv=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         # Function values should be accurate
         y_func_pred = y_pred[0, :].flatten()
         abs_error = np.abs(y_func_pred - self.y_func_all)
         max_error = np.max(abs_error)
-        
+
         self.assertLess(max_error, 1e-6,
                        f"Function interpolation error (with deriv, no cov): {max_error}")
 
@@ -1207,17 +1225,18 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=True,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         self.assertEqual(len(result), 4,
                         f"Expected 4 return values, got {len(result)}")
-        
+
         y_val, y_var, submodel_vals, submodel_cov = result
-        
+
         self.assertEqual(y_var.shape, y_val.shape,
                         f"Variance shape should match prediction shape")
-        
+
         self.assertEqual(len(submodel_vals), 2,
                         f"Expected 2 submodel predictions")
         self.assertEqual(len(submodel_cov), 2,
@@ -1231,14 +1250,15 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             rays_predict=self.rays_predict,
             calc_cov=False,
             return_deriv=True,
-            return_submodels=True
+            return_submodels=True,
+            derivs_to_predict=[[[1, 1]], [[2, 1]]]
         )
-        
+
         self.assertEqual(len(result), 2,
                         f"Expected 2 return values, got {len(result)}")
-        
+
         y_val, submodel_vals = result
-        
+
         self.assertEqual(len(submodel_vals), 2,
                         f"Expected 2 submodel predictions")
 
@@ -1251,12 +1271,12 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
             return_deriv=False,
             return_submodels=True
         )
-        
+
         self.assertEqual(len(result), 4,
                         f"Expected 4 return values, got {len(result)}")
-        
+
         y_val, y_var, submodel_vals, submodel_cov = result
-        
+
         self.assertEqual(y_val.shape[0], 1,
                         f"Expected 1 output row (function only)")
         self.assertEqual(len(submodel_vals), 2)
@@ -1274,7 +1294,8 @@ class TestWDEGPWithGDDEGPMixedOrders(unittest.TestCase):
                 self.params,
                 rays_predict=self.rays_predict,
                 calc_cov=True,
-                return_deriv=True
+                return_deriv=True,
+                derivs_to_predict=[[[1, 1]], [[2, 1]]]
             )
         
         # Predictions should still work

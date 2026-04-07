@@ -181,16 +181,7 @@ class degp:
             if derivs_to_predict is not None:
                 common_derivs = derivs_to_predict
             else:
-                if self.n_order == 0:
-                    raise ValueError(
-                        "derivs_to_predict must be provided when predicting derivatives "
-                        "from a model trained with n_order=0 (no derivative training data)."
-                    )
                 common_derivs = self.flattened_der_indices
-                print(
-                    f"Note: derivs_to_predict is None. Predictions will include all derivatives "
-                    f"used in training: {self.flattened_der_indices}"
-                )
 
             # Determine prediction order from requested derivatives
             required_order = max(
