@@ -6,7 +6,7 @@ def pso(func, lb, ub, **kwargs):
     """
     # Extract PSO-specific args or set defaults
     pop_size = kwargs.pop("pop_size", 20)
-    n_generations = kwargs.pop("n_generations", 50)
+    n_generations = kwargs.pop("n_generations", 100)
     local_opt_every = kwargs.pop("local_opt_every", 15)
     initial_positions = kwargs.pop("initial_positions", None)
     omega = kwargs.pop("omega", 0.5)
