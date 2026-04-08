@@ -67,7 +67,7 @@ Step 2: Set configuration parameters
 
     # Sparse Cholesky parameters
     rho = 3.0
-    use_supernodes = True
+    use_supernodes = False
 
     print("Configuration complete!")
     print(f"Number of training points: {num_training_pts}")

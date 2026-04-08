@@ -2279,7 +2279,8 @@ Step 11: Demonstrate GDDEGP prediction flexibility
        test_points, params,
        calc_cov=False,
        return_deriv=True,
-       rays_predict=rays_predict
+       rays_predict=rays_predict,
+       derivs_to_predict = [[[1,1]], [[2,1]]]
    )
    
    print(f"\nPrediction shape: {y_pred_derivs.shape}")
