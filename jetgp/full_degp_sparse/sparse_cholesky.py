@@ -193,6 +193,7 @@ def build_U(K_ord, S, N, block_size=0, out=None):
     return U
 
 
+@profile
 def build_U_from_phi(phi_exp_3d, S, N, block_size,
                      k_type, k_phys, deriv_lookup, sign_lookup,
                      P_full, sigma_n_sq, sigma_data_diag,
@@ -234,7 +235,9 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
 
     if out is not None:
         U = out
-        U[:] = 0.0
+        # No need to zero: the sparsity pattern S is fixed, so the loop
+        # overwrites exactly the same entries every call.  Non-pattern
+        # entries stay at zero from the initial np.zeros allocation.
     else:
         U = np.zeros((N, N))
 
@@ -261,9 +264,8 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
         # Within each block, earlier columns condition on the union
         # neighbourhood (slightly larger than their own S[j]), which gives
         # a tighter Vecchia approximation at minimal accuracy cost.
-        cols = list(range(start, end))
-        n_cols = len(cols)
-        positions = np.searchsorted(nb_union, cols)
+        n_cols = end - start
+        positions = np.searchsorted(nb_union, np.arange(start, end))
         E = np.zeros((m_union, n_cols))
         E[positions, np.arange(n_cols)] = 1.0
         try:
@@ -275,7 +277,7 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
         np.maximum(diag_vals, 1e-30, out=diag_vals)
         np.sqrt(diag_vals, out=diag_vals)
         V /= diag_vals
-        U[np.ix_(nb_union, cols)] = V
+        U[nb_union, start:end] = V
 
     return U
 

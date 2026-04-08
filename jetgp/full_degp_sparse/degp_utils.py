@@ -620,6 +620,75 @@ def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
                     W_proj[fi, ri, ci] += sj * W[ro + ki, co + kj]
 
 
+@numba.jit(nopython=True, cache=True)
+def _project_alpha_to_phi_space(alpha_v, alpha_proj, n_rows_func, n_cols_func,
+                                 fd_flat_indices, df_flat_indices, dd_flat_indices,
+                                 idx_flat, idx_offsets, idx_sizes,
+                                 signs, n_deriv_types, row_offsets, col_offsets):
+    """
+    Project the rank-1 matrix alpha*alpha^T into phi_exp-space.
+
+    Same structure as _project_W_to_phi_space but computes
+    alpha_v[r]*alpha_v[c] on the fly instead of reading W[r,c].
+    """
+    # Zero out alpha_proj
+    for d in range(alpha_proj.shape[0]):
+        for r in range(alpha_proj.shape[1]):
+            for c in range(alpha_proj.shape[2]):
+                alpha_proj[d, r, c] = 0.0
+
+    s0 = signs[0]
+
+    # ff block: alpha_v[r] * alpha_v[c]
+    for r in range(n_rows_func):
+        ar = alpha_v[r]
+        for c in range(n_cols_func):
+            alpha_proj[0, r, c] += s0 * ar * alpha_v[c]
+
+    # fd blocks
+    for j in range(n_deriv_types):
+        fi = fd_flat_indices[j]
+        sj = signs[j + 1]
+        co = col_offsets[j]
+        off_j = idx_offsets[j]
+        sz_j = idx_sizes[j]
+        for r in range(n_rows_func):
+            ar = alpha_v[r]
+            for k in range(sz_j):
+                ci = idx_flat[off_j + k]
+                alpha_proj[fi, r, ci] += sj * ar * alpha_v[co + k]
+
+    # df blocks
+    for i in range(n_deriv_types):
+        fi = df_flat_indices[i]
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for k in range(sz_i):
+            ri = idx_flat[off_i + k]
+            ak = alpha_v[ro + k]
+            for c in range(n_cols_func):
+                alpha_proj[fi, ri, c] += s0 * ak * alpha_v[c]
+
+    # dd blocks
+    for i in range(n_deriv_types):
+        ro = row_offsets[i]
+        off_i = idx_offsets[i]
+        sz_i = idx_sizes[i]
+        for j in range(n_deriv_types):
+            fi = dd_flat_indices[i, j]
+            sj = signs[j + 1]
+            co = col_offsets[j]
+            off_j = idx_offsets[j]
+            sz_j = idx_sizes[j]
+            for ki in range(sz_i):
+                ri = idx_flat[off_i + ki]
+                aki = alpha_v[ro + ki]
+                for kj in range(sz_j):
+                    ci = idx_flat[off_j + kj]
+                    alpha_proj[fi, ri, ci] += sj * aki * alpha_v[co + kj]
+
+
 def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
     """
     Precompute all structural information needed by rbf_kernel so it can be

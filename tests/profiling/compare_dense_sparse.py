@@ -80,7 +80,7 @@ def run_comparison(N_TRAIN, rho=1.0, n_evals=50):
 print(f"DIM={DIM}, comparing dense vs sparse NLML eval times")
 print(f"{'='*90}")
 
-for rho in [0.5, 1.0, 3.0, 5.0, 10.0]:
+for rho in [0.5, 1.0, 1.5]:
     print(f"\n--- rho={rho} ---")
-    for N in [20, 50, 100, 150]:
+    for N in [20, 50, 100]:
         run_comparison(N, rho=rho)

@@ -24,15 +24,12 @@ from jetgp.full_degp_sparse.degp import degp as SparseDEGP
 
 
 DIM = 20
-N_TRAIN = 20
+N_TRAIN = 100
 N_TEST = 500
 DER_INDICES = [[[[i, 1]] for i in range(1, DIM + 1)]]
 
 JADE_KWARGS = dict(
-    n_generations=30,
-    pop_size=15,
-    local_opt_every=30,
-    debug=False,
+    n_restart_optimizer = 1
 )
 
 
@@ -87,16 +84,16 @@ def main():
     )
     t_build_dense = time.perf_counter() - t0
 
-    t_nlml_dense = time_nlml(dense, x0)
-    t_nllg_dense = time_nlml_and_grad(dense, x0)
+    #t_nlml_dense = time_nlml(dense, x0)
+    #t_nllg_dense = time_nlml_and_grad(dense, x0)
 
-    print(f"  Dense build:       {t_build_dense:.3f}s")
-    print(f"  Dense NLML:        {t_nlml_dense:.4f}s")
-    print(f"  Dense NLML+grad:   {t_nllg_dense:.4f}s")
+    #print(f"  Dense build:       {t_build_dense:.3f}s")
+    #print(f"  Dense NLML:        {t_nlml_dense:.4f}s")
+    #print(f"  Dense NLML+grad:   {t_nllg_dense:.4f}s")
 
     print("  Dense optimising...", flush=True)
     t0 = time.perf_counter()
-    dp = dense.optimize_hyperparameters(optimizer='jade', **JADE_KWARGS)
+    dp = dense.optimize_hyperparameters(optimizer='lbfgs', **JADE_KWARGS)
     t_opt_dense = time.perf_counter() - t0
     print(f"  Dense opt time:    {t_opt_dense:.2f}s")
 
@@ -106,7 +103,7 @@ def main():
     print(f"  Dense NRMSE:       {m_d['nrmse']:.4e}")
 
     # ── Sparse at various rho ──────────────────────────────────────────
-    rho_values = [3, 5, 10, 20]
+    rho_values = [1]
 
     print(f"\n  {'rho':>5} │ {'sp%':>6} {'#SN':>4} │ "
           f"{'build':>7} {'NLML':>8} {'NLL+g':>8} {'opt':>8} │ "
@@ -120,7 +117,7 @@ def main():
             n_order=1, n_bases=DIM,
             der_indices=DER_INDICES,
             normalize=True, kernel='SE', kernel_type='anisotropic',
-            rho=rho, use_supernodes=True,
+            rho=rho, use_supernodes=False,
         )
         t_build = time.perf_counter() - t0
 
@@ -132,25 +129,25 @@ def main():
         sp_pct = 1 - nnz / max_nnz
         n_sn = len(sparse.sparse_supernodes) if sparse.sparse_supernodes else N_TRAIN
 
-        t_nlml = time_nlml(sparse, x0)
-        t_nllg = time_nlml_and_grad(sparse, x0)
+        #t_nlml = time_nlml(sparse, x0)
+        #t_nllg = time_nlml_and_grad(sparse, x0)
 
         t0 = time.perf_counter()
-        sp_params = sparse.optimize_hyperparameters(optimizer='jade', **JADE_KWARGS)
+        sp_params = sparse.optimize_hyperparameters(optimizer='lbfgs', **JADE_KWARGS)
         t_opt = time.perf_counter() - t0
 
         y_pred_s = sparse.predict(X_test, sp_params).flatten()
         m_s = compute_metrics(y_test, y_pred_s)
 
-        print(f"  {rho:>5} │ {sp_pct:>5.0%} {n_sn:>4} │ "
-              f"{t_build:>6.3f}s {t_nlml:>7.4f}s {t_nllg:>7.4f}s {t_opt:>7.2f}s │ "
-              f"{m_s['rmse']:>10.4e} {m_s['nrmse']:>10.4e}")
+        #print(f"  {rho:>5} │ {sp_pct:>5.0%} {n_sn:>4} │ "
+        #      f"{t_build:>6.3f}s {t_nlml:>7.4f}s {t_nllg:>7.4f}s {t_opt:>7.2f}s │ "
+        #      f"{m_s['rmse']:>10.4e} {m_s['nrmse']:>10.4e}")
 
     # Dense summary line
-    print("  " + "─" * 85)
-    print(f"  {'dense':>5} │ {'0%':>6} {'—':>4} │ "
-          f"{t_build_dense:>6.3f}s {t_nlml_dense:>7.4f}s {t_nllg_dense:>7.4f}s {t_opt_dense:>7.2f}s │ "
-          f"{m_d['rmse']:>10.4e} {m_d['nrmse']:>10.4e}")
+    #print("  " + "─" * 85)
+    #print(f"  {'dense':>5} │ {'0%':>6} {'—':>4} │ "
+    #      f"{t_build_dense:>6.3f}s {t_nlml_dense:>7.4f}s {t_nllg_dense:>7.4f}s {t_opt_dense:>7.2f}s │ "
+    #      f"{m_d['rmse']:>10.4e} {m_d['nrmse']:>10.4e}")
 
 
 if __name__ == '__main__':

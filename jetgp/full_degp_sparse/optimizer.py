@@ -1,6 +1,6 @@
 import numpy as np
 import numba
-from scipy.linalg import cho_solve, cho_factor
+from scipy.linalg import cho_solve, cho_factor, blas
 from jetgp.full_degp_sparse import degp_utils as utils
 from jetgp.full_degp_sparse.sparse_cholesky import (
     build_U, build_U_supernodes, nlml_from_U, alpha_from_U
@@ -9,6 +9,37 @@ from line_profiler import profile
 import jetgp.utils as gen_utils
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
 from jetgp.utils import matern_kernel_grad_builder
+
+
+@numba.jit(nopython=True, cache=True)
+def _symmetrise_upper(A):
+    """Copy upper triangle to lower triangle in-place."""
+    n = A.shape[0]
+    for i in range(n):
+        for j in range(i + 1, n):
+            A[j, i] = A[i, j]
+
+
+@numba.jit(nopython=True, parallel=True, cache=True)
+def _permute_and_subtract_outer(K_inv_ord, alpha_v, P_full, W):
+    """Fused: W[P[i], P[j]] = K_inv_ord[i, j] - alpha_v[P[i]] * alpha_v[P[j]]
+    Reads only the lower triangle of K_inv_ord (as produced by dsyrk with lower=1
+    on a Fortran-order buffer).  In column-major layout, lower-triangle entries
+    within each column are contiguous → cache-friendly sequential reads.
+    W is symmetric, so we write both (pi,pj) and (pj,pi).
+    """
+    N = len(P_full)
+    for i in numba.prange(N):
+        pi = P_full[i]
+        ai = alpha_v[pi]
+        # Diagonal
+        W[pi, pi] = K_inv_ord[i, i] - ai * ai
+        # j > i  →  read lower triangle: K_inv_ord[j, i] (row > col)
+        for j in range(i + 1, N):
+            pj = P_full[j]
+            val = K_inv_ord[j, i] - ai * alpha_v[pj]
+            W[pi, pj] = val
+            W[pj, pi] = val
 
 
 def _build_k_index_map(plan, n_rows_func):
@@ -92,6 +123,63 @@ def _extract_K_sub(phi_exp_3d, nb_type, nb_phys, deriv_lookup, sign_lookup,
         # Add noise to diagonal
         K_sub[a, a] += sigma_n_sq + sigma_data_diag[a]
 
+
+@numba.jit(nopython=True, cache=True)
+def _extract_dK_sub(dphi_exp_3d, nb_type, nb_phys, deriv_lookup, sign_lookup, m, dK_sub):
+    """
+    Assemble dK_sub/dtheta from dphi_exp_3d for a neighbourhood.
+
+    Same as _extract_K_sub but without noise diagonal (noise doesn't
+    depend on kernel hyperparameters).
+    """
+    for a in range(m):
+        ta = nb_type[a]
+        pa = nb_phys[a]
+        for b in range(m):
+            tb = nb_type[b]
+            pb = nb_phys[b]
+            d = deriv_lookup[ta, tb]
+            dK_sub[a, b] = dphi_exp_3d[d, pa, pb] * sign_lookup[tb]
+
+
+@numba.jit(nopython=True, cache=True)
+def _trace_term_all_blocks(dphi_exp_3d, deriv_lookup, sign_lookup,
+                           block_nb_type, block_nb_phys, block_m,
+                           block_V_flat, block_V_offsets, block_n_cols,
+                           n_blocks):
+    """
+    Compute sum_blocks trace(V^T dK_sub V) in a single numba pass.
+
+    Avoids Python-level block loop and per-block np.empty/matmul overhead.
+    """
+    result = 0.0
+    for b in range(n_blocks):
+        m = block_m[b]
+        n_cols = block_n_cols[b]
+        off = block_V_offsets[b]
+
+        # For each column pair (i, j) of V, compute V[:,i]^T dK_sub V[:,j]
+        # trace = sum_i V[:,i]^T dK_sub V[:,i]
+        nb_type = block_nb_type[b]
+        nb_phys = block_nb_phys[b]
+
+        for col in range(n_cols):
+            # Compute V[:,col]^T @ dK_sub @ V[:,col]
+            # = sum_a sum_b V[a,col] * dK_sub[a,b] * V[b,col]
+            for a in range(m):
+                ta = nb_type[a]
+                pa = nb_phys[a]
+                va = block_V_flat[off + col * m + a]
+                for bb in range(m):
+                    tb = nb_type[bb]
+                    pb = nb_phys[bb]
+                    d = deriv_lookup[ta, tb]
+                    dk_ab = dphi_exp_3d[d, pa, pb] * sign_lookup[tb]
+                    vb = block_V_flat[off + col * m + bb]
+                    result += va * dk_ab * vb
+    return result
+
+
 class Optimizer:
     """
     Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
@@ -117,6 +205,7 @@ class Optimizer:
         self._W_proj_buf = None
         self._W_proj_shape = None
         self._U_buf = None
+        self._K_inv_buf = None
         self._P_ix = None
         # Direct phi extraction maps (built lazily)
         self._k_index_map = None
@@ -257,7 +346,7 @@ class Optimizer:
             sd_diag_orig = np.zeros(len(P_full))
         self._sigma_data_diag_mmd = sd_diag_orig[P_full]
 
-    @profile
+
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the negative log marginal likelihood (NLL) via sparse U.
@@ -275,14 +364,20 @@ class Optimizer:
             Value of the negative log marginal likelihood.
         """
         try:
+            if self.model._use_dense_factor:
+                # Dense path: single Cholesky, no sparse U
+                W, alpha, nll, *_ = self._dense_nll_and_W(x0)
+                if nll > 1e6:
+                    return 1e6
+                return nll
+
             # Use direct phi path (skip full K construction) when possible
             use_direct = (
-                self._kernel_plan is not None
-                and not self.model.use_supernodes
+                not self.model.use_supernodes
                 and self.model.n_order > 0
             )
             if use_direct:
-                alpha, U, nlml = self._sparse_nlml_direct(x0)
+                alpha, U, nlml, *_ = self._sparse_nlml_direct(x0)
             else:
                 K, _, _, _, _ = self._build_K_and_phi(x0)
                 alpha, U, nlml = self._sparse_U_alpha_nll(K)
@@ -320,6 +415,7 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
+    @profile
     def _compute_grad(self, x0, W, phi, n_bases, oti, diffs):
         """
         Compute the NLL gradient given pre-factorised W = K^{-1} - α α^T.
@@ -670,6 +766,368 @@ class Optimizer:
         return grad
 
     @profile
+    def _compute_grad_blockwise(self, x0, U, alpha_v, phi, n_bases, oti, diffs):
+        """
+        Compute the NLL gradient block-by-block using the Vecchia decomposition.
+
+        Avoids forming the dense W = K^{-1} - αα^T.  Instead decomposes:
+            grad[d] = 0.5 * Σ_j u_j^T dK_d u_j  -  0.5 * α^T dK_d α
+
+        The trace term uses the sparse U columns within each block's
+        neighbourhood (same blocks as build_U_from_phi).  The α term is
+        a rank-1 quadratic form projected into phi-space once.
+        """
+        from math import comb
+
+        ln10        = np.log(10.0)
+        kernel      = self.model.kernel
+        kernel_type = self.model.kernel_type
+        D           = len(diffs)
+        sigma_n_sq  = (10.0 ** x0[-1]) ** 2
+
+        grad = np.zeros(len(x0))
+        deriv_order = 2 * self.model.n_order
+        plan = self._kernel_plan
+        P_full = self.model.mmd_P_full
+        N_total = len(P_full)
+        n_func = phi.shape[0]  # number of physical training points
+
+        # ── noise gradient: trace(W) = ||U||_F² - ||α||² ────────────
+        U_frob_sq = np.sum(U * U)
+        alpha_sq = np.dot(alpha_v, alpha_v)
+        trace_W = U_frob_sq - alpha_sq
+        grad[-1] = ln10 * sigma_n_sq * trace_W
+
+        # ── project αα^T into phi-space (rank-1, cheap) ─────────────
+        ndir = comb(n_bases + deriv_order, deriv_order)
+        proj_shape = (ndir, n_func, n_func)
+        if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
+            self._W_proj_buf = np.empty(proj_shape)
+            self._W_proj_shape = proj_shape
+        alpha_proj = self._W_proj_buf
+
+        row_off = plan.get('row_offsets_abs', plan['row_offsets'] + n_func)
+        col_off = plan.get('col_offsets_abs', plan['col_offsets'] + n_func)
+
+        utils._project_alpha_to_phi_space(
+            alpha_v, alpha_proj, n_func, n_func,
+            plan['fd_flat_indices'], plan['df_flat_indices'],
+            plan['dd_flat_indices'],
+            plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+            plan['signs'], plan['n_deriv_types'], row_off, col_off,
+        )
+
+        # ── pre-compute block metadata (packed for numba) ────────────
+        S = self.model.sparse_S_full_arr
+        block_size = self.model.n_bases + 1
+        k_type, k_phys, deriv_lookup, sign_lookup = self._k_index_map
+
+        # Pack block data into flat arrays for the numba trace kernel
+        block_nb_type_list = []
+        block_nb_phys_list = []
+        block_m_list = []
+        block_n_cols_list = []
+        V_parts = []
+        for start in range(0, N_total, block_size):
+            end = min(start + block_size, N_total)
+            nb_union = S[end - 1] if isinstance(S[end - 1], np.ndarray) else np.asarray(S[end - 1])
+            m = len(nb_union)
+            orig = P_full[nb_union]
+            block_nb_type_list.append(k_type[orig])
+            block_nb_phys_list.append(k_phys[orig])
+            block_m_list.append(m)
+            n_cols = end - start
+            block_n_cols_list.append(n_cols)
+            # Store V column-major: V[:,0], V[:,1], ... (length m*n_cols)
+            V = U[nb_union, start:end]  # (m, n_cols)
+            V_parts.append(V.ravel(order='F'))
+
+        n_blocks = len(block_m_list)
+        max_m = max(block_m_list)
+        # Pad nb_type/nb_phys to uniform length for numba typed array
+        block_nb_type = np.zeros((n_blocks, max_m), dtype=np.int64)
+        block_nb_phys = np.zeros((n_blocks, max_m), dtype=np.int64)
+        for i in range(n_blocks):
+            m = block_m_list[i]
+            block_nb_type[i, :m] = block_nb_type_list[i]
+            block_nb_phys[i, :m] = block_nb_phys_list[i]
+        block_m = np.array(block_m_list, dtype=np.int64)
+        block_n_cols = np.array(block_n_cols_list, dtype=np.int64)
+        block_V_flat = np.concatenate(V_parts)
+        block_V_offsets = np.zeros(n_blocks, dtype=np.int64)
+        for i in range(1, n_blocks):
+            block_V_offsets[i] = block_V_offsets[i-1] + block_m_list[i-1] * block_n_cols_list[i-1]
+
+        # ── vdot factors for alpha term ──────────────────────────────
+        _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
+
+        # ── helper: compute grad contribution for one dphi ───────────
+        def _gc_block(dphi):
+            # Expand dphi to dphi_exp_3d
+            dphi_exp = self._expand_derivs(dphi, n_bases, deriv_order)
+            dphi_3d = dphi_exp.reshape(ndir, n_func, n_func)
+
+            # Trace term: Σ_blocks trace(V^T dK_sub V) — single numba call
+            trace_term = _trace_term_all_blocks(
+                dphi_3d, deriv_lookup, sign_lookup,
+                block_nb_type, block_nb_phys, block_m,
+                block_V_flat, block_V_offsets, block_n_cols,
+                n_blocks)
+
+            # Alpha term: α^T dK α  (via vdot in phi-space)
+            alpha_term = dphi.vdot_expand_fast(_vdot_factors, alpha_proj)
+
+            return 0.5 * (trace_term - alpha_term)
+
+        # ── signal variance ──────────────────────────────────────────
+        grad[-2] = _gc_block(oti.mul(2.0 * ln10, phi))
+
+        # ── kernel-specific hyperparameter gradients ─────────────────
+
+        if kernel == 'SE':
+            if kernel_type == 'anisotropic':
+                ell = 10.0 ** x0[:D]
+                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi, -ln10 * ell[d] ** 2, d)
+                        grad[d] = _gc_block(dphi_buf)
+                elif hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], phi, -ln10 * ell[d] ** 2)
+                        grad[d] = _gc_block(dphi_buf)
+                else:
+                    for d in range(D):
+                        d_sq   = oti.mul(diffs[d], diffs[d])
+                        dphi_d = oti.mul(-ln10 * ell[d] ** 2, oti.mul(d_sq, phi))
+                        grad[d] = _gc_block(dphi_d)
+            else:
+                ell = 10.0 ** float(x0[0])
+                if hasattr(phi, 'fused_sum_sq_sparse'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq_sparse(diffs)
+                elif hasattr(phi, 'fused_sum_sq'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq(diffs)
+                else:
+                    sum_sq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                grad[0] = _gc_block(oti.mul(-ln10 * ell ** 2, oti.mul(sum_sq, phi)))
+
+        elif kernel == 'RQ':
+            if kernel_type == 'anisotropic':
+                ell      = 10.0 ** x0[:D]
+                alpha_rq = 10.0 ** float(x0[D])
+                alpha_idx = D
+            else:
+                ell_val  = 10.0 ** float(x0[0])
+                ell      = np.full(D, ell_val)
+                alpha_rq = np.exp(float(x0[1]))
+                alpha_idx = 1
+
+            if hasattr(phi, 'fused_sqdist_sparse'):
+                r2 = oti.zeros(phi.shape)
+                ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+                r2.fused_sqdist_sparse(diffs, ell_sq)
+            elif hasattr(phi, 'fused_sqdist'):
+                r2 = oti.zeros(phi.shape)
+                ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+                r2.fused_sqdist(diffs, ell_sq)
+            else:
+                r2 = oti.mul(ell[0], diffs[0])
+                r2 = oti.mul(r2, r2)
+                for d in range(1, D):
+                    td = oti.mul(ell[d], diffs[d])
+                    r2 = oti.sum(r2, oti.mul(td, td))
+            base     = oti.sum(1.0, oti.mul(r2, 1.0 / (2.0 * alpha_rq)))
+            inv_base = oti.pow(base, -1)
+            phi_over_base = oti.mul(phi, inv_base)
+
+            if kernel_type == 'anisotropic':
+                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi_over_base, -ln10 * ell[d] ** 2, d)
+                        grad[d] = _gc_block(dphi_buf)
+                elif hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], phi_over_base, -ln10 * ell[d] ** 2)
+                        grad[d] = _gc_block(dphi_buf)
+                else:
+                    for d in range(D):
+                        d_sq   = oti.mul(diffs[d], diffs[d])
+                        dphi_d = oti.mul(-ln10 * ell[d] ** 2, oti.mul(d_sq, phi_over_base))
+                        grad[d] = _gc_block(dphi_d)
+            else:
+                if hasattr(phi, 'fused_sum_sq_sparse'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq_sparse(diffs)
+                elif hasattr(phi, 'fused_sum_sq'):
+                    sum_sq = oti.zeros(phi.shape)
+                    sum_sq.fused_sum_sq(diffs)
+                else:
+                    sum_sq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_sq = oti.sum(sum_sq, oti.mul(diffs[d], diffs[d]))
+                grad[0] = _gc_block(oti.mul(-ln10 * ell[0] ** 2, oti.mul(sum_sq, phi_over_base)))
+
+            log_base = oti.log(base)
+            term = oti.sub(oti.sub(1.0, inv_base), log_base)
+            alpha_factor = ln10 * alpha_rq if kernel_type == 'anisotropic' else alpha_rq
+            grad[alpha_idx] = _gc_block(oti.mul(alpha_factor, oti.mul(phi, term)))
+
+        elif kernel == 'SineExp':
+            if kernel_type == 'anisotropic':
+                ell      = 10.0 ** x0[:D]
+                p        = 10.0 ** x0[D:2 * D]
+                pip      = np.pi / p
+                p_start  = D
+            else:
+                ell_val  = 10.0 ** float(x0[0])
+                p_val    = 10.0 ** float(x0[1])
+                pip_val  = np.pi / p_val
+                ell      = np.full(D, ell_val)
+                pip      = np.full(D, pip_val)
+                p_start  = 1
+
+            sin_d = []
+            cos_d = []
+            for d in range(D):
+                arg = oti.mul(pip[d], diffs[d])
+                sin_d.append(oti.sin(arg))
+                cos_d.append(oti.cos(arg))
+
+            if kernel_type == 'anisotropic':
+                if hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(sin_d[d], phi, -4.0 * ln10 * ell[d] ** 2)
+                        grad[d] = _gc_block(dphi_buf)
+                else:
+                    for d in range(D):
+                        sin_sq = oti.mul(sin_d[d], sin_d[d])
+                        grad[d] = _gc_block(oti.mul(-4.0 * ln10 * ell[d] ** 2,
+                                                     oti.mul(sin_sq, phi)))
+            else:
+                if hasattr(phi, 'fused_sum_sq'):
+                    sum_sin_sq = oti.zeros(phi.shape)
+                    sum_sin_sq.fused_sum_sq(sin_d)
+                else:
+                    sum_sin_sq = oti.mul(sin_d[0], sin_d[0])
+                    for d in range(1, D):
+                        sum_sin_sq = oti.sum(sum_sin_sq, oti.mul(sin_d[d], sin_d[d]))
+                grad[0] = _gc_block(oti.mul(-4.0 * ln10 * ell[0] ** 2,
+                                             oti.mul(sum_sin_sq, phi)))
+
+            if kernel_type == 'anisotropic':
+                for d in range(D):
+                    sc_diff = oti.mul(sin_d[d], oti.mul(cos_d[d], diffs[d]))
+                    scale   = 4.0 * ln10 * ell[d] ** 2 * pip[d]
+                    grad[p_start + d] = _gc_block(oti.mul(scale, oti.mul(sc_diff, phi)))
+            else:
+                sum_scd = oti.mul(sin_d[0], oti.mul(cos_d[0], diffs[0]))
+                for d in range(1, D):
+                    sum_scd = oti.sum(sum_scd,
+                                       oti.mul(sin_d[d], oti.mul(cos_d[d], diffs[d])))
+                scale = 4.0 * ln10 * ell[0] ** 2 * pip[0]
+                grad[p_start] = _gc_block(oti.mul(scale, oti.mul(sum_scd, phi)))
+
+        elif kernel == 'Matern':
+            kf = self.model.kernel_factory
+            if not hasattr(kf, '_matern_grad_prebuild'):
+                from jetgp.kernel_funcs.kernel_funcs import matern_kernel_grad_builder
+                kf._matern_grad_prebuild = matern_kernel_grad_builder(
+                    kf.nu, oti_module=oti)
+
+            if kernel_type == 'anisotropic':
+                ell = 10.0 ** x0[:D]
+            else:
+                ell = np.full(D, 10.0 ** float(x0[0]))
+
+            sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
+            _eps = 1e-10
+
+            if hasattr(phi, 'fused_sqdist_sparse'):
+                r2 = oti.zeros(phi.shape)
+                ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+                r2.fused_sqdist_sparse(diffs, ell_sq)
+            elif hasattr(phi, 'fused_sqdist'):
+                r2 = oti.zeros(phi.shape)
+                ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+                r2.fused_sqdist(diffs, ell_sq)
+            else:
+                r2 = oti.mul(ell[0], diffs[0])
+                r2 = oti.mul(r2, r2)
+                for d in range(1, D):
+                    td = oti.mul(ell[d], diffs[d])
+                    r2 = oti.sum(r2, oti.mul(td, td))
+            r_oti = oti.sqrt(oti.sum(r2, _eps ** 2))
+            f_prime_r = kf._matern_grad_prebuild(r_oti)
+            inv_r     = oti.pow(r_oti, -1)
+
+            base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
+            if kernel_type == 'anisotropic':
+                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul_sparse(diffs[d], base_matern, ln10 * ell[d] ** 2, d)
+                        grad[d] = _gc_block(dphi_buf)
+                elif hasattr(phi, 'fused_scale_sq_mul'):
+                    dphi_buf = oti.zeros(phi.shape)
+                    for d in range(D):
+                        dphi_buf.fused_scale_sq_mul(diffs[d], base_matern, ln10 * ell[d] ** 2)
+                        grad[d] = _gc_block(dphi_buf)
+                else:
+                    for d in range(D):
+                        d_sq   = oti.mul(diffs[d], diffs[d])
+                        dphi_d = oti.mul(ln10 * ell[d] ** 2, oti.mul(d_sq, base_matern))
+                        grad[d] = _gc_block(dphi_d)
+            else:
+                ell_val = ell[0]
+                if hasattr(phi, 'fused_sum_sq_sparse'):
+                    sum_dsq = oti.zeros(phi.shape)
+                    sum_dsq.fused_sum_sq_sparse(diffs)
+                elif hasattr(phi, 'fused_sum_sq'):
+                    sum_dsq = oti.zeros(phi.shape)
+                    sum_dsq.fused_sum_sq(diffs)
+                else:
+                    sum_dsq = oti.mul(diffs[0], diffs[0])
+                    for d in range(1, D):
+                        sum_dsq = oti.sum(sum_dsq, oti.mul(diffs[d], diffs[d]))
+                dphi_e = oti.mul(ln10 * ell_val ** 2, oti.mul(sum_dsq, base_matern))
+                grad[0] = _gc_block(dphi_e)
+
+        elif kernel == 'SI':
+            kf         = self.model.kernel_factory
+            si_prebuild = kf.SI_kernel_prebuild
+
+            if kernel_type == 'anisotropic':
+                ell = 10.0 ** x0[:D]
+            else:
+                ell = np.full(D, 10.0 ** float(x0[0]))
+
+            si_vals   = [si_prebuild(diffs[d]) for d in range(D)]
+            term_vals = [oti.sum(1.0, oti.mul(ell[d], si_vals[d])) for d in range(D)]
+
+            if kernel_type == 'anisotropic':
+                for d in range(D):
+                    phi_over_term = oti.div(phi, term_vals[d])
+                    dphi_d = oti.mul(ln10 * ell[d],
+                                     oti.mul(si_vals[d], phi_over_term))
+                    grad[d] = _gc_block(dphi_d)
+            else:
+                ell_val = ell[0]
+                acc = oti.mul(si_vals[0], oti.div(phi, term_vals[0]))
+                for d in range(1, D):
+                    acc = oti.sum(acc, oti.mul(si_vals[d],
+                                               oti.div(phi, term_vals[d])))
+                grad[0] = _gc_block(oti.mul(ln10 * ell_val, acc))
+
+        return grad
+
     def _build_K_and_phi(self, x0):
         """
         Shared helper: build K (with noise), phi, n_bases, oti, diffs.
@@ -705,16 +1163,19 @@ class Optimizer:
         K += self.model.sigma_data ** 2
         return K, phi, n_bases, oti, diffs
 
+    @profile
     def _sparse_nlml_direct(self, x0):
         """
         Compute sparse NLML directly from phi_exp_3d, skipping full K
         construction and permutation.
 
-        Returns (alpha_v, U, nll) in original index space.
+        Returns (alpha_v, U, nll, phi, n_bases, oti, diffs) where the
+        last four are needed by _compute_grad.
         """
         from jetgp.full_degp_sparse.sparse_cholesky import build_U_from_phi
 
         diffs = self.model.differences_by_dim
+        oti = self.model.kernel_factory.oti
         sigma_n_sq = (10.0 ** x0[-1]) ** 2
 
         phi = self.model.kernel_func(diffs, x0[:-1])
@@ -734,7 +1195,7 @@ class Optimizer:
         N_total = len(P_full)
 
         if self._U_buf is None or self._U_buf.shape[0] != N_total:
-            self._U_buf = np.zeros((N_total, N_total))
+            self._U_buf = np.zeros((N_total, N_total), order='F')
 
         U = build_U_from_phi(
             phi_3d, self.model.sparse_S_full_arr, N_total,
@@ -754,7 +1215,40 @@ class Optimizer:
         alpha_v = np.empty_like(alpha_ord)
         alpha_v[P_full] = alpha_ord
 
-        return alpha_v, U, nll
+        return alpha_v, U, nll, phi, n_bases, oti, diffs
+
+    @profile
+    def _dense_nll_and_W(self, x0):
+        """
+        Dense Cholesky path: build full K, factor once, compute NLL and W.
+
+        Used as a fallback when the sparsity pattern is too full for the
+        block-wise sparse path to be efficient.
+
+        Returns (W, alpha_v, nll, phi, n_bases, oti, diffs).
+        """
+        K, phi, n_bases, oti, diffs = self._build_K_and_phi(x0)
+        N = K.shape[0]
+
+        L, low = cho_factor(K, lower=True)
+        alpha_v = cho_solve((L, low), self.model.y_train)
+
+        nll = (0.5 * np.dot(self.model.y_train, alpha_v)
+               + np.sum(np.log(np.diag(L)))
+               + 0.5 * N * np.log(2 * np.pi))
+
+        K_inv = cho_solve((L, low), np.eye(N))
+        W = K_inv - np.outer(alpha_v, alpha_v)
+
+        # Cache dense factors for prediction
+        self.model._cached_L = L
+        self.model._cached_low = low
+        self.model._cached_alpha = alpha_v
+        self.model._cached_U = None
+        self.model._cached_P = None
+        self.model._cached_params = x0.copy()
+
+        return W, alpha_v, nll, phi, n_bases, oti, diffs
 
     @profile
     def _sparse_U_alpha_nll(self, K):
@@ -775,7 +1269,7 @@ class Optimizer:
             U, _ = build_U_supernodes(K_ord, self.model.sparse_supernodes_full, N_total)
         else:
             if self._U_buf is None or self._U_buf.shape[0] != N_total:
-                self._U_buf = np.zeros((N_total, N_total))
+                self._U_buf = np.zeros((N_total, N_total), order='F')
             U = build_U(K_ord, self.model.sparse_S_full_arr, N_total,
                         block_size=self.model.n_bases + 1, out=self._U_buf)
 
@@ -788,6 +1282,31 @@ class Optimizer:
 
         return alpha_v, U, nll
 
+    @profile
+    def _W_from_U(self, U, alpha_v):
+        """
+        Compute W = K^{-1} - αα^T from a pre-built sparse U.
+
+        U is in MMD order, alpha_v is in original index space.
+        Returns W in original index space.
+        """
+        P_full = self.model.mmd_P_full
+        N_total = len(P_full)
+
+        # K^{-1} = U @ U.T — exploit symmetry of result via dsyrk
+        # (computes upper triangle only, ~2x fewer FLOPs than dgemm)
+        if self._K_inv_buf is None or self._K_inv_buf.shape[0] != N_total:
+            self._K_inv_buf = np.empty((N_total, N_total), order='F')
+        K_inv_ord = blas.dsyrk(1.0, U, lower=1,
+                               c=self._K_inv_buf, overwrite_c=1)
+        # No symmetrisation needed — _permute_and_subtract_outer reads
+        # the lower triangle directly (contiguous in Fortran-order).
+
+        W = np.empty((N_total, N_total))
+        _permute_and_subtract_outer(K_inv_ord, alpha_v, P_full, W)
+        return W
+
+    @profile
     def _sparse_W_and_alpha(self, K):
         """
         Compute W = K^{-1} - αα^T and alpha using the sparse U factor.
@@ -809,20 +1328,24 @@ class Optimizer:
         return W, alpha_v, U, nll
 
     def nll_grad(self, x0):
-        """Analytic gradient of the NLL using the sparse U factor."""
+        """Analytic gradient of the NLL."""
         try:
-            K, phi, n_bases, oti, diffs = self._build_K_and_phi(x0)
-            W, _, _, _ = self._sparse_W_and_alpha(K)
+            if self.model._use_dense_factor:
+                W, alpha_v, nll, phi, n_bases, oti, diffs = self._dense_nll_and_W(x0)
+            else:
+                alpha_v, U, nll, phi, n_bases, oti, diffs = self._sparse_nlml_direct(x0)
+                W = self._W_from_U(U, alpha_v)
         except Exception:
             return np.zeros(len(x0))
         return self._compute_grad(x0, W, phi, n_bases, oti, diffs)
 
+    @profile
     def nll_and_grad(self, x0):
         """
-        Compute NLL and its gradient in a single pass using the sparse U factor.
+        Compute NLL and its gradient in a single pass.
 
-        Builds K once, runs _sparse_W_and_alpha to get (W, alpha, U, nll),
-        then passes W to _compute_grad. Caches alpha and U for prediction.
+        Routes to either the dense Cholesky path or the sparse U path
+        based on the sparsity pattern fill fraction.
 
         Returns
         -------
@@ -830,18 +1353,21 @@ class Optimizer:
         grad : ndarray
         """
         try:
-            K, phi, n_bases, oti, diffs = self._build_K_and_phi(x0)
-            W, alpha_v, U, nll = self._sparse_W_and_alpha(K)
+            if self.model._use_dense_factor:
+                W, alpha_v, nll, phi, n_bases, oti, diffs = self._dense_nll_and_W(x0)
+            else:
+                alpha_v, U, nll, phi, n_bases, oti, diffs = self._sparse_nlml_direct(x0)
+                W = self._W_from_U(U, alpha_v)
+
+                # Cache for fast prediction (reused by degp.predict)
+                self.model._cached_U = U
+                self.model._cached_P = self.model.mmd_P_full
+                self.model._cached_alpha = alpha_v
+                self.model._cached_L = None
+                self.model._cached_low = None
+                self.model._cached_params = x0.copy()
         except Exception:
             return 1e6, np.zeros(len(x0))
-
-        # Cache for fast prediction (reused by degp.predict)
-        self.model._cached_U = U
-        self.model._cached_P = self.model.mmd_P_full
-        self.model._cached_alpha = alpha_v
-        self.model._cached_L = None    # no dense factor on sparse path
-        self.model._cached_low = None
-        self.model._cached_params = x0.copy()
 
         grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
         return float(nll), grad

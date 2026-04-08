@@ -45,7 +45,7 @@ def sum_of_sines_gradient(X):
 JADE_KWARGS = dict(
     n_generations=50,
     pop_size=15,
-    local_opt_every=50,
+    local_opt_every=51,
     debug=False,
 )
 
@@ -144,7 +144,7 @@ def run_config(dim, n_train, rho, n_test=200):
         X_train, y_train, n_order=1, n_bases=dim,
         der_indices=der_indices, normalize=True,
         kernel='SE', kernel_type='anisotropic',
-        rho=rho, use_supernodes=True,
+        rho=rho, use_supernodes=False,
     )
 
     sp_info = sparsity_info(sparse)
@@ -178,9 +178,9 @@ if __name__ == '__main__':
     configs = [
         # (dim, n_train, rho)
         # K size = n_train * (1 + dim)
-        (2,  30, 10),   # K: 90x90
-        (5,  20, 10),   # K: 120x120
-        (10, 15, 10),   # K: 165x165
+        (2,  100, 1),   # K: 90x90
+        (5,  100, 1),   # K: 120x120
+        (10, 100, 1),   # K: 165x165
     ]
 
     print("=" * 110)

@@ -373,6 +373,7 @@ class KernelFactory:
             # Fallback: multiply by zero
             self.oti.mul(0.0, self._sqdist, out=self._sqdist)
 
+    @profile
     def _compute_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell[i]² * diff[i]², using fused C kernel when available."""
         if self._has_fused_sqdist_sparse is None:
