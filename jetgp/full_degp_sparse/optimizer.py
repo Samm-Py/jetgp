@@ -287,6 +287,12 @@ class Optimizer:
                 K, _, _, _, _ = self._build_K_and_phi(x0)
                 alpha, U, nlml = self._sparse_U_alpha_nll(K)
 
+            # Sparse U can silently produce bad factors when K is
+            # ill-conditioned (e.g. very small noise).  Clamp to 1e6
+            # to match the dense fallback behaviour.
+            if nlml > 1e6:
+                return 1e6
+
             self.model._cached_U = U
             self.model._cached_P = self.model.mmd_P_full
             self.model._cached_alpha = alpha
@@ -735,7 +741,7 @@ class Optimizer:
             block_size=self.model.n_bases + 1,
             k_type=k_type, k_phys=k_phys,
             deriv_lookup=deriv_lookup, sign_lookup=sign_lookup,
-            inv_P=self._inv_P,
+            P_full=self.model.mmd_P_full,
             sigma_n_sq=sigma_n_sq,
             sigma_data_diag=self._sigma_data_diag_mmd,
             out=self._U_buf,

@@ -195,7 +195,7 @@ def build_U(K_ord, S, N, block_size=0, out=None):
 
 def build_U_from_phi(phi_exp_3d, S, N, block_size,
                      k_type, k_phys, deriv_lookup, sign_lookup,
-                     inv_P, sigma_n_sq, sigma_data_diag,
+                     P_full, sigma_n_sq, sigma_data_diag,
                      out=None):
     """
     Build sparse U directly from phi_exp_3d, skipping full K construction.
@@ -217,8 +217,8 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
         Maps from original K index to (derivative type, physical point).
     deriv_lookup : int64 array of shape (n_types, n_types)
     sign_lookup : float64 array of shape (n_types,)
-    inv_P : int64 array of shape (N_total,)
-        Inverse MMD permutation: inv_P[mmd_idx] = original K index.
+    P_full : int64 array of shape (N_total,)
+        MMD permutation: P_full[mmd_idx] = original K index.
     sigma_n_sq : float
         Noise variance.
     sigma_data_diag : float64 array of shape (N_total,)
@@ -246,7 +246,7 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
         m_union = len(nb_union)
 
         # Map MMD-ordered union neighbourhood to original K indices
-        orig_nb_union = inv_P[nb_union]
+        orig_nb_union = P_full[nb_union]
         nb_type_union = k_type[orig_nb_union]
         nb_phys_union = k_phys[orig_nb_union]
         sd_diag_union = sigma_data_diag[nb_union]
