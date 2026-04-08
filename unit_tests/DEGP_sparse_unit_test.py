@@ -1,0 +1,235 @@
+"""
+Unit test for 2D Sparse DEGP with second-order derivatives.
+
+This test verifies that the sparse DEGP model correctly interpolates training data
+including function values, first-order derivatives, and second-order main
+derivatives for f(x,y) = sin(x)cos(y).
+
+Uses sparse Cholesky (Vecchia approximation) for the kernel inverse during training.
+"""
+
+import unittest
+import numpy as np
+from jetgp.full_degp_sparse.degp import degp
+import sys
+
+
+class TestSparseDEGP2DSecondOrder(unittest.TestCase):
+    """Test case for 2D sparse DEGP with second-order derivatives."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up training data and model once for all tests."""
+        # Define training grid
+        X1 = np.array([0.0, 0.5, 1.0])
+        X2 = np.array([0.0, 0.5, 1.0])
+        X1_grid, X2_grid = np.meshgrid(X1, X2)
+        cls.X_train = np.column_stack([X1_grid.flatten(), X2_grid.flatten()])
+
+        # Compute true function and derivatives
+        cls.y_func = np.sin(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
+        cls.y_deriv_x = np.cos(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
+        cls.y_deriv_y = -np.sin(cls.X_train[:, 0]) * np.sin(cls.X_train[:, 1])
+        cls.y_deriv_xx = -np.sin(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
+        cls.y_deriv_yy = -np.sin(cls.X_train[:, 0]) * np.cos(cls.X_train[:, 1])
+
+        # Prepare training data list
+        cls.y_train = [
+            cls.y_func.reshape(-1, 1),
+            cls.y_deriv_x.reshape(-1, 1),
+            cls.y_deriv_y.reshape(-1, 1),
+            cls.y_deriv_xx.reshape(-1, 1),
+            cls.y_deriv_yy.reshape(-1, 1)
+        ]
+
+        # Define derivative indices
+        cls.der_indices = [
+            [[[1, 1]], [[2, 1]]],  # first-order derivatives
+            [[[1, 2]], [[2, 2]]]   # second-order derivatives
+        ]
+
+        cls.derivative_locations = []
+        for i in range(len(cls.der_indices)):
+            for j in range(len(cls.der_indices[i])):
+                cls.derivative_locations.append(
+                    [i for i in range(len(cls.X_train))])
+
+        # Sparse Cholesky parameters
+        cls.rho = 3.0
+        cls.use_supernodes = True
+
+        # Initialize sparse model
+        cls.model = degp(
+            cls.X_train,
+            cls.y_train,
+            n_order=2,
+            n_bases=2,
+            der_indices=cls.der_indices,
+            derivative_locations=cls.derivative_locations,
+            normalize=True,
+            kernel="SineExp",
+            kernel_type="isotropic",
+            rho=cls.rho,
+            use_supernodes=cls.use_supernodes,
+        )
+
+        # Optimize hyperparameters
+        cls.params = cls.model.optimize_hyperparameters(
+            optimizer='pso',
+            pop_size=100,
+            n_generations=15,
+            local_opt_every=15,
+            debug=True
+        )
+
+        # Get predictions at training points
+        derivs_to_predict = [[[1, 1]], [[2, 1]], [[1, 2]], [[2, 2]]]
+        cls.y_train_pred, _ = cls.model.predict(
+            cls.X_train,
+            cls.params,
+            calc_cov=True,
+            return_deriv=True,
+            derivs_to_predict=derivs_to_predict
+        )
+
+        cls.n_train = len(cls.X_train)
+
+    def test_training_data_shape(self):
+        """Test that training data has correct shape."""
+        self.assertEqual(self.X_train.shape, (9, 2),
+                         "Training data should have 9 points in 2D")
+        self.assertEqual(len(self.y_train), 5,
+                         "Should have 5 output arrays (func + 4 derivatives)")
+        for y in self.y_train:
+            self.assertEqual(y.shape, (9, 1),
+                             "Each output array should have shape (9, 1)")
+
+    def test_function_interpolation(self):
+        """Test that function values are correctly interpolated."""
+        y_func_pred = self.y_train_pred[0, :].flatten()
+        abs_error = np.abs(y_func_pred - self.y_func)
+        max_error = np.max(abs_error)
+
+        self.assertLess(max_error, 1e-6,
+                        f"Function interpolation error too large: {max_error}")
+
+        # Also check mean error
+        mean_error = np.mean(abs_error)
+        self.assertLess(mean_error, 1e-6,
+                        f"Mean function interpolation error too large: {mean_error}")
+
+    def test_first_derivative_x_interpolation(self):
+        """Test that first derivative w.r.t. x is correctly interpolated."""
+        y_deriv_x_pred = self.y_train_pred[1, :].flatten()
+        abs_error = np.abs(y_deriv_x_pred - self.y_deriv_x)
+        max_error = np.max(abs_error)
+
+        self.assertLess(max_error, 1e-6,
+                        f"First derivative (x) interpolation error too large: {max_error}")
+
+        mean_error = np.mean(abs_error)
+        self.assertLess(mean_error, 1e-7,
+                        f"Mean first derivative (x) interpolation error too large: {mean_error}")
+
+    def test_first_derivative_y_interpolation(self):
+        """Test that first derivative w.r.t. y is correctly interpolated."""
+        y_deriv_y_pred = self.y_train_pred[2, :].flatten()
+        abs_error = np.abs(y_deriv_y_pred - self.y_deriv_y)
+        max_error = np.max(abs_error)
+
+        self.assertLess(max_error, 1e-6,
+                        f"First derivative (y) interpolation error too large: {max_error}")
+
+        mean_error = np.mean(abs_error)
+        self.assertLess(mean_error, 1e-7,
+                        f"Mean first derivative (y) interpolation error too large: {mean_error}")
+
+    def test_second_derivative_xx_interpolation(self):
+        """Test that second derivative w.r.t. x^2 is correctly interpolated."""
+        y_deriv_xx_pred = self.y_train_pred[3, :].flatten()
+        abs_error = np.abs(y_deriv_xx_pred - self.y_deriv_xx)
+        max_error = np.max(abs_error)
+
+        self.assertLess(max_error, 1e-6,
+                        f"Second derivative (xx) interpolation error too large: {max_error}")
+
+        mean_error = np.mean(abs_error)
+        self.assertLess(mean_error, 1e-7,
+                        f"Mean second derivative (xx) interpolation error too large: {mean_error}")
+
+    def test_second_derivative_yy_interpolation(self):
+        """Test that second derivative w.r.t. y^2 is correctly interpolated."""
+        y_deriv_yy_pred = self.y_train_pred[4, :].flatten()
+        abs_error = np.abs(y_deriv_yy_pred - self.y_deriv_yy)
+        max_error = np.max(abs_error)
+
+        self.assertLess(max_error, 1e-6,
+                        f"Second derivative (yy) interpolation error too large: {max_error}")
+
+        mean_error = np.mean(abs_error)
+        self.assertLess(mean_error, 1e-7,
+                        f"Mean second derivative (yy) interpolation error too large: {mean_error}")
+
+    def test_all_interpolations_summary(self):
+        """Test all interpolations and provide a summary."""
+        # Extract all predictions
+        y_func_pred = self.y_train_pred[0, :].flatten()
+        y_deriv_x_pred = self.y_train_pred[1, :].flatten()
+        y_deriv_y_pred = self.y_train_pred[2, :].flatten()
+        y_deriv_xx_pred = self.y_train_pred[3, :].flatten()
+        y_deriv_yy_pred = self.y_train_pred[4, :].flatten()
+
+        # Compute errors
+        errors = {
+            'Function': np.abs(y_func_pred - self.y_func),
+            'Derivative df/dx': np.abs(y_deriv_x_pred - self.y_deriv_x),
+            'Derivative df/dy': np.abs(y_deriv_y_pred - self.y_deriv_y),
+            'Second derivative d2f/dx2': np.abs(y_deriv_xx_pred - self.y_deriv_xx),
+            'Second derivative d2f/dy2': np.abs(y_deriv_yy_pred - self.y_deriv_yy)
+        }
+
+        print("\n" + "="*60)
+        print("Sparse DEGP 2D Second-Order Interpolation Test Summary")
+        print("="*60)
+
+        all_passed = True
+        for name, error in errors.items():
+            max_err = np.max(error)
+            mean_err = np.mean(error)
+            passed = max_err < 1e-6
+            all_passed = all_passed and passed
+
+            status = "PASS" if passed else "FAIL"
+            print(
+                f"{status} | {name:30s} | Max: {max_err:.2e} | Mean: {mean_err:.2e}")
+
+        print("="*60)
+        print(f"Sparse Cholesky: rho={self.rho}, use_supernodes={self.use_supernodes}")
+        print(
+            f"Overall: {'ALL TESTS PASSED' if all_passed else 'SOME TESTS FAILED'}")
+        print("="*60 + "\n")
+
+        self.assertTrue(all_passed, "Not all interpolation tests passed")
+
+
+def run_tests_with_details():
+    """Run tests with detailed output."""
+    # Create test suite
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestSparseDEGP2DSecondOrder)
+
+    # Run with verbosity
+    runner = unittest.TextTestRunner(verbosity=2)
+    result = runner.run(suite)
+
+    return result
+
+
+if __name__ == '__main__':
+    # Run tests
+    print("\nRunning Sparse DEGP 2D Second-Order Interpolation Unit Tests...")
+    print("="*60 + "\n")
+
+    result = run_tests_with_details()
+
+    # Exit with appropriate code
+    sys.exit(0 if result.wasSuccessful() else 1)
