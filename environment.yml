@@ -1,13 +1,25 @@
 name: jetgp
 channels:
   - conda-forge
+  - anaconda
+  - defaults
 dependencies:
-  - python=3.9
-  - mauriaristi::pyoti
-  - ipython
-  - jupyter_sphinx
+  - python=3.9.*
   - numpy
   - scipy
+  - cython=0.29.*
+  - pandas
+  - make
+  - cmake
+  - ipykernel
+  - conda-forge::pyvista
+  - conda-forge::gmsh
+  - conda-forge::python-gmsh
+  - conda-forge::vtk
+  - conda-forge::scikit-sparse
+  - conda-forge::scikit-umfpack
+  - ipython
+  - jupyter_sphinx
   - sphinx >=7.1
   - sphinx-argparse
   - sphinx-book-theme

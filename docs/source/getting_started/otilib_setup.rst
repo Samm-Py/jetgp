@@ -18,7 +18,7 @@ Prerequisites
 What the setup does
 -------------------
 
-The setup script always performs steps 1–3, then optionally step 4:
+The setup script always performs steps 1–2, then optionally step 3:
 
 1. **Copies patched source files** from ``otilib_mods/`` into otilib-master. The patches add:
 
@@ -28,25 +28,22 @@ The setup script always performs steps 1–3, then optionally step 4:
    - OpenMP thread query imports (``include.pxi``)
    - ``{arr_get_all_derivs}`` expansion to the array base template (``array_base.pxi``)
    - JetGP's ``cmod_writer.py`` to both otilib locations (``build/pyoti/`` and ``src/python/pyoti/python/``)
-   - The ``regenerate_all_c.py`` build script (``build/``)
+   - The ``regenerate_all_c.py`` and ``build_static.py`` build scripts (``build/``)
 
-2. **Patches the active pyoti installation** — copies JetGP's ``cmod_writer.py`` into the
-   conda env's installed ``pyoti`` package, and writes the otilib path to
-   ``~/.config/jetgp/otilib_path`` so that JetGP can auto-detect it at runtime without
-   any environment variables.
-
-3. **Rewrites hardcoded absolute paths** in the otilib build scripts
+2. **Rewrites hardcoded absolute paths** in the otilib build scripts
    (``regenerate_all_c.py``, ``build_static.py``, ``rebuild_all_static.py``,
    ``rebuild_all_static.sh``) to match your machine's otilib location and active Python
-   executable.
+   executable. Also saves the otilib path to ``~/.config/jetgp/otilib_path`` for
+   runtime auto-detection.
 
-4. **Full build** (only when ``--build`` is passed):
+3. **Full build** (only when ``--build`` is passed):
 
    - Regenerates all C/Cython sources from templates
    - Runs ``cmake ..``, ``make -j<workers>``, and ``make gendata``
-   - Compiles all Cython static modules in parallel
-   - Copies all built ``.so`` files into the active ``pyoti`` installation so they are
-     immediately importable as ``pyoti.static.onumm*``
+   - Writes a ``.pth`` file into site-packages so that ``pyoti`` is importable
+     directly from ``otilib-master/build/`` (equivalent to ``conda develop .``)
+   - Compiles all Cython static modules in parallel — ``.so`` files land in
+     ``otilib-master/build/pyoti/static/`` and are immediately importable
 
 Usage
 -----

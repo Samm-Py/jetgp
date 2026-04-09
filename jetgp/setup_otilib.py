@@ -14,6 +14,7 @@ import argparse
 import os
 import re
 import shutil
+import site
 import subprocess
 import sys
 from pathlib import Path
@@ -48,8 +49,6 @@ FILE_MAP = [
 # ---------------------------------------------------------------------------
 # Build scripts whose hardcoded paths need to be rewritten
 # ---------------------------------------------------------------------------
-# Each entry: (path relative to otilib root, list of (pattern, replacement_template))
-# Replacement templates may contain {otilib} and {python} placeholders.
 SCRIPT_PATCHES = [
     (
         "build/regenerate_all_c.py",
@@ -115,17 +114,8 @@ def resolve_otilib(path_arg):
     return p
 
 
-def detect_pyoti_install():
-    """Return the Path of the installed pyoti package, or None."""
-    try:
-        import pyoti
-        return Path(pyoti.__path__[0])
-    except ImportError:
-        return None
-
-
 def copy_mod_files(mods_dir: Path, otilib: Path):
-    print("\n[1/4] Copying mod files to otilib-master...")
+    print("\n[1/3] Copying mod files to otilib-master...")
     for src_name, dst_rel in FILE_MAP:
         src = mods_dir / src_name
         dst = otilib / dst_rel
@@ -137,26 +127,8 @@ def copy_mod_files(mods_dir: Path, otilib: Path):
     print("  Done.")
 
 
-def patch_pyoti_install(mods_dir: Path, pyoti_install: Path, otilib: Path):
-    """Patch the conda env's pyoti installation and save the otilib config."""
-    print("\n[2/4] Patching active pyoti installation...")
-
-    # Copy JetGP's cmod_writer.py into the installed pyoti package
-    src = mods_dir / "cmod_writer.py"
-    dst = pyoti_install / "cmod_writer.py"
-    shutil.copy2(src, dst)
-    print(f"  cmod_writer.py  ->  {dst}")
-
-    # Save otilib path to config file so get_oti_module() can auto-detect it
-    JETGP_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
-    JETGP_CONFIG_FILE.write_text(str(otilib))
-    print(f"  Saved otilib path to {JETGP_CONFIG_FILE}")
-
-    print("  Done.")
-
-
 def patch_build_scripts(otilib: Path, python_exe: str):
-    print("\n[3/4] Patching hardcoded paths in build scripts...")
+    print("\n[2/3] Patching hardcoded paths in build scripts...")
     for rel_path, patches in SCRIPT_PATCHES:
         script = otilib / rel_path
         if not script.exists():
@@ -175,24 +147,27 @@ def patch_build_scripts(otilib: Path, python_exe: str):
     print("  Done.")
 
 
-def install_static_modules(otilib: Path, pyoti_install: Path):
-    """Copy all built .so files from otilib's build dir into pyoti's static/."""
-    src_dir = otilib / "build" / "pyoti" / "static"
-    dst_dir = pyoti_install / "static"
-    dst_dir.mkdir(exist_ok=True)
-
-    so_files = list(src_dir.glob("*.so"))
-    if not so_files:
-        print("  WARNING: No .so files found in otilib build/pyoti/static/")
-        return
-
-    for so in so_files:
-        shutil.copy2(so, dst_dir / so.name)
-
-    print(f"  Installed {len(so_files)} static modules to {dst_dir}")
+def save_config(otilib: Path):
+    """Write otilib path to ~/.config/jetgp/otilib_path."""
+    JETGP_CONFIG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    JETGP_CONFIG_FILE.write_text(str(otilib))
+    print(f"  Saved otilib path to {JETGP_CONFIG_FILE}")
 
 
-def run_build(otilib: Path, pyoti_install: Path, workers: int):
+def install_pyoti_to_path(otilib: Path):
+    """
+    Make pyoti importable in the active environment by writing a .pth file
+    pointing to otilib-master/build/ into site-packages.
+    This replicates what `conda develop .` does from the build directory.
+    """
+    build_dir = str(otilib / "build")
+    site_packages = site.getsitepackages()[0]
+    pth_file = Path(site_packages) / "otilib.pth"
+    pth_file.write_text(build_dir + "\n")
+    print(f"  Wrote {pth_file} -> {build_dir}")
+
+
+def run_build(otilib: Path, workers: int):
     build_dir = otilib / "build"
     python = sys.executable
 
@@ -217,14 +192,9 @@ def run_build(otilib: Path, pyoti_install: Path, workers: int):
             ["make", "gendata"],
             str(build_dir),
         ),
-        (
-            f"Building all Cython static modules ({workers} workers)",
-            ["bash", "rebuild_all_static.sh", str(workers)],
-            str(build_dir),
-        ),
     ]
 
-    print("\n[4/4] Running build workflow...")
+    print("\n[3/3] Running build workflow...")
     for description, cmd, cwd in steps:
         print(f"\n  >> {description}")
         print(f"     {' '.join(cmd)}  (cwd: {cwd})")
@@ -232,10 +202,19 @@ def run_build(otilib: Path, pyoti_install: Path, workers: int):
         if result.returncode != 0:
             sys.exit(f"\nError: step failed: {description}")
 
-    print("\n  >> Installing static modules into active pyoti...")
-    install_static_modules(otilib, pyoti_install)
+    print(f"\n  >> Making pyoti importable in active environment...")
+    install_pyoti_to_path(otilib)
 
-    print("\n  Build and install complete.")
+    print(f"\n  >> Building all Cython static modules ({workers} workers)...")
+    result = subprocess.run(
+        ["bash", "rebuild_all_static.sh", str(workers)],
+        cwd=str(build_dir),
+    )
+    if result.returncode != 0:
+        sys.exit("\nError: static module build failed.")
+
+    print("\n  Build complete. Static modules are in otilib-master/build/pyoti/static/")
+    print("  pyoti is importable via the .pth file written to site-packages.")
 
 
 def main():
@@ -265,43 +244,35 @@ def main():
     if not mods_dir.is_dir():
         sys.exit(f"Error: otilib_mods/ not found next to this script ({mods_dir})")
 
-    # Resolve otilib path — prompt if not given
+    # Resolve otilib path
     if args.otilib:
         otilib = resolve_otilib(args.otilib)
+    elif JETGP_CONFIG_FILE.exists():
+        candidate = JETGP_CONFIG_FILE.read_text().strip()
+        if Path(candidate).is_dir():
+            print(f"Using otilib path from config: {candidate}")
+            otilib = Path(candidate)
+        else:
+            sys.exit(
+                f"Error: saved otilib path '{candidate}' no longer exists.\n"
+                f"Run again with --otilib /path/to/otilib-master"
+            )
     else:
-        default = Path.home() / "research_head" / "otilib-master"
+        default = Path.home() / "otilib-master"
         prompt = f"Path to otilib-master [{default}]: "
         answer = input(prompt).strip()
         otilib = resolve_otilib(answer if answer else default)
 
-    # Detect active pyoti installation
-    pyoti_install = detect_pyoti_install()
-    if pyoti_install is None:
-        print(
-            "WARNING: pyoti is not installed in the active Python environment. "
-            "Steps [2/4] and module installation will be skipped.\n"
-            "Activate the jetgp conda environment before running this script."
-        )
-
     python_exe = sys.executable
-    print(f"\notilib root   : {otilib}")
-    print(f"Python        : {python_exe}")
-    if pyoti_install:
-        print(f"pyoti install : {pyoti_install}")
+    print(f"\notilib root : {otilib}")
+    print(f"Python      : {python_exe}")
 
     copy_mod_files(mods_dir, otilib)
-
-    if pyoti_install:
-        patch_pyoti_install(mods_dir, pyoti_install, otilib)
-    else:
-        print("\n[2/4] Skipped (pyoti not found in active environment).")
-
     patch_build_scripts(otilib, python_exe)
+    save_config(otilib)
 
     if args.build:
-        if pyoti_install is None:
-            sys.exit("Error: cannot install modules — pyoti not found. Activate the jetgp env first.")
-        run_build(otilib, pyoti_install, args.workers)
+        run_build(otilib, args.workers)
     else:
         print(
             "\nPatching complete. To build, run:\n"
@@ -310,6 +281,7 @@ def main():
             f"  cd {otilib}/build\n"
             "  python regenerate_all_c.py\n"
             "  cmake .. && make -j$(nproc) && make gendata\n"
+            "  conda develop .\n"
             "  bash rebuild_all_static.sh 4"
         )
 
