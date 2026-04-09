@@ -3814,6 +3814,70 @@ class writer:
     str_out += level + "" + endl
     str_out += level + "#---------------------------------------------------------------------------------------------------" + endl
 
+    # ── build_K_inv_proj: project U U^T into phi-space from Vecchia blocks ─────────────────
+    str_out += level + "" + endl
+    str_out += level + "#***************************************************************************************************" + endl
+    str_out += level + "def build_K_inv_proj(self," + endl
+    str_out += level + tab + "double[:,:,:] K_inv_proj," + endl
+    str_out += level + tab + "long[:,:] block_nb_type," + endl
+    str_out += level + tab + "long[:,:] block_nb_phys," + endl
+    str_out += level + tab + "long[:] block_m," + endl
+    str_out += level + tab + "double[:] block_V_flat," + endl
+    str_out += level + tab + "long[:] block_V_offsets," + endl
+    str_out += level + tab + "long[:] block_n_cols," + endl
+    str_out += level + tab + "long[:,:] deriv_lookup," + endl
+    str_out += level + tab + "double[:] sign_lookup):" + endl
+    str_out += level + tab + '"""' + endl
+    str_out += level + tab + "Project K_inv = U U^T into phi-space from Vecchia block structure." + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "For each block, computes V[a,:] @ V[bb,:] and accumulates into" + endl
+    str_out += level + tab + "K_inv_proj[d, pa, pb] with sign correction.  K_inv_proj must be" + endl
+    str_out += level + tab + "pre-zeroed.  Cost: O(sum_blocks m^2 * n_cols)." + endl
+    str_out += level + tab + '"""' + endl
+    str_out += level + tab + "cdef uint64_t n_blk  = <uint64_t>block_m.shape[0]" + endl
+    str_out += level + tab + "cdef uint64_t max_m  = <uint64_t>block_nb_type.shape[1]" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "cdef double* kptr    = &K_inv_proj[0, 0, 0]" + endl
+    str_out += level + tab + "cdef double* vptr    = &block_V_flat[0]" + endl
+    str_out += level + tab + "cdef double* sptr    = &sign_lookup[0]" + endl
+    str_out += level + tab + "cdef long*   dlptr   = &deriv_lookup[0, 0]" + endl
+    str_out += level + tab + "cdef long*   nbt_ptr = &block_nb_type[0, 0]" + endl
+    str_out += level + tab + "cdef long*   nbp_ptr = &block_nb_phys[0, 0]" + endl
+    str_out += level + tab + "cdef long*   bm_ptr  = &block_m[0]" + endl
+    str_out += level + tab + "cdef long*   boff_ptr = &block_V_offsets[0]" + endl
+    str_out += level + tab + "cdef long*   bnc_ptr = &block_n_cols[0]" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "cdef uint64_t n_func = <uint64_t>K_inv_proj.shape[1]" + endl
+    str_out += level + tab + "cdef uint64_t plane  = n_func * n_func" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "cdef uint64_t b, a, bb, col, m, nc, off" + endl
+    str_out += level + tab + "cdef long ta, tb, pa, pb, d" + endl
+    str_out += level + tab + "cdef double vv" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "with nogil:" + endl
+    str_out += level + tab + tab + "for b in range(n_blk):" + endl
+    str_out += level + tab + tab + tab + "m   = <uint64_t>bm_ptr[b]" + endl
+    str_out += level + tab + tab + tab + "nc  = <uint64_t>bnc_ptr[b]" + endl
+    str_out += level + tab + tab + tab + "off = <uint64_t>boff_ptr[b]" + endl
+    str_out += level + tab + tab + tab + "" + endl
+    str_out += level + tab + tab + tab + "for a in range(m):" + endl
+    str_out += level + tab + tab + tab + tab + "ta = nbt_ptr[b * max_m + a]" + endl
+    str_out += level + tab + tab + tab + tab + "pa = nbp_ptr[b * max_m + a]" + endl
+    str_out += level + tab + tab + tab + tab + "for bb in range(m):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "tb = nbt_ptr[b * max_m + bb]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "pb = nbp_ptr[b * max_m + bb]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "" + endl
+    str_out += level + tab + tab + tab + tab + tab + "# V[a,:] @ V[bb,:] dot product over columns" + endl
+    str_out += level + tab + tab + tab + tab + tab + "vv = 0.0" + endl
+    str_out += level + tab + tab + tab + tab + tab + "for col in range(nc):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "vv += vptr[off + col * m + a] * vptr[off + col * m + bb]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "" + endl
+    str_out += level + tab + tab + tab + tab + tab + "d = dlptr[ta * <long>deriv_lookup.shape[1] + tb]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "kptr[<uint64_t>d * plane + <uint64_t>pa * n_func + <uint64_t>pb] += sptr[tb] * vv" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + "" + endl
+    str_out += level + "#---------------------------------------------------------------------------------------------------" + endl
+
     # ── fused_sqdist: compute sqdist = Σ ell_sq[d] * diff[d]² in one C-level pass ─────────
     str_out += level + "" + endl
     str_out += level + "#***************************************************************************************************" + endl
@@ -4188,6 +4252,153 @@ class writer:
         str_out += level + tab + tab + tab + tab + "res_data[kk]." + d_name + " = p1_data[i]." + d_name + " - p2_data[j]." + d_name + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "return self" + endl
+    str_out += level + "" + endl
+    str_out += level + "#---------------------------------------------------------------------------------------------------" + endl
+
+    # ── fused_grad_all_dims: fuse sparse_scale_sq_mul + vdot per dimension ─────────
+    # For each basis d, runs a single kk loop that computes the sparse
+    # scale * diff[d]² * phi product AND dots the result with W_proj * factors,
+    # eliminating the dphi intermediate array entirely.
+    # Loop order: d outside (per-basis sparse code), kk inside (hot loop).
+    str_out += level + "" + endl
+    str_out += level + "#***************************************************************************************************" + endl
+    str_out += level + "def fused_grad_all_dims(self," + endl
+    str_out += level + tab + "list diffs," + endl
+    str_out += level + tab + "double[:] scales," + endl
+    str_out += level + tab + "double[:] factors," + endl
+    str_out += level + tab + "double[:,:,:] W_proj," + endl
+    str_out += level + tab + "double[:] grad_out," + endl
+    str_out += level + tab + "object FW_T=None):" + endl
+    str_out += level + tab + '"""' + endl
+    str_out += level + tab + "Fused gradient computation for all D length-scale dimensions." + endl
+    str_out += level + tab + "Computes grad_out[d] = 0.5 * vdot(W_proj, expand(scales[d] * diffs[d]^2 * self))" + endl
+    str_out += level + tab + "for all d in [0, D) using sparse arithmetic and inlined vdot." + endl
+    str_out += level + tab + "Eliminates the dphi intermediate array (no write+read per dimension)." + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "Args:" + endl
+    str_out += level + tab + "  diffs: list of D " + self.pytype_name_arr + " arrays (per-dimension differences)." + endl
+    str_out += level + tab + "  scales: 1D array of length D with scale factors (-ln10 * ell[d]^2)." + endl
+    str_out += level + tab + "  factors: 1D array of length ndir with derivative factorial factors." + endl
+    str_out += level + tab + "  W_proj: 3D array of shape (ndir, n_func, n_func) — ignored if FW_T given." + endl
+    str_out += level + tab + "  grad_out: 1D array of length D, output gradient values." + endl
+    str_out += level + tab + "  FW_T: optional 2D array of shape (size, ndir) with FW_T[kk,c] = factors[c]*W_proj[c,kk]." + endl
+    str_out += level + tab + "        When provided, uses cache-friendly stride-1 reads (much faster)." + endl
+    str_out += level + tab + '"""' + endl
+    str_out += level + tab + "cdef uint64_t size = self.arr.size" + endl
+    str_out += level + tab + "cdef uint64_t D = <uint64_t>len(diffs)" + endl
+    str_out += level + tab + "cdef uint64_t kk, d_idx" + endl
+    str_out += level + tab + "cdef " + self.type_name + "* phi_data = self.arr.p_data" + endl
+    str_out += level + tab + "cdef double* fptr = &factors[0]" + endl
+    str_out += level + tab + "cdef double* wptr = &W_proj[0, 0, 0]" + endl
+    str_out += level + tab + "cdef double* sptr = &scales[0]" + endl
+    str_out += level + tab + "cdef double* gptr = &grad_out[0]" + endl
+    str_out += level + tab + "cdef uint64_t ps = <uint64_t>W_proj.shape[1] * <uint64_t>W_proj.shape[2]" + endl
+    str_out += level + tab + "cdef double a_r, a_ed, sq_r, sq_ed, sq_edd, scale, val, dot_val" + endl
+    str_out += level + tab + "cdef bint use_fwt = FW_T is not None" + endl
+    str_out += level + tab + "cdef double* fwptr = NULL" + endl
+    str_out += level + tab + "cdef uint64_t ndir = 0" + endl
+    str_out += level + tab + "cdef double[:,:] _fwt_view" + endl
+    str_out += level + tab + "if use_fwt:" + endl
+    str_out += level + tab + tab + "_fwt_view = FW_T" + endl
+    str_out += level + tab + tab + "fwptr = &_fwt_view[0, 0]" + endl
+    str_out += level + tab + tab + "ndir = <uint64_t>_fwt_view.shape[1]" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "# Build C array of pointers to diff data" + endl
+    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = <" + self.type_name + "**>malloc(D * sizeof(" + self.type_name + "*))" + endl
+    str_out += level + tab + "if diff_ptrs == NULL:" + endl
+    str_out += level + tab + tab + 'raise MemoryError("Failed to allocate diff pointer array")' + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
+    str_out += level + tab + "for d_idx in range(D):" + endl
+    str_out += level + tab + tab + "diff_arr = <" + self.pytype_name_arr + ">diffs[d_idx]" + endl
+    str_out += level + tab + tab + "diff_ptrs[d_idx] = diff_arr.arr.p_data" + endl
+    str_out += level + tab + tab + "gptr[d_idx] = 0.0" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "try:" + endl
+    str_out += level + tab + tab + "with nogil:" + endl
+    str_out += level + tab + tab + tab + "for d_idx in range(D):" + endl
+    str_out += level + tab + tab + tab + tab + "scale = sptr[d_idx]" + endl
+
+    # Generate one branch per basis — the switch is OUTSIDE the kk loop
+    for basis_d in range(self.nbases):
+      nz_a, sq_nz, sq_terms, mul_terms = self._get_sparse_sq_info(basis_d)
+      ed_name = self.name_imdir[1][basis_d]
+      # Find the 2nd-order component name (e_dd)
+      edd_name = None
+      for comp in sq_nz:
+        if comp != 'r' and comp != ed_name:
+          edd_name = comp
+          break
+
+      if basis_d == 0:
+        str_out += level + tab + tab + tab + tab + "if d_idx == 0:" + endl
+      else:
+        str_out += level + tab + tab + tab + tab + "elif d_idx == " + str(basis_d) + ":" + endl
+
+      indent = level + tab + tab + tab + tab + tab
+
+      # Map sq component names to local variable names
+      sq_var_map = {'r': 'sq_r'}
+      if ed_name:
+        sq_var_map[ed_name] = 'sq_ed'
+      if edd_name:
+        sq_var_map[edd_name] = 'sq_edd'
+
+      # Helper: generate the sq computation lines
+      def _emit_sq_lines(ind2):
+        s = ""
+        s += ind2 + "a_r = diff_ptrs[d_idx][kk].r" + endl
+        s += ind2 + "a_ed = diff_ptrs[d_idx][kk]." + ed_name + endl
+        s += ind2 + "sq_r = a_r * a_r" + endl
+        if ed_name in sq_terms:
+          terms_e = sq_terms[ed_name]
+          ep = [("a_r" if l == "r" else "a_ed") + " * " + ("a_r" if r == "r" else "a_ed") for (l, r) in terms_e]
+          s += ind2 + "sq_ed = " + " + ".join(ep) + endl
+        if edd_name and edd_name in sq_terms:
+          terms_e = sq_terms[edd_name]
+          ep = [("a_r" if l == "r" else "a_ed") + " * " + ("a_r" if r == "r" else "a_ed") for (l, r) in terms_e]
+          s += ind2 + "sq_edd = " + " + ".join(ep) + endl
+        return s
+
+      # ── Transposed FW_T path (cache-friendly stride-1 reads) ──
+      str_out += indent + "if use_fwt:" + endl
+      str_out += indent + tab + "for kk in range(size):" + endl
+      indent2 = indent + tab + tab
+      str_out += _emit_sq_lines(indent2)
+      str_out += indent2 + "dot_val = 0.0" + endl
+      for c_idx, comp in enumerate(all_comps):
+        if comp in mul_terms:
+          terms = mul_terms[comp]
+          expr_parts = []
+          for (lhs, rhs) in terms:
+            lhs_var = sq_var_map[lhs]
+            rhs_var = "phi_data[kk]." + rhs
+            expr_parts.append(lhs_var + " * " + rhs_var)
+          expr = " + ".join(expr_parts)
+          str_out += indent2 + "dot_val += fwptr[kk * ndir + " + str(c_idx) + "] * scale * (" + expr + ")" + endl
+      str_out += indent2 + "gptr[d_idx] += 0.5 * dot_val" + endl
+
+      # ── Original W_proj path (fallback) ──
+      str_out += indent + "else:" + endl
+      str_out += indent + tab + "for kk in range(size):" + endl
+      indent2 = indent + tab + tab
+      str_out += _emit_sq_lines(indent2)
+      str_out += indent2 + "dot_val = 0.0" + endl
+      for c_idx, comp in enumerate(all_comps):
+        if comp in mul_terms:
+          terms = mul_terms[comp]
+          expr_parts = []
+          for (lhs, rhs) in terms:
+            lhs_var = sq_var_map[lhs]
+            rhs_var = "phi_data[kk]." + rhs
+            expr_parts.append(lhs_var + " * " + rhs_var)
+          expr = " + ".join(expr_parts)
+          str_out += indent2 + "dot_val += wptr[" + str(c_idx) + " * ps + kk] * fptr[" + str(c_idx) + "] * scale * (" + expr + ")" + endl
+      str_out += indent2 + "gptr[d_idx] += 0.5 * dot_val" + endl
+
+    str_out += level + tab + "finally:" + endl
+    str_out += level + tab + tab + "free(diff_ptrs)" + endl
+    str_out += level + tab + "" + endl
     str_out += level + "" + endl
     str_out += level + "#---------------------------------------------------------------------------------------------------" + endl
 

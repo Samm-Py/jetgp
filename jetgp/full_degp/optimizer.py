@@ -278,8 +278,14 @@ class Optimizer:
             )
 
         _use_vdot_fused = W_proj is not None and hasattr(phi, 'vdot_expand_fast')
+        FW_T = None
         if _use_vdot_fused:
             _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
+            from math import comb
+            _vdot_arr = np.asarray(_vdot_factors)
+            ndir_d = len(_vdot_arr)
+            FW_T = np.empty((base_shape[0] * base_shape[1], ndir_d))
+            np.multiply(W_proj.reshape(ndir_d, -1).T, _vdot_arr, out=FW_T)
 
         def _gc(dphi):
             if _use_vdot_fused:
@@ -317,7 +323,12 @@ class Optimizer:
             # d phi/d log_ell_d = -ln10 * ell_d² * diff_d² * phi
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([-ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    phi.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi, -ln10 * ell[d] ** 2, d)
@@ -380,7 +391,12 @@ class Optimizer:
             phi_over_base = oti.mul(phi, inv_base)
 
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([-ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    phi_over_base.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi_over_base, -ln10 * ell[d] ** 2, d)
@@ -521,7 +537,12 @@ class Optimizer:
             # grad[d] = _gc(base * ln10 * ell_d² * diff_d²)
             base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    base_matern.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], base_matern, ln10 * ell[d] ** 2, d)

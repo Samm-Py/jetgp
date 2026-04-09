@@ -279,7 +279,7 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
 
     return U
 
-@profile
+
 def build_U_from_phi_flat(phi_exp_3d, block_maps, N, sigma_n_sq, out=None):
     """
     Build sparse U directly from phi_exp_3d using precomputed flat indices.
@@ -467,7 +467,7 @@ def build_U_supernodes(K_ord, supernodes, N):
     return U, n_factorizations
 
 
-@profile
+
 def build_U_supernodes_from_phi(phi_exp_3d, supernodes, N, sigma_n_sq):
     """
     Build sparse U using supernode structure directly from phi_exp_3d.
@@ -581,7 +581,7 @@ def build_deriv_supernodes(X_ord, l, S_phys, lam=1.5):
 # NLML via sparse U
 # =============================================================================
 
-# @profile
+
 def nlml_from_U(U, f):
     """
     Compute the negative log marginal likelihood from the sparse U factor.
@@ -771,7 +771,7 @@ def expand_supernodes_to_blocks(supernodes, phys_to_rows):
     return full_supernodes
 
 
-# @profile
+
 def alpha_from_U(U, f):
     """
     Compute K^{-1} f using the sparse U factor.

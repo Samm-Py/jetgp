@@ -180,6 +180,113 @@ def _trace_term_all_blocks(dphi_exp_3d, deriv_lookup, sign_lookup,
     return result
 
 
+@numba.jit(nopython=True, cache=True)
+def _build_K_inv_proj_from_blocks(K_inv_proj,
+                                   block_nb_type, block_nb_phys, block_m,
+                                   block_V_flat, block_V_offsets, block_n_cols,
+                                   deriv_lookup, sign_lookup, n_blocks):
+    """
+    Project K_inv = U U^T into phi-space directly from U's block structure.
+
+    For each block, computes V[a,:] @ V[bb,:] (dot over columns) and
+    accumulates into K_inv_proj[d, pa, pb] with sign correction.
+
+    K_inv_proj must be pre-zeroed.  Cost: O(Σ_blocks m² · n_cols).
+    """
+    max_m = block_nb_type.shape[1]
+    for b in range(n_blocks):
+        m = block_m[b]
+        nc = block_n_cols[b]
+        off = block_V_offsets[b]
+
+        for a in range(m):
+            ta = block_nb_type[b, a]
+            pa = block_nb_phys[b, a]
+            for bb in range(m):
+                tb = block_nb_type[b, bb]
+                pb = block_nb_phys[b, bb]
+
+                # V[a,:] @ V[bb,:] — dot product over block columns
+                vv = 0.0
+                for col in range(nc):
+                    vv += (block_V_flat[off + col * m + a]
+                           * block_V_flat[off + col * m + bb])
+
+                d = deriv_lookup[ta, tb]
+                K_inv_proj[d, pa, pb] += sign_lookup[tb] * vv
+
+
+@numba.jit(nopython=True, cache=True)
+def _build_alpha_proj(alpha_proj, alpha_vecs, signed_vecs, deriv_lookup):
+    """
+    Project alpha*alpha^T into phi-space using per-type alpha vectors.
+
+    alpha_proj must be pre-zeroed. signed_vecs = sign_lookup[:, None] * alpha_vecs.
+    alpha_proj[d, i, j] += Σ_{ta,tb: deriv_lookup[ta,tb]==d} alpha_vecs[ta,i] * signed_vecs[tb,j]
+    """
+    n_types = alpha_vecs.shape[0]
+    n_func = alpha_vecs.shape[1]
+    for ta in range(n_types):
+        for tb in range(n_types):
+            d = deriv_lookup[ta, tb]
+            for i in range(n_func):
+                ai = alpha_vecs[ta, i]
+                if ai == 0.0:
+                    continue
+                for j in range(n_func):
+                    alpha_proj[d, i, j] += ai * signed_vecs[tb, j]
+
+
+def _alpha_quadratic_form(dphi_3d, alpha_v, k_type, k_phys,
+                          deriv_lookup, sign_lookup, n_types, n_func):
+    """
+    Compute α^T dK α via BLAS, grouping by derivative type.
+
+    Builds per-type alpha vectors (n_types, n_func), then for each
+    type pair (ta, tb) computes  sign[tb] * a_ta @ dphi_3d[d] @ a_tb
+    using BLAS gemv + ddot.  Avoids forming the full alpha projection.
+    """
+    # Build per-type alpha vectors
+    alpha_vecs = np.zeros((n_types, n_func))
+    N = len(alpha_v)
+    for i in range(N):
+        alpha_vecs[k_type[i], k_phys[i]] = alpha_v[i]
+
+    result = 0.0
+    for ta in range(n_types):
+        a_vec = alpha_vecs[ta]
+        for tb in range(n_types):
+            b_vec = alpha_vecs[tb]
+            d = deriv_lookup[ta, tb]
+            s = sign_lookup[tb]
+            # a_vec @ dphi_3d[d] @ b_vec — uses BLAS dgemv + ddot
+            result += s * a_vec @ dphi_3d[d] @ b_vec
+    return result
+
+
+@numba.jit(nopython=True, cache=True)
+def _project_G_to_W_proj(W_proj, G_b, nb_type, nb_phys,
+                          deriv_lookup, sign_lookup, m):
+    """
+    Project per-block sensitivity G_b (m × m) into W_proj (ndir × n_func × n_func).
+
+    W_proj[d, pa, pb] += sign_lookup[tb] * G_b[a, b]
+
+    where d = deriv_lookup[ta, tb], pa = nb_phys[a], pb = nb_phys[b].
+    """
+    n_func = W_proj.shape[1]
+    plane  = n_func * W_proj.shape[2]
+    wptr   = W_proj.ravel()
+    for a_i in range(m):
+        ta = nb_type[a_i]
+        pa = nb_phys[a_i]
+        for bb_i in range(m):
+            tb = nb_type[bb_i]
+            pb = nb_phys[bb_i]
+            d  = deriv_lookup[ta, tb]
+            wptr[d * plane + pa * W_proj.shape[2] + pb] += sign_lookup[tb] * G_b[a_i, bb_i]
+
+
 class Optimizer:
     """
     Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
@@ -199,6 +306,7 @@ class Optimizer:
         self._deriv_buf_shape = None
         self._deriv_factors = None
         self._deriv_factors_key = None
+        self._ndir = None
         self._K_buf = None
         self._dK_buf = None
         self._kernel_buf_size = None
@@ -211,11 +319,12 @@ class Optimizer:
         self._k_index_map = None
         self._inv_P = None
         self._sigma_data_diag_mmd = None
+        self._block_metadata = None
 
     def _get_deriv_buf(self, phi, n_bases, order):
         """Return a pre-allocated buffer for get_all_derivs, reusing if shape matches."""
         from math import comb
-        ndir = comb(n_bases + order, order)
+        ndir = self._ndir or comb(n_bases + order, order)
         shape = (ndir, phi.shape[0], phi.shape[1])
         if self._deriv_buf is None or self._deriv_buf_shape != shape:
             self._deriv_buf = np.zeros(shape, dtype=np.float64)
@@ -281,6 +390,7 @@ class Optimizer:
 
     def _get_deriv_factors(self, n_bases, order):
         """Return cached precomputed derivative factorial factors."""
+        from math import comb
         key = (n_bases, order)
         if self._deriv_factors is not None and self._deriv_factors_key == key:
             return self._deriv_factors
@@ -289,6 +399,7 @@ class Optimizer:
             factors.extend(self._enum_factors(n_bases, ordi))
         self._deriv_factors = np.array(factors, dtype=np.float64)
         self._deriv_factors_key = key
+        self._ndir = comb(n_bases + order, order)
         return self._deriv_factors
 
     def _ensure_kernel_plan(self, n_bases):
@@ -406,7 +517,7 @@ class Optimizer:
                     'positions': np.searchsorted(nb, np.arange(start, end)),
                 })
 
-    @profile
+
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the negative log marginal likelihood (NLL) via sparse U.
@@ -471,6 +582,7 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
+    @profile
     def _compute_grad(self, x0, W, phi, n_bases, oti, diffs):
         """
         Compute the NLL gradient given pre-factorised W = K^{-1} - α α^T.
@@ -494,8 +606,7 @@ class Optimizer:
         # the full dK matrix for each hyperparameter dimension.
         W_proj = None
         if use_fast and self.model.n_order > 0:
-            from math import comb
-            ndir = comb(n_bases + deriv_order, deriv_order)
+            ndir = self._ndir
             proj_shape = (ndir, base_shape[0], base_shape[1])
             if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
                 self._W_proj_buf = np.empty(proj_shape)
@@ -515,9 +626,15 @@ class Optimizer:
             )
 
         _use_vdot_fused = W_proj is not None and hasattr(phi, 'vdot_expand_fast')
+        FW_T = None
         if _use_vdot_fused:
             _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
+            # Precompute transposed factor-weighted W_proj for fused_grad_all_dims
+            _vdot_arr = np.asarray(_vdot_factors)
+            ndir_d = len(_vdot_arr)
+            FW_T = (W_proj.reshape(ndir_d, -1).T * _vdot_arr).copy()
 
+        @profile
         def _gc(dphi):
             if _use_vdot_fused:
                 return 0.5 * dphi.vdot_expand_fast(_vdot_factors, W_proj)
@@ -542,7 +659,10 @@ class Optimizer:
                 return 0.5 * np.vdot(W, dK)
 
         # ── signal variance (common: d phi/d log_sf = 2*ln10 * phi) ──────
-        grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
+        if _use_vdot_fused:
+            grad[-2] = ln10 * phi.vdot_expand_fast(_vdot_factors, W_proj)
+        else:
+            grad[-2] = _gc(oti.mul(2.0 * ln10, phi))
 
         # ── noise variance (common: dK/d log_sn = diag(2*ln10*σ_n²)) ────
         grad[-1] = ln10 * sigma_n_sq * np.trace(W)
@@ -554,7 +674,12 @@ class Optimizer:
             # d phi/d log_ell_d = -ln10 * ell_d² * diff_d² * phi
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([-ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    phi.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi, -ln10 * ell[d] ** 2, d)
@@ -617,7 +742,12 @@ class Optimizer:
             phi_over_base = oti.mul(phi, inv_base)
 
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([-ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    phi_over_base.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi_over_base, -ln10 * ell[d] ** 2, d)
@@ -758,7 +888,12 @@ class Optimizer:
             # grad[d] = _gc(base * ln10 * ell_d² * diff_d²)
             base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    base_matern.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], base_matern, ln10 * ell[d] ** 2, d)
@@ -820,19 +955,27 @@ class Optimizer:
 
         return grad
 
+    @profile
     def _compute_grad_blockwise(self, x0, U, alpha_v, phi, n_bases, oti, diffs):
         """
-        Compute the NLL gradient block-by-block using the Vecchia decomposition.
+        Compute the NLL gradient by differentiating through each block's
+        Cholesky in the Vecchia decomposition.
 
-        Avoids forming the dense W = K^{-1} - αα^T.  Instead decomposes:
-            grad[d] = 0.5 * Σ_j u_j^T dK_d u_j  -  0.5 * α^T dK_d α
+        For each block b the Vecchia NLL contribution is:
+            NLL_b = 0.5 * Σ_j [ α_b[p_j]² / s_j  -  log(s_j) ]
 
-        The trace term uses the sparse U columns within each block's
-        neighbourhood (same blocks as build_U_from_phi).  The α term is
-        a rank-1 quadratic form projected into phi-space once.
+        where α_b = K_sub⁻¹ y_nb, s_j = (K_sub⁻¹)[p_j, p_j].
+
+        Differentiating through K_sub⁻¹ gives the per-block sensitivity:
+            G_b = 0.5 * M V^T
+
+        where V = K_sub⁻¹ E (un-normalised U block), and
+            M[:, j] = γ_j V[:, j] - 2 β_j α_b
+            β_j = α_b[p_j] / s_j,   γ_j = β_j² + 1/s_j
+
+        The gradient is  dNLL/dθ = Σ_b tr(G_b  dK_sub_b/dθ),
+        which is projected into phi-space as W_proj for vdot.
         """
-        from math import comb
-
         ln10        = np.log(10.0)
         kernel      = self.model.kernel
         kernel_type = self.model.kernel_type
@@ -844,104 +987,97 @@ class Optimizer:
         plan = self._kernel_plan
         P_full = self.model.mmd_P_full
         N_total = len(P_full)
-        n_func = phi.shape[0]  # number of physical training points
+        n_func = phi.shape[0]
 
-        # ── noise gradient: trace(W) = ||U||_F² - ||α||² ────────────
-        U_frob_sq = np.sum(U * U)
-        alpha_sq = np.dot(alpha_v, alpha_v)
-        trace_W = U_frob_sq - alpha_sq
-        grad[-1] = ln10 * sigma_n_sq * trace_W
-
-        # ── project αα^T into phi-space (rank-1, cheap) ─────────────
-        ndir = comb(n_bases + deriv_order, deriv_order)
-        proj_shape = (ndir, n_func, n_func)
-        if self._W_proj_buf is None or self._W_proj_shape != proj_shape:
-            self._W_proj_buf = np.empty(proj_shape)
-            self._W_proj_shape = proj_shape
-        alpha_proj = self._W_proj_buf
-
-        row_off = plan.get('row_offsets_abs', plan['row_offsets'] + n_func)
-        col_off = plan.get('col_offsets_abs', plan['col_offsets'] + n_func)
-
-        utils._project_alpha_to_phi_space(
-            alpha_v, alpha_proj, n_func, n_func,
-            plan['fd_flat_indices'], plan['df_flat_indices'],
-            plan['dd_flat_indices'],
-            plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
-            plan['signs'], plan['n_deriv_types'], row_off, col_off,
-        )
-
-        # ── pre-compute block metadata (packed for numba) ────────────
-        S = self.model.sparse_S_full_arr
-        block_size = self.model.n_bases + 1
+        ndir = self._ndir
         k_type, k_phys, deriv_lookup, sign_lookup = self._k_index_map
 
-        # Pack block data into flat arrays for the numba trace kernel
-        block_nb_type_list = []
-        block_nb_phys_list = []
-        block_m_list = []
-        block_n_cols_list = []
-        V_parts = []
-        for start in range(0, N_total, block_size):
-            end = min(start + block_size, N_total)
-            nb_union = S[end - 1] if isinstance(S[end - 1], np.ndarray) else np.asarray(S[end - 1])
-            m = len(nb_union)
-            orig = P_full[nb_union]
-            block_nb_type_list.append(k_type[orig])
-            block_nb_phys_list.append(k_phys[orig])
-            block_m_list.append(m)
-            n_cols = end - start
-            block_n_cols_list.append(n_cols)
-            # Store V column-major: V[:,0], V[:,1], ... (length m*n_cols)
-            V = U[nb_union, start:end]  # (m, n_cols)
-            V_parts.append(V.ravel(order='F'))
+        # ── phi_exp for K_sub reconstruction ──────────────────────
+        phi_exp = self._expand_derivs(phi, n_bases, deriv_order)
+        phi_3d = phi_exp.reshape(phi_exp.shape[0], n_func, n_func)
+        phi_flat = phi_3d.ravel()
 
-        n_blocks = len(block_m_list)
-        max_m = max(block_m_list)
-        # Pad nb_type/nb_phys to uniform length for numba typed array
-        block_nb_type = np.zeros((n_blocks, max_m), dtype=np.int64)
-        block_nb_phys = np.zeros((n_blocks, max_m), dtype=np.int64)
-        for i in range(n_blocks):
-            m = block_m_list[i]
-            block_nb_type[i, :m] = block_nb_type_list[i]
-            block_nb_phys[i, :m] = block_nb_phys_list[i]
-        block_m = np.array(block_m_list, dtype=np.int64)
-        block_n_cols = np.array(block_n_cols_list, dtype=np.int64)
-        block_V_flat = np.concatenate(V_parts)
-        block_V_offsets = np.zeros(n_blocks, dtype=np.int64)
-        for i in range(1, n_blocks):
-            block_V_offsets[i] = block_V_offsets[i-1] + block_m_list[i-1] * block_n_cols_list[i-1]
+        block_maps = self._block_phi_maps
+        y_ord = self.model.y_train[P_full]
 
-        # ── vdot factors for alpha term ──────────────────────────────
+        # ── accumulate W_proj and noise trace from per-block G_b ──
+        proj_shape = (ndir, n_func, n_func)
+        W_proj = np.zeros(proj_shape)
+        w_flat = W_proj.ravel()
+        noise_trace = 0.0
+
+        for bm in block_maps:
+            nb   = bm['nb']
+            m    = len(nb)
+            positions = bm['positions']
+            n_cols    = len(positions)
+
+            # Reconstruct K_sub for this block
+            K_sub = phi_flat[bm['flat_idx']].reshape(m, m) * bm['sign_mat']
+            diag_idx = np.arange(m)
+            K_sub[diag_idx, diag_idx] += sigma_n_sq + bm['sd_diag']
+
+            # Cholesky factor
+            L_u, low_u = cho_factor(K_sub, lower=True)
+
+            # V = K_sub⁻¹ E  (un-normalised U block, m × n_cols)
+            E = np.zeros((m, n_cols))
+            E[positions, np.arange(n_cols)] = 1.0
+            V = cho_solve((L_u, low_u), E)
+
+            # α_b = K_sub⁻¹ y_nb  (m,)
+            y_nb = y_ord[nb]
+            alpha_b = cho_solve((L_u, low_u), y_nb)
+
+            # Per-parent scalars
+            s     = V[positions, np.arange(n_cols)]      # s_j = S[p_j, p_j]
+            a     = alpha_b[positions]                     # α_b[p_j]
+            beta  = a / s                                  # β_j
+            gamma = beta ** 2 + 1.0 / s                   # γ_j
+
+            # M[:, j] = γ_j V[:, j] - 2 β_j α_b     (m × n_cols)
+            M = V * gamma[np.newaxis, :] - 2.0 * alpha_b[:, np.newaxis] * beta[np.newaxis, :]
+
+            # Noise trace:  tr(G_b) = 0.5 Σ_{a,k} M[a,k] V[a,k]
+            noise_trace += np.sum(M * V)
+
+            # Project G_b into W_proj using precomputed flat indices
+            G_b = M @ V.T                                  # m × m
+            np.add.at(w_flat, bm['flat_idx'].ravel(), (G_b * bm['sign_mat']).ravel())
+
+        # ── noise gradient ───────────────────────────────────────
+        # dK_sub/d(sigma_n_sq) = I  ⇒  dNLL/d(sigma_n_sq) = Σ_b 0.5 tr(M V^T)
+        # x[-1] = log10(sigma_n), sigma_n_sq = 10^(2x[-1])
+        # chain rule: d(sigma_n_sq)/d(x[-1]) = 2 ln10 sigma_n_sq
+        grad[-1] = ln10 * sigma_n_sq * noise_trace
+
+        # ── deriv factors + fast vdot path ───────────────────────
         _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
 
-        # ── helper: compute grad contribution for one dphi ───────────
+        # Precompute transposed factor-weighted W_proj for cache-friendly access
+        # FW_T[kk, c] = factors[c] * W_proj[c, kk]  — shape (size, ndir)
+        _vdot_arr = np.asarray(_vdot_factors)
+        FW_T = np.empty((n_func * n_func, ndir))
+        np.multiply(W_proj.reshape(ndir, -1).T, _vdot_arr, out=FW_T)
+
+        @profile
         def _gc_block(dphi):
-            # Expand dphi to dphi_exp_3d
-            dphi_exp = self._expand_derivs(dphi, n_bases, deriv_order)
-            dphi_3d = dphi_exp.reshape(ndir, n_func, n_func)
-
-            # Trace term: Σ_blocks trace(V^T dK_sub V) — single numba call
-            trace_term = _trace_term_all_blocks(
-                dphi_3d, deriv_lookup, sign_lookup,
-                block_nb_type, block_nb_phys, block_m,
-                block_V_flat, block_V_offsets, block_n_cols,
-                n_blocks)
-
-            # Alpha term: α^T dK α  (via vdot in phi-space)
-            alpha_term = dphi.vdot_expand_fast(_vdot_factors, alpha_proj)
-
-            return 0.5 * (trace_term - alpha_term)
+            return 0.5 * dphi.vdot_expand_fast(_vdot_factors, W_proj)
 
         # ── signal variance ──────────────────────────────────────────
-        grad[-2] = _gc_block(oti.mul(2.0 * ln10, phi))
+        grad[-2] = ln10 * phi.vdot_expand_fast(_vdot_factors, W_proj)
 
         # ── kernel-specific hyperparameter gradients ─────────────────
 
         if kernel == 'SE':
             if kernel_type == 'anisotropic':
                 ell = 10.0 ** x0[:D]
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([-ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    phi.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi, -ln10 * ell[d] ** 2, d)
@@ -1000,7 +1136,12 @@ class Optimizer:
             phi_over_base = oti.mul(phi, inv_base)
 
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([-ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    phi_over_base.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], phi_over_base, -ln10 * ell[d] ** 2, d)
@@ -1124,7 +1265,12 @@ class Optimizer:
 
             base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
             if kernel_type == 'anisotropic':
-                if hasattr(phi, 'fused_scale_sq_mul_sparse'):
+                if hasattr(phi, 'fused_grad_all_dims'):
+                    scales = np.array([ln10 * ell[d] ** 2 for d in range(D)])
+                    grad_buf = np.zeros(D)
+                    base_matern.fused_grad_all_dims(diffs, scales, _vdot_factors, W_proj, grad_buf, FW_T)
+                    grad[:D] = grad_buf
+                elif hasattr(phi, 'fused_scale_sq_mul_sparse'):
                     dphi_buf = oti.zeros(phi.shape)
                     for d in range(D):
                         dphi_buf.fused_scale_sq_mul_sparse(diffs[d], base_matern, ln10 * ell[d] ** 2, d)
@@ -1217,7 +1363,7 @@ class Optimizer:
         K += self.model.sigma_data ** 2
         return K, phi, n_bases, oti, diffs
 
-    @profile
+
     def _sparse_nlml_direct(self, x0):
         """
         Compute sparse NLML directly from phi_exp_3d, skipping full K
@@ -1385,13 +1531,14 @@ class Optimizer:
         try:
             if self.model._use_dense_factor:
                 W, alpha_v, nll, phi, n_bases, oti, diffs = self._dense_nll_and_W(x0)
+                return self._compute_grad(x0, W, phi, n_bases, oti, diffs)
             else:
                 alpha_v, U, nll, phi, n_bases, oti, diffs = self._sparse_nlml_direct(x0)
-                W = self._W_from_U(U, alpha_v)
+                return self._compute_grad_blockwise(x0, U, alpha_v, phi, n_bases, oti, diffs)
         except Exception:
             return np.zeros(len(x0))
-        return self._compute_grad(x0, W, phi, n_bases, oti, diffs)
 
+    @profile
     def nll_and_grad(self, x0):
         """
         Compute NLL and its gradient in a single pass.
@@ -1419,8 +1566,7 @@ class Optimizer:
                 self.model._cached_low = None
                 self.model._cached_params = x0.copy()
 
-                W = self._W_from_U(U, alpha_v)
-                grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
+                grad = self._compute_grad_blockwise(x0, U, alpha_v, phi, n_bases, oti, diffs)
             else:
                 K, phi, n_bases, oti, diffs = self._build_K_and_phi(x0)
                 alpha_v, U, nll = self._sparse_U_alpha_nll(K)
