@@ -154,6 +154,11 @@ class gddegp:
             j: np.asarray(s, dtype=np.intp) for j, s in self.sparse_S_full.items()
         }
 
+        N_total = len(self.mmd_P_full)
+        total_nb = sum(len(s) for s in self.sparse_S_full.values())
+        self.sparse_fill_fraction = total_nb / (N_total * N_total)
+        self._use_dense_factor = self.sparse_fill_fraction > 0.25
+
         if self.use_supernodes:
             phys_sns = build_supernodes(
                 X_ord, self.mmd_l, self.sparse_S, lam=self.supernode_lam

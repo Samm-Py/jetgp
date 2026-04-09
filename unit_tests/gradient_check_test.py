@@ -566,5 +566,199 @@ class TestWGDDEGPGradient(unittest.TestCase):
                                               tag=f"WGDDEGP/{kernel}/{ktype}")
 
 
+# ---------------------------------------------------------------------------
+# Sparse DEGP
+# ---------------------------------------------------------------------------
+
+class TestSparseDEGPGradient(unittest.TestCase):
+    """FD gradient check for sparse DEGP across all kernels."""
+
+    KERNELS = [
+        ("SE", "isotropic"),
+        ("SE", "anisotropic"),
+        ("RQ", "isotropic"),
+        ("RQ", "anisotropic"),
+        ("SineExp", "isotropic"),
+        ("SineExp", "anisotropic"),
+        ("Matern", "isotropic"),
+        ("Matern", "anisotropic"),
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        from jetgp.full_degp_sparse.degp import degp
+        cls.degp_cls = degp
+        X, y, g1, g2 = _branin_setup()
+        cls.X = X
+        cls.y_train = [y, g1, g2]
+        cls.der_indices = [[[[1, 1]], [[2, 1]]]]
+        cls.deriv_locs = [[i for i in range(len(X))]] * 2
+
+    def _make_model(self, kernel, kernel_type):
+        kw = {}
+        if kernel == "Matern":
+            kw["smoothness_parameter"] = 3
+        return self.degp_cls(
+            self.X, self.y_train, n_order=1, n_bases=2,
+            der_indices=self.der_indices,
+            derivative_locations=self.deriv_locs,
+            normalize=True, kernel=kernel, kernel_type=kernel_type,
+            rho=3.0, use_supernodes=False,
+            **kw
+        )
+
+    def _x0_for(self, model):
+        n = len(model.bounds)
+        return np.array([0.1] * (n - 2) + [0.5, -3.0])
+
+    def test_nll_and_grad_vs_fd(self):
+        for kernel, ktype in self.KERNELS:
+            with self.subTest(kernel=kernel, kernel_type=ktype):
+                model = self._make_model(kernel, ktype)
+                opt = model.optimizer
+                x0 = self._x0_for(model)
+                tol = MATERN_TOL if kernel == 'Matern' else 1e-3
+                _check_gradient(self, opt, x0, tol=tol,
+                                tag=f"SparseDEGP/{kernel}/{ktype}")
+
+
+# ---------------------------------------------------------------------------
+# Sparse DDEGP
+# ---------------------------------------------------------------------------
+
+class TestSparseDDEGPGradient(unittest.TestCase):
+    """FD gradient check for sparse DDEGP across all kernels."""
+
+    KERNELS = [
+        ("SE", "isotropic"),
+        ("SE", "anisotropic"),
+        ("RQ", "isotropic"),
+        ("RQ", "anisotropic"),
+        ("SineExp", "isotropic"),
+        ("SineExp", "anisotropic"),
+        ("Matern", "isotropic"),
+        ("Matern", "anisotropic"),
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        from jetgp.full_ddegp_sparse.ddegp import ddegp
+        cls.ddegp_cls = ddegp
+        X, y, g1, g2 = _branin_setup()
+        cls.X = X
+        cls.y_func = y
+        cls.g1, cls.g2 = g1, g2
+
+        angles = [np.pi / 4, np.pi / 2, 3 * np.pi / 4]
+        cls.rays = np.array([[np.cos(a) for a in angles],
+                             [np.sin(a) for a in angles]])
+        dir_derivs = []
+        for i in range(cls.rays.shape[1]):
+            r = cls.rays[:, i]
+            dir_derivs.append(g1 * r[0] + g2 * r[1])
+        cls.y_train = [y] + dir_derivs
+        cls.der_indices = [[[[1, 1]], [[2, 1]], [[3, 1]]]]
+        cls.deriv_locs = [[i for i in range(len(X))]] * 3
+
+    def _make_model(self, kernel, kernel_type):
+        kw = {}
+        if kernel == "Matern":
+            kw["smoothness_parameter"] = 3
+        return self.ddegp_cls(
+            self.X, self.y_train, n_order=1,
+            der_indices=self.der_indices,
+            rays=self.rays,
+            derivative_locations=self.deriv_locs,
+            normalize=True, kernel=kernel, kernel_type=kernel_type,
+            rho=3.0, use_supernodes=False,
+            **kw
+        )
+
+    def _x0_for(self, model):
+        n = len(model.bounds)
+        return np.array([0.1] * (n - 2) + [0.5, -3.0])
+
+    def test_nll_and_grad_vs_fd(self):
+        for kernel, ktype in self.KERNELS:
+            with self.subTest(kernel=kernel, kernel_type=ktype):
+                model = self._make_model(kernel, ktype)
+                opt = model.optimizer
+                x0 = self._x0_for(model)
+                tol = MATERN_TOL if kernel == 'Matern' else 1e-3
+                _check_gradient(self, opt, x0, tol=tol,
+                                tag=f"SparseDDEGP/{kernel}/{ktype}")
+
+
+# ---------------------------------------------------------------------------
+# Sparse GDDEGP
+# ---------------------------------------------------------------------------
+
+class TestSparseGDDEGPGradient(unittest.TestCase):
+    """FD gradient check for sparse GDDEGP across all kernels."""
+
+    KERNELS = [
+        ("SE", "isotropic"),
+        ("SE", "anisotropic"),
+        ("RQ", "isotropic"),
+        ("RQ", "anisotropic"),
+        ("SineExp", "isotropic"),
+        ("SineExp", "anisotropic"),
+        ("Matern", "isotropic"),
+        ("Matern", "anisotropic"),
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        from jetgp.full_gddegp_sparse.gddegp import gddegp
+        cls.gddegp_cls = gddegp
+        X, y, g1, g2 = _branin_setup()
+        cls.X = X
+
+        rays_list = []
+        dir_derivs = []
+        for i in range(len(X)):
+            gx, gy = g1[i].item(), g2[i].item()
+            mag = np.sqrt(gx**2 + gy**2)
+            if mag < 1e-10:
+                ray = np.array([[1.0], [0.0]])
+            else:
+                ray = np.array([[gx / mag], [gy / mag]])
+            rays_list.append(ray)
+            dir_derivs.append(gx * ray[0, 0] + gy * ray[1, 0])
+
+        cls.rays_array = np.hstack(rays_list)  # (2, n)
+        cls.y_train = [y, np.array(dir_derivs).reshape(-1, 1)]
+        cls.der_indices = [[[[1, 1]]]]
+        cls.deriv_locs = [[i for i in range(len(X))]] * 1
+
+    def _make_model(self, kernel, kernel_type):
+        kw = {}
+        if kernel == "Matern":
+            kw["smoothness_parameter"] = 3
+        return self.gddegp_cls(
+            self.X, self.y_train, n_order=1,
+            rays_list=[self.rays_array],
+            der_indices=self.der_indices,
+            derivative_locations=self.deriv_locs,
+            normalize=True, kernel=kernel, kernel_type=kernel_type,
+            rho=3.0, use_supernodes=False,
+            **kw
+        )
+
+    def _x0_for(self, model):
+        n = len(model.bounds)
+        return np.array([0.1] * (n - 2) + [0.5, -3.0])
+
+    def test_nll_and_grad_vs_fd(self):
+        for kernel, ktype in self.KERNELS:
+            with self.subTest(kernel=kernel, kernel_type=ktype):
+                model = self._make_model(kernel, ktype)
+                opt = model.optimizer
+                x0 = self._x0_for(model)
+                tol = MATERN_TOL if kernel == 'Matern' else 1e-3
+                _check_gradient(self, opt, x0, tol=tol,
+                                tag=f"SparseGDDEGP/{kernel}/{ktype}")
+
+
 if __name__ == "__main__":
     unittest.main()
