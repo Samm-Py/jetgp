@@ -23,6 +23,7 @@ for N_DIRS in 1 2 3; do
       SEED=$((999 + REP))
       echo "  morris n_dirs=$N_DIRS, n_train=$N, seed=$SEED, rep=$REP"
       python jetgp_gddegp/jetgp_gddegp_morris.py --single $N_DIRS $N $SEED $REP
+      sleep 15
     done
   done
 done

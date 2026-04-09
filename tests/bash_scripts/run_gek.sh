@@ -34,6 +34,7 @@ for ENTRY in "${TASKS[@]}"; do
       SEED=$((999 + REP))
       echo "  ${FUNC} n_train=$N, seed=$SEED, rep=$REP"
       python "$SCRIPT" --single $N $SEED $REP
+      sleep 15
     done
   done
 done
@@ -65,6 +66,7 @@ for ENTRY in "${TASKS[@]}"; do
       SEED=$((999 + REP))
       echo "  ${FUNC} n_train=$N, seed=$SEED, rep=$REP"
       python "$SCRIPT" --single $N $SEED $REP
+      sleep 15
     done
   done
 done

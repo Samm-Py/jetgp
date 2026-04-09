@@ -186,8 +186,8 @@ Step 5: Initialize and train the Sparse DDEGP model
     params = gp_model.optimize_hyperparameters(
         optimizer='pso',
         pop_size=200,
-        n_generations=15,
-        local_opt_every=None,
+        n_generations=16,
+        local_opt_every=16,
         debug=False
     )
 

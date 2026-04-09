@@ -111,6 +111,57 @@ If using Anaconda, you can register the repository path with your environment us
 
 This method automatically makes ``jetgp`` importable whenever the ``jetgp`` environment is active.
 
+otilib Setup
+============
+
+JetGP relies on a patched version of `otilib <https://github.com/mauriaristi/otilib>`_ to provide the OTI arithmetic backend. The ``setup_otilib`` utility automates applying the required patches and (optionally) running the full build workflow.
+
+Clone otilib
+------------
+
+.. code-block:: bash
+
+   $ git clone https://github.com/mauriaristi/otilib.git otilib-master
+
+Apply patches and build
+-----------------------
+
+With the ``jetgp`` environment active, run one of the following:
+
+**Interactive (prompts for otilib path):**
+
+.. code-block:: bash
+
+   $ python -m jetgp.setup_otilib
+
+**Non-interactive:**
+
+.. code-block:: bash
+
+   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master
+
+**Patch and build in one step:**
+
+.. code-block:: bash
+
+   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master --build --workers 8
+
+**From Python:**
+
+.. code-block:: python
+
+   import jetgp
+   jetgp.setup_otilib()   # interactive prompt
+
+What the setup does
+-------------------
+
+1. Copies five patched source files from ``otilib_mods/`` into the correct locations inside otilib-master.
+2. Rewrites hardcoded absolute paths in the otilib build scripts to match your machine.
+3. Optionally runs the full build: template regeneration → cmake → make → Cython static module compilation.
+
+See ``otilib_mods/README.md`` for the full file map and a description of each change.
+
 Local documentation build
 =========================
 

@@ -1,0 +1,238 @@
+# OTI numbers in C -> CMakeLists.txt file
+#
+# Created by:
+# Mauricio Aristizabal Cano
+# Date: June 14 2018
+#
+
+
+# -------------------------------------------------------------------
+# --------------------- BUILD OTILIB - PYTHON -----------------------
+# -------------------------------------------------------------------
+
+# 1. Copy python files to the lib directory.
+# Change to generate the proper file in compile time.
+
+FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/tmp_src)
+
+# Copy the pure python files of the library to the library folder.
+FILE(COPY  python/whereotilib.py  python/auxFunctions.py
+	DESTINATION "${PROJECT_BINARY_DIR}/pyoti/" )
+
+FILE(COPY  python/__init__.py
+	DESTINATION "${PROJECT_BINARY_DIR}/pyoti" )
+
+
+SET(CYTHON_BUILD_DIR     "${PROJECT_BINARY_DIR}/pyoti"                   )
+SET(CYTHON_SOUCE_DIR     "${PROJECT_SOURCE_DIR}/src/python/pyoti/cython" )
+SET(CYTHON_INCLUDE_DIR   "${PROJECT_SOURCE_DIR}/include"                 )
+SET(CYTHON_SETUP_DIR     "${PROJECT_BINARY_DIR}/tmp_src"                 )
+SET(CYTHON_LINK_DIR      "${PROJECT_BINARY_DIR}/lib"                     )
+
+
+SET(CYTHON_COMPILE_INTEL_FLAG "False")
+SET(CYTHON_COMPILE_GNU_FLAG "False")
+
+# Use the default compiler as the precall for the cython command line.
+SET(CYTHON_CMD_CALL_PREC "CC=${CMAKE_C_COMPILER}")
+
+# Compiler dependent flags:
+if (CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  # using Intel icc.
+  SET(CYTHON_COMPILE_INTEL_FLAG  "True") 	
+endif()
+
+if (CMAKE_C_COMPILER_ID STREQUAL "IntelLLVM")
+  # using Intel icx.
+	SET(CYTHON_COMPILE_INTEL_FLAG  "True") 	
+endif()
+
+if (CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+  
+  # Avoidin using Clang (compilation issues)
+  SET(CYTHON_COMPILE_GNU_FLAG  "False")
+
+  # Reset the cython pre-compilation flag
+  # to use "gcc wrapper".
+  set(CYTHON_CMD_CALL_PREC "DISTUTILS_DEBUG=1")
+
+endif()
+
+# if (CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+#   # using Visual Studio C++
+# endif()
+
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  # using GCC
+  SET(CYTHON_COMPILE_GNU_FLAG  "True") 	
+endif()
+
+
+
+# TODO: Add option to selectively compile static libraries.
+SET(CYTHON_COMPILE_STATIC_FLAG "True")
+
+
+
+SET(CYTHON_SOURCES_NAMES dense.pyx core.pyx)
+
+SET(CYTHONIZE_BUILD_DIR   "${PROJECT_BINARY_DIR}/tmp_src"                )
+SET(CYTHONIZE_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include"                )
+
+if(APPLE)
+	# Apple requires the arquitecture to be defined.
+	# SET(DUTILS_ECARG1 "-arch i386"  )
+	# SET(DUTILS_ECARG2 "-arch x86_64")
+
+	SET(DUTILS_ECARG1 "-I.")
+	SET(DUTILS_ECARG2 "-I.")
+
+else()
+	# these are dummy arguments for distutils, because linux does
+	# not require setting this
+	SET(DUTILS_ECARG1 "-I.")
+	SET(DUTILS_ECARG2 "-I.")
+
+endif()
+
+configure_file (
+  "${PROJECT_SOURCE_DIR}/src/python/pyoti/cython/setup.py.in"
+  "${PROJECT_BINARY_DIR}/tmp_src/setup.py"
+  )
+
+
+# message( STATUS "Using the f")
+
+message(STATUS ">>> CYTHON_CMD_CALL_PREC: ${CYTHON_CMD_CALL_PREC}")
+
+
+
+# CMAKE
+ADD_CUSTOM_TARGET(oticython ALL
+	DEPENDS oti otiarrinter)
+
+# # 2. Execute Cython setup call 
+ADD_CUSTOM_COMMAND (
+	TARGET  oticython
+	# COMMAND python3 ${CYTHON_SETUP_DIR}/setup.py build_ext -b${PROJECT_BINARY_DIR} 
+	# COMMAND CC=icc python3 ${CYTHON_SETUP_DIR}/setup.py build_ext -b${PROJECT_BINARY_DIR} 
+	COMMAND ${CYTHON_CMD_CALL_PREC} python3 ${CYTHON_SETUP_DIR}/setup.py -q build_ext -b${PROJECT_BINARY_DIR} -j 8 -v
+)
+# TODO: This may not work in Windows.... Check this, maybe change to FILE(COPY ...)
+#  ---- 
+ADD_CUSTOM_COMMAND (
+	TARGET  oticython
+	# COMMAND pwd
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/__init__.py      ${CYTHON_BUILD_DIR}/
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/whereotilib.py   ${CYTHON_BUILD_DIR}/
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/auxFunctions.py  ${CYTHON_BUILD_DIR}/
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/fmod_writer.py   ${CYTHON_BUILD_DIR}/
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/cmod_writer.py   ${CYTHON_BUILD_DIR}/
+	COMMAND cp -R ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/source_conv   ${CYTHON_BUILD_DIR}/
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/base_derivs_fortran.f90   ${CYTHON_BUILD_DIR}/
+	COMMAND cp ${PROJECT_SOURCE_DIR}/src/python/pyoti/python/core_functions.f90   ${CYTHON_BUILD_DIR}/
+)
+
+# -------------------------------------------------------------------
+# --------------------- BUILD OTILIB - PYTHON -----------------------
+# -------------------------------------------------------------------
+
+# =========================================================================
+#          Individual Cython Module Targets (Auto-detected)
+# =========================================================================
+# Usage: make cython_m10n2, make cython_m5n4, etc.
+
+# Get Python and NumPy include directories
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "from sysconfig import get_paths; print(get_paths()['include'])"
+    OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "import numpy; print(numpy.get_include())"
+    OUTPUT_VARIABLE NUMPY_INCLUDE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get Python extension suffix (e.g., .cpython-39-x86_64-linux-gnu.so)
+execute_process(
+    COMMAND ${Python_EXECUTABLE} -c "from sysconfig import get_config_var; print(get_config_var('EXT_SUFFIX'))"
+    OUTPUT_VARIABLE PYTHON_EXT_SUFFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Cython include paths (for .pxd files)
+# The include/pyoti directory contains the .pxd files
+# We need the parent so "from pyoti.xxx cimport" works
+set(CYTHON_INCLUDE_BASE "${PROJECT_SOURCE_DIR}/include")
+set(CYTHON_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cython")
+
+message(STATUS "Python include: ${PYTHON_INCLUDE_DIR}")
+message(STATUS "NumPy include: ${NUMPY_INCLUDE_DIR}")
+message(STATUS "Python extension suffix: ${PYTHON_EXT_SUFFIX}")
+message(STATUS "Cython include base: ${CYTHON_INCLUDE_BASE}")
+
+# Find all onummXnY.pyx files
+file(GLOB OTI_CYTHON_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/cython/static/onumm*.pyx")
+
+foreach(PYX_FILE ${OTI_CYTHON_SOURCES})
+    # Extract filename without path (e.g., "onumm10n2.pyx")
+    get_filename_component(FILENAME ${PYX_FILE} NAME)
+    
+    # Extract mXnY part (remove "onumm" prefix and ".pyx" suffix)
+    string(REGEX REPLACE "^onumm" "" MN_PART ${FILENAME})
+    string(REGEX REPLACE "\\.pyx$" "" MN_PART ${MN_PART})
+    
+    # Create target names
+    set(CYTHON_TARGET_NAME "cython_m${MN_PART}")
+    set(C_LIB_TARGET_NAME "m${MN_PART}")
+    set(MODULE_NAME "onumm${MN_PART}")
+    
+    # Paths
+    set(PYX_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cython/static/${MODULE_NAME}.pyx")
+    set(C_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cython/static/${MODULE_NAME}.c")
+    set(SO_PATH "${PROJECT_BINARY_DIR}/pyoti/static/${MODULE_NAME}${PYTHON_EXT_SUFFIX}")
+    
+    # Create the cython target
+    add_custom_target(${CYTHON_TARGET_NAME}
+        # Step 1: Run Cython with include paths
+        COMMAND cython -3 
+            -I${CYTHON_INCLUDE_BASE}
+            -I${CYTHON_SRC_DIR}
+            -I${CMAKE_CURRENT_SOURCE_DIR}/cython/static
+            ${PYX_PATH}
+        
+        # Step 2: Compile to shared object
+        COMMAND ${CMAKE_C_COMPILER} -shared -fPIC -O3
+            -I${PYTHON_INCLUDE_DIR}
+            -I${PROJECT_SOURCE_DIR}/include
+            -I${NUMPY_INCLUDE_DIR}
+            -L${PROJECT_BINARY_DIR}/lib
+            ${C_PATH}
+            -l${C_LIB_TARGET_NAME} -lm
+            -o ${SO_PATH}
+        
+        DEPENDS ${C_LIB_TARGET_NAME}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cython/static
+        COMMENT "Building ${MODULE_NAME} Cython extension"
+    )
+    
+    message(STATUS "Added Cython target: ${CYTHON_TARGET_NAME}")
+endforeach()
+
+# =========================================================================
+#          Build all Cython modules at once
+# =========================================================================
+set(ALL_CYTHON_TARGETS "")
+foreach(PYX_FILE ${OTI_CYTHON_SOURCES})
+    get_filename_component(FILENAME ${PYX_FILE} NAME)
+    string(REGEX REPLACE "^onumm" "" MN_PART ${FILENAME})
+    string(REGEX REPLACE "\\.pyx$" "" MN_PART ${MN_PART})
+    list(APPEND ALL_CYTHON_TARGETS "cython_m${MN_PART}")
+endforeach()
+
+add_custom_target(cython_all_static
+    DEPENDS ${ALL_CYTHON_TARGETS}
+    COMMENT "Building all static Cython extensions"
+)

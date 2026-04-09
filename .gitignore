@@ -49,6 +49,7 @@ jetgp/cmod_writer.py
 # Tests: ignore pycache only
 tests/__pycache__/
 
+
 # Local scripts (benchmarking, verification, utilities)
 benchmark_optimizers.py
 benchmark_optimizers_10d.py

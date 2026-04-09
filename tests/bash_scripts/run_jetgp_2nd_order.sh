@@ -31,6 +31,7 @@ for ENTRY in "${TASKS[@]}"; do
       SEED=$((999 + REP))
       echo "  ${FUNC} n_train=$N, seed=$SEED, rep=$REP"
       python jetgp_degp/jetgp_2nd_order.py --single "$FUNC" $N $SEED $REP
+      sleep 15
     done
   done
 done

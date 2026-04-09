@@ -36,6 +36,7 @@ for NITER in $ITERS; do
         SEED=$((999 + REP))
         echo "  ${FUNC} n_train=$N, seed=$SEED, rep=$REP"
         python "$SCRIPT" --single $NITER $N $SEED $REP
+        sleep 15
       done
     done
   done

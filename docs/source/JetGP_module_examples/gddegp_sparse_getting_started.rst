@@ -227,7 +227,7 @@ Step 6: Initialize and train the Sparse GDDEGP model
         optimizer='pso',
         pop_size=200,
         n_generations=15,
-        local_opt_every=None,
+        local_opt_every=15,
         debug=False
     )
 

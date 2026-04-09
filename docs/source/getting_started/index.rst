@@ -8,6 +8,7 @@ This section provides **tutorials** for using JetGP classes, including DEGP, WDE
    :caption: Tutorials
 
    module_overview
+   otilib_setup
    Initializing_JetGP_Modules
    hyperparameter_optimization
    making_predictions

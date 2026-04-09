@@ -34,6 +34,7 @@ for NITER in $ITERS; do
         SEED=$((999 + REP))
         echo "  ${FUNC} n_train=$N, seed=$SEED, rep=$REP"
         python gpytorch/gpytorch_2nd_order.py --single $NITER "$FUNC" $N $SEED $REP
+        sleep 15
       done
     done
   done
