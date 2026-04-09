@@ -156,9 +156,10 @@ With the ``jetgp`` environment active, run one of the following:
 What the setup does
 -------------------
 
-1. Copies five patched source files from ``otilib_mods/`` into the correct locations inside otilib-master.
-2. Rewrites hardcoded absolute paths in the otilib build scripts to match your machine.
-3. Optionally runs the full build: template regeneration → cmake → make → Cython static module compilation.
+1. **Copies patched source files** from ``otilib_mods/`` into the correct locations inside otilib-master (CMakeLists files, Cython templates, ``cmod_writer.py``, and ``regenerate_all_c.py``).
+2. **Patches the active pyoti installation** — copies JetGP's ``cmod_writer.py`` into the conda env's installed ``pyoti`` package, and saves the otilib path to ``~/.config/jetgp/otilib_path`` so that JetGP can auto-detect it at runtime.
+3. **Rewrites hardcoded absolute paths** in the otilib build scripts to match your machine.
+4. **Optionally runs the full build** — template regeneration → cmake → make → Cython static module compilation → copies all built ``.so`` files into the active ``pyoti`` installation so they are immediately importable.
 
 See ``otilib_mods/README.md`` for the full file map and a description of each change.
 

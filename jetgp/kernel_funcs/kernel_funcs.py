@@ -122,6 +122,14 @@ def _get_otilib_path(otilib_path=None):
             raise RuntimeError(f"OTILIB_PATH does not exist: {otilib_path}")
         return otilib_path
 
+    # Check config file written by setup_otilib
+    from pathlib import Path
+    config_file = Path.home() / ".config" / "jetgp" / "otilib_path"
+    if config_file.exists():
+        candidate = config_file.read_text().strip()
+        if os.path.isdir(candidate):
+            return candidate
+
     # Auto-detect from installed pyoti
     try:
         import pyoti

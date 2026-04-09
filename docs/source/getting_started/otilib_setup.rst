@@ -18,7 +18,7 @@ Prerequisites
 What the setup does
 -------------------
 
-The setup script performs two steps regardless of whether ``--build`` is passed:
+The setup script always performs steps 1–3, then optionally step 4:
 
 1. **Copies patched source files** from ``otilib_mods/`` into otilib-master. The patches add:
 
@@ -27,19 +27,26 @@ The setup script performs two steps regardless of whether ``--build`` is passed:
    - ``oti.empty()`` uninitialized array allocator (``creators.pxi``)
    - OpenMP thread query imports (``include.pxi``)
    - ``{arr_get_all_derivs}`` expansion to the array base template (``array_base.pxi``)
-   - The ``regenerate_all_c.py`` build script (``build/regenerate_all_c.py``)
+   - JetGP's ``cmod_writer.py`` to both otilib locations (``build/pyoti/`` and ``src/python/pyoti/python/``)
+   - The ``regenerate_all_c.py`` build script (``build/``)
 
-2. **Rewrites hardcoded absolute paths** in the otilib build scripts
+2. **Patches the active pyoti installation** — copies JetGP's ``cmod_writer.py`` into the
+   conda env's installed ``pyoti`` package, and writes the otilib path to
+   ``~/.config/jetgp/otilib_path`` so that JetGP can auto-detect it at runtime without
+   any environment variables.
+
+3. **Rewrites hardcoded absolute paths** in the otilib build scripts
    (``regenerate_all_c.py``, ``build_static.py``, ``rebuild_all_static.py``,
    ``rebuild_all_static.sh``) to match your machine's otilib location and active Python
    executable.
 
-If ``--build`` is passed, it also runs the full build workflow:
+4. **Full build** (only when ``--build`` is passed):
 
-3. Regenerates all C/Cython sources from templates
-4. Runs ``cmake ..`` and ``make -j<workers>``
-5. Runs ``make gendata``
-6. Compiles all Cython static modules in parallel
+   - Regenerates all C/Cython sources from templates
+   - Runs ``cmake ..``, ``make -j<workers>``, and ``make gendata``
+   - Compiles all Cython static modules in parallel
+   - Copies all built ``.so`` files into the active ``pyoti`` installation so they are
+     immediately importable as ``pyoti.static.onumm*``
 
 Usage
 -----
@@ -114,6 +121,8 @@ The following files are copied from ``otilib_mods/`` during setup:
      - ``src/python/pyoti/CMakeLists.txt``
    * - ``regenerate_all_c.py``
      - ``build/regenerate_all_c.py``
+   * - ``build_static.py``
+     - ``build/build_static.py``
    * - ``cmod_writer.py``
      - ``build/pyoti/cmod_writer.py``
    * - ``cmod_writer.py``

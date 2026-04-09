@@ -44,8 +44,6 @@ jetgp/wdegp_old
 jetgp/wdegp_old/*
 docs/build
 docs/build/*
-jetgp/build_static.py
-jetgp/cmod_writer.py
 # Tests: ignore pycache only
 tests/__pycache__/
 
