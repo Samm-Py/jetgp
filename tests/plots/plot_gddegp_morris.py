@@ -41,7 +41,7 @@ plt.rcParams.update({
 # ── File map ──────────────────────────────────────────────────────────────────
 DIM          = 20
 SAMPLE_SIZES = [DIM, 5 * DIM, 10 * DIM]
-SHOW_ITERS   = [100, 200, 500, 1000, 2000]
+SHOW_ITERS   = [100, 200, 500, 1000]
 
 degp_file = 'results_jetgp_morris.json'
 gddegp_files = {
@@ -62,7 +62,6 @@ COLORS = {
     'GPyTorch (200)':  '#9ECAE1',
     'GPyTorch (500)':  '#6BAED6',
     'GPyTorch (1000)': '#2171B5',
-    'GPyTorch (2000)': '#084594',
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

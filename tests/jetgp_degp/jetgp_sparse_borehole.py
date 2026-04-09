@@ -30,8 +30,8 @@ KERNEL = "SE"
 KERNEL_TYPE = "anisotropic"
 DER_INDICES = [[[[i, 1]] for i in range(1, DIM + 1)]]
 
-RHO_VALUES = [.5,1.0,1.25]
-USE_SUPERNODES = True
+RHO_VALUES = [1.0]
+USE_SUPERNODES = False
 
 JADE_KWARGS = dict(
     optimizer="jade",

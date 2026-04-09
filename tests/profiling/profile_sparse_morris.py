@@ -24,13 +24,13 @@ from jetgp.full_degp_sparse.degp import degp as SparseDEGP
 
 
 DIM = 20
-N_TRAIN = 20
+N_TRAIN = 50
 N_TEST = 500
 DER_INDICES = [[[[i, 1]] for i in range(1, DIM + 1)]]
 
 JADE_KWARGS = dict(
     n_generations=1,
-    local_opt_every=11,
+    local_opt_every=1,
     pop_size=10,
     debug=True,
 )
@@ -120,7 +120,7 @@ def main():
             n_order=1, n_bases=DIM,
             der_indices=DER_INDICES,
             normalize=True, kernel='SE', kernel_type='anisotropic',
-            rho=rho, use_supernodes=True,
+            rho=rho, use_supernodes=False,
         )
         t_build = time.perf_counter() - t0
 

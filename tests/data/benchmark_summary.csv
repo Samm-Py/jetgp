@@ -1,0 +1,64 @@
+Function,Method,n_train,Avg NRMSE,Avg Train Time (s)
+borehole,DEGP,8,0.0065,0.086
+borehole,DEGP,40,0.0005,0.395
+borehole,DEGP,80,0.0003,2.818
+borehole,GEK,8,0.0355,0.279
+borehole,GEK,40,0.0023,0.489
+borehole,GEK,80,0.0010,1.159
+borehole,GEK nDIM,8,0.0085,0.432
+borehole,GEK nDIM,40,0.0009,4.370
+borehole,GEK nDIM,80,0.0006,23.778
+borehole,GPyTorch 100,8,0.0888,0.475
+borehole,GPyTorch 100,40,0.0402,1.105
+borehole,GPyTorch 100,80,0.0306,4.002
+borehole,GPyTorch 200,8,0.0831,0.951
+borehole,GPyTorch 200,40,0.0347,2.232
+borehole,GPyTorch 200,80,0.0263,7.889
+borehole,GPyTorch 500,8,0.0722,2.314
+borehole,GPyTorch 500,40,0.0241,5.475
+borehole,GPyTorch 500,80,0.0181,19.664
+borehole,GPyTorch 1000,8,0.0596,4.858
+borehole,GPyTorch 1000,40,0.0145,10.923
+borehole,GPyTorch 1000,80,0.0107,41.711
+morris,DEGP,20,0.0494,1.143
+morris,DEGP,100,0.0159,42.860
+morris,DEGP,200,0.0096,210.048
+morris,GEK,20,0.1100,0.984
+morris,GEK,100,0.1117,4.897
+morris,GEK,200,0.1045,20.352
+morris,GEK nDIM,20,0.0712,20.928
+morris,GEK nDIM,100,0.0572,705.087
+morris,GEK nDIM,200,0.0472,3576.224
+morris,GPyTorch 100,20,0.0845,1.382
+morris,GPyTorch 100,100,0.0614,33.188
+morris,GPyTorch 100,200,0.0513,163.481
+morris,GPyTorch 200,20,0.0802,2.780
+morris,GPyTorch 200,100,0.0558,66.379
+morris,GPyTorch 200,200,0.0462,323.321
+morris,GPyTorch 500,20,0.0704,6.866
+morris,GPyTorch 500,100,0.0449,168.376
+morris,GPyTorch 500,200,0.0368,822.516
+morris,GPyTorch 1000,20,0.0600,14.585
+morris,GPyTorch 1000,100,0.0346,343.593
+morris,GPyTorch 1000,200,0.0286,1654.538
+otl_circuit,DEGP,6,0.0106,0.225
+otl_circuit,DEGP,30,0.0012,0.412
+otl_circuit,DEGP,60,0.0003,0.854
+otl_circuit,GEK,6,0.0280,0.205
+otl_circuit,GEK,30,0.0042,0.313
+otl_circuit,GEK,60,0.0020,0.550
+otl_circuit,GEK nDIM,6,0.0269,0.262
+otl_circuit,GEK nDIM,30,0.0014,1.275
+otl_circuit,GEK nDIM,60,0.0006,4.615
+otl_circuit,GPyTorch 100,6,0.0714,0.442
+otl_circuit,GPyTorch 100,30,0.0295,0.697
+otl_circuit,GPyTorch 100,60,0.0204,1.347
+otl_circuit,GPyTorch 200,6,0.0659,0.936
+otl_circuit,GPyTorch 200,30,0.0261,1.373
+otl_circuit,GPyTorch 200,60,0.0181,2.705
+otl_circuit,GPyTorch 500,6,0.0533,2.144
+otl_circuit,GPyTorch 500,30,0.0185,3.483
+otl_circuit,GPyTorch 500,60,0.0130,6.763
+otl_circuit,GPyTorch 1000,6,0.0361,4.376
+otl_circuit,GPyTorch 1000,30,0.0113,6.956
+otl_circuit,GPyTorch 1000,60,0.0080,14.155

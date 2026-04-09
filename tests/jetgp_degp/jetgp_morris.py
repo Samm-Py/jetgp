@@ -58,7 +58,7 @@ def run_single(n_train, seed):
     params = model.optimize_hyperparameters(
         optimizer="jade",
         n_generations=10,
-        local_opt_every=10,
+        local_opt_every=11,
         pop_size=10,
         debug=True
     )

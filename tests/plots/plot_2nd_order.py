@@ -44,7 +44,7 @@ func_meta = {
     'morris':      {'dim': 20, 'label': 'Morris (20D)'},
 }
 
-SHOW_ITERS = [100, 200, 500, 1000, 2000]
+SHOW_ITERS = [100, 200, 500, 1000]
 
 COLORS = {
     'JetGP (2nd)':        '#1D9E75',
@@ -52,7 +52,6 @@ COLORS = {
     'GPyTorch (200)':     '#9ECAE1',
     'GPyTorch (500)':     '#6BAED6',
     'GPyTorch (1000)':    '#2171B5',
-    'GPyTorch (2000)':    '#084594',
 }
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

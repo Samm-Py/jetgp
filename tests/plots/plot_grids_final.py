@@ -42,21 +42,18 @@ gpt_files = {
         200:  'results_gpytorch_borehole_200iter.json',
         500:  'results_gpytorch_borehole_500iter.json',
         1000: 'results_gpytorch_borehole_1000iter.json',
-        2000: 'results_gpytorch_borehole_2000iter.json',
     },
     'otl_circuit': {
         100:  'results_gpytorch_otl_circuit_100iter.json',
         200:  'results_gpytorch_otl_circuit_200iter.json',
         500:  'results_gpytorch_otl_circuit_500iter.json',
         1000: 'results_gpytorch_otl_circuit_1000iter.json',
-        2000: 'results_gpytorch_otl_circuit_2000iter.json',
     },
     'morris': {
         100:  'results_gpytorch_morris_100iter.json',
         200:  'results_gpytorch_morris_200iter.json',
         500:  'results_gpytorch_morris_500iter.json',
         1000: 'results_gpytorch_morris_1000iter.json',
-        2000: 'results_gpytorch_morris_2000iter.json',
     },
 }
 jetgp_files = {
@@ -80,9 +77,9 @@ func_meta = {
     'morris':      {'dim': 20, 'label': 'Morris (20D)'},
 }
 SHOW_ITERS = {
-    'borehole':    [100, 200, 500, 1000, 2000],
-    'otl_circuit': [100, 200, 500, 1000, 2000],
-    'morris':      [100, 200, 500, 1000, 2000],
+    'borehole':    [100, 200, 500, 1000],
+    'otl_circuit': [100, 200, 500, 1000],
+    'morris':      [100, 200, 500, 1000],
 }
 COLORS = {
     'JetGP':           '#1D9E75',
@@ -92,12 +89,14 @@ COLORS = {
     'GPyTorch (200)':  '#9ECAE1',
     'GPyTorch (500)':  '#6BAED6',
     'GPyTorch (1000)': '#2171B5',
-    'GPyTorch (2000)': '#084594',
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 def load(fname):
-    with open(data_dir / fname) as f:
+    path = data_dir / fname
+    if not path.exists():
+        return None
+    with open(path) as f:
         return json.load(f)
 
 def agg(records, metric):
@@ -118,6 +117,8 @@ def build_summary(func, metric):
     summary = {n: {} for n in n_sizes}
 
     def get_agg(recs):
+        if recs is None:
+            return {}
         return agg_total(recs) if metric == 'total_time' else agg(recs, metric)
 
     for n, v in get_agg(load(jetgp_files[func])).items():

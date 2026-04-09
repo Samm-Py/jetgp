@@ -1,0 +1,10 @@
+Function,n_train,NRMSE GEK/JetGP,NRMSE GEKnDIM/JetGP,NRMSE GPy100/JetGP,NRMSE GPy1000/JetGP,Time GEK/JetGP,Time GEKnDIM/JetGP,Time GPy100/JetGP,Time GPy1000/JetGP
+borehole,8,5.4,1.3,13.6,9.2,3.3,5.1,5.6,56.8
+borehole,40,4.3,1.8,74.9,27.0,1.2,11.0,2.8,27.6
+borehole,80,3.0,1.8,92.1,32.1,0.4,8.4,1.4,14.8
+morris,20,2.2,1.4,1.7,1.2,0.9,18.3,1.2,12.8
+morris,100,7.0,3.6,3.9,2.2,0.1,16.5,0.8,8.0
+morris,200,10.9,4.9,5.3,3.0,0.1,17.0,0.8,7.9
+otl_circuit,6,2.6,2.5,6.7,3.4,0.9,1.2,2.0,19.4
+otl_circuit,30,3.6,1.2,25.3,9.7,0.8,3.1,1.7,16.9
+otl_circuit,60,7.3,2.3,75.5,29.5,0.6,5.4,1.6,16.6
