@@ -96,15 +96,15 @@ Step 4: Initialize Sparse DEGP model
                 derivative_locations=derivative_locations,
                 normalize=True,
                 kernel="SE", kernel_type="anisotropic",
-                rho=3.0, use_supernodes=True)
+                rho=1.0, use_supernodes=False)
 
    print("Sparse DEGP model initialized.")
 
 **Explanation:**
 The sparse DEGP model is initialized with two additional parameters compared to the dense version:
 
-- ``rho=3.0``: Controls the neighborhood size for the Vecchia approximation. Each column of the sparse Cholesky factor conditions on the ``rho`` nearest neighbors (in MMD ordering). Larger values increase accuracy but reduce sparsity.
-- ``use_supernodes=True``: Enables supernode aggregation, which groups nearby points for batched computation, providing significant speedup.
+- ``rho=1.0``: Controls the neighborhood size for the Vecchia approximation. Each column of the sparse Cholesky factor conditions on the ``rho`` nearest neighbors (in MMD ordering). Larger values increase accuracy but reduce sparsity.
+- ``use_supernodes= False``: Enables supernode aggregation, which groups nearby points for batched computation, providing significant speedup.
 
 All other parameters (``n_order``, ``n_bases``, ``kernel``, etc.) are identical to the dense DEGP.
 

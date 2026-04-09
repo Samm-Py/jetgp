@@ -66,7 +66,7 @@ Step 2: Set configuration parameters
     np.random.seed(random_seed)
 
     # Sparse Cholesky parameters
-    rho = 3.0
+    rho = 1.0
     use_supernodes = False
 
     print("Configuration complete!")
