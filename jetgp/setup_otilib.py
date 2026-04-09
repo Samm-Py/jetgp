@@ -19,25 +19,25 @@ import sys
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
-# File map: source (relative to otilib_mods/) -> destination (relative to otilib root)
+# File map: list of (source relative to otilib_mods/, destination relative to otilib root)
+# A source file may appear more than once to copy it to multiple destinations.
 # ---------------------------------------------------------------------------
-FILE_MAP = {
-    "src_CMakeLists.txt":             "src/CMakeLists.txt",
-    "src_python_pyoti_CMakeLists.txt": "src/python/pyoti/CMakeLists.txt",
-    "regenerate_all_c.py":            "build/regenerate_all_c.py",
-    "creators.pxi": (
+FILE_MAP = [
+    ("src_CMakeLists.txt",             "src/CMakeLists.txt"),
+    ("src_python_pyoti_CMakeLists.txt", "src/python/pyoti/CMakeLists.txt"),
+    ("regenerate_all_c.py",            "build/regenerate_all_c.py"),
+    ("cmod_writer.py",                 "build/pyoti/cmod_writer.py"),
+    ("cmod_writer.py",                 "src/python/pyoti/python/cmod_writer.py"),
+    ("creators.pxi",
         "src/python/pyoti/python/source_conv/"
-        "src/python/pyoti/cython/static/number/creators.pxi"
-    ),
-    "include.pxi": (
+        "src/python/pyoti/cython/static/number/creators.pxi"),
+    ("include.pxi",
         "src/python/pyoti/python/source_conv/"
-        "src/python/pyoti/cython/static/number/include.pxi"
-    ),
-    "array_base.pxi": (
+        "src/python/pyoti/cython/static/number/include.pxi"),
+    ("array_base.pxi",
         "src/python/pyoti/python/source_conv/"
-        "src/python/pyoti/cython/static/number/array/base.pxi"
-    ),
-}
+        "src/python/pyoti/cython/static/number/array/base.pxi"),
+]
 
 # ---------------------------------------------------------------------------
 # Build scripts whose hardcoded paths need to be rewritten
@@ -116,7 +116,7 @@ def resolve_otilib(path_arg):
 
 def copy_mod_files(mods_dir: Path, otilib: Path):
     print("\n[1/3] Copying mod files...")
-    for src_name, dst_rel in FILE_MAP.items():
+    for src_name, dst_rel in FILE_MAP:
         src = mods_dir / src_name
         dst = otilib / dst_rel
         if not src.exists():

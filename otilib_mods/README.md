@@ -10,6 +10,8 @@ Copy each file to its destination in your local `otilib-master` before running t
 | `src_CMakeLists.txt` | `src/CMakeLists.txt` |
 | `src_python_pyoti_CMakeLists.txt` | `src/python/pyoti/CMakeLists.txt` |
 | `regenerate_all_c.py` | `build/regenerate_all_c.py` |
+| `cmod_writer.py` | `build/pyoti/cmod_writer.py` |
+| `cmod_writer.py` | `src/python/pyoti/python/cmod_writer.py` |
 | `creators.pxi` | `src/python/pyoti/python/source_conv/src/python/pyoti/cython/static/number/creators.pxi` |
 | `include.pxi` | `src/python/pyoti/python/source_conv/src/python/pyoti/cython/static/number/include.pxi` |
 | `array_base.pxi` | `src/python/pyoti/python/source_conv/src/python/pyoti/cython/static/number/array/base.pxi` |
