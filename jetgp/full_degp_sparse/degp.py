@@ -64,7 +64,7 @@ class degp:
         kernel="SE",
         kernel_type="anisotropic",
         smoothness_parameter=None,
-        rho=3.0,
+        rho=1.0,
         use_supernodes=True,
         supernode_lam=1.5,
     ):

@@ -43,9 +43,9 @@ def sum_of_sines_gradient(X):
 # =============================================================================
 
 JADE_KWARGS = dict(
-    n_generations=50,
-    pop_size=15,
-    local_opt_every=51,
+    n_generations=10,
+    pop_size=10,
+    local_opt_every=10,
     debug=False,
 )
 
@@ -180,7 +180,7 @@ if __name__ == '__main__':
         # K size = n_train * (1 + dim)
         (2,  100, 1),   # K: 90x90
         (5,  100, 1),   # K: 120x120
-        (10, 100, 1),   # K: 165x165
+        (20, 100, 1),   # K: 165x165
     ]
 
     print("=" * 110)

@@ -31,12 +31,12 @@ KERNEL_TYPE = "anisotropic"
 DER_INDICES = [[[[i, 1]] for i in range(1, DIM + 1)]]
 
 RHO_VALUES = [.5,1.0,1.25]
-USE_SUPERNODES = False
+USE_SUPERNODES = True
 
 JADE_KWARGS = dict(
     optimizer="jade",
     n_generations=10,
-    local_opt_every=10,
+    local_opt_every=11,
     pop_size=10,
     debug=True,
 )

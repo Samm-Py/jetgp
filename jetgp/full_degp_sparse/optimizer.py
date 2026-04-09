@@ -346,7 +346,67 @@ class Optimizer:
             sd_diag_orig = np.zeros(len(P_full))
         self._sigma_data_diag_mmd = sd_diag_orig[P_full]
 
+        # Precompute flat index arrays for phi_exp_3d gather.
+        # At runtime, K_sub = phi_exp_3d.ravel()[flat_idx] * sign_mat + noise.
+        stride_d = n_rows_func * n_rows_func
+        stride_row = n_rows_func
 
+        if (self.model.use_supernodes
+                and self.model.sparse_supernodes_full is not None):
+            for sn in self.model.sparse_supernodes_full:
+                ch = sn.get('children_arr')
+                if ch is None:
+                    ch = np.asarray(sn['children'])
+                orig_ch = P_full[ch]
+                ch_type = k_type[orig_ch]
+                ch_phys = k_phys[orig_ch]
+                m = len(ch)
+
+                d_mat = deriv_lookup[ch_type[:, None], ch_type[None, :]]
+                pa_mat = np.broadcast_to(ch_phys[:, None], (m, m))
+                pb_mat = np.broadcast_to(ch_phys[None, :], (m, m))
+                sn['phi_flat_idx'] = np.ascontiguousarray(
+                    d_mat * stride_d + pa_mat * stride_row + pb_mat
+                )
+                sn['phi_sign_mat'] = np.ascontiguousarray(
+                    sign_lookup[ch_type[None, :]] * np.ones((m, 1))
+                )
+                sn['phi_sd_diag'] = self._sigma_data_diag_mmd[ch]
+
+        # Same precomputation for non-supernode block path
+        if (not self.model.use_supernodes
+                and self.model.n_order > 0):
+            N_total = len(P_full)
+            block_size = self.model.n_bases + 1
+            S = self.model.sparse_S_full_arr
+            self._block_phi_maps = []
+            for start in range(0, N_total, block_size):
+                end = min(start + block_size, N_total)
+                nb = S[end - 1] if isinstance(S[end - 1], np.ndarray) else np.asarray(S[end - 1])
+                m = len(nb)
+
+                orig_nb = P_full[nb]
+                nb_type = k_type[orig_nb]
+                nb_phys = k_phys[orig_nb]
+
+                d_mat = deriv_lookup[nb_type[:, None], nb_type[None, :]]
+                pa_mat = np.broadcast_to(nb_phys[:, None], (m, m))
+                pb_mat = np.broadcast_to(nb_phys[None, :], (m, m))
+
+                self._block_phi_maps.append({
+                    'nb': nb,
+                    'start': start,
+                    'flat_idx': np.ascontiguousarray(
+                        d_mat * stride_d + pa_mat * stride_row + pb_mat
+                    ),
+                    'sign_mat': np.ascontiguousarray(
+                        sign_lookup[nb_type[None, :]] * np.ones((m, 1))
+                    ),
+                    'sd_diag': self._sigma_data_diag_mmd[nb],
+                    'positions': np.searchsorted(nb, np.arange(start, end)),
+                })
+
+    @profile
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the negative log marginal likelihood (NLL) via sparse U.
@@ -372,11 +432,7 @@ class Optimizer:
                 return nll
 
             # Use direct phi path (skip full K construction) when possible
-            use_direct = (
-                not self.model.use_supernodes
-                and self.model.n_order > 0
-            )
-            if use_direct:
+            if self.model.n_order > 0:
                 alpha, U, nlml, *_ = self._sparse_nlml_direct(x0)
             else:
                 K, _, _, _, _ = self._build_K_and_phi(x0)
@@ -415,7 +471,6 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
-    @profile
     def _compute_grad(self, x0, W, phi, n_bases, oti, diffs):
         """
         Compute the NLL gradient given pre-factorised W = K^{-1} - α α^T.
@@ -765,7 +820,6 @@ class Optimizer:
 
         return grad
 
-    @profile
     def _compute_grad_blockwise(self, x0, U, alpha_v, phi, n_bases, oti, diffs):
         """
         Compute the NLL gradient block-by-block using the Vecchia decomposition.
@@ -1127,7 +1181,7 @@ class Optimizer:
                 grad[0] = _gc_block(oti.mul(ln10 * ell_val, acc))
 
         return grad
-
+        
     def _build_K_and_phi(self, x0):
         """
         Shared helper: build K (with noise), phi, n_bases, oti, diffs.
@@ -1172,7 +1226,10 @@ class Optimizer:
         Returns (alpha_v, U, nll, phi, n_bases, oti, diffs) where the
         last four are needed by _compute_grad.
         """
-        from jetgp.full_degp_sparse.sparse_cholesky import build_U_from_phi
+        from jetgp.full_degp_sparse.sparse_cholesky import (
+            build_U_from_phi, build_U_from_phi_flat,
+            build_U_supernodes_from_phi,
+        )
 
         diffs = self.model.differences_by_dim
         oti = self.model.kernel_factory.oti
@@ -1194,19 +1251,19 @@ class Optimizer:
         P_full = self.model.mmd_P_full
         N_total = len(P_full)
 
-        if self._U_buf is None or self._U_buf.shape[0] != N_total:
-            self._U_buf = np.zeros((N_total, N_total), order='F')
+        if self.model.use_supernodes and self.model.sparse_supernodes_full is not None:
+            U, _ = build_U_supernodes_from_phi(
+                phi_3d, self.model.sparse_supernodes_full, N_total,
+                sigma_n_sq,
+            )
+        else:
+            if self._U_buf is None or self._U_buf.shape[0] != N_total:
+                self._U_buf = np.zeros((N_total, N_total), order='F')
 
-        U = build_U_from_phi(
-            phi_3d, self.model.sparse_S_full_arr, N_total,
-            block_size=self.model.n_bases + 1,
-            k_type=k_type, k_phys=k_phys,
-            deriv_lookup=deriv_lookup, sign_lookup=sign_lookup,
-            P_full=self.model.mmd_P_full,
-            sigma_n_sq=sigma_n_sq,
-            sigma_data_diag=self._sigma_data_diag_mmd,
-            out=self._U_buf,
-        )
+            U = build_U_from_phi_flat(
+                phi_3d, self._block_phi_maps, N_total,
+                sigma_n_sq, out=self._U_buf,
+            )
 
         y_ord = self.model.y_train[P_full]
         nll = nlml_from_U(U, y_ord)
@@ -1217,7 +1274,6 @@ class Optimizer:
 
         return alpha_v, U, nll, phi, n_bases, oti, diffs
 
-    @profile
     def _dense_nll_and_W(self, x0):
         """
         Dense Cholesky path: build full K, factor once, compute NLL and W.
@@ -1249,8 +1305,6 @@ class Optimizer:
         self.model._cached_params = x0.copy()
 
         return W, alpha_v, nll, phi, n_bases, oti, diffs
-
-    @profile
     def _sparse_U_alpha_nll(self, K):
         """
         Build sparse U, compute alpha and NLML.  Does NOT form K^{-1}.
@@ -1282,7 +1336,7 @@ class Optimizer:
 
         return alpha_v, U, nll
 
-    @profile
+
     def _W_from_U(self, U, alpha_v):
         """
         Compute W = K^{-1} - αα^T from a pre-built sparse U.
@@ -1306,7 +1360,6 @@ class Optimizer:
         _permute_and_subtract_outer(K_inv_ord, alpha_v, P_full, W)
         return W
 
-    @profile
     def _sparse_W_and_alpha(self, K):
         """
         Compute W = K^{-1} - αα^T and alpha using the sparse U factor.
@@ -1339,7 +1392,6 @@ class Optimizer:
             return np.zeros(len(x0))
         return self._compute_grad(x0, W, phi, n_bases, oti, diffs)
 
-    @profile
     def nll_and_grad(self, x0):
         """
         Compute NLL and its gradient in a single pass.
@@ -1355,9 +1407,9 @@ class Optimizer:
         try:
             if self.model._use_dense_factor:
                 W, alpha_v, nll, phi, n_bases, oti, diffs = self._dense_nll_and_W(x0)
-            else:
+                grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
+            elif self.model.n_order > 0:
                 alpha_v, U, nll, phi, n_bases, oti, diffs = self._sparse_nlml_direct(x0)
-                W = self._W_from_U(U, alpha_v)
 
                 # Cache for fast prediction (reused by degp.predict)
                 self.model._cached_U = U
@@ -1366,10 +1418,27 @@ class Optimizer:
                 self.model._cached_L = None
                 self.model._cached_low = None
                 self.model._cached_params = x0.copy()
+
+                W = self._W_from_U(U, alpha_v)
+                grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
+            else:
+                K, phi, n_bases, oti, diffs = self._build_K_and_phi(x0)
+                alpha_v, U, nll = self._sparse_U_alpha_nll(K)
+
+                self.model._cached_U = U
+                self.model._cached_P = self.model.mmd_P_full
+                self.model._cached_alpha = alpha_v
+                self.model._cached_L = None
+                self.model._cached_low = None
+                self.model._cached_params = x0.copy()
+
+                W = self._W_from_U(U, alpha_v)
+                grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
         except Exception:
             return 1e6, np.zeros(len(x0))
 
-        grad = self._compute_grad(x0, W, phi, n_bases, oti, diffs)
+        if nll > 1e6:
+            return 1e6, np.zeros(len(x0))
         return float(nll), grad
 
     def optimize_hyperparameters(self,

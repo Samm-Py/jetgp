@@ -31,8 +31,8 @@ KERNEL_TYPE = "anisotropic"
 DER_INDICES = [[[[i, 1]] for i in range(1, DIM + 1)]]
 
 # Sparse settings
-RHO_VALUES = [1.0, 3.0]
-USE_SUPERNODES = False
+RHO_VALUES = [1]
+USE_SUPERNODES = True
 
 JADE_KWARGS = dict(
     optimizer="jade",

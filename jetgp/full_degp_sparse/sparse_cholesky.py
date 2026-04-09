@@ -105,7 +105,6 @@ def build_sparsity_pattern(X_ord, l, rho):
 # Sparse inverse-Cholesky factor U (column-by-column)
 # =============================================================================
 
-@profile
 def build_U(K_ord, S, N, block_size=0, out=None):
     """
     Build the sparse inverse-Cholesky factor U column by column.
@@ -193,7 +192,6 @@ def build_U(K_ord, S, N, block_size=0, out=None):
     return U
 
 
-@profile
 def build_U_from_phi(phi_exp_3d, S, N, block_size,
                      k_type, k_phys, deriv_lookup, sign_lookup,
                      P_full, sigma_n_sq, sigma_data_diag,
@@ -281,6 +279,61 @@ def build_U_from_phi(phi_exp_3d, S, N, block_size,
 
     return U
 
+@profile
+def build_U_from_phi_flat(phi_exp_3d, block_maps, N, sigma_n_sq, out=None):
+    """
+    Build sparse U directly from phi_exp_3d using precomputed flat indices.
+
+    Same result as build_U_from_phi but uses a single ravel()[flat_idx]
+    gather per block instead of the numba _extract_K_sub loop.
+
+    Parameters
+    ----------
+    phi_exp_3d : ndarray of shape (n_derivs, n_rows_func, n_cols_func)
+    block_maps : list of dict
+        Precomputed per-block: 'nb', 'flat_idx', 'sign_mat', 'sd_diag',
+        'positions'.
+    N : int
+    sigma_n_sq : float
+    out : ndarray, optional
+
+    Returns
+    -------
+    U : ndarray of shape (N, N)
+    """
+    if out is not None:
+        U = out
+    else:
+        U = np.zeros((N, N))
+
+    phi_flat = phi_exp_3d.ravel()
+
+    for bm in block_maps:
+        nb = bm['nb']
+        m = len(nb)
+        start = bm['start']
+
+        K_sub = phi_flat[bm['flat_idx']] * bm['sign_mat']
+        diag_idx = np.arange(m)
+        K_sub[diag_idx, diag_idx] += sigma_n_sq + bm['sd_diag']
+
+        positions = bm['positions']
+        n_cols = len(positions)
+        E = np.zeros((m, n_cols))
+        E[positions, np.arange(n_cols)] = 1.0
+        try:
+            L_u, low_u = cho_factor(K_sub, lower=True)
+            V = cho_solve((L_u, low_u), E)
+        except np.linalg.LinAlgError:
+            V = np.linalg.solve(K_sub, E)
+        diag_vals = V[positions, np.arange(n_cols)]
+        np.maximum(diag_vals, 1e-30, out=diag_vals)
+        np.sqrt(diag_vals, out=diag_vals)
+        V /= diag_vals
+        U[nb, start:start + n_cols] = V
+
+    return U
+
 
 # =============================================================================
 # Supernodes
@@ -339,7 +392,6 @@ def build_supernodes(X_ord, l, S, lam=1.5):
     return supernodes
 
 
-@profile
 def build_U_supernodes(K_ord, supernodes, N):
     """
     Build sparse U using supernode structure.
@@ -411,6 +463,81 @@ def build_U_supernodes(K_ord, supernodes, N):
         V /= diag_vals  # broadcast: (m, n_parents) / (n_parents,)
 
         # Place all columns at once via fancy indexing
+        U[np.ix_(ch, parents)] = V
+    return U, n_factorizations
+
+
+@profile
+def build_U_supernodes_from_phi(phi_exp_3d, supernodes, N, sigma_n_sq):
+    """
+    Build sparse U using supernode structure directly from phi_exp_3d.
+
+    Like build_U_supernodes but assembles each supernode's K_sub on the fly
+    via a precomputed flat index into phi_exp_3d, skipping full K construction.
+
+    Requires that each supernode dict has precomputed keys:
+        'phi_flat_idx', 'phi_sign_mat', 'phi_sd_diag'
+    (set up once by the optimizer's _ensure_phi_index_maps).
+
+    Parameters
+    ----------
+    phi_exp_3d : ndarray of shape (n_derivs, n_rows_func, n_cols_func)
+    supernodes : list of dict
+    N : int
+    sigma_n_sq : float
+
+    Returns
+    -------
+    U : ndarray of shape (N, N)
+    n_factorizations : int
+    """
+    phi_flat = phi_exp_3d.ravel()
+
+    U = np.zeros((N, N))
+    n_factorizations = 0
+    for sn in supernodes:
+        ch = sn.get('children_arr')
+        if ch is None:
+            ch = np.asarray(sn['children'])
+
+        m = len(ch)
+
+        # Single vectorised gather + elementwise multiply
+        K_sub = phi_flat[sn['phi_flat_idx']] * sn['phi_sign_mat']
+        diag_idx = np.arange(m)
+        K_sub[diag_idx, diag_idx] += sigma_n_sq + sn['phi_sd_diag']
+
+        try:
+            L, low = cho_factor(K_sub, lower=True)
+            use_cho = True
+        except np.linalg.LinAlgError:
+            L, low = lu_factor(K_sub)
+            if np.any(np.abs(np.diag(L)) < 1e-30):
+                raise np.linalg.LinAlgError("Singular submatrix in supernode")
+            use_cho = False
+        n_factorizations += 1
+
+        parents = sn['parents']
+        n_parents = len(parents)
+        parent_positions = sn.get('parent_positions')
+        if parent_positions is None:
+            ch_pos = sn.get('ch_pos')
+            if ch_pos is None:
+                ch_pos = {c: i for i, c in enumerate(sn['children'])}
+            parent_positions = np.array([ch_pos[p] for p in parents])
+
+        E = np.zeros((m, n_parents))
+        E[parent_positions, np.arange(n_parents)] = 1.0
+        if use_cho:
+            V = cho_solve((L, low), E)
+        else:
+            V = lu_solve((L, low), E)
+
+        diag_vals = V[parent_positions, np.arange(n_parents)]
+        np.maximum(diag_vals, 1e-30, out=diag_vals)
+        np.sqrt(diag_vals, out=diag_vals)
+        V /= diag_vals
+
         U[np.ix_(ch, parents)] = V
     return U, n_factorizations
 

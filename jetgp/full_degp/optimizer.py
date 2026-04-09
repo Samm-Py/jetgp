@@ -143,7 +143,6 @@ class Optimizer:
                 self._kernel_plan['row_offsets_abs'] = self._kernel_plan['row_offsets'] + n_rows_func
                 self._kernel_plan['col_offsets_abs'] = self._kernel_plan['col_offsets'] + n_rows_func
 
-    @profile
     def negative_log_marginal_likelihood(self, x0):
         """
         Compute the negative log marginal likelihood (NLL) of the model.
@@ -235,7 +234,6 @@ class Optimizer:
         """
         return self.negative_log_marginal_likelihood(x0)
 
-    @profile
     def _compute_grad(self, x0, W, phi, n_bases, oti, diffs):
         """
         Compute the NLL gradient given pre-factorised W = K^{-1} - α α^T.
@@ -283,7 +281,6 @@ class Optimizer:
         if _use_vdot_fused:
             _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
 
-        @profile
         def _gc(dphi):
             if _use_vdot_fused:
                 return 0.5 * dphi.vdot_expand_fast(_vdot_factors, W_proj)
@@ -627,7 +624,6 @@ class Optimizer:
 
         return self._compute_grad(x0, W, phi, n_bases, oti, diffs)
 
-    @profile
     def nll_and_grad(self, x0):
         """
         Compute NLL and its gradient in a single pass, sharing one Cholesky.
