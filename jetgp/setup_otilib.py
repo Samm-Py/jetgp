@@ -210,12 +210,14 @@ def run_build(otilib: Path, workers: int):
                         shutil.rmtree(companion)
                     print(f"  Removed: {f.relative_to(otilib)}")
 
-    # Rewrite src/c/static.c to only include wanted modules
+    # Write an empty static.c for the bootstrap — no static modules are
+    # needed yet, and the wanted .c files may not exist until after
+    # regenerate_all_c.py runs.  The second cmake+make will pick up the
+    # regenerated sources via the individual mXnY targets.
     static_c = otilib / "src" / "c" / "static.c"
     if static_c.exists():
-        includes = [f'#include "static/{name}.c"\n' for name in sorted(wanted)]
-        static_c.write_text("\n".join(includes))
-        print(f"  Rewrote static.c with {len(includes)} includes")
+        static_c.write_text("/* placeholder — static modules built as individual targets */\n")
+        print("  Wrote empty static.c (static modules built as individual targets)")
 
     # Bootstrap: build pyoti.core first so that regenerate_all_c.py can
     # import cmod_writer (which depends on pyoti.core).
