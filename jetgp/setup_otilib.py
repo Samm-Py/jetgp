@@ -232,6 +232,11 @@ def run_build(otilib: Path, workers: int):
             ["make", "oticython", f"-j{workers}"],
             str(build_dir),
         ),
+        (
+            "Running make gendata (generates data files needed by cmod_writer)",
+            ["make", "gendata"],
+            str(build_dir),
+        ),
     ]
 
     print("\n[3/3] Running build workflow...")
@@ -260,11 +265,6 @@ def run_build(otilib: Path, workers: int):
         (
             f"Running make -j{workers}",
             ["make", f"-j{workers}"],
-            str(build_dir),
-        ),
-        (
-            "Running make gendata",
-            ["make", "gendata"],
             str(build_dir),
         ),
     ]
