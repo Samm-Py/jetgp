@@ -9,20 +9,14 @@ import sys
 import re
 import os
 
-# All modules: (nbases, order)
+# Modules required to build documentation and run getting-started examples.
+# Additional modules can be compiled on demand via JetGP's auto_compile feature.
 ALL_MODULES = [
-    (1,1), (1,2), (1,3), (1,4), (1,6), (1,8), (1,10), (1,20), (1,30), (1,66),
-    (2,1), (2,2), (2,3), (2,4), (2,6),
-    (3,1), (3,2), (3,3), (3,4), (3,8),
-    (4,1), (4,2), (4,3), (4,4),
-    (5,1), (5,2), (5,3), (5,4),
-    (6,1), (6,2), (6,3), (6,4),
-    (7,1), (7,2), (7,3), (7,4),
-    (8,1), (8,2), (8,3), (8,4),
-    (9,1), (9,2), (9,3), (9,4),
-    (10,1), (10,2), (10,3), (10,4),
-    (15,1), (15,2), (15,3), (15,4),
-    (20,2), (30,2), (50,2), (51,2), (60,2), (61,2),
+    (1,2), (1,4), (1,6), (1,8),
+    (2,2), (2,4), (2,6),
+    (3,2), (3,4),
+    (4,2), (4,4),
+    (6,2),
 ]
 
 BASE_DIR = "/home/sam/research_head/otilib-master"
