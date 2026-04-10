@@ -39,17 +39,24 @@ if __name__ == "__main__":
         modules = ALL_MODULES
 
         # Clean up shipped static sources not in ALL_MODULES (only for default builds)
+        import shutil
         wanted = {f"onumm{nb}n{od}" for nb, od in modules}
-        static_dir = os.path.join(BASE_DIR, "src", "c", "static")
-        for f in glob.glob(os.path.join(static_dir, "onumm*.c")):
-            name = os.path.splitext(os.path.basename(f))[0]
-            if name not in wanted:
-                companion_dir = os.path.join(static_dir, name)
-                os.remove(f)
-                if os.path.isdir(companion_dir):
-                    import shutil
-                    shutil.rmtree(companion_dir)
-                print(f"  Removed unwanted static source: {name}")
+        clean_dirs = [
+            os.path.join(BASE_DIR, "src", "c", "static"),
+            os.path.join(BASE_DIR, "src", "python", "pyoti", "cython", "static"),
+            os.path.join(BASE_DIR, "include", "pyoti", "static"),
+        ]
+        clean_exts = [".c", ".pyx", ".pxd"]
+        for d in clean_dirs:
+            for ext in clean_exts:
+                for f in glob.glob(os.path.join(d, f"onumm*{ext}")):
+                    name = os.path.splitext(os.path.basename(f))[0]
+                    if name not in wanted:
+                        os.remove(f)
+                        companion_dir = os.path.join(d, name)
+                        if os.path.isdir(companion_dir):
+                            shutil.rmtree(companion_dir)
+                        print(f"  Removed unwanted: {os.path.relpath(f, BASE_DIR)}")
 
     print(f"Regenerating {len(modules)} modules...")
     for nbases, order in modules:

@@ -173,6 +173,32 @@ def run_build(otilib: Path, workers: int):
     build_dir = otilib / "build"
     python = sys.executable
 
+    # Clean up shipped static module files not needed by JetGP before
+    # the bootstrap build (avoids Cythonizing unwanted .pxd headers).
+    # Parse ALL_MODULES from the deployed regenerate_all_c.py.
+    print("\n  >> Cleaning up unwanted shipped static modules...")
+    regen_text = (build_dir / "regenerate_all_c.py").read_text()
+    match = re.search(r'ALL_MODULES\s*=\s*\[([^\]]+)\]', regen_text)
+    wanted = set()
+    if match:
+        for m, n in re.findall(r'\((\d+)\s*,\s*(\d+)\)', match.group(1)):
+            wanted.add(f"onumm{m}n{n}")
+    clean_dirs = [
+        otilib / "src" / "c" / "static",
+        otilib / "src" / "python" / "pyoti" / "cython" / "static",
+        otilib / "include" / "pyoti" / "static",
+    ]
+    for d in clean_dirs:
+        for ext in (".c", ".pyx", ".pxd"):
+            for f in d.glob(f"onumm*{ext}"):
+                name = f.stem
+                if name not in wanted:
+                    f.unlink()
+                    companion = f.with_suffix("")
+                    if companion.is_dir():
+                        shutil.rmtree(companion)
+                    print(f"  Removed: {f.relative_to(otilib)}")
+
     # Bootstrap: build pyoti.core first so that regenerate_all_c.py can
     # import cmod_writer (which depends on pyoti.core).
     bootstrap_steps = [
