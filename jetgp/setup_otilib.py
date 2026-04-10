@@ -301,7 +301,7 @@ def main():
     else:
         print(
             "\nPatching complete. To build, run:\n"
-            f"  python -m jetgp.setup_otilib --otilib {otilib} --build [--workers N]\n"
+            f"  python -m jetgp.setup_otilib --otilib {otilib} --build --workers 8\n"
             "Or manually:\n"
             f"  cd {otilib}/build\n"
             "  python regenerate_all_c.py\n"
