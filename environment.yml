@@ -29,11 +29,11 @@ dependencies:
   - sphinx-design
   - sphinx_rtd_theme >=3
   - sphinxcontrib-bibtex
-  - numba
   - sympy
   - line_profiler
   - pip
   - pip:
+    - numba
     - torch
     - scikit-learn
     - pytest
