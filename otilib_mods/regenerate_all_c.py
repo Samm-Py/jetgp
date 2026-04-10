@@ -8,6 +8,7 @@ Usage: python regenerate_all_c.py [mXnY ...]
 import sys
 import re
 import os
+import glob
 
 # Modules required to build documentation and run getting-started examples.
 # Additional modules can be compiled on demand via JetGP's auto_compile feature.
@@ -36,6 +37,19 @@ if __name__ == "__main__":
         modules = [parse_mn(a) for a in sys.argv[1:]]
     else:
         modules = ALL_MODULES
+
+        # Clean up shipped static sources not in ALL_MODULES (only for default builds)
+        wanted = {f"onumm{nb}n{od}" for nb, od in modules}
+        static_dir = os.path.join(BASE_DIR, "src", "c", "static")
+        for f in glob.glob(os.path.join(static_dir, "onumm*.c")):
+            name = os.path.splitext(os.path.basename(f))[0]
+            if name not in wanted:
+                companion_dir = os.path.join(static_dir, name)
+                os.remove(f)
+                if os.path.isdir(companion_dir):
+                    import shutil
+                    shutil.rmtree(companion_dir)
+                print(f"  Removed unwanted static source: {name}")
 
     print(f"Regenerating {len(modules)} modules...")
     for nbases, order in modules:
