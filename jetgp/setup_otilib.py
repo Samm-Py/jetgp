@@ -219,6 +219,20 @@ def run_build(otilib: Path, workers: int):
         static_c.write_text("/* placeholder — static modules built as individual targets */\n")
         print("  Wrote empty static.c (static modules built as individual targets)")
 
+    # Disable examples build — they link against static module symbols
+    # that are no longer compiled into the oti library.
+    top_cmake = otilib / "CMakeLists.txt"
+    if top_cmake.exists():
+        txt = top_cmake.read_text()
+        txt = re.sub(
+            r'^(\s*add_subdirectory\s*\(\s*examples\b)',
+            r'# \1',
+            txt,
+            flags=re.MULTILINE,
+        )
+        top_cmake.write_text(txt)
+        print("  Disabled examples build in top-level CMakeLists.txt")
+
     # Bootstrap: build pyoti.core first so that regenerate_all_c.py can
     # import cmod_writer (which depends on pyoti.core).
     bootstrap_steps = [
