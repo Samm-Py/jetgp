@@ -210,6 +210,13 @@ def run_build(otilib: Path, workers: int):
                         shutil.rmtree(companion)
                     print(f"  Removed: {f.relative_to(otilib)}")
 
+    # Rewrite src/c/static.c to only include wanted modules
+    static_c = otilib / "src" / "c" / "static.c"
+    if static_c.exists():
+        includes = [f'#include "static/{name}.c"\n' for name in sorted(wanted)]
+        static_c.write_text("\n".join(includes))
+        print(f"  Rewrote static.c with {len(includes)} includes")
+
     # Bootstrap: build pyoti.core first so that regenerate_all_c.py can
     # import cmod_writer (which depends on pyoti.core).
     bootstrap_steps = [
