@@ -276,12 +276,24 @@ def run_build(otilib: Path, workers: int):
             ["cmake", ".."],
             str(build_dir),
         ),
-        (
+    ]
+
+    # Build only the individual mXnY static library targets (the core
+    # libs are already built from the bootstrap).  This avoids a full
+    # parallel make that triggers Fortran .mod file race conditions.
+    if wanted:
+        make_targets = [f"m{name[5:]}" for name in sorted(wanted)]  # onummXnY -> mXnY
+        steps.append((
+            f"Building static library targets: {' '.join(make_targets)}",
+            ["make"] + make_targets + [f"-j{workers}"],
+            str(build_dir),
+        ))
+    else:
+        steps.append((
             f"Running make -j{workers}",
             ["make", f"-j{workers}"],
             str(build_dir),
-        ),
-    ]
+        ))
 
     for description, cmd, cwd in steps:
         print(f"\n  >> {description}")
