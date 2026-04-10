@@ -173,6 +173,17 @@ def run_build(otilib: Path, workers: int):
     build_dir = otilib / "build"
     python = sys.executable
 
+    # Ensure cmake uses the conda environment's compilers, not the system ones.
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        conda_bin = Path(conda_prefix) / "bin"
+        if (conda_bin / "gcc").exists():
+            os.environ["CC"] = str(conda_bin / "gcc")
+            print(f"  Set CC={os.environ['CC']}")
+        if (conda_bin / "gfortran").exists():
+            os.environ["FC"] = str(conda_bin / "gfortran")
+            print(f"  Set FC={os.environ['FC']}")
+
     # Clean up shipped static module files not needed by JetGP before
     # the bootstrap build (avoids Cythonizing unwanted .pxd headers).
     # Parse ALL_MODULES from the deployed regenerate_all_c.py.
