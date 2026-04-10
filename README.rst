@@ -138,7 +138,7 @@ Your directory layout should look like:
 Apply patches and build
 -----------------------
 
-With the ``jetgp`` environment active, run one of the following:
+With the ``jetgp`` environment active and from the ``jetgp`` directory, run one of the following:
 
 **Interactive (prompts for otilib path):**
 
