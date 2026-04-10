@@ -119,9 +119,21 @@ JetGP relies on a patched version of `otilib <https://github.com/mauriaristi/oti
 Clone otilib
 ------------
 
+Clone otilib as a sibling directory to ``jetgp``:
+
 .. code-block:: bash
 
+   $ cd ..            # move to the parent of jetgp
    $ git clone https://github.com/mauriaristi/otilib.git otilib-master
+   $ cd jetgp         # return to the jetgp directory
+
+Your directory layout should look like:
+
+.. code-block:: text
+
+   parent/
+   ├── jetgp/
+   └── otilib-master/
 
 Apply patches and build
 -----------------------
@@ -138,13 +150,13 @@ With the ``jetgp`` environment active, run one of the following:
 
 .. code-block:: bash
 
-   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master
+   $ python -m jetgp.setup_otilib --otilib ../otilib-master
 
 **Patch and build in one step:**
 
 .. code-block:: bash
 
-   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master --build --workers 8
+   $ python -m jetgp.setup_otilib --otilib ../otilib-master --build --workers 8
 
 **From Python:**
 
