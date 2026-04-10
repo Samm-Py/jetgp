@@ -48,58 +48,14 @@ The setup script always performs steps 1–2, then optionally step 3:
 Usage
 -----
 
-Interactive (prompts for otilib path)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+With the ``jetgp`` environment active and from the ``jetgp`` directory, run:
 
 .. code-block:: bash
 
-   $ python -m jetgp.setup_otilib
+   $ python -m jetgp.setup_otilib --otilib ../otilib-master --build --workers 8
 
-Non-interactive
-~~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master
-
-Patch and build in one step
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. code-block:: bash
-
-   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master --build
-
-Control the number of parallel workers for the Cython compilation step (default: 4):
-
-.. code-block:: bash
-
-   $ python -m jetgp.setup_otilib --otilib /path/to/otilib-master --build --workers 8
-
-From Python
-~~~~~~~~~~~
-
-.. code-block:: python
-
-   import jetgp
-   jetgp.setup_otilib()                          # interactive prompt
-
-   # or with arguments
-   from jetgp.setup_otilib import main
-   import sys
-   sys.argv = ['setup_otilib', '--otilib', '/path/to/otilib-master', '--build']
-   main()
-
-Manual build
-------------
-
-If you prefer to run the build steps yourself after patching:
-
-.. code-block:: bash
-
-   $ cd /path/to/otilib-master/build
-   $ python regenerate_all_c.py
-   $ cmake .. && make -j$(nproc) && make gendata
-   $ bash rebuild_all_static.sh 4
+This patches otilib with JetGP's required modifications and runs the full build.
+To patch without building, omit ``--build``.
 
 File map
 --------
@@ -130,3 +86,7 @@ The following files are copied from ``otilib_mods/`` during setup:
      - ``src/python/pyoti/python/source_conv/src/python/pyoti/cython/static/number/include.pxi``
    * - ``array_base.pxi``
      - ``src/python/pyoti/python/source_conv/src/python/pyoti/cython/static/number/array/base.pxi``
+   * - ``rebuild_all_static.py``
+     - ``build/rebuild_all_static.py``
+   * - ``rebuild_all_static.sh``
+     - ``build/rebuild_all_static.sh``

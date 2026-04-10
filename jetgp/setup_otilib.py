@@ -373,13 +373,7 @@ def main():
     else:
         print(
             "\nPatching complete. To build, run:\n"
-            f"  python -m jetgp.setup_otilib --otilib {otilib} --build --workers 8\n"
-            "Or manually:\n"
-            f"  cd {otilib}/build\n"
-            "  python regenerate_all_c.py\n"
-            "  cmake .. && make -j$(nproc) && make gendata\n"
-            "  conda develop .\n"
-            "  bash rebuild_all_static.sh 4"
+            f"  python -m jetgp.setup_otilib --otilib {otilib} --build --workers 8"
         )
 
 
