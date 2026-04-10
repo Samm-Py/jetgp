@@ -182,8 +182,8 @@ def run_build(otilib: Path, workers: int):
             str(build_dir),
         ),
         (
-            f"Running make -j{workers} (bootstrap — builds pyoti.core)",
-            ["make", f"-j{workers}"],
+            f"Running make oticython -j{workers} (bootstrap — builds pyoti.core only)",
+            ["make", "oticython", f"-j{workers}"],
             str(build_dir),
         ),
     ]
