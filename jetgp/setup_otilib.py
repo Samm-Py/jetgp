@@ -44,6 +44,8 @@ FILE_MAP = [
     ("array_base.pxi",
         "src/python/pyoti/python/source_conv/"
         "src/python/pyoti/cython/static/number/array/base.pxi"),
+    ("rebuild_all_static.py",          "build/rebuild_all_static.py"),
+    ("rebuild_all_static.sh",          "build/rebuild_all_static.sh"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -171,6 +173,33 @@ def run_build(otilib: Path, workers: int):
     build_dir = otilib / "build"
     python = sys.executable
 
+    # Bootstrap: build pyoti.core first so that regenerate_all_c.py can
+    # import cmod_writer (which depends on pyoti.core).
+    bootstrap_steps = [
+        (
+            "Running cmake .. (bootstrap)",
+            ["cmake", ".."],
+            str(build_dir),
+        ),
+        (
+            f"Running make -j{workers} (bootstrap — builds pyoti.core)",
+            ["make", f"-j{workers}"],
+            str(build_dir),
+        ),
+    ]
+
+    print("\n[3/3] Running build workflow...")
+    for description, cmd, cwd in bootstrap_steps:
+        print(f"\n  >> {description}")
+        print(f"     {' '.join(cmd)}  (cwd: {cwd})")
+        result = subprocess.run(cmd, cwd=cwd)
+        if result.returncode != 0:
+            sys.exit(f"\nError: step failed: {description}")
+
+    print(f"\n  >> Making pyoti importable in active environment...")
+    install_pyoti_to_path(otilib)
+
+    # Now that pyoti.core is available, regenerate sources and rebuild.
     steps = [
         (
             "Regenerating C/Cython sources from templates",
@@ -178,7 +207,7 @@ def run_build(otilib: Path, workers: int):
             str(build_dir),
         ),
         (
-            "Running cmake ..",
+            "Running cmake .. (picks up regenerated sources)",
             ["cmake", ".."],
             str(build_dir),
         ),
@@ -194,16 +223,12 @@ def run_build(otilib: Path, workers: int):
         ),
     ]
 
-    print("\n[3/3] Running build workflow...")
     for description, cmd, cwd in steps:
         print(f"\n  >> {description}")
         print(f"     {' '.join(cmd)}  (cwd: {cwd})")
         result = subprocess.run(cmd, cwd=cwd)
         if result.returncode != 0:
             sys.exit(f"\nError: step failed: {description}")
-
-    print(f"\n  >> Making pyoti importable in active environment...")
-    install_pyoti_to_path(otilib)
 
     print(f"\n  >> Building all Cython static modules ({workers} workers)...")
     result = subprocess.run(
