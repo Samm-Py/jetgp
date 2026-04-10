@@ -11,6 +11,8 @@ dependencies:
   - pandas
   - make
   - cmake
+  - gcc
+  - gfortran
   - ipykernel
   - conda-forge::pyvista
   - conda-forge::gmsh
