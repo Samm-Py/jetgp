@@ -138,32 +138,14 @@ Your directory layout should look like:
 Apply patches and build
 -----------------------
 
-With the ``jetgp`` environment active and from the ``jetgp`` directory, run one of the following:
-
-**Interactive (prompts for otilib path):**
-
-.. code-block:: bash
-
-   $ python -m jetgp.setup_otilib
-
-**Non-interactive:**
-
-.. code-block:: bash
-
-   $ python -m jetgp.setup_otilib --otilib ../otilib-master
-
-**Patch and build in one step:**
+With the ``jetgp`` environment active and from the ``jetgp`` directory, run:
 
 .. code-block:: bash
 
    $ python -m jetgp.setup_otilib --otilib ../otilib-master --build --workers 8
 
-**From Python:**
-
-.. code-block:: python
-
-   import jetgp
-   jetgp.setup_otilib()   # interactive prompt
+This patches otilib with JetGP's required modifications and runs the full build.
+To patch without building, omit ``--build``.
 
 What the setup does
 -------------------
