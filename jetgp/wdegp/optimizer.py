@@ -54,8 +54,11 @@ class Optimizer:
         # Sparse fused OTI functions only valid for DEGP (axis-aligned diffs)
         self._sparse_safe = getattr(self.model, 'submodel_type', 'degp') == 'degp'
 
-        # Precompute kernel plans (structural info that never changes)
-        self._kernel_plans = None  # lazily initialized on first NLL call
+        # Kernel plans live on the model — they depend only on derivative
+        # structure (n_order, n_bases, derivative layout) and never on
+        # hyperparameters, so they're built once in the model's __init__.
+        self._kernel_plans = getattr(self.model, 'kernel_plans', None)
+        self._kernel_plans_n_bases = self.model.n_bases if self._kernel_plans is not None else None
         self._deriv_buf = None
         self._deriv_buf_shape = None
         self._deriv_buf_ndir = None
@@ -160,28 +163,10 @@ class Optimizer:
             self.utils = wdegp_utils
             self._uses_signs = True
 
-    def _ensure_kernel_plans(self, n_bases):
-        """Lazily precompute kernel plans for all submodels (once per n_bases)."""
-        if self._kernel_plans is not None and self._kernel_plans_n_bases == n_bases:
-            return
-        if not hasattr(self.utils, 'precompute_kernel_plan'):
-            self._kernel_plans = None
-            return
-        plans = []
-        index = self.model.derivative_locations
-        for i in range(len(index)):
-            plan = self.utils.precompute_kernel_plan(
-                self.model.n_order, n_bases,
-                self.model.flattened_der_indices[i],
-                self.model.powers[i],
-                index[i],
-            )
-            plans.append(plan)
-        self._kernel_plans = plans
-        self._kernel_plans_n_bases = n_bases
-        # Reset buffers when plans change
-        self._K_bufs = None
-        self._dK_bufs = None
+        # Bind the raw numba kernel so hot-path loops can skip the Python
+        # rbf_kernel_fast wrapper (saves ~100 us/call by removing its dict
+        # lookups and attribute accesses).
+        self._assemble_numba = getattr(self.utils, '_assemble_kernel_numba', None)
 
     def _ensure_kernel_bufs(self, n_rows_func):
         """Pre-allocate reusable K and dK buffers for each submodel."""
@@ -191,10 +176,20 @@ class Optimizer:
             return  # already allocated
         self._K_bufs = []
         self._dK_bufs = []
+        max_total = max(
+            n_rows_func + plan['n_pts_with_derivs'] for plan in self._kernel_plans
+        )
+        # Single backing buffers shared across all submodels. Each submodel
+        # iteration completes its use of K/dK before the next overwrites, so
+        # aliasing is safe and keeps the memory hot in L2/L3 instead of
+        # streaming ~77 MB of per-submodel buffers from DRAM each pass.
+        self._K_buf_flat = np.empty(max_total * max_total)
+        self._dK_buf_flat = np.empty(max_total * max_total)
         for plan in self._kernel_plans:
             total = n_rows_func + plan['n_pts_with_derivs']
-            self._K_bufs.append(np.empty((total, total)))
-            self._dK_bufs.append(np.empty((total, total)))
+            n = total * total
+            self._K_bufs.append(self._K_buf_flat[:n].reshape(total, total))
+            self._dK_bufs.append(self._dK_buf_flat[:n].reshape(total, total))
             if 'row_offsets_abs' not in plan:
                 plan['row_offsets_abs'] = plan['row_offsets'] + n_rows_func
                 plan['col_offsets_abs'] = plan['col_offsets'] + n_rows_func
@@ -257,9 +252,10 @@ class Optimizer:
             deriv_order = 2 * n_order
             phi_exp = self._expand_derivs(phi, n_bases, deriv_order)
 
-        # Ensure kernel plans are precomputed
-        self._ensure_kernel_plans(n_bases)
-        use_fast = self._kernel_plans is not None
+        # Plans are precomputed on the model; fast path requires runtime
+        # n_bases to match the structural value used to build them.
+        use_fast = (self._kernel_plans is not None
+                    and n_bases == self._kernel_plans_n_bases)
 
         # Pre-reshape phi_exp to 3D once
         if use_fast:
@@ -271,7 +267,11 @@ class Optimizer:
             y_train_sub = y_train[i]
 
             if use_fast:
-                K = self.utils.rbf_kernel_fast(phi_exp_3d, self._kernel_plans[i], out=self._K_bufs[i])
+                K = self._K_bufs[i]
+                self._assemble_numba(
+                    phi_exp_3d, K, phi_exp_3d.shape[1], phi_exp_3d.shape[2],
+                    *self._kernel_plans[i]['_numba_args'],
+                )
             else:
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, n_order, n_bases,
@@ -343,9 +343,10 @@ class Optimizer:
             deriv_order = 2 * self.model.n_order
             phi_exp = self._expand_derivs(phi, n_bases, deriv_order)
 
-        # Ensure kernel plans are precomputed
-        self._ensure_kernel_plans(n_bases)
-        use_fast = self._kernel_plans is not None
+        # Plans are precomputed on the model; fast path requires runtime
+        # n_bases to match the structural value used to build them.
+        use_fast = (self._kernel_plans is not None
+                    and n_bases == self._kernel_plans_n_bases)
 
         # Pre-reshape phi_exp to 3D once
         if use_fast:
@@ -358,7 +359,11 @@ class Optimizer:
         for i in range(len(index)):
             y_train_sub = self.model.y_train_normalized[i]
             if use_fast:
-                K = self.utils.rbf_kernel_fast(phi_exp_3d, self._kernel_plans[i], out=self._K_bufs[i])
+                K = self._K_bufs[i]
+                self._assemble_numba(
+                    phi_exp_3d, K, phi_exp_3d.shape[1], phi_exp_3d.shape[2],
+                    *self._kernel_plans[i]['_numba_args'],
+                )
             else:
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, self.model.n_order, n_bases,
@@ -426,7 +431,11 @@ class Optimizer:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
                 total = 0.0
                 for i in range(len(index)):
-                    dK = self.utils.rbf_kernel_fast(dphi_3d, self._kernel_plans[i], out=self._dK_bufs[i])
+                    dK = self._dK_bufs[i]
+                    self._assemble_numba(
+                        dphi_3d, dK, dphi_3d.shape[1], dphi_3d.shape[2],
+                        *self._kernel_plans[i]['_numba_args'],
+                    )
                     total += np.vdot(W_list[i], dK)
                 return 0.5 * total
             else:
@@ -639,6 +648,7 @@ class Optimizer:
         return grad
     @profile
     def nll_and_grad(self, x0):
+        
         """Compute NLL and its gradient in a single pass, sharing one Cholesky per submodel."""
         ln10 = np.log(10.0)
 
@@ -660,9 +670,10 @@ class Optimizer:
             deriv_order = 2 * self.model.n_order
             phi_exp = self._expand_derivs(phi, n_bases, deriv_order)
 
-        # Ensure kernel plans are precomputed
-        self._ensure_kernel_plans(n_bases)
-        use_fast = self._kernel_plans is not None
+        # Plans are precomputed on the model; fast path requires runtime
+        # n_bases to match the structural value used to build them.
+        use_fast = (self._kernel_plans is not None
+                    and n_bases == self._kernel_plans_n_bases)
 
         # Pre-reshape phi_exp to 3D once
         if use_fast:
@@ -677,7 +688,11 @@ class Optimizer:
             y_train_sub = self.model.y_train_normalized[i]
 
             if use_fast:
-                K = self.utils.rbf_kernel_fast(phi_exp_3d, self._kernel_plans[i], out=self._K_bufs[i])
+                K = self._K_bufs[i]
+                self._assemble_numba(
+                    phi_exp_3d, K, phi_exp_3d.shape[1], phi_exp_3d.shape[2],
+                    *self._kernel_plans[i]['_numba_args'],
+                )
             else:
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, self.model.n_order, n_bases,
@@ -758,7 +773,11 @@ class Optimizer:
                 dphi_3d = dphi_exp.reshape(dphi_exp.shape[0], base_shape[0], base_shape[1])
                 total = 0.0
                 for i in range(n_sub):
-                    dK = self.utils.rbf_kernel_fast(dphi_3d, self._kernel_plans[i], out=self._dK_bufs[i])
+                    dK = self._dK_bufs[i]
+                    self._assemble_numba(
+                        dphi_3d, dK, dphi_3d.shape[1], dphi_3d.shape[2],
+                        *self._kernel_plans[i]['_numba_args'],
+                    )
                     total += np.vdot(W_list[i], dK)
                 return 0.5 * total
             else:

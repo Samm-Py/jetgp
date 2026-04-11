@@ -113,7 +113,10 @@ class wdegp:
         
         # Process derivative indices
         self._setup_derivative_indices()
-        
+
+        # Precompute kernel plans (purely structural — no hyperparameters)
+        self._precompute_kernel_plans()
+
         # Handle sigma_data
         if sigma_data is None:
             sigma_data = np.zeros(self._compute_total_constraints())
@@ -342,6 +345,39 @@ class wdegp:
                 self.oti,
                 return_deriv=True
             )
+
+    def _precompute_kernel_plans(self):
+        """Precompute structural kernel plans once per model.
+
+        Plans depend only on (n_order, n_bases, derivative layout), not on
+        hyperparameters, so they are built here and reused by the optimizer
+        across every nll/nll_and_grad call.
+        """
+        self.kernel_plans = None
+        gp_utils = self._get_utils_module()
+        if gp_utils is None or not hasattr(gp_utils, 'precompute_kernel_plan'):
+            return
+        plans = []
+        for i in range(len(self.derivative_locations)):
+            plan = gp_utils.precompute_kernel_plan(
+                self.n_order, self.n_bases,
+                self.flattened_der_indices[i],
+                self.powers[i],
+                self.derivative_locations[i],
+            )
+            # Pre-bake everything the optimizer's hot path needs so it can
+            # call _assemble_kernel_numba directly without any per-call dict
+            # lookups on the plan.
+            plan['row_offsets_abs'] = plan['row_offsets'] + self.num_points
+            plan['col_offsets_abs'] = plan['col_offsets'] + self.num_points
+            plan['_numba_args'] = (
+                plan['fd_flat_indices'], plan['df_flat_indices'], plan['dd_flat_indices'],
+                plan['idx_flat'], plan['idx_offsets'], plan['index_sizes'],
+                plan['signs'], plan['n_deriv_types'],
+                plan['row_offsets_abs'], plan['col_offsets_abs'],
+            )
+            plans.append(plan)
+        self.kernel_plans = plans
 
     def _get_utils_module(self):
         """Get the appropriate utils module based on submodel_type."""
