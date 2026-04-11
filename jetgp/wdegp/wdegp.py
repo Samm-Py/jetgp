@@ -153,6 +153,9 @@ class wdegp:
         from jetgp.wdegp.optimizer import Optimizer
         self.optimizer = Optimizer(self)
 
+        # Lazy-built full prediction model for predict(mode='full')
+        self._full_predict_model = None
+
     def _validate_config(self):
         """Validate the configuration parameters."""
         valid_types = ['degp', 'ddegp', 'gddegp']
@@ -357,10 +360,15 @@ class wdegp:
         gp_utils = self._get_utils_module()
         if gp_utils is None or not hasattr(gp_utils, 'precompute_kernel_plan'):
             return
+        # GDDEGP builds its OTI module with 2*n_bases (even/odd tag doubling),
+        # so the kernel plan — which is indexed against the actual OTI world
+        # via coti.imdir — must also be built with 2*n_bases. DEGP and DDEGP
+        # use n_bases directly.
+        plan_n_bases = 2 * self.n_bases if self.submodel_type == 'gddegp' else self.n_bases
         plans = []
         for i in range(len(self.derivative_locations)):
             plan = gp_utils.precompute_kernel_plan(
-                self.n_order, self.n_bases,
+                self.n_order, plan_n_bases,
                 self.flattened_der_indices[i],
                 self.powers[i],
                 self.derivative_locations[i],
@@ -391,6 +399,167 @@ class wdegp:
             from jetgp.full_gddegp import wgddegp_utils
             return wgddegp_utils
 
+    def _check_full_predict_compat(self):
+        """Enforce safe-transfer assumptions for ``predict(mode='full')``.
+
+        Requires every submodel to share identical ``y_train[0]`` (so both the
+        weighted and full models compute the same y-normalization statistics)
+        and identical ``der_indices`` (so we can union observations per
+        component without re-mapping derivative types).
+        """
+        y_func_ref = np.asarray(self.y_train_input[0][0])
+        for k in range(1, self.num_submodels):
+            if not np.allclose(np.asarray(self.y_train_input[k][0]), y_func_ref):
+                raise ValueError(
+                    "predict(mode='full') requires every submodel's y_train[0] "
+                    f"to be identical; submodel {k} differs from submodel 0."
+                )
+            if self.der_indices[k] != self.der_indices[0]:
+                raise ValueError(
+                    "predict(mode='full') requires every submodel to share the "
+                    "same der_indices."
+                )
+        return y_func_ref
+
+    def _union_degp_derivs(self):
+        """Union per-component (point -> value) observations across submodels.
+
+        Returns
+        -------
+        full_locs : list of list of int
+        full_y_derivs : list of ndarray (n_obs, 1)
+        """
+        n_components = len(self.flattened_der_indices[0])
+        full_locs = []
+        full_y_derivs = []
+        for comp in range(n_components):
+            merged = {}
+            for k in range(self.num_submodels):
+                locs_k = self.derivative_locations[k][comp]
+                y_k = np.asarray(self.y_train_input[k][comp + 1]).ravel()
+                for local_i, pt in enumerate(locs_k):
+                    val = float(y_k[local_i])
+                    if pt in merged and not np.isclose(merged[pt], val):
+                        raise ValueError(
+                            f"Inconsistent derivative value at point {pt}, "
+                            f"component {comp} across submodels."
+                        )
+                    merged[pt] = val
+            sorted_pts = sorted(merged.keys())
+            full_locs.append(sorted_pts)
+            full_y_derivs.append(
+                np.array([merged[p] for p in sorted_pts], dtype=float).reshape(-1, 1)
+            )
+        return full_locs, full_y_derivs
+
+    def _build_full_predict_model(self):
+        """Build a non-weighted full model over the union of submodel observations.
+
+        Used by ``predict(mode='full')`` to run a single dense GP prediction
+        using the WDEGP-optimized hyperparameters, bypassing the submatrix
+        approximation at inference time. Supports DEGP, DDEGP, and GDDEGP
+        submodel types.
+        """
+        smoothness_param = getattr(self.kernel_factory, 'alpha', None)
+        y_func_ref = self._check_full_predict_compat()
+
+        if self.submodel_type == 'degp':
+            full_locs, full_y_derivs = self._union_degp_derivs()
+            y_train_full = [y_func_ref.reshape(-1, 1)] + full_y_derivs
+
+            from jetgp.full_degp.degp import degp
+            return degp(
+                self.x_train_input,
+                y_train_full,
+                n_order=self.n_order,
+                n_bases=self.n_bases,
+                der_indices=self.der_indices[0],
+                derivative_locations=full_locs,
+                normalize=self.normalize,
+                kernel=self.kernel,
+                kernel_type=self.kernel_type,
+                smoothness_parameter=smoothness_param,
+            )
+
+        if self.submodel_type == 'ddegp':
+            full_locs, full_y_derivs = self._union_degp_derivs()
+            y_train_full = [y_func_ref.reshape(-1, 1)] + full_y_derivs
+
+            # self.rays was normalized in place during _normalize_data; recover.
+            if self.normalize:
+                raw_rays = self.rays * self.sigmas_x.flatten()[:, None]
+            else:
+                raw_rays = self.rays
+
+            from jetgp.full_ddegp.ddegp import ddegp
+            return ddegp(
+                self.x_train_input,
+                y_train_full,
+                n_order=self.n_order,
+                der_indices=self.der_indices[0],
+                rays=raw_rays,
+                derivative_locations=full_locs,
+                normalize=self.normalize,
+                kernel=self.kernel,
+                kernel_type=self.kernel_type,
+                smoothness_parameter=smoothness_param,
+            )
+
+        if self.submodel_type == 'gddegp':
+            # GDDEGP: concatenate per-direction (rays, locations, y) across submodels.
+            # We require all submodels to have the same number of direction types.
+            n_dirs_ref = len(self.rays_list[0])
+            for k in range(1, self.num_submodels):
+                if len(self.rays_list[k]) != n_dirs_ref:
+                    raise ValueError(
+                        "predict(mode='full') requires every GDDEGP submodel to "
+                        "define the same number of direction types."
+                    )
+
+            sigmas_x_flat = self.sigmas_x.flatten()[:, None] if self.normalize else None
+
+            full_rays_list = []
+            full_locs = []
+            full_y_per_dir = []
+            for dir_idx in range(n_dirs_ref):
+                rays_parts = []
+                locs_parts = []
+                y_parts = []
+                for sm_idx in range(self.num_submodels):
+                    sm_rays = self.rays_list[sm_idx][dir_idx]
+                    if self.normalize:
+                        sm_rays = sm_rays * sigmas_x_flat  # inverse of normalize_directions_2
+                    rays_parts.append(sm_rays)
+                    locs_parts.extend(self.derivative_locations[sm_idx][dir_idx])
+                    y_parts.append(
+                        np.asarray(self.y_train_input[sm_idx][dir_idx + 1]).reshape(-1, 1)
+                    )
+                full_rays_list.append(np.hstack(rays_parts))
+                full_locs.append(locs_parts)
+                full_y_per_dir.append(np.vstack(y_parts))
+
+            y_train_full = [y_func_ref.reshape(-1, 1)] + full_y_per_dir
+
+            from jetgp.full_gddegp.gddegp import gddegp
+            return gddegp(
+                self.x_train_input,
+                y_train_full,
+                n_order=self.n_order,
+                rays_list=full_rays_list,
+                der_indices=self.der_indices[0],
+                derivative_locations=full_locs,
+                n_bases=2 * self.n_bases,
+                normalize=self.normalize,
+                kernel=self.kernel,
+                kernel_type=self.kernel_type,
+                smoothness_parameter=smoothness_param,
+            )
+
+        raise NotImplementedError(
+            f"predict(mode='full') not implemented for submodel_type="
+            f"'{self.submodel_type}'."
+        )
+
     def optimize_hyperparameters(self, *args, **kwargs):
         """
         Optimize hyperparameters via the configured optimizer.
@@ -403,14 +572,15 @@ class wdegp:
         return self.optimizer.optimize_hyperparameters(*args, **kwargs)
     
     def predict(
-        self, 
-        X_test, 
-        length_scales, 
-        calc_cov=False, 
+        self,
+        X_test,
+        length_scales,
+        calc_cov=False,
         return_deriv=False,
         return_submodels=False,
         rays_predict=None,
-        derivs_to_predict=None
+        derivs_to_predict=None,
+        mode="weighted",
     ):
         """
         Compute posterior predictive mean and (optionally) covariance at test points.
@@ -435,7 +605,14 @@ class wdegp:
             training set of any submodel — each submodel constructs K_* from kernel
             derivatives directly. If None, defaults to all derivatives common to all
             submodels.
-    
+        mode : str, default='weighted'
+            - 'weighted': standard WDEGP inference via weighted sum of submodels.
+            - 'full': build a dense full model on the union of all submodel
+              observations and predict with the WDEGP-optimized hyperparameters.
+              Bypasses the submatrix approximation at inference time. Requires
+              every submodel to share the same ``y_train[0]`` and
+              ``der_indices``. The full model is built once and cached.
+
         Returns
         -------
         y_val : ndarray
@@ -448,9 +625,37 @@ class wdegp:
             Submodel variances (only if calc_cov and return_submodels are True).
         """
         import warnings
-        
+
+        if mode == "full":
+            if self._full_predict_model is None:
+                self._full_predict_model = self._build_full_predict_model()
+            if return_submodels:
+                warnings.warn(
+                    "return_submodels is ignored when mode='full'.", UserWarning
+                )
+            full_kwargs = dict(
+                calc_cov=calc_cov,
+                return_deriv=return_deriv,
+                derivs_to_predict=derivs_to_predict,
+            )
+            if self.submodel_type == 'gddegp':
+                full_kwargs['rays_predict'] = rays_predict
+            elif rays_predict is not None:
+                warnings.warn(
+                    f"rays_predict is ignored for submodel_type="
+                    f"'{self.submodel_type}' when mode='full'.",
+                    UserWarning,
+                )
+            return self._full_predict_model.predict(
+                X_test, length_scales, **full_kwargs
+            )
+        elif mode != "weighted":
+            raise ValueError(
+                f"mode must be 'weighted' or 'full', got '{mode}'."
+            )
+
         gp_utils = self._get_utils_module()
-        
+
         ell = length_scales[:-1]
         sigma_n = length_scales[-1]
         n_test = X_test.shape[0]
