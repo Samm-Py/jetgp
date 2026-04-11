@@ -1,4 +1,5 @@
 import numpy as np
+import numba
 from numpy.linalg import cholesky, solve
 from jetgp.full_gddegp import gddegp_utils as utils
 import jetgp.utils as gen_utils
@@ -6,6 +7,25 @@ from scipy.linalg import cho_solve, cho_factor
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
 from line_profiler import profile
 from jetgp.utils import matern_kernel_grad_builder
+
+
+@numba.jit(nopython=True, parallel=True, cache=True)
+def _subtract_outer(K_inv, alpha_v, W):
+    """Fused: W[i,j] = K_inv[i,j] - alpha_v[i]*alpha_v[j]
+    Exploits symmetry — writes both (i,j) and (j,i) per inner iteration,
+    halving inner loop work vs a naive double loop.
+    Avoids the N×N temporary that np.outer allocates.
+    """
+    N = K_inv.shape[0]
+    for i in numba.prange(N):
+        ai = alpha_v[i]
+        W[i, i] = K_inv[i, i] - ai * ai
+        for j in range(i + 1, N):
+            val = K_inv[i, j] - ai * alpha_v[j]
+            W[i, j] = val
+            W[j, i] = val
+
+
 class Optimizer:
     """
     Optimizer class to perform hyperparameter tuning for derivative-enhanced Gaussian Process models
@@ -23,6 +43,7 @@ class Optimizer:
         self._kernel_plan = None
         self._deriv_buf = None
         self._deriv_buf_shape = None
+        self._deriv_buf_ndir = None
         self._deriv_factors = None
         self._deriv_factors_key = None
         self._K_buf = None
@@ -32,9 +53,10 @@ class Optimizer:
         self._W_proj_shape = None
 
     def _get_deriv_buf(self, phi, n_bases, order):
-        from math import comb
-        ndir = comb(n_bases + order, order)
-        shape = (ndir, phi.shape[0], phi.shape[1])
+        if self._deriv_buf_ndir is None:
+            from math import comb
+            self._deriv_buf_ndir = comb(n_bases + order, order)
+        shape = (self._deriv_buf_ndir, phi.shape[0], phi.shape[1])
         if self._deriv_buf is None or self._deriv_buf_shape != shape:
             self._deriv_buf = np.zeros(shape, dtype=np.float64)
             self._deriv_buf_shape = shape
@@ -180,8 +202,8 @@ class Optimizer:
             deriv_order = 2 * self.model.n_order
             phi_exp = self._expand_derivs(phi, n_bases, deriv_order)
         K = self._build_K(phi_exp, phi, n_bases)
-        K += ((10 ** sigma_n) ** 2) * np.eye(len(K))
-        K += self.model.sigma_data**2
+        K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
+        K.flat[::K.shape[0] + 1] += self.model.sigma_data_sq_diag
 
         try:
             L, low = cho_factor(K, lower=True)
@@ -252,7 +274,8 @@ class Optimizer:
             alpha_v = cho_solve((L, low), self.model.y_train)
             N       = len(self.model.y_train)
             K_inv   = cho_solve((L, low), np.eye(N))
-            W       = K_inv - np.outer(alpha_v, alpha_v)
+            W       = np.empty((N, N))
+            _subtract_outer(K_inv, alpha_v, W)
         except Exception:
             return np.zeros(len(x0))
 
@@ -493,7 +516,8 @@ class Optimizer:
 
             # W matrix for gradient (reuse same Cholesky)
             K_inv = cho_solve((L, low), np.eye(N))
-            W     = K_inv - np.outer(alpha_v, alpha_v)
+            W     = np.empty((N, N))
+            _subtract_outer(K_inv, alpha_v, W)
         except Exception:
             return 1e6, np.zeros(len(x0))
 

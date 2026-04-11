@@ -133,6 +133,11 @@ class degp:
             if sigma_data is None
             else np.diag(sigma_data)
         )
+        self.sigma_data_sq_diag = (
+            np.zeros(self.y_train.shape[0])
+            if sigma_data is None
+            else np.asarray(sigma_data) ** 2
+        )
 
         # Initialize kernel factory and optimizer
         self.kernel_factory = KernelFactory(
@@ -329,7 +334,7 @@ class degp:
                 self.flattened_der_indices, self.powers,
                 index=self.derivative_locations
             )
-            K += (10 ** sigma_n) ** 2 * np.eye(K.shape[0])
+            K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
             K += self.sigma_data ** 2
 
             # Final prediction always uses exact K solve (the sparse

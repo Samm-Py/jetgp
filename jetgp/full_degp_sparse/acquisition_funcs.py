@@ -288,7 +288,7 @@ def mse_reduction(
         diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=True
     )
-    K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
+    K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
     
     # Use precomputed differences
     diff_train_cand = precomputed_diffs['train_cand']
@@ -356,7 +356,7 @@ def imse_reduction(
         diff_train_train, length_scales, gp.n_order, gp.n_bases, gp.kernel_func,
         gp.flattened_der_indicies, gp.powers, return_deriv=True
     )
-    K += (10**sigma_n) ** 2 * np.eye(K.shape[0])
+    K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
     
     # Use precomputed differences
     diff_train_domain = precomputed_diffs['train_domain']

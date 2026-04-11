@@ -327,7 +327,6 @@ def transform_der_indices(der_indices, der_map):
 # RBF Kernel Assembly Functions (Optimized with Numba)
 # =============================================================================
 
-@profile
 def rbf_kernel(
     phi,
     phi_exp,
@@ -719,7 +718,6 @@ def rbf_kernel_fast(phi_exp_3d, plan, out=None):
     return K
 
 
-@profile
 def rbf_kernel_predictions(
     phi,
     phi_exp,

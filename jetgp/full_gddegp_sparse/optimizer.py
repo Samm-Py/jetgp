@@ -143,6 +143,7 @@ class Optimizer:
         self._kernel_plan = None
         self._deriv_buf = None
         self._deriv_buf_shape = None
+        self._deriv_buf_ndir = None
         self._deriv_factors = None
         self._deriv_factors_key = None
         self._K_buf = None
@@ -161,9 +162,10 @@ class Optimizer:
 
     def _get_deriv_buf(self, phi, n_bases, order):
         """Return a pre-allocated buffer for get_all_derivs, reusing if shape matches."""
-        from math import comb
-        ndir = comb(n_bases + order, order)
-        shape = (ndir, phi.shape[0], phi.shape[1])
+        if self._deriv_buf_ndir is None:
+            from math import comb
+            self._deriv_buf_ndir = comb(n_bases + order, order)
+        shape = (self._deriv_buf_ndir, phi.shape[0], phi.shape[1])
         if self._deriv_buf is None or self._deriv_buf_shape != shape:
             self._deriv_buf = np.zeros(shape, dtype=np.float64)
             self._deriv_buf_shape = shape
@@ -1006,7 +1008,7 @@ class Optimizer:
                 index=self.model.derivative_locations,
             )
         K.flat[::K.shape[0] + 1] += sigma_n_sq
-        K += self.model.sigma_data ** 2
+        K.flat[::K.shape[0] + 1] += self.model.sigma_data_sq_diag
         return K, phi, n_bases, oti, diffs
 
     def _sparse_nlml_direct(self, x0):

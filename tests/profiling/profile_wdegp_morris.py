@@ -1,12 +1,13 @@
 """
 Profile: WDEGP on Morris 20D with n_train=200.
 One submodel per training point; each gets all function values + its own gradient.
+
+Run with:
+    kernprof -l -v profile_wdegp_morris.py
 """
 
 import os
 import numpy as np
-import cProfile
-import pstats
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -62,18 +63,18 @@ x0 = np.array([0.1] * (len(model.bounds) - 2) + [0.5, -3.0])
 print("Warming up...")
 opt.nll_and_grad(x0)
 
-# Profile
-print("Profiling (3 iterations)...")
-pr = cProfile.Profile()
-pr.enable()
-for _ in range(3):
-    opt.nll_and_grad(x0)
-pr.disable()
+@profile
+def run_nll_and_grad():
+    for _ in range(3):
+        opt.nll_and_grad(x0)
 
-stats = pstats.Stats(pr)
-stats.sort_stats('cumulative')
-stats.print_stats(30)
+@profile
+def run_nlml():
+    for _ in range(3):
+        opt.nll_wrapper(x0)
 
-print("\n--- Sorted by tottime ---")
-stats.sort_stats('tottime')
-stats.print_stats(30)
+print("Profiling nll_and_grad (3 iterations)...")
+run_nll_and_grad()
+
+print("Profiling negative_log_marginal_likelihood (3 iterations)...")
+run_nlml()

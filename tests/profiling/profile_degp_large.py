@@ -1,6 +1,11 @@
+"""
+Profile: DEGP on random 20D data with n_train=100.
+
+Run with:
+    kernprof -l -v profile_degp_large.py
+"""
+
 import numpy as np
-import cProfile
-import pstats
 from jetgp.full_degp.degp import degp
 from jetgp.full_degp.optimizer import Optimizer
 from jetgp.utils import gen_OTI_indices
@@ -31,20 +36,31 @@ model = degp(X, y_train, n_order=1, n_bases=D,
 opt = Optimizer(model)
 x0 = np.array([0.1] * (len(model.bounds) - 2) + [0.5, -3.0])
 
+# Register negative_log_marginal_likelihood for line-level profiling
+try:
+    profile.add_function(opt.negative_log_marginal_likelihood)
+except NameError:
+    pass  # not running under kernprof
+
 # Warm up
 opt.nll_and_grad(x0)
+opt.nll_wrapper(x0)
 
-# Profile
-pr = cProfile.Profile()
-pr.enable()
-for _ in range(10):
-    opt.nll_and_grad(x0)
-pr.disable()
 
-stats = pstats.Stats(pr)
-stats.sort_stats('cumulative')
-stats.print_stats(30)
+@profile
+def run_nll_and_grad():
+    for _ in range(10):
+        opt.nll_and_grad(x0)
 
-print("\n--- Sorted by tottime ---")
-stats.sort_stats('tottime')
-stats.print_stats(30)
+
+@profile
+def run_nlml():
+    for _ in range(10):
+        opt.nll_wrapper(x0)
+
+
+print("Profiling nll_and_grad (10 iterations)...")
+run_nll_and_grad()
+
+print("Profiling negative_log_marginal_likelihood (10 iterations)...")
+run_nlml()

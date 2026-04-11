@@ -41,7 +41,7 @@ plt.rcParams.update({
 FUNC        = 'active_subspace_10d'
 DIM         = 10
 SAMPLE_SIZES = [DIM, 5 * DIM, 10 * DIM]
-SHOW_ITERS  = [100, 200, 500]
+SHOW_ITERS  = [100, 200, 500, 1000]
 
 ddegp_file  = f'results_jetgp_ddegp_{FUNC}.json'
 degp_file   = f'results_jetgp_degp_{FUNC}.json'
@@ -57,6 +57,7 @@ COLORS = {
     'GPyTorch (100)':  '#C6DCEF',
     'GPyTorch (200)':  '#9ECAE1',
     'GPyTorch (500)':  '#6BAED6',
+    'GPyTorch (1000)': '#2171B5',
 }
 
 # ── Helpers ───────────────────────────────────────────────────────────────────

@@ -323,9 +323,10 @@ class Optimizer:
 
     def _get_deriv_buf(self, phi, n_bases, order):
         """Return a pre-allocated buffer for get_all_derivs, reusing if shape matches."""
-        from math import comb
-        ndir = self._ndir or comb(n_bases + order, order)
-        shape = (ndir, phi.shape[0], phi.shape[1])
+        if self._ndir is None:
+            from math import comb
+            self._ndir = comb(n_bases + order, order)
+        shape = (self._ndir, phi.shape[0], phi.shape[1])
         if self._deriv_buf is None or self._deriv_buf_shape != shape:
             self._deriv_buf = np.zeros(shape, dtype=np.float64)
             self._deriv_buf_shape = shape
@@ -629,10 +630,10 @@ class Optimizer:
         FW_T = None
         if _use_vdot_fused:
             _vdot_factors = self._get_deriv_factors(n_bases, deriv_order)
-            # Precompute transposed factor-weighted W_proj for fused_grad_all_dims
             _vdot_arr = np.asarray(_vdot_factors)
             ndir_d = len(_vdot_arr)
-            FW_T = (W_proj.reshape(ndir_d, -1).T * _vdot_arr).copy()
+            FW_T = np.empty((base_shape[0] * base_shape[1], ndir_d))
+            np.multiply(W_proj.reshape(ndir_d, -1).T, _vdot_arr, out=FW_T)
 
         @profile
         def _gc(dphi):
@@ -1360,7 +1361,7 @@ class Optimizer:
                 index=self.model.derivative_locations,
             )
         K.flat[::K.shape[0] + 1] += sigma_n_sq
-        K += self.model.sigma_data ** 2
+        K.flat[::K.shape[0] + 1] += self.model.sigma_data_sq_diag
         return K, phi, n_bases, oti, diffs
 
 

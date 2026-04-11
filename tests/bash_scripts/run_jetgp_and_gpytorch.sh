@@ -1,5 +1,5 @@
 #!/bin/bash
-# Run JetGP benchmarks (DEGP, GDDEGP, WDEGP) then GPyTorch capped at 1000 iterations.
+# Run JetGP benchmarks (DEGP, GDDEGP, WDEGP, Sparse DEGP) then GPyTorch capped at 1000 iterations.
 set -e
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -12,6 +12,7 @@ echo "=========================================="
 bash "$DIR/run_jetgp_degp.sh"
 bash "$DIR/run_jetgp_gddegp.sh"
 bash "$DIR/run_jetgp_wdegp.sh"
+bash "$DIR/run_jetgp_sparse_degp.sh"
 
 # GPyTorch second (1000 iterations only)
 bash "$DIR/run_gpytorch_1000.sh"

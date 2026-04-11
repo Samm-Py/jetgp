@@ -118,6 +118,7 @@ class wdegp:
         if sigma_data is None:
             sigma_data = np.zeros(self._compute_total_constraints())
         self.sigma_data = np.diag(sigma_data)
+        self.sigma_data_sq_diag = np.asarray(sigma_data) ** 2
 
         # Normalize if requested
         if normalize:
@@ -654,7 +655,7 @@ class wdegp:
                 self.flattened_der_indices[i], self.powers[i],
                 index=deriv_locs_i
             )
-            K += (10 ** sigma_n) ** 2 * np.eye(len(K))
+            K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
 
             # Solve linear system
             try:

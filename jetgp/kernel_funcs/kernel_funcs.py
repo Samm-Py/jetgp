@@ -361,8 +361,8 @@ class KernelFactory:
         tuple
             (tmp1, tmp2, sqdist) temporary arrays.
         """
-        if self._cached_shape != shape:
-            self._cached_shape = shape
+        if tuple(shape) != self._cached_shape:
+            self._cached_shape = tuple(shape)
             self._tmp1 = self.oti.zeros(shape)
             self._tmp2 = self.oti.zeros(shape)
             self._sqdist = self.oti.zeros(shape)
@@ -421,6 +421,94 @@ class KernelFactory:
                 self.oti.mul(ell, differences_by_dim[i], out=tmp1)
                 self.oti.mul(tmp1, tmp1, out=tmp2)
                 self.oti.sum(sqdist, tmp2, out=sqdist)
+
+    def _compute_neg_half_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
+        """Compute -0.5 * Σ ell[i]² * diff[i]² directly, absorbing the -0.5 into ell_sq
+        on the fused path to avoid a separate mul step."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        if self._has_fused_sqdist_sparse:
+            ell_sq = np.ascontiguousarray(-0.5 * ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist:
+            ell_sq = np.ascontiguousarray(-0.5 * ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist(differences_by_dim, ell_sq)
+        else:
+            self._reset_sqdist()
+            for i in range(self.dim):
+                self.oti.mul(ell[i], differences_by_dim[i], out=tmp1)
+                self.oti.mul(tmp1, tmp1, out=tmp2)
+                self.oti.sum(sqdist, tmp2, out=sqdist)
+            self.oti.mul(-0.5, sqdist, out=sqdist)
+
+    def _compute_neg_half_sqdist_iso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
+        """Compute -0.5 * Σ ell² * diff[i]² directly, absorbing the -0.5 into ell_sq
+        on the fused path to avoid a separate mul step."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        if self._has_fused_sqdist_sparse:
+            ell_sq_val = -0.5 * float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist:
+            ell_sq_val = -0.5 * float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist(differences_by_dim, ell_sq)
+        else:
+            self._reset_sqdist()
+            for i in range(self.dim):
+                self.oti.mul(ell, differences_by_dim[i], out=tmp1)
+                self.oti.mul(tmp1, tmp1, out=tmp2)
+                self.oti.sum(sqdist, tmp2, out=sqdist)
+            self.oti.mul(-0.5, sqdist, out=sqdist)
+
+    def _compute_scaled_sqdist_aniso(self, differences_by_dim, ell, scale, sqdist, tmp1, tmp2):
+        """Compute scale * Σ ell[i]² * diff[i]², absorbing scale into ell_sq on the fused
+        path to avoid a separate mul step after sqdist construction."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        if self._has_fused_sqdist_sparse:
+            ell_sq = np.ascontiguousarray(scale * ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist:
+            ell_sq = np.ascontiguousarray(scale * ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist(differences_by_dim, ell_sq)
+        else:
+            self._reset_sqdist()
+            for i in range(self.dim):
+                self.oti.mul(ell[i], differences_by_dim[i], out=tmp1)
+                self.oti.mul(tmp1, tmp1, out=tmp2)
+                self.oti.sum(sqdist, tmp2, out=sqdist)
+            self.oti.mul(scale, sqdist, out=sqdist)
+
+    def _compute_scaled_sqdist_iso(self, differences_by_dim, ell, scale, sqdist, tmp1, tmp2):
+        """Compute scale * Σ ell² * diff[i]², absorbing scale into ell_sq on the fused
+        path to avoid a separate mul step after sqdist construction."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        if self._has_fused_sqdist_sparse:
+            ell_sq_val = scale * float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist:
+            ell_sq_val = scale * float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist(differences_by_dim, ell_sq)
+        else:
+            self._reset_sqdist()
+            for i in range(self.dim):
+                self.oti.mul(ell, differences_by_dim[i], out=tmp1)
+                self.oti.mul(tmp1, tmp1, out=tmp2)
+                self.oti.sum(sqdist, tmp2, out=sqdist)
+            self.oti.mul(scale, sqdist, out=sqdist)
 
     # -------------------------------------------------------------------
     # Hyperparameter Caching Methods
@@ -559,11 +647,18 @@ class KernelFactory:
             self.get_bounds_from_data()
 
         if kernel_type == "anisotropic":
-            return self._create_anisotropic(kernel_name)
+            kernel_func = self._create_anisotropic(kernel_name)
         elif kernel_type == "isotropic":
-            return self._create_isotropic(kernel_name)
+            kernel_func = self._create_isotropic(kernel_name)
         else:
             raise ValueError("Invalid kernel_type")
+
+        # Pre-warm the temp array cache for the training shape so the first
+        # optimizer call hits immediately instead of allocating on the fly.
+        if self.differences_by_dim is not None and len(self.differences_by_dim) > 0:
+            self._ensure_temp_arrays(self.differences_by_dim[0].shape)
+
+        return kernel_func
 
     def _create_anisotropic(self, kernel):
         """
@@ -676,11 +771,19 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_se_params_aniso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
-        self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        self._compute_neg_half_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
-        self.oti.exp((-0.5) * sqdist, out=tmp1)
+        # TODO (performance): oti.exp dominates kernel cost (~48% of kernel time).
+        # The full N×N OTI phi array is computed, but the final kernel matrix K is
+        # symmetric — only the upper triangle is needed. For DEGP, phi[j,i] equals
+        # phi[i,j] with first-order OTI epsilon components negated (second-order
+        # unchanged), so a C-level `fused_mirror` op could reconstruct the lower
+        # triangle from the upper without re-evaluating oti.exp, halving its cost.
+        # For GDDEGP, odd/even OTI basis tags are fully swapped between phi[i,j] and
+        # phi[j,i], requiring an odd↔even component remapping — more complex but
+        # follows the same principle. Both require otilib C/Cython changes.
+        self.oti.exp(sqdist, out=tmp1)
         self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
         return tmp2
 
@@ -701,17 +804,15 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, alpha, sigma_f_sq = self._cache_rq_params_aniso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
-        self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
 
         # (1 + sqdist / (2 * alpha))^(-alpha)
         inv_2alpha = 1.0 / (2 * alpha)
-        self.oti.mul(sqdist, inv_2alpha, out=tmp1)
-        self.oti.sum(1.0, tmp1, out=tmp2)
-        self.oti.pow(tmp2, -alpha, out=tmp1)
-        self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
-        return tmp2
+        self._compute_scaled_sqdist_aniso(differences_by_dim, ell, inv_2alpha, sqdist, tmp1, tmp2)
+        self.oti.sum(1.0, sqdist, out=tmp1)
+        self.oti.pow(tmp1, -alpha, out=tmp2)
+        self.oti.mul(sigma_f_sq, tmp2, out=tmp1)
+        return tmp1
 
     def sine_exp_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
@@ -731,8 +832,7 @@ class KernelFactory:
         """
         ell, pi_over_p, sigma_f_sq = self._cache_sine_exp_params_aniso(
             length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -764,8 +864,7 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_matern_params_aniso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
 
         # Compute scaled squared distance using fused op if available
         self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
@@ -822,11 +921,10 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_se_params_iso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
-        self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
+        self._compute_neg_half_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
-        self.oti.exp((-0.5) * sqdist, out=tmp1)
+        self.oti.exp(sqdist, out=tmp1)
         self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
         return tmp2
 
@@ -847,17 +945,15 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, alpha, sigma_f_sq = self._cache_rq_params_iso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
-        self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
 
         # (1 + sqdist / (2 * alpha))^(-alpha)
         inv_2alpha = 1.0 / (2 * alpha)
-        self.oti.mul(sqdist, inv_2alpha, out=tmp1)
-        self.oti.sum(1.0, tmp1, out=tmp2)
-        self.oti.pow(tmp2, -alpha, out=tmp1)
-        self.oti.mul(sigma_f_sq, tmp1, out=tmp2)
-        return tmp2
+        self._compute_scaled_sqdist_iso(differences_by_dim, ell, inv_2alpha, sqdist, tmp1, tmp2)
+        self.oti.sum(1.0, sqdist, out=tmp1)
+        self.oti.pow(tmp1, -alpha, out=tmp2)
+        self.oti.mul(sigma_f_sq, tmp2, out=tmp1)
+        return tmp1
 
     def sine_exp_kernel_isotropic(self, differences_by_dim, length_scales):
         """
@@ -877,8 +973,7 @@ class KernelFactory:
         """
         ell, pi_over_p, sigma_f_sq = self._cache_sine_exp_params_iso(
             length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
         self._reset_sqdist()
 
         for i in range(self.dim):
@@ -910,8 +1005,7 @@ class KernelFactory:
             Kernel matrix values.
         """
         ell, sigma_f_sq = self._cache_matern_params_iso(length_scales)
-        tmp1, tmp2, sqdist = self._ensure_temp_arrays(
-            differences_by_dim[0].shape)
+        tmp1, tmp2, sqdist = self._ensure_temp_arrays(differences_by_dim[0].shape)
 
         # Compute scaled squared distance using fused op if available
         self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)

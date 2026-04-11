@@ -1,9 +1,27 @@
 import numpy as np
+import numba
 from scipy.linalg import cho_solve, cho_factor
 from line_profiler import profile
 import jetgp.utils as gen_utils
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
 from jetgp.utils import matern_kernel_grad_builder
+
+
+@numba.jit(nopython=True, parallel=True, cache=True)
+def _subtract_outer(K_inv, alpha_v, W):
+    """Fused: W[i,j] = K_inv[i,j] - alpha_v[i]*alpha_v[j]
+    Exploits symmetry — writes both (i,j) and (j,i) per inner iteration,
+    halving inner loop work vs a naive double loop.
+    Avoids the N×N temporary that np.outer allocates.
+    """
+    N = K_inv.shape[0]
+    for i in numba.prange(N):
+        ai = alpha_v[i]
+        W[i, i] = K_inv[i, i] - ai * ai
+        for j in range(i + 1, N):
+            val = K_inv[i, j] - ai * alpha_v[j]
+            W[i, j] = val
+            W[j, i] = val
 
 
 class Optimizer:
@@ -40,6 +58,7 @@ class Optimizer:
         self._kernel_plans = None  # lazily initialized on first NLL call
         self._deriv_buf = None
         self._deriv_buf_shape = None
+        self._deriv_buf_ndir = None
         self._deriv_factors = None
         self._deriv_factors_key = None
         self._K_bufs = None   # per-submodel pre-allocated K buffers
@@ -48,14 +67,16 @@ class Optimizer:
         self._W_proj_shape = None
 
     def _get_deriv_buf(self, phi, n_bases, order):
-        from math import comb
-        ndir = comb(n_bases + order, order)
-        shape = (ndir, phi.shape[0], phi.shape[1])
+        if self._deriv_buf_ndir is None:
+            from math import comb
+            self._deriv_buf_ndir = comb(n_bases + order, order)
+        shape = (self._deriv_buf_ndir, phi.shape[0], phi.shape[1])
         if self._deriv_buf is None or self._deriv_buf_shape != shape:
             self._deriv_buf = np.zeros(shape, dtype=np.float64)
             self._deriv_buf_shape = shape
         return self._deriv_buf
 
+    @profile
     def _expand_derivs(self, phi, n_bases, deriv_order):
         """Expand OTI derivatives, using fast struct path if available."""
         if hasattr(phi, 'get_all_derivs_fast'):
@@ -258,7 +279,7 @@ class Optimizer:
                     self.model.powers[i], index=index[i]
                 )
 
-            K += (10 ** sigma_n) ** 2 * np.eye(len(K))
+            K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
 
             try:
                 L, low = cho_factor(K, lower=True)
@@ -616,7 +637,7 @@ class Optimizer:
                 grad[0] = _gc(dphi_e)
 
         return grad
-
+    @profile
     def nll_and_grad(self, x0):
         """Compute NLL and its gradient in a single pass, sharing one Cholesky per submodel."""
         ln10 = np.log(10.0)

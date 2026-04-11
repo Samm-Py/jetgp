@@ -6,7 +6,7 @@ DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$DIR"
 
 N_REPS=5
-RHO_VALUES="1.0 3.0"
+RHO_VALUES=".5 1.0 1.5"
 
 # func_name  script  dim  sizes(D, 5D, 10D)
 TASKS=(
