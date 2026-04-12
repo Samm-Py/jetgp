@@ -168,7 +168,7 @@ class Optimizer:
         # lookups and attribute accesses).
         self._assemble_numba = getattr(self.utils, '_assemble_kernel_numba', None)
 
-    def _ensure_kernel_bufs(self, n_rows_func):
+    def _ensure_kernel_bufs(self):
         """Pre-allocate reusable K and dK buffers for each submodel."""
         if self._kernel_plans is None:
             return
@@ -176,8 +176,10 @@ class Optimizer:
             return  # already allocated
         self._K_bufs = []
         self._dK_bufs = []
+        func_locs = self.model.function_locations
         max_total = max(
-            n_rows_func + plan['n_pts_with_derivs'] for plan in self._kernel_plans
+            len(func_locs[i]) + plan['n_pts_with_derivs']
+            for i, plan in enumerate(self._kernel_plans)
         )
         # Single backing buffers shared across all submodels. Each submodel
         # iteration completes its use of K/dK before the next overwrites, so
@@ -185,14 +187,12 @@ class Optimizer:
         # streaming ~77 MB of per-submodel buffers from DRAM each pass.
         self._K_buf_flat = np.empty(max_total * max_total)
         self._dK_buf_flat = np.empty(max_total * max_total)
-        for plan in self._kernel_plans:
-            total = n_rows_func + plan['n_pts_with_derivs']
+        for i, plan in enumerate(self._kernel_plans):
+            n_func = len(func_locs[i])
+            total = n_func + plan['n_pts_with_derivs']
             n = total * total
             self._K_bufs.append(self._K_buf_flat[:n].reshape(total, total))
             self._dK_bufs.append(self._dK_buf_flat[:n].reshape(total, total))
-            if 'row_offsets_abs' not in plan:
-                plan['row_offsets_abs'] = plan['row_offsets'] + n_rows_func
-                plan['col_offsets_abs'] = plan['col_offsets'] + n_rows_func
 
     @profile
     def negative_log_marginal_likelihood(
@@ -260,7 +260,7 @@ class Optimizer:
         # Pre-reshape phi_exp to 3D once
         if use_fast:
             base_shape = phi.shape
-            self._ensure_kernel_bufs(base_shape[0])
+            self._ensure_kernel_bufs()
             phi_exp_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
 
         weights = self.model.submodel_weights
@@ -278,7 +278,8 @@ class Optimizer:
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, n_order, n_bases,
                     self.model.flattened_der_indices[i],
-                    self.model.powers[i], index=index[i]
+                    self.model.powers[i], index=index[i],
+                    function_locations=self.model.function_locations[i],
                 )
 
             K.flat[::K.shape[0] + 1] += (10 ** sigma_n) ** 2
@@ -294,9 +295,20 @@ class Optimizer:
                 log_det = np.sum(np.log(np.diag(L)))
                 const = 0.5 * len(y_train_sub) * np.log(2 * np.pi)
 
-                llhood += w_i * (data_fit + log_det + const)
+                nll_i = data_fit + log_det + const
+
+                # Guard against numerical blow-up: with signed weights a
+                # divergent submodel NLL can drive the total to -inf.  If
+                # any single submodel's NLL is outside a reasonable range,
+                # return a large penalty so the optimizer steers away.
+                if not np.isfinite(nll_i) or abs(nll_i) > 1e8:
+                    return 1e6
+
+                llhood += w_i * nll_i
             except np.linalg.LinAlgError:
-                llhood += 1e6  # Penalize badly conditioned matrices (unsigned)
+                # Cholesky failure — always penalise upward regardless of
+                # the submodel weight (we want the optimizer to move away).
+                return 1e6
 
         return llhood
 
@@ -353,13 +365,16 @@ class Optimizer:
         # Pre-reshape phi_exp to 3D once
         if use_fast:
             base_shape = phi.shape
-            self._ensure_kernel_bufs(base_shape[0])
+            self._ensure_kernel_bufs()
             phi_exp_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
 
-        # Build per-submodel W matrices
+        # Build per-submodel W matrices (bake in submodel weight so the
+        # downstream W_proj / vdot accumulations naturally form a signed sum).
+        weights = self.model.submodel_weights
         W_list = []
         for i in range(len(index)):
             y_train_sub = self.model.y_train_normalized[i]
+            w_i = weights[i]
             if use_fast:
                 K = self._K_bufs[i]
                 self._assemble_numba(
@@ -370,7 +385,8 @@ class Optimizer:
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, self.model.n_order, n_bases,
                     self.model.flattened_der_indices[i],
-                    self.model.powers[i], index=index[i]
+                    self.model.powers[i], index=index[i],
+                    function_locations=self.model.function_locations[i],
                 )
             K.flat[::K.shape[0] + 1] += sigma_n_sq
             try:
@@ -378,7 +394,7 @@ class Optimizer:
                 alpha_v = cho_solve((L, low), y_train_sub)
                 N       = len(y_train_sub)
                 K_inv   = cho_solve((L, low), np.eye(N))
-                W_list.append(K_inv - np.outer(alpha_v, alpha_v))
+                W_list.append(w_i * (K_inv - np.outer(alpha_v, alpha_v)))
             except Exception:
                 return np.zeros(len(x0))
 
@@ -399,6 +415,7 @@ class Optimizer:
                 plan = self._kernel_plans[i]
                 row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
                 col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
+                func_idx = plan['function_locations']
                 args = [
                     W_list[i], W_proj, base_shape[0], base_shape[1],
                     plan['fd_flat_indices'], plan['df_flat_indices'],
@@ -407,7 +424,7 @@ class Optimizer:
                 ]
                 if self._uses_signs:
                     args.append(plan['signs'])
-                args.extend([plan['n_deriv_types'], row_off, col_off])
+                args.extend([plan['n_deriv_types'], row_off, col_off, func_idx])
                 self.utils._project_W_to_phi_space_accum(*args)
 
         _use_vdot_fused = W_proj is not None and hasattr(phi, 'vdot_expand_fast')
@@ -680,7 +697,7 @@ class Optimizer:
         # Pre-reshape phi_exp to 3D once
         if use_fast:
             base_shape = phi.shape
-            self._ensure_kernel_bufs(base_shape[0])
+            self._ensure_kernel_bufs()
             phi_exp_3d = phi_exp.reshape(phi_exp.shape[0], base_shape[0], base_shape[1])
 
         # --- single loop: compute NLL and W_list simultaneously ---
@@ -701,7 +718,8 @@ class Optimizer:
                 K = self.utils.rbf_kernel(
                     phi, phi_exp, self.model.n_order, n_bases,
                     self.model.flattened_der_indices[i],
-                    self.model.powers[i], index=index[i]
+                    self.model.powers[i], index=index[i],
+                    function_locations=self.model.function_locations[i],
                 )
             K.flat[::K.shape[0] + 1] += sigma_n_sq
 
@@ -714,7 +732,13 @@ class Optimizer:
                 data_fit = 0.5 * np.dot(y_train_sub.flatten(), alpha_v.flatten())
                 log_det  = np.sum(np.log(np.diag(L)))
                 const    = 0.5 * N * np.log(2 * np.pi)
-                llhood  += w_i * (data_fit + log_det + const)
+                nll_i    = data_fit + log_det + const
+
+                # Guard against numerical blow-up (see nll_wrapper).
+                if not np.isfinite(nll_i) or abs(nll_i) > 1e8:
+                    return 1e6, np.zeros(len(x0))
+
+                llhood  += w_i * nll_i
 
                 # W matrix for gradient — bake the sign in once so the
                 # downstream W_proj / vdot accumulations naturally form a
@@ -722,11 +746,9 @@ class Optimizer:
                 K_inv = cho_solve((L, low), np.eye(N))
                 W_list.append(w_i * (K_inv - np.outer(alpha_v, alpha_v)))
             except np.linalg.LinAlgError:
-                # Penalty is unsigned: a Cholesky failure should always
-                # push the optimizer away, even for a negatively-weighted
-                # correction block where w_i * 1e6 would be rewarding.
-                llhood += 1e6
-                return float(llhood), np.zeros(len(x0))
+                # Cholesky failure — always penalise upward regardless of
+                # the submodel weight.
+                return 1e6, np.zeros(len(x0))
 
         # --- gradient from W_list (no second kernel build / Cholesky) ---
         grad = np.zeros(len(x0))
@@ -747,6 +769,7 @@ class Optimizer:
                 plan = self._kernel_plans[i]
                 row_off = plan.get('row_offsets_abs', plan['row_offsets'] + base_shape[0])
                 col_off = plan.get('col_offsets_abs', plan['col_offsets'] + base_shape[1])
+                func_idx = plan['function_locations']
                 args = [
                     W_list[i], W_proj, base_shape[0], base_shape[1],
                     plan['fd_flat_indices'], plan['df_flat_indices'],
@@ -755,7 +778,7 @@ class Optimizer:
                 ]
                 if self._uses_signs:
                     args.append(plan['signs'])
-                args.extend([plan['n_deriv_types'], row_off, col_off])
+                args.extend([plan['n_deriv_types'], row_off, col_off, func_idx])
                 self.utils._project_W_to_phi_space_accum(*args)
 
         _use_vdot_fused = W_proj is not None and hasattr(phi, 'vdot_expand_fast')

@@ -763,5 +763,71 @@ class TestSparseGDDEGPGradient(unittest.TestCase):
                                 tag=f"SparseGDDEGP/{kernel}/{ktype}")
 
 
+# ---------------------------------------------------------------------------
+# SDEGP — gradient checks with simplified constructor
+# ---------------------------------------------------------------------------
+
+class TestSDEGPGradient(unittest.TestCase):
+    """FD gradient check for SDEGP using the simplified constructor.
+
+    Uses the 2-appendant sliced likelihood factorization from
+    Cheng & Zimmermann (2024), with signed submodel weights (+1/-1).
+    """
+
+    KERNELS = [
+        ("SE", "isotropic"),
+        ("SE", "anisotropic"),
+        ("RQ", "isotropic"),
+        ("RQ", "anisotropic"),
+        ("Matern", "isotropic"),
+        ("Matern", "anisotropic"),
+    ]
+
+    @classmethod
+    def setUpClass(cls):
+        from jetgp.sdegp.sdegp import sdegp
+        cls.sdegp_cls = sdegp
+
+        X, y, g1, g2 = _branin_setup()
+        cls.X = X
+        cls.y = y
+        cls.grads = np.hstack([g1, g2])
+        cls.m = 4  # 4 slices -> 2*4-3 = 5 submodels
+
+    def _make_model(self, kernel, kernel_type):
+        kw = {}
+        if kernel == "Matern":
+            kw["smoothness_parameter"] = 3
+        return self.sdegp_cls(
+            self.X, self.y.ravel(), self.grads,
+            n_order=1, m=self.m,
+            kernel=kernel, kernel_type=kernel_type,
+            **kw
+        )
+
+    def _x0_for(self, model):
+        n = len(model.bounds)
+        return np.array([0.1] * (n - 2) + [0.5, -3.0])
+
+    def test_nll_and_grad_vs_fd(self):
+        for kernel, ktype in self.KERNELS:
+            with self.subTest(kernel=kernel, kernel_type=ktype):
+                model = self._make_model(kernel, ktype)
+                opt = model.optimizer
+                x0 = self._x0_for(model)
+                tol = MATERN_TOL if kernel == 'Matern' else 1e-3
+                _check_gradient(self, opt, x0, tol=tol,
+                                tag=f"SDEGP/{kernel}/{ktype}")
+
+    def test_nll_grad_matches_nll_and_grad(self):
+        for kernel, ktype in self.KERNELS:
+            with self.subTest(kernel=kernel, kernel_type=ktype):
+                model = self._make_model(kernel, ktype)
+                opt = model.optimizer
+                x0 = self._x0_for(model)
+                _check_grad_matches_nll_grad(self, opt, x0,
+                                              tag=f"SDEGP/{kernel}/{ktype}")
+
+
 if __name__ == "__main__":
     unittest.main()

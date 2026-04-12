@@ -1,0 +1,31 @@
+[
+  {
+    "n_train": 100,
+    "seed": 1000,
+    "m_slices": 13,
+    "slice_dim": 6,
+    "slice_sizes": [
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      8,
+      7,
+      7,
+      7,
+      7
+    ],
+    "wdegp_nrmse": 0.030914560631046348,
+    "wdegp_rmse": 7.194791895896256,
+    "wdegp_train_time": 15.984742640001059,
+    "sdegp_nrmse": 0.020935366079543452,
+    "sdegp_rmse": 4.872319034528115,
+    "sdegp_train_time": 22.547874947998935,
+    "nrmse_ratio_sdegp_over_wdegp": 0.6772008287421313,
+    "macroreplicate": 1
+  }
+]

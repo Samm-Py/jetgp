@@ -335,12 +335,13 @@ def rbf_kernel(
     der_indices,
     powers,
     index=-1,
+    function_locations=None,
 ):
     """
     Constructs the RBF kernel matrix with derivative entries using an
     efficient pre-allocation strategy combined with a single call to
     extract all derivative components.
-    
+
     This version uses Numba-accelerated functions for efficient matrix slicing,
     replacing expensive np.ix_ operations.
 
@@ -360,6 +361,9 @@ def rbf_kernel(
         Sign powers for each derivative type.
     index : list of lists
         Training point indices for each derivative type.
+    function_locations : list of int, optional
+        Global point indices for the function-value block.
+        If None, all points are used (legacy behaviour).
 
     Returns
     -------
@@ -367,13 +371,24 @@ def rbf_kernel(
         Full RBF kernel matrix with mixed function and derivative entries.
     """
     dh = coti.get_dHelp()
-    
+
     # Create maps to translate derivative specifications to flat indices
     der_map = deriv_map(n_bases, 2 * n_order)
     der_indices_tr, der_ind_order = transform_der_indices(der_indices, der_map)
 
     # Determine Block Sizes and Pre-allocate Matrix
-    n_rows_func, n_cols_func = phi.shape
+    n_rows_phi, n_cols_phi = phi.shape
+    base_shape = (n_rows_phi, n_cols_phi)
+
+    if function_locations is not None:
+        func_idx = np.asarray(function_locations, dtype=np.int64)
+        n_rows_func = len(func_idx)
+        n_cols_func = len(func_idx)
+    else:
+        func_idx = None
+        n_rows_func = n_rows_phi
+        n_cols_func = n_cols_phi
+
     n_deriv_types = len(der_indices)
     n_pts_with_derivs_cols = sum(len(order_indices) for order_indices in index)
     n_pts_with_derivs_rows = sum(len(order_indices) for order_indices in index)
@@ -381,17 +396,19 @@ def rbf_kernel(
     total_cols = n_cols_func + n_pts_with_derivs_cols
 
     K = np.zeros((total_rows, total_cols))
-    base_shape = (n_rows_func, n_cols_func)
 
     # Pre-compute signs (avoid repeated exponentiation)
     signs = np.array([(-1.0) ** p for p in powers], dtype=np.float64)
-    
+
     # Convert index lists to numpy arrays for numba
     index_arrays = [np.asarray(idx, dtype=np.int64) for idx in index]
 
     # Block (0,0): Function-Function (K_ff)
     content_full = phi_exp[0].reshape(base_shape)
-    K[:n_rows_func, :n_cols_func] = content_full * signs[0]
+    if func_idx is not None:
+        K[:n_rows_func, :n_cols_func] = content_full[np.ix_(func_idx, func_idx)] * signs[0]
+    else:
+        K[:n_rows_func, :n_cols_func] = content_full * signs[0]
 
     # First Block-Row: Function-Derivative (K_fd)
     col_offset = n_cols_func
@@ -400,10 +417,15 @@ def rbf_kernel(
         content_full = phi_exp[flat_idx].reshape(base_shape)
         current_indices = index_arrays[j]
         n_pts_this_order = len(current_indices)
-        
-        # Use numba for efficient column extraction and assignment
-        extract_cols_and_assign(content_full, current_indices, K,
-                                0, col_offset, n_rows_func, signs[j + 1])
+
+        if func_idx is not None:
+            # Extract rows for func_idx, cols for current_indices
+            K[:n_rows_func, col_offset:col_offset + n_pts_this_order] = (
+                content_full[np.ix_(func_idx, current_indices)] * signs[j + 1]
+            )
+        else:
+            extract_cols_and_assign(content_full, current_indices, K,
+                                    0, col_offset, n_rows_func, signs[j + 1])
         col_offset += n_pts_this_order
 
     # First Block-Column: Derivative-Function (K_df)
@@ -413,10 +435,14 @@ def rbf_kernel(
         content_full = phi_exp[flat_idx].reshape(base_shape)
         current_indices = index_arrays[i]
         n_pts_this_order = len(current_indices)
-        
-        # Use numba for efficient row extraction and assignment
-        extract_rows_and_assign(content_full, current_indices, K,
-                                row_offset, 0, n_cols_func, signs[0])
+
+        if func_idx is not None:
+            K[row_offset:row_offset + n_pts_this_order, :n_cols_func] = (
+                content_full[np.ix_(current_indices, func_idx)] * signs[0]
+            )
+        else:
+            extract_rows_and_assign(content_full, current_indices, K,
+                                    row_offset, 0, n_cols_func, signs[0])
         row_offset += n_pts_this_order
 
     # Inner Blocks: Derivative-Derivative (K_dd)
@@ -425,11 +451,11 @@ def rbf_kernel(
         col_offset = n_cols_func
         row_indices = index_arrays[i]
         n_pts_row = len(row_indices)
-        
+
         for j in range(n_deriv_types):
             col_indices = index_arrays[j]
             n_pts_col = len(col_indices)
-            
+
             # Multiply the derivative indices to find the correct flat index
             imdir1 = der_ind_order[j]
             imdir2 = der_ind_order[i]
@@ -437,11 +463,11 @@ def rbf_kernel(
                 imdir1[0], imdir1[1], imdir2[0], imdir2[1])
             flat_idx = der_map[new_ord][new_idx]
             content_full = phi_exp[flat_idx].reshape(base_shape)
-            
+
             # Use numba for efficient submatrix extraction and assignment (replaces np.ix_)
             extract_and_assign(content_full, row_indices, col_indices, K,
                                row_offset, col_offset, signs[j + 1])
-            
+
             col_offset += n_pts_col
         row_offset += n_pts_row
 
@@ -452,16 +478,27 @@ def rbf_kernel(
 def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
                            fd_flat_indices, df_flat_indices, dd_flat_indices,
                            idx_flat, idx_offsets, idx_sizes,
-                           signs, n_deriv_types, row_offsets, col_offsets):
+                           signs, n_deriv_types, row_offsets, col_offsets,
+                           func_idx):
     """
     Fused numba kernel that assembles the entire K matrix in a single call.
     Handles ff, fd, df, and dd blocks without Python-level loop overhead.
+
+    func_idx : int64 array
+        Global point indices for the function-value block.  When the length
+        equals n_rows_func (== n_cols_func) **and** the entries are
+        0..n_rows_func-1 in order the behaviour is identical to the old
+        "all points" path, but the indexing is uniform in both cases.
     """
-    # Block (0,0): Function-Function
+    n_func = func_idx.shape[0]
     s0 = signs[0]
-    for r in range(n_rows_func):
-        for c in range(n_cols_func):
-            K[r, c] = phi_exp_3d[0, r, c] * s0
+
+    # Block (0,0): Function-Function — extract sub-block from phi_exp
+    for r in range(n_func):
+        ri = func_idx[r]
+        for c in range(n_func):
+            ci = func_idx[c]
+            K[r, c] = phi_exp_3d[0, ri, ci] * s0
 
     # First Block-Row: Function-Derivative (fd)
     for j in range(n_deriv_types):
@@ -470,10 +507,11 @@ def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
         co = col_offsets[j]
         off_j = idx_offsets[j]
         sz_j = idx_sizes[j]
-        for r in range(n_rows_func):
+        for r in range(n_func):
+            ri = func_idx[r]
             for k in range(sz_j):
                 ci = idx_flat[off_j + k]
-                K[r, co + k] = phi_exp_3d[fi, r, ci] * sj
+                K[r, co + k] = phi_exp_3d[fi, ri, ci] * sj
 
     # First Block-Column: Derivative-Function (df)
     for i in range(n_deriv_types):
@@ -483,8 +521,9 @@ def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
         sz_i = idx_sizes[i]
         for k in range(sz_i):
             ri = idx_flat[off_i + k]
-            for c in range(n_cols_func):
-                K[ro + k, c] = phi_exp_3d[fi, ri, c] * s0
+            for c in range(n_func):
+                ci = func_idx[c]
+                K[ro + k, c] = phi_exp_3d[fi, ri, ci] * s0
 
     # Inner Blocks: Derivative-Derivative (dd)
     for i in range(n_deriv_types):
@@ -508,7 +547,8 @@ def _assemble_kernel_numba(phi_exp_3d, K, n_rows_func, n_cols_func,
 def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
                              fd_flat_indices, df_flat_indices, dd_flat_indices,
                              idx_flat, idx_offsets, idx_sizes,
-                             signs, n_deriv_types, row_offsets, col_offsets):
+                             signs, n_deriv_types, row_offsets, col_offsets,
+                             func_idx):
     """
     Reverse of _assemble_kernel_numba: project W from K-space back into
     phi_exp-space so that vdot(W, assemble(dphi_exp)) == vdot(W_proj, dphi_exp).
@@ -517,20 +557,24 @@ def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
         for r in range(W_proj.shape[1]):
             for c in range(W_proj.shape[2]):
                 W_proj[d, r, c] = 0.0
+    n_func = func_idx.shape[0]
     s0 = signs[0]
-    for r in range(n_rows_func):
-        for c in range(n_cols_func):
-            W_proj[0, r, c] += s0 * W[r, c]
+    for r in range(n_func):
+        ri = func_idx[r]
+        for c in range(n_func):
+            ci = func_idx[c]
+            W_proj[0, ri, ci] += s0 * W[r, c]
     for j in range(n_deriv_types):
         fi = fd_flat_indices[j]
         sj = signs[j + 1]
         co = col_offsets[j]
         off_j = idx_offsets[j]
         sz_j = idx_sizes[j]
-        for r in range(n_rows_func):
+        for r in range(n_func):
+            ri = func_idx[r]
             for k in range(sz_j):
                 ci = idx_flat[off_j + k]
-                W_proj[fi, r, ci] += sj * W[r, co + k]
+                W_proj[fi, ri, ci] += sj * W[r, co + k]
     for i in range(n_deriv_types):
         fi = df_flat_indices[i]
         ro = row_offsets[i]
@@ -538,8 +582,9 @@ def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
         sz_i = idx_sizes[i]
         for k in range(sz_i):
             ri = idx_flat[off_i + k]
-            for c in range(n_cols_func):
-                W_proj[fi, ri, c] += s0 * W[ro + k, c]
+            for c in range(n_func):
+                ci = func_idx[c]
+                W_proj[fi, ri, ci] += s0 * W[ro + k, c]
     for i in range(n_deriv_types):
         ro = row_offsets[i]
         off_i = idx_offsets[i]
@@ -561,25 +606,30 @@ def _project_W_to_phi_space(W, W_proj, n_rows_func, n_cols_func,
 def _project_W_to_phi_space_accum(W, W_proj, n_rows_func, n_cols_func,
                                    fd_flat_indices, df_flat_indices, dd_flat_indices,
                                    idx_flat, idx_offsets, idx_sizes,
-                                   signs, n_deriv_types, row_offsets, col_offsets):
+                                   signs, n_deriv_types, row_offsets, col_offsets,
+                                   func_idx):
     """
     Like _project_W_to_phi_space but accumulates into W_proj without zeroing.
     Caller must zero W_proj before the first call.
     """
+    n_func = func_idx.shape[0]
     s0 = signs[0]
-    for r in range(n_rows_func):
-        for c in range(n_cols_func):
-            W_proj[0, r, c] += s0 * W[r, c]
+    for r in range(n_func):
+        ri = func_idx[r]
+        for c in range(n_func):
+            ci = func_idx[c]
+            W_proj[0, ri, ci] += s0 * W[r, c]
     for j in range(n_deriv_types):
         fi = fd_flat_indices[j]
         sj = signs[j + 1]
         co = col_offsets[j]
         off_j = idx_offsets[j]
         sz_j = idx_sizes[j]
-        for r in range(n_rows_func):
+        for r in range(n_func):
+            ri = func_idx[r]
             for k in range(sz_j):
                 ci = idx_flat[off_j + k]
-                W_proj[fi, r, ci] += sj * W[r, co + k]
+                W_proj[fi, ri, ci] += sj * W[r, co + k]
     for i in range(n_deriv_types):
         fi = df_flat_indices[i]
         ro = row_offsets[i]
@@ -587,8 +637,9 @@ def _project_W_to_phi_space_accum(W, W_proj, n_rows_func, n_cols_func,
         sz_i = idx_sizes[i]
         for k in range(sz_i):
             ri = idx_flat[off_i + k]
-            for c in range(n_cols_func):
-                W_proj[fi, ri, c] += s0 * W[ro + k, c]
+            for c in range(n_func):
+                ci = func_idx[c]
+                W_proj[fi, ri, ci] += s0 * W[ro + k, c]
     for i in range(n_deriv_types):
         ro = row_offsets[i]
         off_i = idx_offsets[i]
@@ -606,10 +657,17 @@ def _project_W_to_phi_space_accum(W, W_proj, n_rows_func, n_cols_func,
                     W_proj[fi, ri, ci] += sj * W[ro + ki, co + kj]
 
 
-def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
+def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index,
+                           function_locations=None):
     """
     Precompute all structural information needed by rbf_kernel so it can be
     reused across repeated calls with different phi_exp values.
+
+    Parameters
+    ----------
+    function_locations : ndarray of int64, optional
+        Global point indices for the function-value (ff) block of this
+        submodel.  When None every point is included (legacy behaviour).
 
     Returns a dict containing flat indices, signs, index arrays, precomputed
     offsets/sizes, and mult_dir results for the dd block.
@@ -657,6 +715,12 @@ def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
     fd_flat_indices = np.array(der_indices_tr, dtype=np.int64)
     df_flat_indices = np.array(der_indices_tr, dtype=np.int64)
 
+    # Store function_locations for per-submodel ff block extraction
+    if function_locations is not None:
+        func_idx = np.asarray(function_locations, dtype=np.int64)
+    else:
+        func_idx = None
+
     return {
         'der_indices_tr': der_indices_tr,
         'signs': signs,
@@ -665,6 +729,7 @@ def precompute_kernel_plan(n_order, n_bases, der_indices, powers, index):
         'n_pts_with_derivs': n_pts_with_derivs,
         'dd_flat_indices': dd_flat_indices,
         'n_deriv_types': n_deriv_types,
+        'function_locations': func_idx,
         # Fused kernel data
         'idx_flat': idx_flat,
         'idx_offsets': idx_offsets,

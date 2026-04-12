@@ -1,7 +1,7 @@
 JetGP Module Examples
 =======================
 
-This section provides **examples** for using JetGP classes, including DEGP, WDEGP, DDEGP, GDDEGP, and WDDEGP.
+This section provides **examples** for using JetGP classes, including DEGP, WDEGP, SDEGP, DDEGP, GDDEGP, and WDDEGP.
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +12,7 @@ This section provides **examples** for using JetGP classes, including DEGP, WDEG
    ddegp_getting_started
    gddegp_getting_started
    wdegp_getting_started
+   sdegp_getting_started
    degp_sparse_getting_started
    ddegp_sparse_getting_started
    gddegp_sparse_getting_started
