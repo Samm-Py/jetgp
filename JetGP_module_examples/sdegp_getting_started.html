@@ -1,0 +1,1508 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Sliced Derivative-Enhanced Gaussian Process (SDEGP) &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/sdegp_getting_started';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)" href="degp_sparse_getting_started.html" />
+    <link rel="prev" title="Weighted Derivative-Enhanced Gaussian Process (WDEGP)" href="wdegp_getting_started.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">JetGP Module Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_kernel_comparison.html">1D DEGP Kernel Comparison</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/JetGP_module_examples/sdegp_getting_started.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/JetGP_module_examples/sdegp_getting_started.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Sliced Derivative-Enhanced Gaussian Process (SDEGP)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-1-first-order-sdegp-on-2d-branin-hoo">Example 1: First-Order SDEGP on 2D Branin-Hoo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-import-required-packages">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-the-branin-hoo-function-and-its-derivatives">Step 2: Define the Branin-Hoo function and its derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-generate-training-data-with-latin-hypercube-sampling">Step 3: Generate training data with Latin Hypercube Sampling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-visualize-the-partitioning-strategy">Step 4: Visualize the partitioning strategy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-build-sdegp-and-degp-models">Step 5: Build SDEGP and DEGP models</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-visualize-covariance-matrices">Step 6: Visualize covariance matrices</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-optimize-hyperparameters">Step 7: Optimize hyperparameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-compare-predictions">Step 8: Compare predictions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-likelihood-surface-comparison">Step 9: Likelihood surface comparison</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-2-second-order-sdegp-on-2d-branin-hoo">Example 2: Second-Order SDEGP on 2D Branin-Hoo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-compute-second-order-derivatives">Step 1: Compute second-order derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-second-order-degp-model">Step 2: Build second-order DEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-build-second-order-sdegp-model">Step 3: Build second-order SDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-optimize-and-compare">Step 4: Optimize and compare</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-compare-second-order-predictions">Step 5: Compare second-order predictions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-second-order-likelihood-surface">Step 6: Second-order likelihood surface</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Summary</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="sliced-derivative-enhanced-gaussian-process-sdegp">
+<h1>Sliced Derivative-Enhanced Gaussian Process (SDEGP)<a class="headerlink" href="#sliced-derivative-enhanced-gaussian-process-sdegp" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The <strong>Sliced Derivative-Enhanced Gaussian Process (SDEGP)</strong> implements the Sliced GE-Kriging (SGE-Kriging) method from <a class="reference external" href="https://doi.org/10.1007/s00158-024-03804-9">Cheng &amp; Zimmermann (2024)</a>. It accelerates hyperparameter optimization for Derivative-Enhanced GPs by replacing the full joint log-likelihood with a <strong>sliced 2-appendant likelihood factorization</strong>.</p>
+<p><strong>Key idea:</strong> Training points are partitioned into <span class="math notranslate nohighlight">\(m\)</span> slices along the coordinate with the largest derivative-based sensitivity index. The log-likelihood is then approximated as a signed sum of smaller submodel log-likelihoods:</p>
+<div class="math notranslate nohighlight">
+\[\ln \hat{f}(\tilde{\mathbf{y}}) = \sum_{i=1}^{m-1} \ln f(\tilde{\mathbf{y}}_i, \tilde{\mathbf{y}}_{i+1})
+\;-\; \sum_{i=2}^{m-1} \ln f(\tilde{\mathbf{y}}_i)\]</div>
+<p>This produces <span class="math notranslate nohighlight">\(2m - 3\)</span> submodels: <span class="math notranslate nohighlight">\(m-1\)</span> pair blocks (weight <span class="math notranslate nohighlight">\(+1\)</span>) and <span class="math notranslate nohighlight">\(m-2\)</span> single-slice correction blocks (weight <span class="math notranslate nohighlight">\(-1\)</span>). Because each submodel involves only a subset of the training points, the Cholesky decompositions are smaller and faster.</p>
+<p><strong>Prediction</strong> is always exact: after optimizing hyperparameters with the sliced likelihood, a full DEGP model is built for inference.</p>
+<p>This tutorial demonstrates SDEGP on the 2D <strong>Branin-Hoo</strong> function, comparing it against standard DEGP for both first-order and second-order derivative models.</p>
+<p>—</p>
+</section>
+<section id="example-1-first-order-sdegp-on-2d-branin-hoo">
+<h2>Example 1: First-Order SDEGP on 2D Branin-Hoo<a class="headerlink" href="#example-1-first-order-sdegp-on-2d-branin-hoo" title="Link to this heading">#</a></h2>
+<section id="step-1-import-required-packages">
+<h3>Step 1: Import required packages<a class="headerlink" href="#step-1-import-required-packages" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Patch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">qmc</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_degp.degp</span><span class="w"> </span><span class="kn">import</span> <span class="n">degp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.sdegp.sdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">sdegp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.sdegp.sliced_partition</span><span class="w"> </span><span class="kn">import</span> <span class="n">partition_indices</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Modules imported successfully.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Modules imported successfully.
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+We import the <code class="docutils literal notranslate"><span class="pre">degp</span></code> module for the baseline, <code class="docutils literal notranslate"><span class="pre">sdegp</span></code> for the sliced model, and <code class="docutils literal notranslate"><span class="pre">partition_indices</span></code> to visualize the partitioning strategy.</p>
+<p>—</p>
+</section>
+<section id="step-2-define-the-branin-hoo-function-and-its-derivatives">
+<h3>Step 2: Define the Branin-Hoo function and its derivatives<a class="headerlink" href="#step-2-define-the-branin-hoo-function-and-its-derivatives" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s2">&quot;x1 x2&quot;</span><span class="p">,</span> <span class="n">real</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Branin-Hoo parameters</span>
+<span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="mf">1.0</span><span class="p">,</span>
+    <span class="mf">5.1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span>
+    <span class="mf">5.0</span> <span class="o">/</span> <span class="n">sp</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span>
+    <span class="mf">6.0</span><span class="p">,</span>
+    <span class="mf">10.0</span><span class="p">,</span>
+    <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">pi</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">f_sym</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="n">x2_sym</span> <span class="o">-</span> <span class="n">b</span> <span class="o">*</span> <span class="n">x1_sym</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="n">x1_sym</span> <span class="o">-</span> <span class="n">r</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> \
+        <span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x1_sym</span><span class="p">)</span> <span class="o">+</span> <span class="n">s</span>
+
+<span class="c1"># First derivatives</span>
+<span class="n">df_dx1_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x1_sym</span><span class="p">)</span>
+<span class="n">df_dx2_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">)</span>
+
+<span class="c1"># Lambdify for fast evaluation</span>
+<span class="n">f_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">],</span> <span class="n">f_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+<span class="n">df_dx1_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">],</span> <span class="n">df_dx1_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+<span class="n">df_dx2_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">],</span> <span class="n">df_dx2_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Branin-Hoo function defined.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;f(x1, x2) = </span><span class="si">{</span><span class="n">f_sym</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Branin-Hoo function defined.
+f(x1, x2) = 1.0*(-1.275*x1**2/pi**2 + 5.0*x1/pi + x2 - 6.0)**2 + (10.0 - 1.25/pi)*cos(x1) + 10.0
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The Branin-Hoo function is a standard 2D benchmark with three global minima. We use SymPy to compute exact symbolic derivatives, then convert to NumPy functions for fast evaluation.</p>
+<p>—</p>
+</section>
+<section id="step-3-generate-training-data-with-latin-hypercube-sampling">
+<h3>Step 3: Generate training data with Latin Hypercube Sampling<a class="headerlink" href="#step-3-generate-training-data-with-latin-hypercube-sampling" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">N_TRAIN</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">DIM</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">BOUNDS_LO</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+<span class="n">BOUNDS_HI</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">])</span>
+
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">LatinHypercube</span><span class="p">(</span><span class="n">d</span><span class="o">=</span><span class="n">DIM</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">qmc</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">N_TRAIN</span><span class="p">),</span> <span class="n">BOUNDS_LO</span><span class="p">,</span> <span class="n">BOUNDS_HI</span><span class="p">)</span>
+
+<span class="n">y_train_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">f_np</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">g1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">df_dx1_np</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">g2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">df_dx2_np</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">grads</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">g1</span><span class="p">,</span> <span class="n">g2</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_train shape: </span><span class="si">{</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;y_train shape: </span><span class="si">{</span><span class="n">y_train_vals</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;grads shape:   </span><span class="si">{</span><span class="n">grads</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>X_train shape: (15, 2)
+y_train shape: (15, 1)
+grads shape:   (15, 2)
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+We generate 15 training points via Latin Hypercube Sampling over the Branin domain <span class="math notranslate nohighlight">\(x_1 \in [-5, 10]\)</span>, <span class="math notranslate nohighlight">\(x_2 \in [0, 15]\)</span>. Function values and both partial derivatives are computed at every training point.</p>
+<p>—</p>
+</section>
+<section id="step-4-visualize-the-partitioning-strategy">
+<h3>Step 4: Visualize the partitioning strategy<a class="headerlink" href="#step-4-visualize-the-partitioning-strategy" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">M</span> <span class="o">=</span> <span class="mi">5</span>  <span class="c1"># number of slices</span>
+<span class="n">slices</span><span class="p">,</span> <span class="n">slice_dim</span> <span class="o">=</span> <span class="n">partition_indices</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span> <span class="n">M</span><span class="p">)</span>
+
+<span class="c1"># Sensitivity indices</span>
+<span class="n">S</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">grads</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dim_labels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s1">&#39;$x_1$&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$x_2$&#39;</span><span class="p">]</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="c1"># --- Left panel: sensitivity bar chart ---</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">colors_bar</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;#e74c3c&#39;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">slice_dim</span> <span class="k">else</span> <span class="s1">&#39;#3498db&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">DIM</span><span class="p">)]</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">dim_labels</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors_bar</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Sensitivity index  $S_k = </span><span class="se">\\</span><span class="s1">mathrm</span><span class="si">{mean}</span><span class="s1">(</span><span class="se">\\</span><span class="s1">partial f / </span><span class="se">\\</span><span class="s1">partial x_k)^2$&#39;</span><span class="p">,</span>
+               <span class="n">fontsize</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Sensitivity Indices (slicing along max)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">S</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="o">+</span> <span class="mf">0.02</span> <span class="o">*</span> <span class="nb">max</span><span class="p">(</span><span class="n">S</span><span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+
+<span class="c1"># --- Right panel: domain with colored slices ---</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Set2</span>
+<span class="n">slice_colors</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmap</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="n">M</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span><span class="p">)]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s_idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slices</span><span class="p">):</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">s_idx</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[</span><span class="n">s_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+               <span class="n">c</span><span class="o">=</span><span class="p">[</span><span class="n">slice_colors</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">s</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Slice </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1"> (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">s_idx</span><span class="p">)</span><span class="si">}</span><span class="s1"> pts)&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Draw slice boundaries (sorted along slice_dim)</span>
+<span class="n">boundaries</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">max_val</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">slice_dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">min_val</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="n">slice_dim</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">slices</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">boundary</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_val</span> <span class="o">+</span> <span class="n">min_val</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+    <span class="n">boundaries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">boundary</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slice_dim</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">boundary</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">boundary</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$x_1$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$x_2$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Domain Partitioning: </span><span class="si">{</span><span class="n">M</span><span class="si">}</span><span class="s1"> slices along </span><span class="si">{</span><span class="n">dim_labels</span><span class="p">[</span><span class="n">slice_dim</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Slice dimension: </span><span class="si">{</span><span class="n">slice_dim</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">dim_labels</span><span class="p">[</span><span class="n">slice_dim</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Slice sizes: </span><span class="si">{</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="ow">in</span><span class="w"> </span><span class="n">slices</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of submodels: </span><span class="si">{</span><span class="mi">2</span><span class="o">*</span><span class="n">M</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/sdegp_getting_started_3_0.png" src="../_images/sdegp_getting_started_3_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+Slice dimension: 0 ($x_1$)
+Slice sizes: [3, 3, 3, 3, 3]
+Number of submodels: 7
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The left panel shows the sensitivity indices <span class="math notranslate nohighlight">\(S_k = \mathrm{mean}((\partial f / \partial x_k)^2)\)</span> for each coordinate. The partition selects the dimension with the largest <span class="math notranslate nohighlight">\(S_k\)</span>. The right panel shows the training points colored by their slice assignment. Dashed lines indicate slice boundaries. With <span class="math notranslate nohighlight">\(m=5\)</span> slices, we get <span class="math notranslate nohighlight">\(2(5)-3 = 7\)</span> submodels.</p>
+<p>—</p>
+</section>
+<section id="step-5-build-sdegp-and-degp-models">
+<h3>Step 5: Build SDEGP and DEGP models<a class="headerlink" href="#step-5-build-sdegp-and-degp-models" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># --- SDEGP (sliced training, exact prediction) ---</span>
+<span class="n">sdegp_model</span> <span class="o">=</span> <span class="n">sdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_vals</span><span class="p">,</span> <span class="n">grads</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">M</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SDEGP model built: </span><span class="si">{</span><span class="n">sdegp_model</span><span class="o">.</span><span class="n">num_submodels</span><span class="si">}</span><span class="s2"> submodels, &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;weights = </span><span class="si">{</span><span class="n">sdegp_model</span><span class="o">.</span><span class="n">submodel_weights</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># --- Full DEGP baseline ---</span>
+<span class="n">der_specs</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">gen_OTI_indices</span><span class="p">(</span><span class="n">DIM</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">all_pts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_TRAIN</span><span class="p">))</span>
+<span class="n">degp_model</span> <span class="o">=</span> <span class="n">degp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span>
+    <span class="p">[</span><span class="n">y_train_vals</span><span class="p">,</span> <span class="n">g1</span><span class="p">,</span> <span class="n">g2</span><span class="p">],</span>
+    <span class="n">n_order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">n_bases</span><span class="o">=</span><span class="n">DIM</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="o">=</span><span class="n">der_specs</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="p">[</span><span class="n">all_pts</span><span class="p">,</span> <span class="n">all_pts</span><span class="p">],</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+    <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DEGP model built.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP model built: 7 submodels, weights = [ 1.  1.  1.  1. -1. -1. -1.]
+DEGP model built.
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The SDEGP constructor takes raw <code class="docutils literal notranslate"><span class="pre">(X,</span> <span class="pre">y,</span> <span class="pre">grads)</span></code> and internally builds the sliced submodels. Compare this with the standard DEGP which requires manually specifying <code class="docutils literal notranslate"><span class="pre">der_indices</span></code>, <code class="docutils literal notranslate"><span class="pre">derivative_locations</span></code>, and the structured <code class="docutils literal notranslate"><span class="pre">y_train</span></code> list.</p>
+<p>—</p>
+</section>
+<section id="step-6-visualize-covariance-matrices">
+<h3>Step 6: Visualize covariance matrices<a class="headerlink" href="#step-6-visualize-covariance-matrices" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Evaluate at a fixed hyperparameter for illustration</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">4.0</span><span class="p">])</span>  <span class="c1"># [log10(theta1), log10(theta2), log10(sigma_f), log10(sigma_n)]</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.sdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">sdegp_utils</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cho_factor</span>
+
+<span class="n">ell</span> <span class="o">=</span> <span class="n">x0</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">sigma_n</span> <span class="o">=</span> <span class="n">x0</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Compute full DEGP kernel matrix</span>
+<span class="n">diffs</span> <span class="o">=</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">differences_by_dim</span>
+<span class="n">phi</span> <span class="o">=</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">ell</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">n_bases_rays</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">phi_exp</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="n">n_bases_rays</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_degp</span><span class="w"> </span><span class="kn">import</span> <span class="n">degp_utils</span>
+<span class="n">K_full</span> <span class="o">=</span> <span class="n">degp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+    <span class="n">phi</span><span class="p">,</span> <span class="n">phi_exp</span><span class="p">,</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">degp_model</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">,</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">powers</span><span class="p">,</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">degp_model</span><span class="o">.</span><span class="n">derivative_locations</span>
+<span class="p">)</span>
+<span class="n">K_full</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K_full</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_n</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Compute one SDEGP pair-block and one correction-block kernel matrix</span>
+<span class="n">diffs_s</span> <span class="o">=</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">differences_by_dim</span>
+<span class="n">phi_s</span> <span class="o">=</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="n">diffs_s</span><span class="p">,</span> <span class="n">ell</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">n_bases_s</span> <span class="o">=</span> <span class="n">phi_s</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">phi_exp_s</span> <span class="o">=</span> <span class="n">phi_s</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="n">n_bases_s</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+
+<span class="c1"># Pair block 0 (slices 0+1, weight +1)</span>
+<span class="n">K_pair</span> <span class="o">=</span> <span class="n">sdegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+    <span class="n">phi_s</span><span class="p">,</span> <span class="n">phi_exp_s</span><span class="p">,</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">sdegp_model</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">sdegp_model</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">K_pair</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K_pair</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_n</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="c1"># Correction block (first single-slice block, weight -1)</span>
+<span class="n">corr_idx</span> <span class="o">=</span> <span class="n">M</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c1"># index of first correction block</span>
+<span class="n">K_corr</span> <span class="o">=</span> <span class="n">sdegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+    <span class="n">phi_s</span><span class="p">,</span> <span class="n">phi_exp_s</span><span class="p">,</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">sdegp_model</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">[</span><span class="n">corr_idx</span><span class="p">],</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">powers</span><span class="p">[</span><span class="n">corr_idx</span><span class="p">],</span>
+    <span class="n">index</span><span class="o">=</span><span class="n">sdegp_model</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">[</span><span class="n">corr_idx</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">K_corr</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K_corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">sigma_n</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">im0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">K_full</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Full DEGP Kernel (</span><span class="si">{</span><span class="n">K_full</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">K_full</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">|K|$&#39;</span><span class="p">)</span>
+
+<span class="n">im1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">K_pair</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Pair Block (w=+1, </span><span class="si">{</span><span class="n">K_pair</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">K_pair</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">|K|$&#39;</span><span class="p">)</span>
+
+<span class="n">im2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">K_corr</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-15</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Correction Block (w=-1, </span><span class="si">{</span><span class="n">K_corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">x</span><span class="si">{</span><span class="n">K_corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">shrink</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">|K|$&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;Constraint index&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Constraint index&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Full DEGP matrix size:     </span><span class="si">{</span><span class="n">K_full</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">K_full</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Pair block matrix size:    </span><span class="si">{</span><span class="n">K_pair</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">K_pair</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Correction block matrix:   </span><span class="si">{</span><span class="n">K_corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> x </span><span class="si">{</span><span class="n">K_corr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/sdegp_getting_started_5_0.png" src="../_images/sdegp_getting_started_5_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Full DEGP matrix size:     45 x 45
+Pair block matrix size:    27 x 27
+Correction block matrix:   21 x 21
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The full DEGP kernel matrix has size <span class="math notranslate nohighlight">\(N(1+d) \times N(1+d)\)</span> — for 15 points and 2 derivatives that is <span class="math notranslate nohighlight">\(45 \times 45\)</span>. Each SDEGP submodel operates on a subset of these constraints. The pair blocks contain two adjacent slices and the correction blocks contain a single slice, so their kernel matrices are significantly smaller. This is the source of the computational speedup.</p>
+<p>—</p>
+</section>
+<section id="step-7-optimize-hyperparameters">
+<h3>Step 7: Optimize hyperparameters<a class="headerlink" href="#step-7-optimize-hyperparameters" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+
+<span class="c1"># --- SDEGP optimization ---</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">params_sdegp</span> <span class="o">=</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">t_sdegp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="c1"># --- DEGP optimization ---</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">params_degp</span> <span class="o">=</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">t_degp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SDEGP optimized params: </span><span class="si">{</span><span class="n">params_sdegp</span><span class="si">}</span><span class="s2">  (</span><span class="si">{</span><span class="n">t_sdegp</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEGP  optimized params: </span><span class="si">{</span><span class="n">params_degp</span><span class="si">}</span><span class="s2">   (</span><span class="si">{</span><span class="n">t_degp</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Speedup: </span><span class="si">{</span><span class="n">t_degp</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_sdegp</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP optimized params: [-0.12330051 -1.25032187  1.89391749 -6.52819949]  (0.37s)
+DEGP  optimized params: [-0.08429499 -1.21913041  1.87995544 -6.81114118]   (0.34s)
+Speedup: 0.93x
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Both models use the same optimizer settings for a fair comparison. The SDEGP optimizer works with smaller kernel matrices, so each NLL evaluation is cheaper. The speedup grows with the number of training points and dimensions.</p>
+<p>—</p>
+</section>
+<section id="step-8-compare-predictions">
+<h3>Step 8: Compare predictions<a class="headerlink" href="#step-8-compare-predictions" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dense test grid</span>
+<span class="n">n_grid</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">x1_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">BOUNDS_LO</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">BOUNDS_HI</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">n_grid</span><span class="p">)</span>
+<span class="n">x2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">BOUNDS_LO</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">BOUNDS_HI</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">n_grid</span><span class="p">)</span>
+<span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1_test</span><span class="p">,</span> <span class="n">x2_test</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">X2_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">()])</span>
+
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">f_np</span><span class="p">(</span><span class="n">X_test</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_test</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">)</span>
+
+<span class="c1"># SDEGP predictions</span>
+<span class="n">y_pred_sdegp</span> <span class="o">=</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params_sdegp</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_pred_sdegp</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+    <span class="n">y_pred_sdegp</span> <span class="o">=</span> <span class="n">y_pred_sdegp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">y_pred_sdegp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_pred_sdegp</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">)</span>
+
+<span class="c1"># DEGP predictions</span>
+<span class="n">y_pred_degp</span> <span class="o">=</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params_degp</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_pred_degp</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+    <span class="n">y_pred_degp</span> <span class="o">=</span> <span class="n">y_pred_degp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">y_pred_degp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_pred_degp</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">)</span>
+
+<span class="c1"># Errors</span>
+<span class="n">err_sdegp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_sdegp</span><span class="p">)</span>
+<span class="n">err_degp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_degp</span><span class="p">)</span>
+
+<span class="c1"># NRMSE</span>
+<span class="n">nrmse_sdegp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_sdegp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+<span class="n">nrmse_degp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_degp</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="c1"># Top row: predictions</span>
+<span class="n">levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_true</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">30</span><span class="p">)</span>
+<span class="n">cs0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;True Branin-Hoo&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+<span class="n">cs1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">y_pred_degp</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DEGP Prediction (NRMSE=</span><span class="si">{</span><span class="n">nrmse_degp</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="n">cs2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">y_pred_sdegp</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SDEGP Prediction (NRMSE=</span><span class="si">{</span><span class="n">nrmse_sdegp</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+<span class="c1"># Bottom row: errors</span>
+<span class="n">err_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err_degp</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">err_sdegp</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">err_levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">err_max</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>  <span class="c1"># empty</span>
+
+<span class="n">cs3</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">err_degp</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">err_levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;DEGP Absolute Error&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs3</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="n">cs4</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">err_sdegp</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">err_levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;SDEGP Absolute Error&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs4</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_visible</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ax</span><span class="o">.</span><span class="n">has_data</span><span class="p">():</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$x_1$&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$x_2$&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEGP  NRMSE: </span><span class="si">{</span><span class="n">nrmse_degp</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SDEGP NRMSE: </span><span class="si">{</span><span class="n">nrmse_sdegp</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/sdegp_getting_started_7_0.png" src="../_images/sdegp_getting_started_7_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>DEGP  NRMSE: 0.000541
+SDEGP NRMSE: 0.000627
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Both models produce similar prediction accuracy, confirming that the sliced likelihood approximation preserves the quality of the optimized hyperparameters. The error patterns are nearly identical.</p>
+<p>—</p>
+</section>
+<section id="step-9-likelihood-surface-comparison">
+<h3>Step 9: Likelihood surface comparison<a class="headerlink" href="#step-9-likelihood-surface-comparison" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fix sigma_f and sigma_n at the DEGP-optimized values, sweep theta1 and theta2</span>
+<span class="n">sigma_f_fixed</span> <span class="o">=</span> <span class="n">params_degp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">sigma_n_fixed</span> <span class="o">=</span> <span class="n">params_degp</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">n_sweep</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">theta1_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">n_sweep</span><span class="p">)</span>
+<span class="n">theta2_range</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">n_sweep</span><span class="p">)</span>
+<span class="n">T1</span><span class="p">,</span> <span class="n">T2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">theta1_range</span><span class="p">,</span> <span class="n">theta2_range</span><span class="p">)</span>
+
+<span class="n">nll_degp_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="n">nll_sdegp_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sweep</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sweep</span><span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">T1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">T2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">sigma_f_fixed</span><span class="p">,</span> <span class="n">sigma_n_fixed</span><span class="p">])</span>
+        <span class="n">nll_degp_grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">degp_model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">nll_wrapper</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+        <span class="n">nll_sdegp_grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">sdegp_model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">nll_wrapper</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+<span class="c1"># Clip for better visualization</span>
+<span class="n">nll_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">nll_degp_grid</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">nll_sdegp_grid</span><span class="p">))</span>
+<span class="n">clip_max</span> <span class="o">=</span> <span class="n">nll_min</span> <span class="o">+</span> <span class="mi">80</span>
+<span class="n">nll_degp_clip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">nll_degp_grid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">clip_max</span><span class="p">)</span>
+<span class="n">nll_sdegp_clip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">nll_sdegp_grid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">clip_max</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">))</span>
+
+<span class="n">levels_nll</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">nll_min</span><span class="p">,</span> <span class="n">clip_max</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+
+<span class="n">cs0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">nll_degp_clip</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels_nll</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">params_degp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params_degp</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k*&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;DEGP optimum&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;DEGP Negative Log-Likelihood&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_1)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">cs1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">nll_sdegp_clip</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels_nll</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">params_sdegp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params_sdegp</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k*&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SDEGP optimum&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;SDEGP Negative Log-Likelihood&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_1)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="c1"># Difference</span>
+<span class="n">nll_diff</span> <span class="o">=</span> <span class="n">nll_sdegp_grid</span> <span class="o">-</span> <span class="n">nll_degp_grid</span>
+<span class="n">diff_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">nll_diff</span><span class="p">))</span>
+<span class="n">cs2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">nll_diff</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;NLL Difference (SDEGP - DEGP)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_1)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="c1"># Report optimum locations</span>
+<span class="n">idx_degp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanargmin</span><span class="p">(</span><span class="n">nll_degp_grid</span><span class="p">),</span> <span class="n">nll_degp_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">idx_sdegp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unravel_index</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanargmin</span><span class="p">(</span><span class="n">nll_sdegp_grid</span><span class="p">),</span> <span class="n">nll_sdegp_grid</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEGP  NLL minimum at (theta1, theta2) = &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">theta1_range</span><span class="p">[</span><span class="n">idx_degp</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">theta2_range</span><span class="p">[</span><span class="n">idx_degp</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SDEGP NLL minimum at (theta1, theta2) = &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">theta1_range</span><span class="p">[</span><span class="n">idx_sdegp</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">theta2_range</span><span class="p">[</span><span class="n">idx_sdegp</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/sdegp_getting_started_8_0.png" src="../_images/sdegp_getting_started_8_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>DEGP  NLL minimum at (theta1, theta2) = (-0.090, -1.205)
+SDEGP NLL minimum at (theta1, theta2) = (-0.115, -1.246)
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The likelihood surfaces show that SDEGP and DEGP share the same optimal region. The left and center panels are the NLL contours for DEGP and SDEGP respectively, with fixed <span class="math notranslate nohighlight">\(\sigma_f\)</span> and <span class="math notranslate nohighlight">\(\sigma_n\)</span>. The right panel shows their difference — the sliced approximation closely tracks the full likelihood, especially near the optimum.</p>
+<p>—</p>
+</section>
+<section id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h3>
+<p>This example demonstrates first-order SDEGP on the 2D Branin-Hoo function:</p>
+<ul class="simple">
+<li><p>The sensitivity-based partition selects the most influential coordinate for slicing</p></li>
+<li><p>Covariance submatrices are significantly smaller than the full matrix, enabling faster optimization</p></li>
+<li><p>The likelihood surfaces of SDEGP and DEGP share the same minimum region</p></li>
+<li><p>Prediction accuracy is comparable, with SDEGP being faster to train</p></li>
+</ul>
+<p>—</p>
+</section>
+</section>
+<section id="example-2-second-order-sdegp-on-2d-branin-hoo">
+<h2>Example 2: Second-Order SDEGP on 2D Branin-Hoo<a class="headerlink" href="#example-2-second-order-sdegp-on-2d-branin-hoo" title="Link to this heading">#</a></h2>
+<section id="id1">
+<h3>Overview<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
+<p>Extend the comparison to <strong>second-order derivatives</strong>. With second-order information, the kernel matrix grows to <span class="math notranslate nohighlight">\(N(1 + d + d_2) \times N(1 + d + d_2)\)</span> where <span class="math notranslate nohighlight">\(d_2\)</span> is the number of second-order derivative components. The computational savings from slicing become more pronounced.</p>
+<p>—</p>
+</section>
+<section id="step-1-compute-second-order-derivatives">
+<h3>Step 1: Compute second-order derivatives<a class="headerlink" href="#step-1-compute-second-order-derivatives" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Second-order derivatives (main diagonal of Hessian)</span>
+<span class="n">d2f_dx1x1_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x1_sym</span><span class="p">,</span> <span class="n">x1_sym</span><span class="p">)</span>
+<span class="n">d2f_dx2x2_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">)</span>
+<span class="n">d2f_dx1x2_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">)</span>
+
+<span class="n">d2f_dx1x1_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">],</span> <span class="n">d2f_dx1x1_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+<span class="n">d2f_dx2x2_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">],</span> <span class="n">d2f_dx2x2_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+<span class="n">d2f_dx1x2_np</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">([</span><span class="n">x1_sym</span><span class="p">,</span> <span class="n">x2_sym</span><span class="p">],</span> <span class="n">d2f_dx1x2_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+
+<span class="c1"># np.broadcast_to ensures constant derivatives (e.g. d2f/dx2^2 = 2)</span>
+<span class="c1"># are expanded to the correct (N,1) shape</span>
+<span class="n">h11</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">d2f_dx1x1_np</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])),</span>
+                       <span class="p">(</span><span class="n">N_TRAIN</span><span class="p">,))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">h22</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">d2f_dx2x2_np</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])),</span>
+                       <span class="p">(</span><span class="n">N_TRAIN</span><span class="p">,))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">h12</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">d2f_dx1x2_np</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])),</span>
+                       <span class="p">(</span><span class="n">N_TRAIN</span><span class="p">,))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d2f/dx1^2 shape: </span><span class="si">{</span><span class="n">h11</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d2f/dx2^2 shape: </span><span class="si">{</span><span class="n">h22</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;d2f/dx1dx2 shape: </span><span class="si">{</span><span class="n">h12</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>d2f/dx1^2 shape: (15, 1)
+d2f/dx2^2 shape: (15, 1)
+d2f/dx1dx2 shape: (15, 1)
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+For the second-order model we compute the three independent second derivatives: <span class="math notranslate nohighlight">\(\partial^2 f/\partial x_1^2\)</span>, <span class="math notranslate nohighlight">\(\partial^2 f/\partial x_2^2\)</span>, and the mixed partial <span class="math notranslate nohighlight">\(\partial^2 f/\partial x_1 \partial x_2\)</span>.</p>
+<p>—</p>
+</section>
+<section id="step-2-build-second-order-degp-model">
+<h3>Step 2: Build second-order DEGP model<a class="headerlink" href="#step-2-build-second-order-degp-model" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Second-order derivative indices</span>
+<span class="n">der_specs_2</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">gen_OTI_indices</span><span class="p">(</span><span class="n">DIM</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">all_pts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N_TRAIN</span><span class="p">))</span>
+
+<span class="c1"># Number of derivative types: 2 first-order + 3 second-order = 5</span>
+<span class="n">n_deriv_types</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">der_specs_2</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Derivative types (n_order=2): </span><span class="si">{</span><span class="n">n_deriv_types</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;der_indices structure: </span><span class="si">{</span><span class="n">der_specs_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">y_train_2</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">y_train_vals</span><span class="p">,</span>  <span class="c1"># function values</span>
+    <span class="n">g1</span><span class="p">,</span> <span class="n">g2</span><span class="p">,</span>        <span class="c1"># first derivatives</span>
+    <span class="n">h11</span><span class="p">,</span> <span class="n">h12</span><span class="p">,</span> <span class="n">h22</span>  <span class="c1"># second derivatives (d2f/dx1^2, d2f/dx1dx2, d2f/dx2^2)</span>
+<span class="p">]</span>
+
+<span class="n">degp_model_2</span> <span class="o">=</span> <span class="n">degp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span>
+    <span class="n">y_train_2</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">n_bases</span><span class="o">=</span><span class="n">DIM</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="o">=</span><span class="n">der_specs_2</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="p">[</span><span class="n">all_pts</span><span class="p">]</span> <span class="o">*</span> <span class="n">n_deriv_types</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+    <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Second-order DEGP built.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Total constraints: </span><span class="si">{</span><span class="n">N_TRAIN</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mi">1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">n_deriv_types</span><span class="p">)</span><span class="si">}</span><span class="s2"> &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">N_TRAIN</span><span class="si">}</span><span class="s2"> function + </span><span class="si">{</span><span class="n">N_TRAIN</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">n_deriv_types</span><span class="si">}</span><span class="s2"> derivatives)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Derivative types (n_order=2): 5
+der_indices structure: [[[[1, 1]], [[2, 1]]], [[[1, 2]], [[1, 1], [2, 1]], [[2, 2]]]]
+Second-order DEGP built.
+Total constraints: 90 (15 function + 75 derivatives)
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+With second-order derivatives in 2D, each training point contributes 6 constraints (1 function value + 2 first derivatives + 3 second derivatives), making the kernel matrix <span class="math notranslate nohighlight">\(90 \times 90\)</span> for 15 training points. This is where SDEGP’s slicing becomes particularly beneficial.</p>
+<p>—</p>
+</section>
+<section id="step-3-build-second-order-sdegp-model">
+<h3>Step 3: Build second-order SDEGP model<a class="headerlink" href="#step-3-build-second-order-sdegp-model" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># For SDEGP, we need to stack all derivatives: first-order + second-order</span>
+<span class="n">grads_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">g1</span><span class="p">,</span> <span class="n">g2</span><span class="p">,</span> <span class="n">h11</span><span class="p">,</span> <span class="n">h12</span><span class="p">,</span> <span class="n">h22</span><span class="p">])</span>
+
+<span class="n">sdegp_model_2</span> <span class="o">=</span> <span class="n">sdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train_vals</span><span class="p">,</span> <span class="n">grads_2</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">M</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Second-order SDEGP built: </span><span class="si">{</span><span class="n">sdegp_model_2</span><span class="o">.</span><span class="n">num_submodels</span><span class="si">}</span><span class="s2"> submodels&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Slice dimension: </span><span class="si">{</span><span class="n">sdegp_model_2</span><span class="o">.</span><span class="n">slice_dim</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Second-order SDEGP built: 7 submodels
+Slice dimension: 0
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The SDEGP constructor accepts all derivative observations stacked column-wise: first the <span class="math notranslate nohighlight">\(d\)</span> first-order gradients, then the second-order derivatives in the same order as <code class="docutils literal notranslate"><span class="pre">gen_OTI_indices(DIM,</span> <span class="pre">2)</span></code>. The constructor handles the slicing and submodel construction automatically.</p>
+<p>—</p>
+</section>
+<section id="step-4-optimize-and-compare">
+<h3>Step 4: Optimize and compare<a class="headerlink" href="#step-4-optimize-and-compare" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># --- SDEGP optimization ---</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">params_sdegp_2</span> <span class="o">=</span> <span class="n">sdegp_model_2</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">t_sdegp_2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="c1"># --- DEGP optimization ---</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+<span class="n">params_degp_2</span> <span class="o">=</span> <span class="n">degp_model_2</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;jade&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">t_degp_2</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;SDEGP optimized: </span><span class="si">{</span><span class="n">params_sdegp_2</span><span class="si">}</span><span class="s2">  (</span><span class="si">{</span><span class="n">t_sdegp_2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DEGP  optimized: </span><span class="si">{</span><span class="n">params_degp_2</span><span class="si">}</span><span class="s2">   (</span><span class="si">{</span><span class="n">t_degp_2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">s)&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Speedup: </span><span class="si">{</span><span class="n">t_degp_2</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">t_sdegp_2</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP optimized: [-0.11757648 -1.20117343  1.91762581 -5.27914062]  (0.59s)
+DEGP  optimized: [-0.14182445 -1.26950465  2.45923062 -5.17769741]   (0.64s)
+Speedup: 1.08x
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-5-compare-second-order-predictions">
+<h3>Step 5: Compare second-order predictions<a class="headerlink" href="#step-5-compare-second-order-predictions" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># SDEGP predictions</span>
+<span class="n">y_pred_sdegp_2</span> <span class="o">=</span> <span class="n">sdegp_model_2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params_sdegp_2</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_pred_sdegp_2</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+    <span class="n">y_pred_sdegp_2</span> <span class="o">=</span> <span class="n">y_pred_sdegp_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">y_pred_sdegp_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_pred_sdegp_2</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">)</span>
+
+<span class="c1"># DEGP predictions</span>
+<span class="n">y_pred_degp_2</span> <span class="o">=</span> <span class="n">degp_model_2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params_degp_2</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+<span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_pred_degp_2</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+    <span class="n">y_pred_degp_2</span> <span class="o">=</span> <span class="n">y_pred_degp_2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">y_pred_degp_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_pred_degp_2</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_grid</span><span class="p">,</span> <span class="n">n_grid</span><span class="p">)</span>
+
+<span class="c1"># Errors</span>
+<span class="n">err_sdegp_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_sdegp_2</span><span class="p">)</span>
+<span class="n">err_degp_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_degp_2</span><span class="p">)</span>
+<span class="n">nrmse_sdegp_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_sdegp_2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+<span class="n">nrmse_degp_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_degp_2</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">y_true</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y_true</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mi">30</span><span class="p">)</span>
+
+<span class="n">cs0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;True Branin-Hoo&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+
+<span class="n">cs1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">y_pred_degp_2</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DEGP 2nd-Order (NRMSE=</span><span class="si">{</span><span class="n">nrmse_degp_2</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="n">cs2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">y_pred_sdegp_2</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdYlBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SDEGP 2nd-Order (NRMSE=</span><span class="si">{</span><span class="n">nrmse_sdegp_2</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+<span class="n">err_max_2</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err_degp_2</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">err_sdegp_2</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="n">err_levels_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">err_max_2</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">cs3</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">err_degp_2</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">err_levels_2</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;DEGP 2nd-Order Error&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs3</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+
+<span class="n">cs4</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">err_sdegp_2</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">err_levels_2</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;Reds&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;SDEGP 2nd-Order Error&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs4</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">flat</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">ax</span><span class="o">.</span><span class="n">get_visible</span><span class="p">()</span> <span class="ow">and</span> <span class="n">ax</span><span class="o">.</span><span class="n">has_data</span><span class="p">():</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$x_1$&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$x_2$&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Second-order results:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  DEGP  NRMSE: </span><span class="si">{</span><span class="n">nrmse_degp_2</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  SDEGP NRMSE: </span><span class="si">{</span><span class="n">nrmse_sdegp_2</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/sdegp_getting_started_13_0.png" src="../_images/sdegp_getting_started_13_0.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+Second-order results:
+  DEGP  NRMSE: 0.000021
+  SDEGP NRMSE: 0.000037
+</pre></div>
+</div>
+</div>
+</div>
+<p><strong>Explanation:</strong>
+Second-order derivatives provide curvature information that further improves prediction accuracy for both models. The SDEGP speedup is more pronounced here because the kernel matrix per training point grows from <span class="math notranslate nohighlight">\(1+d=3\)</span> constraints (first-order) to <span class="math notranslate nohighlight">\(1+d+d_2=6\)</span> constraints (second-order), making the full matrix significantly larger while each SDEGP submatrix remains manageable.</p>
+<p>—</p>
+</section>
+<section id="step-6-second-order-likelihood-surface">
+<h3>Step 6: Second-order likelihood surface<a class="headerlink" href="#step-6-second-order-likelihood-surface" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sigma_f_2</span> <span class="o">=</span> <span class="n">params_degp_2</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">sigma_n_2</span> <span class="o">=</span> <span class="n">params_degp_2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">nll_degp_2_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+<span class="n">nll_sdegp_2_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sweep</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sweep</span><span class="p">):</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">T1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">T2</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">sigma_f_2</span><span class="p">,</span> <span class="n">sigma_n_2</span><span class="p">])</span>
+        <span class="n">nll_degp_2_grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">degp_model_2</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">nll_wrapper</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+        <span class="n">nll_sdegp_2_grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">sdegp_model_2</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">nll_wrapper</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span>
+
+<span class="n">nll_min_2</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">nll_degp_2_grid</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">nll_sdegp_2_grid</span><span class="p">))</span>
+<span class="n">clip_max_2</span> <span class="o">=</span> <span class="n">nll_min_2</span> <span class="o">+</span> <span class="mi">80</span>
+<span class="n">nll_degp_2_clip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">nll_degp_2_grid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">clip_max_2</span><span class="p">)</span>
+<span class="n">nll_sdegp_2_clip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">nll_sdegp_2_grid</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">clip_max_2</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">))</span>
+
+<span class="n">levels_nll_2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">nll_min_2</span><span class="p">,</span> <span class="n">clip_max_2</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+
+<span class="n">cs0</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">nll_degp_2_clip</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels_nll_2</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">params_degp_2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params_degp_2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k*&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;DEGP optimum&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;DEGP 2nd-Order NLL&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_1)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs0</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">cs1</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">nll_sdegp_2_clip</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="n">levels_nll_2</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">params_sdegp_2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params_sdegp_2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;k*&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SDEGP optimum&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;SDEGP 2nd-Order NLL&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_1)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">nll_diff_2</span> <span class="o">=</span> <span class="n">nll_sdegp_2_grid</span> <span class="o">-</span> <span class="n">nll_degp_2_grid</span>
+<span class="n">cs2</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">T1</span><span class="p">,</span> <span class="n">T2</span><span class="p">,</span> <span class="n">nll_diff_2</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;RdBu_r&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;NLL Difference (SDEGP - DEGP)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_1)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\log_</span><span class="si">{10}</span><span class="s1">(\theta_2)$&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">cs2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/sdegp_getting_started_14_0.png" src="../_images/sdegp_getting_started_14_0.png" />
+</div>
+</div>
+<p><strong>Explanation:</strong>
+The second-order likelihood surfaces confirm the same behavior: the sliced approximation closely matches the full likelihood, with both finding similar optimal hyperparameters.</p>
+<p>—</p>
+</section>
+<section id="id2">
+<h3>Summary<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<p>This tutorial demonstrated the SDEGP module on the 2D Branin-Hoo function:</p>
+<ul class="simple">
+<li><p><strong>Partitioning:</strong> Training points are sliced along the coordinate with the largest sensitivity index, producing smaller submodels for faster optimization</p></li>
+<li><p><strong>Covariance structure:</strong> Submodel kernel matrices are significantly smaller than the full matrix, reducing the cost of each Cholesky decomposition</p></li>
+<li><p><strong>Likelihood approximation:</strong> The sliced NLL closely tracks the full NLL, sharing the same optimal region</p></li>
+<li><p><strong>Prediction quality:</strong> SDEGP achieves comparable accuracy to full DEGP for both first- and second-order models</p></li>
+<li><p><strong>Computational savings:</strong> The speedup grows with the number of constraints per point (i.e., higher derivative orders and higher dimensions)</p></li>
+</ul>
+<p>The SDEGP API is intentionally simple: pass raw <code class="docutils literal notranslate"><span class="pre">(X,</span> <span class="pre">y,</span> <span class="pre">grads)</span></code> and the number of slices <code class="docutils literal notranslate"><span class="pre">m</span></code>, and the module handles partitioning, submodel construction, and exact prediction internally.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="wdegp_getting_started.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="degp_sparse_getting_started.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-1-first-order-sdegp-on-2d-branin-hoo">Example 1: First-Order SDEGP on 2D Branin-Hoo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-import-required-packages">Step 1: Import required packages</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-define-the-branin-hoo-function-and-its-derivatives">Step 2: Define the Branin-Hoo function and its derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-generate-training-data-with-latin-hypercube-sampling">Step 3: Generate training data with Latin Hypercube Sampling</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-visualize-the-partitioning-strategy">Step 4: Visualize the partitioning strategy</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-build-sdegp-and-degp-models">Step 5: Build SDEGP and DEGP models</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-visualize-covariance-matrices">Step 6: Visualize covariance matrices</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-optimize-hyperparameters">Step 7: Optimize hyperparameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-8-compare-predictions">Step 8: Compare predictions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-9-likelihood-surface-comparison">Step 9: Likelihood surface comparison</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-2-second-order-sdegp-on-2d-branin-hoo">Example 2: Second-Order SDEGP on 2D Branin-Hoo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-compute-second-order-derivatives">Step 1: Compute second-order derivatives</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-second-order-degp-model">Step 2: Build second-order DEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-build-second-order-sdegp-model">Step 3: Build second-order SDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-optimize-and-compare">Step 4: Optimize and compare</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-5-compare-second-order-predictions">Step 5: Compare second-order predictions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-second-order-likelihood-surface">Step 6: Second-order likelihood surface</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Summary</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

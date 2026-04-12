@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/wdegp_getting_started';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Numerical Examples" href="../numerical_examples/index.html" />
+    <link rel="next" title="Sliced Derivative-Enhanced Gaussian Process (SDEGP)" href="sdegp_getting_started.html" />
     <link rel="prev" title="Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)" href="gddegp_getting_started.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -582,6 +587,30 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-accuracy-metrics">Step 6: Accuracy metrics</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-visualise-predictions">Step 7: Visualise predictions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id48">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-9-weighted-vs-full-prediction-mode-full">Example 9: Weighted vs Full Prediction (<code class="docutils literal notranslate"><span class="pre">mode='full'</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id49">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-imports-and-problem-setup">Step 1: Imports and problem setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-the-wdegp-model">Step 2: Build the WDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-predict-with-both-modes">Step 3: Predict with both modes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-visual-comparison">Step 4: Visual comparison</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id50">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-10-mode-full-with-ddegp-submodels">Example 10: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with DDEGP Submodels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id51">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-setup">Step 1: Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-train-wdegp-and-predict-with-both-modes">Step 2: Train WDEGP and predict with both modes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-visualize">Step 3: Visualize</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-11-mode-full-with-gddegp-submodels">Example 11: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with GDDEGP Submodels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id52">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id53">Step 1: Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id54">Step 2: Train WDEGP and predict with both modes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id55">Step 3: Visualize</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id56">Summary</a></li>
 </ul>
 </li>
 </ul>
@@ -1093,8 +1122,7 @@ The kernel hyperparameters are tuned by maximizing the <strong>log marginal like
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Making predictions for all derivatives that are common among submodels
-Prediction shape with return_deriv=True: (3, 10)
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Prediction shape with return_deriv=True: (3, 10)
   Row 0: function values
   Row 1: first derivatives
   Row 2: second derivatives
@@ -1104,46 +1132,46 @@ Interpolation verification using return_deriv=True:
 ======================================================================
 
 Function value interpolation:
-  Point 0 (x=0.500): Abs Error = 1.67e-16
-  Point 1 (x=0.722): Abs Error = 3.33e-16
-  Point 2 (x=0.944): Abs Error = 9.99e-16
+  Point 0 (x=0.500): Abs Error = 5.55e-17
+  Point 1 (x=0.722): Abs Error = 9.44e-16
+  Point 2 (x=0.944): Abs Error = 1.11e-16
   Point 3 (x=1.167): Abs Error = 2.22e-16
   Point 4 (x=1.389): Abs Error = 1.39e-16
-  Point 5 (x=1.611): Abs Error = 1.67e-16
-  Point 6 (x=1.833): Abs Error = 2.22e-16
+  Point 5 (x=1.611): Abs Error = 3.89e-16
+  Point 6 (x=1.833): Abs Error = 5.55e-16
   Point 7 (x=2.056): Abs Error = 0.00e+00
   Point 8 (x=2.278): Abs Error = 4.44e-16
   Point 9 (x=2.500): Abs Error = 8.88e-16
 
 First derivative interpolation:
-  Point 0 (x=0.500): Pred=128.663706, Analytic=-31.915927, Rel Error=5.03e+00
-  Point 1 (x=0.722): Pred=484.562101, Analytic=-16.130645, Rel Error=3.10e+01
-  Point 2 (x=0.944): Pred=519.554404, Analytic=-2.336758, Rel Error=2.23e+02
-  Point 3 (x=1.167): Pred=354.561483, Analytic=7.068635, Rel Error=4.92e+01
-  Point 4 (x=1.389): Pred=107.905034, Analytic=10.951579, Rel Error=8.85e+00
-  Point 5 (x=1.611): Pred=-111.570095, Analytic=10.008799, Rel Error=1.21e+01
-  Point 6 (x=1.833): Pred=-229.308517, Analytic=6.469975, Rel Error=3.64e+01
-  Point 7 (x=2.056): Pred=-221.649371, Analytic=3.260883, Rel Error=6.90e+01
-  Point 8 (x=2.278): Pred=-114.974318, Analytic=3.000267, Rel Error=3.93e+01
-  Point 9 (x=2.500): Pred=32.026548, Analytic=7.216815, Rel Error=3.44e+00
+  Point 0 (x=0.500): Pred=-31.915927, Analytic=-31.915927, Rel Error=2.23e-16
+  Point 1 (x=0.722): Pred=-16.130645, Analytic=-16.130645, Rel Error=2.20e-16
+  Point 2 (x=0.944): Pred=-2.336758, Analytic=-2.336758, Rel Error=3.80e-16
+  Point 3 (x=1.167): Pred=7.068635, Analytic=7.068635, Rel Error=2.51e-16
+  Point 4 (x=1.389): Pred=10.951579, Analytic=10.951579, Rel Error=0.00e+00
+  Point 5 (x=1.611): Pred=10.008799, Analytic=10.008799, Rel Error=0.00e+00
+  Point 6 (x=1.833): Pred=6.469975, Analytic=6.469975, Rel Error=1.37e-16
+  Point 7 (x=2.056): Pred=3.260883, Analytic=3.260883, Rel Error=0.00e+00
+  Point 8 (x=2.278): Pred=3.000267, Analytic=3.000267, Rel Error=2.96e-16
+  Point 9 (x=2.500): Pred=7.216815, Analytic=7.216815, Rel Error=3.69e-16
 
 Second derivative interpolation:
-  Point 0 (x=0.500): Pred=-31.915927, Analytic=128.663706, Rel Error=1.25e+00
-  Point 1 (x=0.722): Pred=-16.130645, Analytic=484.562101, Rel Error=1.03e+00
-  Point 2 (x=0.944): Pred=-2.336758, Analytic=519.554404, Rel Error=1.00e+00
-  Point 3 (x=1.167): Pred=7.068635, Analytic=354.561483, Rel Error=9.80e-01
-  Point 4 (x=1.389): Pred=10.951579, Analytic=107.905034, Rel Error=8.99e-01
-  Point 5 (x=1.611): Pred=10.008799, Analytic=-111.570095, Rel Error=1.09e+00
-  Point 6 (x=1.833): Pred=6.469975, Analytic=-229.308517, Rel Error=1.03e+00
-  Point 7 (x=2.056): Pred=3.260883, Analytic=-221.649371, Rel Error=1.01e+00
-  Point 8 (x=2.278): Pred=3.000267, Analytic=-114.974318, Rel Error=1.03e+00
-  Point 9 (x=2.500): Pred=7.216815, Analytic=32.026548, Rel Error=7.75e-01
+  Point 0 (x=0.500): Pred=128.663706, Analytic=128.663706, Rel Error=2.21e-16
+  Point 1 (x=0.722): Pred=484.562101, Analytic=484.562101, Rel Error=1.17e-16
+  Point 2 (x=0.944): Pred=519.554404, Analytic=519.554404, Rel Error=0.00e+00
+  Point 3 (x=1.167): Pred=354.561483, Analytic=354.561483, Rel Error=4.81e-16
+  Point 4 (x=1.389): Pred=107.905034, Analytic=107.905034, Rel Error=2.63e-16
+  Point 5 (x=1.611): Pred=-111.570095, Analytic=-111.570095, Rel Error=3.82e-16
+  Point 6 (x=1.833): Pred=-229.308517, Analytic=-229.308517, Rel Error=1.24e-16
+  Point 7 (x=2.056): Pred=-221.649371, Analytic=-221.649371, Rel Error=2.56e-16
+  Point 8 (x=2.278): Pred=-114.974318, Analytic=-114.974318, Rel Error=1.24e-16
+  Point 9 (x=2.500): Pred=32.026548, Analytic=32.026548, Rel Error=1.33e-15
 
 ======================================================================
 Summary:
-  Max function error: 9.99e-16
-  Max 1st deriv error: 5.22e+02
-  Max 2nd deriv error: 5.22e+02
+  Max function error: 9.44e-16
+  Max 1st deriv error: 7.11e-15
+  Max 2nd deriv error: 1.71e-13
 ======================================================================
 </pre></div>
 </div>
@@ -1415,7 +1443,7 @@ Function values are computed at all training points, while derivatives are only 
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
 
-Optimized hyperparameters: [  0.8663892   -0.05256763 -15.29422093]
+Optimized hyperparameters: [  0.86638928  -0.05256754 -15.20766295]
 </pre></div>
 </div>
 </div>
@@ -1505,16 +1533,15 @@ NRMSE: 0.055107
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function value interpolation errors:
 ======================================================================
 Point 0 (x=0.500, no derivs): Abs Error = 5.55e-17
-Point 1 (x=0.722, no derivs): Abs Error = 2.78e-16
-Point 2 (x=0.944, WITH derivs): Abs Error = 3.33e-16
-Point 3 (x=1.167, WITH derivs): Abs Error = 4.44e-16
+Point 1 (x=0.722, no derivs): Abs Error = 3.89e-16
+Point 2 (x=0.944, WITH derivs): Abs Error = 5.55e-16
+Point 3 (x=1.167, WITH derivs): Abs Error = 0.00e+00
 Point 4 (x=1.389, WITH derivs): Abs Error = 8.33e-17
-Point 5 (x=1.611, WITH derivs): Abs Error = 1.67e-16
+Point 5 (x=1.611, WITH derivs): Abs Error = 6.11e-16
 Point 6 (x=1.833, no derivs): Abs Error = 0.00e+00
 Point 7 (x=2.056, no derivs): Abs Error = 0.00e+00
 Point 8 (x=2.278, no derivs): Abs Error = 4.44e-16
 Point 9 (x=2.500, no derivs): Abs Error = 8.88e-16
-Making predictions for all derivatives that are common among submodels
 
 Prediction shape with return_deriv=True: (3, 4)
   Row 0: function values
@@ -1526,16 +1553,16 @@ Derivative verification at sparse points [2, 3, 4, 5] using return_deriv=True:
 ======================================================================
 
 First derivative interpolation (direct from GP):
-  Point 2 (x=0.944): Pred=519.554404, Analytic=-2.336758, Rel Error=2.23e+02
-  Point 3 (x=1.167): Pred=354.561483, Analytic=7.068635, Rel Error=4.92e+01
-  Point 4 (x=1.389): Pred=107.905034, Analytic=10.951579, Rel Error=8.85e+00
-  Point 5 (x=1.611): Pred=-111.570095, Analytic=10.008799, Rel Error=1.21e+01
+  Point 2 (x=0.944): Pred=-2.336758, Analytic=-2.336758, Rel Error=1.90e-16
+  Point 3 (x=1.167): Pred=7.068635, Analytic=7.068635, Rel Error=1.26e-16
+  Point 4 (x=1.389): Pred=10.951579, Analytic=10.951579, Rel Error=0.00e+00
+  Point 5 (x=1.611): Pred=10.008799, Analytic=10.008799, Rel Error=3.55e-16
 
 Second derivative interpolation (direct from GP):
-  Point 2 (x=0.944): Pred=-2.336758, Analytic=519.554404, Rel Error=1.00e+00
-  Point 3 (x=1.167): Pred=7.068635, Analytic=354.561483, Rel Error=9.80e-01
-  Point 4 (x=1.389): Pred=10.951579, Analytic=107.905034, Rel Error=8.99e-01
-  Point 5 (x=1.611): Pred=10.008799, Analytic=-111.570095, Rel Error=1.09e+00
+  Point 2 (x=0.944): Pred=519.554404, Analytic=519.554404, Rel Error=0.00e+00
+  Point 3 (x=1.167): Pred=354.561483, Analytic=354.561483, Rel Error=0.00e+00
+  Point 4 (x=1.389): Pred=107.905034, Analytic=107.905034, Rel Error=2.63e-16
+  Point 5 (x=1.611): Pred=-111.570095, Analytic=-111.570095, Rel Error=1.27e-16
 
 ======================================================================
 Note: Derivative predictions can be obtained at any test point using
@@ -1812,7 +1839,7 @@ We partition the training points into two groups: even indices for Submodel 0, o
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [  0.8271466   -0.02419456 -14.74341361]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [ 0.82714653 -0.02419425 -9.26248706]
 </pre></div>
 </div>
 </div>
@@ -1898,56 +1925,55 @@ We partition the training points into two groups: even indices for Submodel 0, o
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Making predictions for all derivatives that are common among submodels
-======================================================================
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>======================================================================
 Interpolation verification using return_deriv=True:
 ======================================================================
 
 Function value interpolation (all points):
   Point 0 (SM0, x=0.500): Error = 5.55e-17
-  Point 1 (SM1, x=0.722): Error = 5.55e-17
-  Point 2 (SM0, x=0.944): Error = 5.55e-16
-  Point 3 (SM1, x=1.167): Error = 7.22e-16
+  Point 1 (SM1, x=0.722): Error = 2.78e-16
+  Point 2 (SM0, x=0.944): Error = 1.11e-16
+  Point 3 (SM1, x=1.167): Error = 4.44e-16
   Point 4 (SM0, x=1.389): Error = 1.39e-16
-  Point 5 (SM1, x=1.611): Error = 3.89e-16
-  Point 6 (SM0, x=1.833): Error = 1.11e-16
-  Point 7 (SM1, x=2.056): Error = 2.22e-16
+  Point 5 (SM1, x=1.611): Error = 0.00e+00
+  Point 6 (SM0, x=1.833): Error = 3.33e-16
+  Point 7 (SM1, x=2.056): Error = 0.00e+00
   Point 8 (SM0, x=2.278): Error = 4.44e-16
-  Point 9 (SM1, x=2.500): Error = 2.66e-15
+  Point 9 (SM1, x=2.500): Error = 8.88e-16
 
 First derivative interpolation:
   Submodel 0 points (even indices):
-    Point 0: Pred=128.663706, Analytic=-31.915927, Rel Error=5.03e+00
-    Point 2: Pred=519.554404, Analytic=-2.336758, Rel Error=2.23e+02
-    Point 4: Pred=107.905034, Analytic=10.951579, Rel Error=8.85e+00
-    Point 6: Pred=-229.308517, Analytic=6.469975, Rel Error=3.64e+01
-    Point 8: Pred=-114.974318, Analytic=3.000267, Rel Error=3.93e+01
+    Point 0: Pred=-31.915927, Analytic=-31.915927, Rel Error=2.23e-16
+    Point 2: Pred=-2.336758, Analytic=-2.336758, Rel Error=5.70e-16
+    Point 4: Pred=10.951579, Analytic=10.951579, Rel Error=1.62e-16
+    Point 6: Pred=6.469975, Analytic=6.469975, Rel Error=6.86e-16
+    Point 8: Pred=3.000267, Analytic=3.000267, Rel Error=2.96e-16
   Submodel 1 points (odd indices):
-    Point 1: Pred=484.562101, Analytic=-16.130645, Rel Error=3.10e+01
-    Point 3: Pred=354.561483, Analytic=7.068635, Rel Error=4.92e+01
-    Point 5: Pred=-111.570095, Analytic=10.008799, Rel Error=1.21e+01
-    Point 7: Pred=-221.649371, Analytic=3.260883, Rel Error=6.90e+01
-    Point 9: Pred=32.026548, Analytic=7.216815, Rel Error=3.44e+00
+    Point 1: Pred=-16.130645, Analytic=-16.130645, Rel Error=6.61e-16
+    Point 3: Pred=7.068635, Analytic=7.068635, Rel Error=2.51e-16
+    Point 5: Pred=10.008799, Analytic=10.008799, Rel Error=1.77e-16
+    Point 7: Pred=3.260883, Analytic=3.260883, Rel Error=1.36e-16
+    Point 9: Pred=7.216815, Analytic=7.216815, Rel Error=3.69e-16
 
 Second derivative interpolation:
   Submodel 0 points (even indices):
-    Point 0: Pred=-31.915927, Analytic=128.663706, Rel Error=1.25e+00
-    Point 2: Pred=-2.336758, Analytic=519.554404, Rel Error=1.00e+00
-    Point 4: Pred=10.951579, Analytic=107.905034, Rel Error=8.99e-01
-    Point 6: Pred=6.469975, Analytic=-229.308517, Rel Error=1.03e+00
-    Point 8: Pred=3.000267, Analytic=-114.974318, Rel Error=1.03e+00
+    Point 0: Pred=128.663706, Analytic=128.663706, Rel Error=4.42e-16
+    Point 2: Pred=519.554404, Analytic=519.554404, Rel Error=0.00e+00
+    Point 4: Pred=107.905034, Analytic=107.905034, Rel Error=3.95e-16
+    Point 6: Pred=-229.308517, Analytic=-229.308517, Rel Error=3.72e-16
+    Point 8: Pred=-114.974318, Analytic=-114.974318, Rel Error=0.00e+00
   Submodel 1 points (odd indices):
-    Point 1: Pred=-16.130645, Analytic=484.562101, Rel Error=1.03e+00
-    Point 3: Pred=7.068635, Analytic=354.561483, Rel Error=9.80e-01
-    Point 5: Pred=10.008799, Analytic=-111.570095, Rel Error=1.09e+00
-    Point 7: Pred=3.260883, Analytic=-221.649371, Rel Error=1.01e+00
-    Point 9: Pred=7.216815, Analytic=32.026548, Rel Error=7.75e-01
+    Point 1: Pred=484.562101, Analytic=484.562101, Rel Error=1.17e-16
+    Point 3: Pred=354.561483, Analytic=354.561483, Rel Error=1.60e-16
+    Point 5: Pred=-111.570095, Analytic=-111.570095, Rel Error=1.27e-16
+    Point 7: Pred=-221.649371, Analytic=-221.649371, Rel Error=3.85e-16
+    Point 9: Pred=32.026548, Analytic=32.026548, Rel Error=3.55e-15
 
 ======================================================================
 Summary:
-  Max function error: 2.66e-15
-  Max 1st deriv error: 5.22e+02
-  Max 2nd deriv error: 5.22e+02
+  Max function error: 8.88e-16
+  Max 1st deriv error: 1.07e-14
+  Max 2nd deriv error: 1.14e-13
 ======================================================================
 </pre></div>
 </div>
@@ -2244,7 +2270,7 @@ This example shows that within a single submodel, <strong>different derivative t
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [ 7.98000714e-01 -3.45122751e-03 -4.77573017e+00]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [ 7.98000838e-01 -3.45121994e-03 -8.85918623e+00]
 </pre></div>
 </div>
 </div>
@@ -2305,38 +2331,37 @@ This example shows that within a single submodel, <strong>different derivative t
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.043772
-Making predictions for all derivatives that are common among submodels
 
 ======================================================================
 Verification using return_deriv=True:
 ======================================================================
-Max function error: 1.71e-09
-Max 1st deriv error: 5.22e+02
-Max 2nd deriv error: 5.22e+02
+Max function error: 8.88e-16
+Max 1st deriv error: 5.33e-15
+Max 2nd deriv error: 4.65e+02
 
 Submodel 0 derivative verification:
   1st order at [0, 2, 4, 6, 8]:
-    Point 0: Rel Error = 1.15e+00
-    Point 2: Rel Error = 2.23e+02
-    Point 4: Rel Error = 8.85e+00
-    Point 6: Rel Error = 3.64e+01
-    Point 8: Rel Error = 7.80e+00
+    Point 0: Rel Error = 1.11e-16
+    Point 2: Rel Error = 5.70e-16
+    Point 4: Rel Error = 4.87e-16
+    Point 6: Rel Error = 2.75e-16
+    Point 8: Rel Error = 2.96e-16
   2nd order at [2, 4, 6]:
-    Point 2: Rel Error = 1.00e+00
-    Point 4: Rel Error = 8.99e-01
-    Point 6: Rel Error = 1.03e+00
+    Point 2: Rel Error = 2.19e-16
+    Point 4: Rel Error = 6.58e-16
+    Point 6: Rel Error = 3.72e-16
 
 Submodel 1 derivative verification:
   1st order at [1, 3, 5, 7, 9]:
-    Point 1: Rel Error = 2.22e+00
-    Point 3: Rel Error = 4.92e+01
-    Point 5: Rel Error = 7.71e-01
-    Point 7: Rel Error = 6.90e+01
-    Point 9: Rel Error = 3.44e+00
+    Point 1: Rel Error = 2.20e-16
+    Point 3: Rel Error = 6.28e-16
+    Point 5: Rel Error = 1.77e-16
+    Point 7: Rel Error = 1.36e-16
+    Point 9: Rel Error = 1.23e-16
   2nd order at [3, 7, 9]:
-    Point 3: Rel Error = 9.80e-01
-    Point 7: Rel Error = 1.01e+00
-    Point 9: Rel Error = 7.75e-01
+    Point 3: Rel Error = 4.81e-16
+    Point 7: Rel Error = 3.85e-16
+    Point 9: Rel Error = 3.99e-15
 </pre></div>
 </div>
 </div>
@@ -2538,18 +2563,18 @@ Derivative verification using derivs_to_predict
 ======================================================================
 
 Submodel 0 points — 1st derivative (predicted vs analytic):
-  Point 0: Predicted=-31.915927, Analytic=-31.915927, Rel Error=2.23e-16
-  Point 2: Predicted=-2.336758, Analytic=-2.336758, Rel Error=3.80e-16
-  Point 4: Predicted=10.951579, Analytic=10.951579, Rel Error=4.87e-16
+  Point 0: Predicted=-31.915927, Analytic=-31.915927, Rel Error=0.00e+00
+  Point 2: Predicted=-2.336758, Analytic=-2.336758, Rel Error=5.70e-16
+  Point 4: Predicted=10.951579, Analytic=10.951579, Rel Error=1.62e-16
   Point 6: Predicted=6.469975, Analytic=6.469975, Rel Error=1.37e-16
-  Point 8: Predicted=3.000267, Analytic=3.000267, Rel Error=1.18e-15
+  Point 8: Predicted=3.000267, Analytic=3.000267, Rel Error=2.96e-16
 
 Submodel 1 points — 2nd derivative (predicted vs analytic):
   Point 1: Predicted=484.562101, Analytic=484.562101, Rel Error=1.17e-16
   Point 3: Predicted=354.561483, Analytic=354.561483, Rel Error=1.60e-16
-  Point 5: Predicted=-111.570095, Analytic=-111.570095, Rel Error=2.55e-16
-  Point 7: Predicted=-221.649371, Analytic=-221.649371, Rel Error=0.00e+00
-  Point 9: Predicted=32.026548, Analytic=32.026548, Rel Error=3.99e-15
+  Point 5: Predicted=-111.570095, Analytic=-111.570095, Rel Error=1.27e-16
+  Point 7: Predicted=-221.649371, Analytic=-221.649371, Rel Error=1.28e-16
+  Point 9: Predicted=32.026548, Analytic=32.026548, Rel Error=5.99e-15
 </pre></div>
 </div>
 </div>
@@ -2887,7 +2912,7 @@ many physical problems. The derivative locations must be <strong>disjoint</stron
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-2.76347178e-03  4.53644966e-02  4.15252405e-01 -1.39805287e+01]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-2.76359828e-03  4.53643457e-02  4.15252909e-01 -1.18605819e+01]
 </pre></div>
 </div>
 </div>
@@ -2919,7 +2944,7 @@ many physical problems. The derivative locations must be <strong>disjoint</stron
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.001031
-Max absolute error: 1.222064e-02
+Max absolute error: 1.222065e-02
 </pre></div>
 </div>
 </div>
@@ -2980,8 +3005,7 @@ Max absolute error: 1.222064e-02
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>======================================================================
 Function value interpolation verification:
 ======================================================================
-Max function interpolation error: 2.62e-13
-Making predictions for all derivatives that are common among submodels
+Max function interpolation error: 3.09e-13
 
 Prediction shape with return_deriv=True: (3, 25)
   Row 0: function values
@@ -2993,27 +3017,27 @@ Directional derivative interpolation verification:
 ======================================================================
 
 Ray 0 (+45°) derivatives:
-  Max error: 2.12e-13
+  Max error: 2.94e-13
 
 Ray 1 (-45°) derivatives:
-  Max error: 2.75e-13
+  Max error: 2.66e-13
 
 Detailed verification (first 5 points):
   Point 0 (SM2 (outer)):
-    Ray 0: Pred=1.514335, Analytic=1.514335, Error=3.82e-14
-    Ray 1: Pred=2.221441, Analytic=2.221441, Error=2.31e-14
+    Ray 0: Pred=1.514335, Analytic=1.514335, Error=1.31e-14
+    Ray 1: Pred=2.221441, Analytic=2.221441, Error=1.82e-14
   Point 1 (SM2 (outer)):
-    Ray 0: Pred=-0.530330, Analytic=-0.530330, Error=7.33e-15
-    Ray 1: Pred=-0.176777, Analytic=-0.176777, Error=9.60e-15
+    Ray 0: Pred=-0.530330, Analytic=-0.530330, Error=1.07e-14
+    Ray 1: Pred=-0.176777, Analytic=-0.176777, Error=5.30e-15
   Point 2 (SM1 (inner)):
-    Ray 0: Pred=-2.574995, Analytic=-2.574995, Error=2.12e-13
-    Ray 1: Pred=-2.574995, Analytic=-2.574995, Error=4.44e-15
+    Ray 0: Pred=-2.574995, Analytic=-2.574995, Error=5.64e-14
+    Ray 1: Pred=-2.574995, Analytic=-2.574995, Error=1.83e-13
   Point 3 (SM2 (outer)):
-    Ray 0: Pred=-0.176777, Analytic=-0.176777, Error=9.58e-15
-    Ray 1: Pred=-0.530330, Analytic=-0.530330, Error=2.62e-14
+    Ray 0: Pred=-0.176777, Analytic=-0.176777, Error=1.52e-14
+    Ray 1: Pred=-0.530330, Analytic=-0.530330, Error=9.66e-15
   Point 4 (SM2 (outer)):
-    Ray 0: Pred=2.221441, Analytic=2.221441, Error=1.38e-14
-    Ray 1: Pred=1.514335, Analytic=1.514335, Error=3.53e-14
+    Ray 0: Pred=2.221441, Analytic=2.221441, Error=3.11e-15
+    Ray 1: Pred=1.514335, Analytic=1.514335, Error=7.55e-15
 </pre></div>
 </div>
 </div>
@@ -3456,7 +3480,7 @@ Submodel 2 indices (f &gt; 11.35, away from valley): [0, 1, 4, 5, 9, 10, 14, 15,
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimized hyperparameters: [-0.46078435 -1.49573843  2.5344893  -5.10462823]
+Optimized hyperparameters: [-0.52595651 -1.58229843  2.69138599 -4.98857571]
 </pre></div>
 </div>
 </div>
@@ -3487,8 +3511,8 @@ Optimized hyperparameters: [-0.46078435 -1.49573843  2.5344893  -5.10462823]
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.000800
-Max absolute error: 4.104346e-01
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.000011
+Max absolute error: 5.385228e-03
 </pre></div>
 </div>
 </div>
@@ -3530,7 +3554,8 @@ Max absolute error: 4.104346e-01
     <span class="n">test_points</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
     <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">return_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="n">rays_predict</span><span class="o">=</span><span class="n">rays_predict</span>
+    <span class="n">rays_predict</span><span class="o">=</span><span class="n">rays_predict</span><span class="p">,</span>
+    <span class="n">derivs_to_predict</span> <span class="o">=</span> <span class="p">[[[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]]]</span>
 <span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Prediction shape: </span><span class="si">{</span><span class="n">y_pred_derivs</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -3571,7 +3596,6 @@ Test points: [[ 0.   0.5]
 Predicting along coordinate axes (NEW directions, not used in training):
   rays_predict[0] (x-dir): shape (2, 3)
   rays_predict[1] (y-dir): shape (2, 3)
-Making predictions for all derivatives that are common among submodels
 
 Prediction shape: (3, 3)
   Row 0: function values
@@ -3581,14 +3605,14 @@ Prediction shape: (3, 3)
 Comparison with analytic partial derivatives:
 ----------------------------------------------------------------------
 Point (0.00, 0.50):
-  ∂f/∂x: Predicted=-1.9992, Analytic=-2.0000
-  ∂f/∂y: Predicted=10.0000, Analytic=10.0000
+  ∂f/∂x: Predicted=-1.9993, Analytic=-2.0000
+  ∂f/∂y: Predicted=10.0001, Analytic=10.0000
 Point (0.50, 1.00):
-  ∂f/∂x: Predicted=-15.9998, Analytic=-16.0000
-  ∂f/∂y: Predicted=15.0011, Analytic=15.0000
+  ∂f/∂x: Predicted=-16.0002, Analytic=-16.0000
+  ∂f/∂y: Predicted=14.9996, Analytic=15.0000
 Point (-0.50, 0.50):
-  ∂f/∂x: Predicted=2.0002, Analytic=2.0000
-  ∂f/∂y: Predicted=4.9999, Analytic=5.0000
+  ∂f/∂x: Predicted=1.9995, Analytic=2.0000
+  ∂f/∂y: Predicted=5.0004, Analytic=5.0000
 
 ======================================================================
 Note: Training used gradient-aligned directions, but we predicted
@@ -3839,7 +3863,7 @@ derivative_locations : submodel 0 → [[0, 2, 6, 8]]
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-0.90791917 -0.82445123  1.0177508  -7.96572785]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [ -0.90796847  -0.82469839   1.01804935 -11.13336542]
 </pre></div>
 </div>
 </div>
@@ -3880,8 +3904,8 @@ derivative_locations : submodel 0 → [[0, 2, 6, 8]]
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function RMSE               : 3.8251e-04
-df/dx2 RMSE (non-common)    : 4.0300e-03
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function RMSE               : 3.8209e-04
+df/dx2 RMSE (non-common)    : 4.0255e-03
 df/dx2 correlation          : 1.0000
 </pre></div>
 </div>
@@ -4088,7 +4112,7 @@ training covariance for this submodel.</p>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimised hyperparameters: [-1.39083569e-02  4.47278616e-02  4.47652758e-01 -1.51974132e+01]
+Optimised hyperparameters: [-1.39070917e-02  4.47276858e-02  4.47650956e-01 -1.58119282e+01]
 </pre></div>
 </div>
 </div>
@@ -4235,6 +4259,526 @@ df/dx2   RMSE : 3.1993e-02   Pearson r: 0.998
 </ul>
 </section>
 </section>
+<section id="example-9-weighted-vs-full-prediction-mode-full">
+<h2>Example 9: Weighted vs Full Prediction (<code class="docutils literal notranslate"><span class="pre">mode='full'</span></code>)<a class="headerlink" href="#example-9-weighted-vs-full-prediction-mode-full" title="Link to this heading">#</a></h2>
+<section id="id49">
+<h3>Overview<a class="headerlink" href="#id49" title="Link to this heading">#</a></h3>
+<p>WDEGP trains by decomposing the joint likelihood into a set of submodels, each built on a submatrix of the full covariance kernel. At inference time the default <code class="docutils literal notranslate"><span class="pre">predict</span></code> forms a weighted sum of the submodels’ posteriors. This approximation is what gives WDEGP its scaling advantage during training.</p>
+<p>At inference time, however, the full kernel is often affordable even when it was not during optimization — prediction is a one-shot cost, whereas training calls the likelihood many times. JetGP exposes a <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> option on <code class="docutils literal notranslate"><span class="pre">wdegp.predict</span></code> that, instead of combining submodel predictions, builds a single dense GP over the <strong>union</strong> of all submodel observations and evaluates it using the WDEGP-optimized hyperparameters.</p>
+<p>When it is safe to use this mode:</p>
+<ul class="simple">
+<li><p>Every submodel must share the same <code class="docutils literal notranslate"><span class="pre">y_train[0]</span></code> (function values) — this guarantees that the full model’s y-normalization matches the one WDEGP used during optimization, so the hyperparameters transfer without rescaling.</p></li>
+<li><p>Every submodel must share the same <code class="docutils literal notranslate"><span class="pre">der_indices</span></code> — so observations can be unioned per derivative component unambiguously.</p></li>
+</ul>
+<p>Under these conditions the hyperparameter vector transfers 1:1 and the full prediction is essentially “what you would have gotten if you had fit a full derivative-enhanced GP with the WDEGP <code class="docutils literal notranslate"><span class="pre">ell</span></code>.”</p>
+<p>In this example we reuse the 1D setup from Example 1 and compare the two prediction modes side-by-side on the same trained model.</p>
+</section>
+<section id="step-1-imports-and-problem-setup">
+<h3>Step 1: Imports and problem setup<a class="headerlink" href="#step-1-imports-and-problem-setup" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sympy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">utils</span>
+
+<span class="c1"># Same oscillatory-with-trend benchmark as Example 1</span>
+<span class="n">x_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+<span class="n">f_sym</span>  <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="n">sp</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">x_sym</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x_sym</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">x_sym</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">4</span>
+<span class="n">f1_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x_sym</span><span class="p">)</span>
+<span class="n">f2_sym</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">f_sym</span><span class="p">,</span> <span class="n">x_sym</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">f_fun</span>  <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">f_sym</span><span class="p">,</span>  <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+<span class="n">f1_fun</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">f1_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+<span class="n">f2_fun</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lambdify</span><span class="p">(</span><span class="n">x_sym</span><span class="p">,</span> <span class="n">f2_sym</span><span class="p">,</span> <span class="s2">&quot;numpy&quot;</span><span class="p">)</span>
+
+<span class="n">n_bases</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">n_order</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">lb_x</span><span class="p">,</span> <span class="n">ub_x</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.5</span>
+<span class="n">num_points</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lb_x</span><span class="p">,</span> <span class="n">ub_x</span><span class="p">,</span> <span class="n">num_points</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y_function_values</span> <span class="o">=</span> <span class="n">f_fun</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-2-build-the-wdegp-model">
+<h3>Step 2: Build the WDEGP model<a class="headerlink" href="#step-2-build-the-wdegp-model" title="Link to this heading">#</a></h3>
+<p>Each submodel carries <strong>all</strong> function values plus its own 1st and 2nd derivatives. This is exactly the layout required by <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code>: every submodel’s <code class="docutils literal notranslate"><span class="pre">y_train[0]</span></code> is identical, and every submodel shares the same <code class="docutils literal notranslate"><span class="pre">der_indices</span></code>.</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">submodel_indices</span> <span class="o">=</span> <span class="p">[[[</span><span class="n">i</span><span class="p">],</span> <span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">)]</span>
+<span class="n">derivative_specs</span> <span class="o">=</span> <span class="p">[</span><span class="n">utils</span><span class="o">.</span><span class="n">gen_OTI_indices</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">)]</span>
+
+<span class="n">submodel_data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+    <span class="n">xval</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">d1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">f1_fun</span><span class="p">(</span><span class="n">xval</span><span class="p">)]])</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">f2_fun</span><span class="p">(</span><span class="n">xval</span><span class="p">)]])</span>
+    <span class="n">submodel_data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">y_function_values</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">])</span>
+
+<span class="n">gp_model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span>
+    <span class="n">submodel_data</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="p">,</span>
+    <span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">derivative_specs</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="n">submodel_indices</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+    <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;pso&#39;</span><span class="p">,</span>
+    <span class="n">pop_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">n_generations</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">local_opt_every</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Optimized hyperparameters:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
+Optimized hyperparameters: [ 7.95171037e-01 -8.13824973e-03 -1.59311933e+01]
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-3-predict-with-both-modes">
+<h3>Step 3: Predict with both modes<a class="headerlink" href="#step-3-predict-with-both-modes" title="Link to this heading">#</a></h3>
+<p>Once the hyperparameters are fixed, both <code class="docutils literal notranslate"><span class="pre">mode='weighted'</span></code> (default) and <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> can be called on the same model. The full model is built lazily the first time <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> is called and cached for subsequent calls.</p>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lb_x</span><span class="p">,</span> <span class="n">ub_x</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">f_fun</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+<span class="c1"># Default: weighted sum of submodels (WDEGP inference)</span>
+<span class="n">y_pred_w</span><span class="p">,</span> <span class="n">var_w</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;weighted&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># New: dense full-kernel prediction with the same hyperparameters</span>
+<span class="n">y_pred_f</span><span class="p">,</span> <span class="n">var_f</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+    <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span>
+<span class="p">)</span>
+
+<span class="n">nrmse_w</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">nrmse</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred_w</span><span class="p">)</span>
+<span class="n">nrmse_f</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">nrmse</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred_f</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NRMSE, mode=&#39;weighted&#39;: </span><span class="si">{</span><span class="n">nrmse_w</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NRMSE, mode=&#39;full&#39;    : </span><span class="si">{</span><span class="n">nrmse_f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ratio (full / weighted): </span><span class="si">{</span><span class="n">nrmse_f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">nrmse_w</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE, mode=&#39;weighted&#39;: 1.070463e-02
+NRMSE, mode=&#39;full&#39;    : 7.479506e-03
+Ratio (full / weighted): 0.6987
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-4-visual-comparison">
+<h3>Step 4: Visual comparison<a class="headerlink" href="#step-4-visual-comparison" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">13</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">nrmse</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+    <span class="n">axes</span><span class="p">,</span>
+    <span class="p">[(</span><span class="s2">&quot;mode=&#39;weighted&#39;&quot;</span><span class="p">,</span> <span class="n">y_pred_w</span><span class="p">,</span> <span class="n">var_w</span><span class="p">,</span> <span class="n">nrmse_w</span><span class="p">),</span>
+     <span class="p">(</span><span class="s2">&quot;mode=&#39;full&#39;&quot;</span><span class="p">,</span>     <span class="n">y_pred_f</span><span class="p">,</span> <span class="n">var_f</span><span class="p">,</span> <span class="n">nrmse_f</span><span class="p">)],</span>
+<span class="p">):</span>
+    <span class="n">y_flat</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="n">std</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">var</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="s1">&#39;b-&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;True&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_flat</span><span class="p">,</span> <span class="s1">&#39;r--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;GP mean&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span>
+                    <span class="n">y_flat</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std</span><span class="p">,</span>
+                    <span class="n">y_flat</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">std</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;95% CI&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_function_values</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Training pts&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="se">\n</span><span class="s2">NRMSE = </span><span class="si">{</span><span class="n">nrmse</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;f(x)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;best&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/wdegp_getting_started_88_0.png" src="../_images/wdegp_getting_started_88_0.png" />
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="id50">
+<h3>Summary<a class="headerlink" href="#id50" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><strong>``mode=’weighted’``</strong> (default) — standard WDEGP inference: each submodel posterior is computed on its own submatrix of the covariance and the test-point predictions are combined by softmax-style weights.</p></li>
+<li><p><strong>``mode=’full’``</strong> — builds a dense GP on the union of all submodel observations (using stored, un-normalized training data) and calls its <code class="docutils literal notranslate"><span class="pre">predict</span></code> with the WDEGP hyperparameters. The full model is constructed once and cached on the WDEGP instance.</p></li>
+</ul>
+<p>When to prefer <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code>:</p>
+<ul class="simple">
+<li><p>Inference accuracy matters more than inference cost, and the full <span class="math notranslate nohighlight">\(n(1+d) \times n(1+d)\)</span> Cholesky fits comfortably in memory.</p></li>
+<li><p>You are evaluating a one-shot batch of test points rather than running an acquisition loop that re-calls <code class="docutils literal notranslate"><span class="pre">predict</span></code> many times.</p></li>
+</ul>
+<p>When to stick with <code class="docutils literal notranslate"><span class="pre">mode='weighted'</span></code>:</p>
+<ul class="simple">
+<li><p>Inference is called inside a hot loop (e.g. Bayesian optimization acquisition maximization), where the per-call savings from submatrix Cholesky factorizations add up.</p></li>
+<li><p>Your submodels do <strong>not</strong> share identical function-value data or <code class="docutils literal notranslate"><span class="pre">der_indices</span></code> — in that case <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> raises an error because hyperparameter transfer is no longer safe.</p></li>
+</ul>
+<p>The same <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> path is supported for WDEGP with DEGP, DDEGP, and GDDEGP submodel types. For GDDEGP, <code class="docutils literal notranslate"><span class="pre">rays_predict</span></code> is forwarded to the underlying full model when <code class="docutils literal notranslate"><span class="pre">return_deriv=True</span></code>. The next two examples demonstrate it for the directional variants.</p>
+</section>
+</section>
+<section id="example-10-mode-full-with-ddegp-submodels">
+<h2>Example 10: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with DDEGP Submodels<a class="headerlink" href="#example-10-mode-full-with-ddegp-submodels" title="Link to this heading">#</a></h2>
+<section id="id51">
+<h3>Overview<a class="headerlink" href="#id51" title="Link to this heading">#</a></h3>
+<p>This example reuses the 2D DDEGP setup from Example 6 — two submodels partitioned by distance from the origin, sharing a common pair of global rays at ±45° — and compares <code class="docutils literal notranslate"><span class="pre">mode='weighted'</span></code> and <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> on the same trained model. Both submodels share the same <code class="docutils literal notranslate"><span class="pre">y_train[0]</span></code> and the same <code class="docutils literal notranslate"><span class="pre">der_indices</span></code>, which is all <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> requires. Internally, the full model is built using the un-normalized global rays (recovered by multiplying the stored normalized rays by <code class="docutils literal notranslate"><span class="pre">sigmas_x</span></code>).</p>
+</section>
+<section id="step-1-setup">
+<h3>Step 1: Setup<a class="headerlink" href="#step-1-setup" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">f_2d</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">grad_f_2d</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">dfdx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">dfdy</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">dfdx</span><span class="p">,</span> <span class="n">dfdy</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">directional_deriv</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">ray</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">grad_f_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">@</span> <span class="n">ray</span>
+
+<span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+<span class="n">num_points</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Global ±45° rays, shared by all submodels</span>
+<span class="n">rays</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)],</span>
+    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span><span class="p">)],</span>
+<span class="p">])</span>
+
+<span class="c1"># Partition points by distance from origin</span>
+<span class="n">distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">sm1_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">)</span> <span class="k">if</span> <span class="n">distances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">distances</span><span class="p">)]</span>
+<span class="n">sm2_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">)</span> <span class="k">if</span> <span class="n">distances</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span>  <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">distances</span><span class="p">)]</span>
+
+<span class="n">y_function_values</span> <span class="o">=</span> <span class="n">f_2d</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">ray_0</span><span class="p">,</span> <span class="n">ray_1</span> <span class="o">=</span> <span class="n">rays</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">rays</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">y_function_values</span><span class="p">,</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">],</span> <span class="n">ray_0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">],</span> <span class="n">ray_1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+    <span class="p">[</span><span class="n">y_function_values</span><span class="p">,</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">],</span> <span class="n">ray_0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">],</span> <span class="n">ray_1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+<span class="p">]</span>
+
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">sm1_indices</span><span class="p">,</span> <span class="n">sm1_indices</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">sm2_indices</span><span class="p">,</span> <span class="n">sm2_indices</span><span class="p">],</span>
+<span class="p">]</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]],</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]],</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-2-train-wdegp-and-predict-with-both-modes">
+<h3>Step 2: Train WDEGP and predict with both modes<a class="headerlink" href="#step-2-train-wdegp-and-predict-with-both-modes" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gp_model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="n">derivative_locations</span><span class="p">,</span>
+    <span class="n">submodel_type</span><span class="o">=</span><span class="s1">&#39;ddegp&#39;</span><span class="p">,</span>
+    <span class="n">rays</span><span class="o">=</span><span class="n">rays</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+    <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span> <span class="n">n_restart_optimizer</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="n">x1_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">x2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1_test</span><span class="p">,</span> <span class="n">x2_test</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1_test</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2_test</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">f_2d</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="n">y_pred_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;weighted&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">y_pred_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+<span class="n">denom</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">y_true</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+<span class="n">nrmse_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_w</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">denom</span>
+<span class="n">nrmse_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">denom</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NRMSE, mode=&#39;weighted&#39;: </span><span class="si">{</span><span class="n">nrmse_w</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NRMSE, mode=&#39;full&#39;    : </span><span class="si">{</span><span class="n">nrmse_f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ratio (full / weighted): </span><span class="si">{</span><span class="n">nrmse_f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">nrmse_w</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE, mode=&#39;weighted&#39;: 1.030885e-03
+NRMSE, mode=&#39;full&#39;    : 1.172863e-04
+Ratio (full / weighted): 0.1138
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="step-3-visualize">
+<h3>Step 3: Visualize<a class="headerlink" href="#step-3-visualize" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_true_grid</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">err_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred_w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_true_grid</span><span class="p">)</span>
+<span class="n">err_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred_f</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_true_grid</span><span class="p">)</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err_w</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">err_f</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">nrmse</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+    <span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="n">err_w</span><span class="p">,</span> <span class="n">err_f</span><span class="p">],</span> <span class="p">[</span><span class="n">nrmse_w</span><span class="p">,</span> <span class="n">nrmse_f</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;mode=&#39;weighted&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;mode=&#39;full&#39;&quot;</span><span class="p">],</span>
+<span class="p">):</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot&#39;</span><span class="p">,</span>
+                     <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+               <span class="n">c</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SM1&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+               <span class="n">c</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SM2&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="se">\n</span><span class="s2">NRMSE = </span><span class="si">{</span><span class="n">nrmse</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.1e</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/wdegp_getting_started_91_0.png" src="../_images/wdegp_getting_started_91_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="example-11-mode-full-with-gddegp-submodels">
+<h2>Example 11: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with GDDEGP Submodels<a class="headerlink" href="#example-11-mode-full-with-gddegp-submodels" title="Link to this heading">#</a></h2>
+<section id="id52">
+<h3>Overview<a class="headerlink" href="#id52" title="Link to this heading">#</a></h3>
+<p>This example reuses the gradient-aligned GDDEGP setup from Example 7. Each training point has its own pair of directions (gradient-aligned + perpendicular), and the WDEGP model partitions the points into two submodels by function value. When <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> is called, WDEGP stacks each submodel’s point-wise rays per direction back into a single <code class="docutils literal notranslate"><span class="pre">rays_list</span></code> and hands them to <code class="docutils literal notranslate"><span class="pre">full_gddegp.gddegp</span></code>, again un-normalizing rays on the fly so the full model can re-normalize consistently.</p>
+</section>
+<section id="id53">
+<h3>Step 1: Setup<a class="headerlink" href="#id53" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.wdegp.wdegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">wdegp</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">f_2d</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">grad_f_2d</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">dfdx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">40</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">dfdy</span> <span class="o">=</span> <span class="mi">20</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">dfdx</span><span class="p">,</span> <span class="n">dfdy</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">directional_deriv</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">rays</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">grad_f_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">*</span> <span class="n">rays</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">n_bases</span><span class="p">,</span> <span class="n">n_order</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+<span class="n">num_points</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Point-wise rays: gradient-aligned + perpendicular</span>
+<span class="n">grad_all</span> <span class="o">=</span> <span class="n">grad_f_2d</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">rays_dir1_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_points</span><span class="p">))</span>
+<span class="n">rays_dir2_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">num_points</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">grad_all</span><span class="p">[</span><span class="n">i</span><span class="p">];</span> <span class="n">gn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gn</span> <span class="o">&gt;</span> <span class="mf">1e-10</span><span class="p">:</span>
+        <span class="n">rays_dir1_all</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span> <span class="o">/</span> <span class="n">gn</span>
+        <span class="n">rays_dir2_all</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">rays_dir1_all</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="n">rays_dir1_all</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="p">]])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">rays_dir1_all</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">])</span>
+        <span class="n">rays_dir2_all</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+
+<span class="c1"># Partition by function value</span>
+<span class="n">f_vals</span> <span class="o">=</span> <span class="n">f_2d</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">sm1_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">)</span> <span class="k">if</span> <span class="n">f_vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">f_vals</span><span class="p">)]</span>
+<span class="n">sm2_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">)</span> <span class="k">if</span> <span class="n">f_vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span>  <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">f_vals</span><span class="p">)]</span>
+
+<span class="n">rays_list</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">rays_dir1_all</span><span class="p">[:,</span> <span class="n">sm1_indices</span><span class="p">],</span> <span class="n">rays_dir2_all</span><span class="p">[:,</span> <span class="n">sm1_indices</span><span class="p">]],</span>
+    <span class="p">[</span><span class="n">rays_dir1_all</span><span class="p">[:,</span> <span class="n">sm2_indices</span><span class="p">],</span> <span class="n">rays_dir2_all</span><span class="p">[:,</span> <span class="n">sm2_indices</span><span class="p">]],</span>
+<span class="p">]</span>
+
+<span class="n">y_function_values</span> <span class="o">=</span> <span class="n">f_2d</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">y_train</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">y_function_values</span><span class="p">,</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">],</span> <span class="n">rays_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">],</span> <span class="n">rays_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+    <span class="p">[</span><span class="n">y_function_values</span><span class="p">,</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">],</span> <span class="n">rays_list</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+     <span class="n">directional_deriv</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">],</span> <span class="n">rays_list</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+<span class="p">]</span>
+
+<span class="n">derivative_locations</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">sm1_indices</span><span class="p">,</span> <span class="n">sm1_indices</span><span class="p">],</span>
+    <span class="p">[</span><span class="n">sm2_indices</span><span class="p">,</span> <span class="n">sm2_indices</span><span class="p">],</span>
+<span class="p">]</span>
+<span class="n">der_indices</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]],</span>
+    <span class="p">[[[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]],</span> <span class="p">[[[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]]],</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="id54">
+<h3>Step 2: Train WDEGP and predict with both modes<a class="headerlink" href="#id54" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gp_model</span> <span class="o">=</span> <span class="n">wdegp</span><span class="p">(</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span>
+    <span class="n">n_order</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span>
+    <span class="n">der_indices</span><span class="p">,</span>
+    <span class="n">derivative_locations</span><span class="o">=</span><span class="n">derivative_locations</span><span class="p">,</span>
+    <span class="n">submodel_type</span><span class="o">=</span><span class="s1">&#39;gddegp&#39;</span><span class="p">,</span>
+    <span class="n">rays_list</span><span class="o">=</span><span class="n">rays_list</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s2">&quot;SE&quot;</span><span class="p">,</span>
+    <span class="n">kernel_type</span><span class="o">=</span><span class="s2">&quot;anisotropic&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">gp_model</span><span class="o">.</span><span class="n">optimize_hyperparameters</span><span class="p">(</span>
+    <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span> <span class="n">n_restart_optimizer</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="n">x1_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">x2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1_test</span><span class="p">,</span> <span class="n">x2_test</span><span class="p">)</span>
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1_test</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2_test</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">f_2d</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="n">y_pred_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;weighted&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+<span class="n">y_pred_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gp_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;full&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+<span class="n">denom</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">y_true</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+<span class="n">nrmse_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_w</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">denom</span>
+<span class="n">nrmse_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">y_true</span> <span class="o">-</span> <span class="n">y_pred_f</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">denom</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NRMSE, mode=&#39;weighted&#39;: </span><span class="si">{</span><span class="n">nrmse_w</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;NRMSE, mode=&#39;full&#39;    : </span><span class="si">{</span><span class="n">nrmse_f</span><span class="si">:</span><span class="s2">.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Ratio (full / weighted): </span><span class="si">{</span><span class="n">nrmse_f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">nrmse_w</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE, mode=&#39;weighted&#39;: 4.516195e-05
+NRMSE, mode=&#39;full&#39;    : 8.716238e-06
+Ratio (full / weighted): 0.1930
+</pre></div>
+</div>
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="id55">
+<h3>Step 3: Visualize<a class="headerlink" href="#id55" title="Link to this heading">#</a></h3>
+<div class="jupyter_cell jupyter_container docutils container">
+<div class="cell_input code_cell docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y_true_grid</span> <span class="o">=</span> <span class="n">y_true</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">err_w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred_w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_true_grid</span><span class="p">)</span>
+<span class="n">err_f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred_f</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_true_grid</span><span class="p">)</span>
+<span class="n">vmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">err_w</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">err_f</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">nrmse</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+    <span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="n">err_w</span><span class="p">,</span> <span class="n">err_f</span><span class="p">],</span> <span class="p">[</span><span class="n">nrmse_w</span><span class="p">,</span> <span class="n">nrmse_f</span><span class="p">],</span>
+    <span class="p">[</span><span class="s2">&quot;mode=&#39;weighted&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;mode=&#39;full&#39;&quot;</span><span class="p">],</span>
+<span class="p">):</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">contourf</span><span class="p">(</span><span class="n">X1_test</span><span class="p">,</span> <span class="n">X2_test</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">levels</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot&#39;</span><span class="p">,</span>
+                     <span class="n">vmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[</span><span class="n">sm1_indices</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+               <span class="n">c</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SM1&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[</span><span class="n">sm2_indices</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+               <span class="n">c</span><span class="o">=</span><span class="s1">&#39;cyan&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">edgecolors</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;SM2&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="se">\n</span><span class="s2">NRMSE = </span><span class="si">{</span><span class="n">nrmse</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.1e</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper left&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/wdegp_getting_started_94_0.png" src="../_images/wdegp_getting_started_94_0.png" />
+</div>
+</div>
+<p>—</p>
+</section>
+<section id="id56">
+<h3>Summary<a class="headerlink" href="#id56" title="Link to this heading">#</a></h3>
+<p>The three <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> examples (Examples 9 / 10 / 11) cover the full set of WDEGP submodel types:</p>
+<ul class="simple">
+<li><p><strong>Example 9 (DEGP)</strong> — coordinate-aligned partial derivatives, the simplest path: observations unioned per partial-derivative component.</p></li>
+<li><p><strong>Example 10 (DDEGP)</strong> — global directional derivatives, shared rays across submodels; WDEGP un-normalizes the stored rays before passing them to <code class="docutils literal notranslate"><span class="pre">full_ddegp</span></code>.</p></li>
+<li><p><strong>Example 11 (GDDEGP)</strong> — point-wise directional derivatives; WDEGP concatenates each submodel’s per-direction ray block into a single <code class="docutils literal notranslate"><span class="pre">rays_list</span></code> matching the unioned point ordering.</p></li>
+</ul>
+<p>In all three cases the hyperparameters from WDEGP training transfer directly to the full model because the required safe-transfer conditions (identical <code class="docutils literal notranslate"><span class="pre">y_train[0]</span></code>, identical <code class="docutils literal notranslate"><span class="pre">der_indices</span></code>) are satisfied by the setups. Attempting <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> on a configuration that violates these conditions will raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> rather than silently producing incorrect predictions.</p>
+</section>
+</section>
 </section>
 
 
@@ -4258,11 +4802,11 @@ df/dx2   RMSE : 3.1993e-02   Pearson r: 0.998
       </div>
     </a>
     <a class="right-next"
-       href="../numerical_examples/index.html"
+       href="sdegp_getting_started.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Numerical Examples</p>
+        <p class="prev-next-title">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -4420,6 +4964,30 @@ df/dx2   RMSE : 3.1993e-02   Pearson r: 0.998
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-6-accuracy-metrics">Step 6: Accuracy metrics</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-7-visualise-predictions">Step 7: Visualise predictions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id48">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-9-weighted-vs-full-prediction-mode-full">Example 9: Weighted vs Full Prediction (<code class="docutils literal notranslate"><span class="pre">mode='full'</span></code>)</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id49">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-imports-and-problem-setup">Step 1: Imports and problem setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-build-the-wdegp-model">Step 2: Build the WDEGP model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-predict-with-both-modes">Step 3: Predict with both modes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-visual-comparison">Step 4: Visual comparison</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id50">Summary</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-10-mode-full-with-ddegp-submodels">Example 10: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with DDEGP Submodels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id51">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-setup">Step 1: Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-train-wdegp-and-predict-with-both-modes">Step 2: Train WDEGP and predict with both modes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-visualize">Step 3: Visualize</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-11-mode-full-with-gddegp-submodels">Example 11: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with GDDEGP Submodels</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id52">Overview</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id53">Step 1: Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id54">Step 2: Train WDEGP and predict with both modes</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id55">Step 3: Visualize</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id56">Summary</a></li>
 </ul>
 </li>
 </ul>

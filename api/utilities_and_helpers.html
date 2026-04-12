@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -199,6 +199,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -216,6 +217,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -1729,7 +1734,7 @@ so it applies only output scaling (sigma_y) to derivatives.</p>
 
 <dl class="py class" id="module-jetgp.kernel_funcs.kernel_funcs">
 <dt class="sig sig-object py" id="jetgp.kernel_funcs.kernel_funcs.KernelFactory">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jetgp.kernel_funcs.kernel_funcs.</span></span><span class="sig-name descname"><span class="pre">KernelFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_noise_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothness_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oti_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">jetgp.kernel_funcs.kernel_funcs.</span></span><span class="sig-name descname"><span class="pre">KernelFactory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">differences_by_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_noise_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smoothness_parameter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">oti_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sparse_diffs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/kernel_funcs/kernel_funcs.html#KernelFactory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.kernel_funcs.kernel_funcs.KernelFactory" title="Link to this definition">#</a></dt>
 <dd><p>Factory for generating different kernel functions (SE, RQ, SineExp, Matérn)
 in isotropic and anisotropic forms with caching for improved performance.</p>
 <dl class="py attribute">

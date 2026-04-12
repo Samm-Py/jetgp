@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -199,6 +199,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -216,6 +217,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -544,7 +549,7 @@ Example: rays_list[0] = [rays_dir1_sm1, rays_dir2_sm1] for submodel 1.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="jetgp.wdegp.wdegp.wdegp.predict">
-<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_submodels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivs_to_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/wdegp/wdegp.html#wdegp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.wdegp.wdegp.wdegp.predict" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X_test</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length_scales</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calc_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_submodels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rays_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derivs_to_predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'weighted'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/jetgp/wdegp/wdegp.html#wdegp.predict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#jetgp.wdegp.wdegp.wdegp.predict" title="Link to this definition">#</a></dt>
 <dd><p>Compute posterior predictive mean and (optionally) covariance at test points.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -560,6 +565,15 @@ rays_predict[dir_idx] has shape (d, n_test).</p></li>
 training set of any submodel — each submodel constructs K_* from kernel
 derivatives directly. If None, defaults to all derivatives common to all
 submodels.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>default='weighted'</em>) – <ul>
+<li><p>‘weighted’: standard WDEGP inference via weighted sum of submodels.</p></li>
+<li><p>’full’: build a dense full model on the union of all submodel
+observations and predict with the WDEGP-optimized hyperparameters.
+Bypasses the submatrix approximation at inference time. Requires
+every submodel to share the same <code class="docutils literal notranslate"><span class="pre">y_train[0]</span></code> and
+<code class="docutils literal notranslate"><span class="pre">der_indices</span></code>. The full model is built once and cached.</p></li>
+</ul>
+</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

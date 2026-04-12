@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -198,6 +198,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -215,6 +216,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -366,6 +371,7 @@ document.write(`
                   
   <h1>Source code for jetgp.full_gddegp.optimizer</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cholesky</span><span class="p">,</span> <span class="n">solve</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_gddegp</span><span class="w"> </span><span class="kn">import</span> <span class="n">gddegp_utils</span> <span class="k">as</span> <span class="n">utils</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gen_utils</span>
@@ -373,6 +379,25 @@ document.write(`
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.hyperparameter_optimizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">OPTIMIZERS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">line_profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">profile</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">matern_kernel_grad_builder</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_subtract_outer</span><span class="p">(</span><span class="n">K_inv</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fused: W[i,j] = K_inv[i,j] - alpha_v[i]*alpha_v[j]</span>
+<span class="sd">    Exploits symmetry — writes both (i,j) and (j,i) per inner iteration,</span>
+<span class="sd">    halving inner loop work vs a naive double loop.</span>
+<span class="sd">    Avoids the N×N temporary that np.outer allocates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">K_inv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">numba</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">ai</span> <span class="o">=</span> <span class="n">alpha_v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">K_inv</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">ai</span> <span class="o">*</span> <span class="n">ai</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">K_inv</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">ai</span> <span class="o">*</span> <span class="n">alpha_v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+
 <div class="viewcode-block" id="Optimizer">
 <a class="viewcode-back" href="../../../api/full_gddegp.html#jetgp.full_gddegp.optimizer.Optimizer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Optimizer</span><span class="p">:</span>
@@ -392,6 +417,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_factors</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_factors_key</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_K_buf</span> <span class="o">=</span> <span class="kc">None</span>
@@ -401,9 +427,10 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_W_proj_shape</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_deriv_buf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">comb</span>
-        <span class="n">ndir</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">n_bases</span> <span class="o">+</span> <span class="n">order</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
-        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">ndir</span><span class="p">,</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">comb</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">n_bases</span> <span class="o">+</span> <span class="n">order</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span><span class="p">,</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">!=</span> <span class="n">shape</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">=</span> <span class="n">shape</span>
@@ -551,15 +578,22 @@ document.write(`
             <span class="n">deriv_order</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_order</span>
             <span class="n">phi_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_derivs</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">)</span>
         <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_K</span><span class="p">(</span><span class="n">phi_exp</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">)</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="p">((</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">))</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data_sq_diag</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span>
             <span class="p">)</span>
+
+            <span class="c1"># Cache for fast prediction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_L</span> <span class="o">=</span> <span class="n">L</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_low</span> <span class="o">=</span> <span class="n">low</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_n_bases</span> <span class="o">=</span> <span class="n">n_bases</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_params</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
             <span class="n">data_fit</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
             <span class="n">log_det_K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">L</span><span class="p">)))</span>
@@ -618,11 +652,12 @@ document.write(`
         <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">**</span> <span class="mi">2</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">alpha_v</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
             <span class="n">N</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
             <span class="n">K_inv</span>   <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
-            <span class="n">W</span>       <span class="o">=</span> <span class="n">K_inv</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">alpha_v</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">)</span>
+            <span class="n">W</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+            <span class="n">_subtract_outer</span><span class="p">(</span><span class="n">K_inv</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">))</span>
 
@@ -650,7 +685,13 @@ document.write(`
                 <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;n_deriv_types&#39;</span><span class="p">],</span> <span class="n">row_off</span><span class="p">,</span> <span class="n">col_off</span><span class="p">,</span>
             <span class="p">)</span>
 
+        <span class="n">_use_vdot_fused</span> <span class="o">=</span> <span class="n">W_proj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;vdot_expand_fast&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_use_vdot_fused</span><span class="p">:</span>
+            <span class="n">_vdot_factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_deriv_factors</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">)</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">_gc</span><span class="p">(</span><span class="n">dphi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">_use_vdot_fused</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dphi</span><span class="o">.</span><span class="n">vdot_expand_fast</span><span class="p">(</span><span class="n">_vdot_factors</span><span class="p">,</span> <span class="n">W_proj</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">dphi_exp</span> <span class="o">=</span> <span class="n">dphi</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
             <span class="k">else</span><span class="p">:</span>
@@ -849,7 +890,7 @@ document.write(`
         <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">**</span> <span class="mi">2</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">alpha_v</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
             <span class="n">N</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
 
@@ -860,9 +901,17 @@ document.write(`
 
             <span class="c1"># W matrix for gradient (reuse same Cholesky)</span>
             <span class="n">K_inv</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
-            <span class="n">W</span>     <span class="o">=</span> <span class="n">K_inv</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">alpha_v</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">)</span>
+            <span class="n">W</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+            <span class="n">_subtract_outer</span><span class="p">(</span><span class="n">K_inv</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># Cache for fast prediction (reused by gddegp.predict)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_L</span> <span class="o">=</span> <span class="n">L</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_low</span> <span class="o">=</span> <span class="n">low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">alpha_v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_n_bases</span> <span class="o">=</span> <span class="n">n_bases</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_params</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># --- gradient from W (no second kernel build / Cholesky) ---</span>
         <span class="n">grad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">))</span>
@@ -889,7 +938,13 @@ document.write(`
                 <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;n_deriv_types&#39;</span><span class="p">],</span> <span class="n">row_off</span><span class="p">,</span> <span class="n">col_off</span><span class="p">,</span>
             <span class="p">)</span>
 
+        <span class="n">_use_vdot_fused</span> <span class="o">=</span> <span class="n">W_proj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;vdot_expand_fast&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_use_vdot_fused</span><span class="p">:</span>
+            <span class="n">_vdot_factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_deriv_factors</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">)</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">_gc</span><span class="p">(</span><span class="n">dphi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">_use_vdot_fused</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dphi</span><span class="o">.</span><span class="n">vdot_expand_fast</span><span class="p">(</span><span class="n">_vdot_factors</span><span class="p">,</span> <span class="n">W_proj</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">dphi_exp</span> <span class="o">=</span> <span class="n">dphi</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
             <span class="k">else</span><span class="p">:</span>

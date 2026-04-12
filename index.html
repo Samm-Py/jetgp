@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -201,6 +201,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/making_predictions.html">Making Predictions</a></li>
@@ -218,6 +219,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -453,6 +458,12 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#add-jetgp-to-python-path">Add JetGP to Python Path</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otilib-setup">otilib Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-otilib">Clone otilib</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apply-patches-and-build">Apply patches and build</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-setup-does">What the setup does</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-documentation-build">Local documentation build</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start-examples">Quick Start Examples</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#degp-derivative-enhanced-gaussian-process">DEGP: Derivative-Enhanced Gaussian Process</a></li>
@@ -585,6 +596,43 @@ $<span class="w"> </span>conda<span class="w"> </span>develop<span class="w"> </
 </pre></div>
 </div>
 <p>This method automatically makes <code class="docutils literal notranslate"><span class="pre">jetgp</span></code> importable whenever the <code class="docutils literal notranslate"><span class="pre">jetgp</span></code> environment is active.</p>
+</section>
+</section>
+<section id="otilib-setup">
+<h2>otilib Setup<a class="headerlink" href="#otilib-setup" title="Link to this heading">#</a></h2>
+<p>JetGP relies on a patched version of <a class="reference external" href="https://github.com/mauriaristi/otilib">otilib</a> to provide the OTI arithmetic backend. The <code class="docutils literal notranslate"><span class="pre">setup_otilib</span></code> utility automates applying the required patches and running the full build workflow.</p>
+<section id="clone-otilib">
+<h3>Clone otilib<a class="headerlink" href="#clone-otilib" title="Link to this heading">#</a></h3>
+<p>Clone otilib as a sibling directory to <code class="docutils literal notranslate"><span class="pre">jetgp</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..<span class="w">            </span><span class="c1"># move to the parent of jetgp</span>
+$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/mauriaristi/otilib.git<span class="w"> </span>otilib-master
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>jetgp<span class="w">         </span><span class="c1"># return to the jetgp directory</span>
+</pre></div>
+</div>
+<p>Your directory layout should look like:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>parent/
+├── jetgp/
+└── otilib-master/
+</pre></div>
+</div>
+</section>
+<section id="apply-patches-and-build">
+<h3>Apply patches and build<a class="headerlink" href="#apply-patches-and-build" title="Link to this heading">#</a></h3>
+<p>With the <code class="docutils literal notranslate"><span class="pre">jetgp</span></code> environment active and from the <code class="docutils literal notranslate"><span class="pre">jetgp</span></code> directory, run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>jetgp.setup_otilib<span class="w"> </span>--otilib<span class="w"> </span>../otilib-master<span class="w"> </span>--build<span class="w"> </span>--workers<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+<p>This patches otilib with JetGP’s required modifications and runs the full build.
+To patch without building, omit <code class="docutils literal notranslate"><span class="pre">--build</span></code>.</p>
+</section>
+<section id="what-the-setup-does">
+<h3>What the setup does<a class="headerlink" href="#what-the-setup-does" title="Link to this heading">#</a></h3>
+<ol class="arabic simple">
+<li><p><strong>Copies patched source files</strong> from <code class="docutils literal notranslate"><span class="pre">otilib_mods/</span></code> into the correct locations inside otilib-master (CMakeLists files, Cython templates, <code class="docutils literal notranslate"><span class="pre">cmod_writer.py</span></code>, <code class="docutils literal notranslate"><span class="pre">build_static.py</span></code>, and <code class="docutils literal notranslate"><span class="pre">regenerate_all_c.py</span></code>).</p></li>
+<li><p><strong>Rewrites hardcoded absolute paths</strong> in the otilib build scripts to match your machine and saves the otilib path to <code class="docutils literal notranslate"><span class="pre">~/.config/jetgp/otilib_path</span></code> for runtime auto-detection.</p></li>
+<li><p><strong>Optionally runs the full build</strong> — template regeneration → cmake → make → gendata → writes a <code class="docutils literal notranslate"><span class="pre">.pth</span></code> file so <code class="docutils literal notranslate"><span class="pre">pyoti</span></code> is importable from <code class="docutils literal notranslate"><span class="pre">otilib-master/build/</span></code> → Cython static module compilation.</p></li>
+</ol>
+<p>See <code class="docutils literal notranslate"><span class="pre">otilib_mods/README.md</span></code> for the full file map and a description of each change.</p>
 </section>
 </section>
 <section id="local-documentation-build">
@@ -1291,6 +1339,12 @@ information at point index <code class="docutils literal notranslate"><span clas
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cloning-the-repository">Cloning the repository</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-environment">Conda environment</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#add-jetgp-to-python-path">Add JetGP to Python Path</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#otilib-setup">otilib Setup</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-otilib">Clone otilib</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#apply-patches-and-build">Apply patches and build</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-the-setup-does">What the setup does</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#local-documentation-build">Local documentation build</a></li>

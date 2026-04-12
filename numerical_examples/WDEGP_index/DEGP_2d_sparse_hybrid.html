@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -795,28 +800,26 @@ Arrays per submodel: 5
 Optimizing hyperparameters...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=47.91385918475584
-Gen 2: best f=18.045345256799862
-Gen 3: best f=18.045345256799862
-Gen 4: best f=18.045345256799862
-Gen 5: best f=15.348355135768827
-Gen 6: best f=15.348355135768827
-Gen 7: best f=15.348355135768827
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=47.913859211931495
+Gen 2: best f=17.870936820874626
+Gen 3: best f=17.870936820874626
+Gen 4: best f=17.870936820874626
+Gen 5: best f=15.219681394872431
+Gen 6: best f=15.219681394872431
+Gen 7: best f=15.219681394872431
+Gen 8: best f=15.219681394872431
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=13.233077630609856
-Gen 9: best f=11.936236154792113
-Gen 10: best f=11.936236154792113
-Gen 11: best f=11.516952793850749
-Gen 12: best f=11.516952793850749
-Gen 13: best f=11.516952793850749
-Gen 14: best f=11.516952793850749
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=11.516952793850749
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=11.138607906101043
+Gen 10: best f=11.138607906101043
+Gen 11: best f=10.557442597242236
+Gen 12: best f=10.557442597242236
+Gen 13: best f=10.557442597242236
+Gen 14: best f=9.83082728571297
+Gen 15: best f=9.83082728571297
 
 Optimized parameters:
-[ -0.26883153  -0.09019859   0.94748321 -14.09571385]
+[ -0.28531738  -0.07126233   0.83273116 -12.55158341]
 </pre></div>
 </div>
 </div>
@@ -854,9 +857,9 @@ Optimized parameters:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.012538
-RMSE:  0.053467
-MAE:   0.034333
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.012436
+RMSE:  0.053031
+MAE:   0.034330
 </pre></div>
 </div>
 </div>
@@ -949,9 +952,8 @@ MAE:   0.034333
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>======================================================================
 Derivative verification using return_deriv=True
 ======================================================================
-Making predictions for all derivatives that are common among submodels
 
-Prediction shape: (5, 4)
+Prediction shape: (6, 4)
   Row 0: function values
   Row 1: df/dx1 (1st order, dim 1)
   Row 2: df/dx2 (1st order, dim 2)
@@ -959,16 +961,16 @@ Prediction shape: (5, 4)
   Row 4: d²f/dx2² (2nd order, dim 2)
 
 1st order derivatives (df/dx1):
-  Point 5: Pred=5.323457, True=-2.697119, RelErr=2.97e+00
-  Point 6: Pred=5.323457, True=-2.030453, RelErr=3.62e+00
-  Point 9: Pred=5.323457, True=2.030453, RelErr=1.62e+00
-  Point 10: Pred=5.323457, True=2.697119, RelErr=9.74e-01
+  Point 5: Pred=-2.697119, True=-2.697119, RelErr=1.59e-13
+  Point 6: Pred=-2.030453, True=-2.030453, RelErr=4.57e-12
+  Point 9: Pred=2.030453, True=2.030453, RelErr=4.02e-14
+  Point 10: Pred=2.697119, True=2.697119, RelErr=2.59e-12
 
 1st order derivatives (df/dx2):
-  Point 5: Pred=-2.697119, True=1.740741, RelErr=2.55e+00
-  Point 6: Pred=-2.030453, True=-2.407407, RelErr=1.57e-01
-  Point 9: Pred=2.030453, True=2.407407, RelErr=1.57e-01
-  Point 10: Pred=2.697119, True=-1.740741, RelErr=2.55e+00
+  Point 5: Pred=1.740741, True=1.740741, RelErr=2.96e-12
+  Point 6: Pred=-2.407407, True=-2.407407, RelErr=4.95e-12
+  Point 9: Pred=2.407407, True=2.407407, RelErr=2.83e-12
+  Point 10: Pred=-1.740741, True=-1.740741, RelErr=4.77e-12
 </pre></div>
 </div>
 </div>

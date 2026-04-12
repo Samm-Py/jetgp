@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -198,6 +198,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -215,6 +216,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -633,64 +638,103 @@ document.write(`
 <span class="sd">    &gt;&gt;&gt; diffs[0].shape</span>
 <span class="sd">    (2, 2)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">X1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
-    <span class="n">X2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
-    <span class="n">n1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">X1</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">n2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">X2</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># Keep numpy copies for fused path</span>
+    <span class="n">X1_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">X2_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">n1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">X1_np</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n2</span> <span class="o">=</span> <span class="n">X2_np</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">n_rays</span> <span class="o">=</span> <span class="n">rays</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-    
+
+    <span class="c1"># Check if the fused C-level function is available</span>
+    <span class="n">_use_fused</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="s1">&#39;fused_from_real_with_perturbations&#39;</span><span class="p">)</span>
+
     <span class="n">differences_by_dim</span> <span class="o">=</span> <span class="p">[]</span>
-    
+
     <span class="c1"># Case 1: n_order == 0 (no hypercomplex perturbation)</span>
     <span class="k">if</span> <span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
-            <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
-                <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">X2</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])</span>
-            <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_use_fused</span><span class="p">:</span>
+            <span class="n">perturb1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">perturb2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">real_diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+                    <span class="n">X1_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+                <span class="p">)</span>
+                <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+                <span class="n">diffs_k</span><span class="o">.</span><span class="n">fused_from_real_with_perturbations</span><span class="p">(</span><span class="n">real_diffs</span><span class="p">,</span> <span class="n">perturb1</span><span class="p">,</span> <span class="n">perturb2</span><span class="p">)</span>
+                <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X1_oti</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1_np</span><span class="p">)</span>
+            <span class="n">X2_oti</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2_np</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+                <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
+                    <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X1_oti</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">X2_oti</span><span class="p">[:,</span> <span class="n">k</span><span class="p">])</span>
+                <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">differences_by_dim</span>
-    
+
     <span class="c1"># Determine the order for hypercomplex units based on return_deriv</span>
     <span class="k">if</span> <span class="n">return_deriv</span><span class="p">:</span>
         <span class="n">hc_order</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">hc_order</span> <span class="o">=</span> <span class="n">n_order</span>
-    
+
     <span class="c1"># Pre-calculate the perturbation vector using directional rays</span>
     <span class="n">e_bases</span> <span class="o">=</span> <span class="p">[</span><span class="n">oti_module</span><span class="o">.</span><span class="n">e</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">hc_order</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_rays</span><span class="p">)]</span>
     <span class="n">perts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rays</span><span class="p">,</span> <span class="n">e_bases</span><span class="p">)</span>
-    
+
+    <span class="k">if</span> <span class="n">_use_fused</span><span class="p">:</span>
+        <span class="c1"># --- Fused path: numpy broadcast for real part, C-level OTI fill ---</span>
+        <span class="n">perturb2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># X2 has no perturbation in DDEGP</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="c1"># Real differences via numpy broadcasting (fast)</span>
+            <span class="n">real_diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+                <span class="n">X1_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+            <span class="p">)</span>
+            <span class="c1"># Perturbation: perts[k] (ray-projected) broadcast to all n1 points</span>
+            <span class="n">perturb1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">perts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="c1"># Fused fill: out[i,j].real = real_diffs[i,j], out[i,j].im = perturb1[i] - 0</span>
+            <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+            <span class="n">diffs_k</span><span class="o">.</span><span class="n">fused_from_real_with_perturbations</span><span class="p">(</span><span class="n">real_diffs</span><span class="p">,</span> <span class="n">perturb1</span><span class="p">,</span> <span class="n">perturb2</span><span class="p">)</span>
+            <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">differences_by_dim</span>
+
+    <span class="c1"># --- Fallback: original Python loop path ---</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1_np</span><span class="p">)</span>
+    <span class="n">X2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2_np</span><span class="p">)</span>
+
     <span class="c1"># Case 2: return_deriv=False (prediction without derivative outputs)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">return_deriv</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
             <span class="c1"># Add the pre-calculated perturbation for the current dimension to all points in X1</span>
             <span class="n">X1_k_tagged</span> <span class="o">=</span> <span class="n">X1</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">perts</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
             <span class="n">X2_k</span> <span class="o">=</span> <span class="n">X2</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
-            
+
             <span class="c1"># Pre-allocate the result matrix for this dimension</span>
             <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
-            
+
             <span class="c1"># Use an efficient single loop for subtraction</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
                 <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X1_k_tagged</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_k</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
-            
+
             <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
-    
+
     <span class="c1"># Case 3: return_deriv=True (training kernel with derivative-derivative blocks)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
             <span class="n">X2_k</span> <span class="o">=</span> <span class="n">X2</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span>
-            
+
             <span class="c1"># Pre-allocate the result matrix for this dimension</span>
             <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
-            
+
             <span class="c1"># Compute differences without perturbation first</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n1</span><span class="p">):</span>
                 <span class="n">diffs_k</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">X1</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_k</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
-            
+
             <span class="c1"># Add perturbation to the entire matrix (more efficient)</span>
             <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span> <span class="o">+</span> <span class="n">perts</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
-    
+
     <span class="k">return</span> <span class="n">differences_by_dim</span></div>
 
 

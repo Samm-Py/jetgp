@@ -2279,7 +2279,8 @@ Step 11: Demonstrate GDDEGP prediction flexibility
        test_points, params,
        calc_cov=False,
        return_deriv=True,
-       rays_predict=rays_predict
+       rays_predict=rays_predict,
+       derivs_to_predict = [[[1,1]], [[2,1]]]
    )
    
    print(f"\nPrediction shape: {y_pred_derivs.shape}")
@@ -2846,3 +2847,472 @@ Key takeaways:
 - **``der_indices = [[]]``**: one submodel with no derivative types — no derivative constraints in the training covariance
 - **``derivs_to_predict`` unlocks any derivative within ``n_bases`` and ``n_order``**: the WDEGP cross-covariance is built analytically from the kernel, not from observations
 - **Consistent with DEGP/DDEGP/GDDEGP function-only**: all four modules expose the same ``derivs_to_predict`` mechanism; the WDEGP-specific difference is the per-submodel ``y_train`` and ``der_indices`` structure
+
+
+Example 9: Weighted vs Full Prediction (``mode='full'``)
+---------------------------------------------------------
+
+Overview
+~~~~~~~~
+
+WDEGP trains by decomposing the joint likelihood into a set of submodels, each built on a submatrix of the full covariance kernel. At inference time the default ``predict`` forms a weighted sum of the submodels' posteriors. This approximation is what gives WDEGP its scaling advantage during training.
+
+At inference time, however, the full kernel is often affordable even when it was not during optimization — prediction is a one-shot cost, whereas training calls the likelihood many times. JetGP exposes a ``mode='full'`` option on ``wdegp.predict`` that, instead of combining submodel predictions, builds a single dense GP over the **union** of all submodel observations and evaluates it using the WDEGP-optimized hyperparameters.
+
+When it is safe to use this mode:
+
+- Every submodel must share the same ``y_train[0]`` (function values) — this guarantees that the full model's y-normalization matches the one WDEGP used during optimization, so the hyperparameters transfer without rescaling.
+- Every submodel must share the same ``der_indices`` — so observations can be unioned per derivative component unambiguously.
+
+Under these conditions the hyperparameter vector transfers 1:1 and the full prediction is essentially "what you would have gotten if you had fit a full derivative-enhanced GP with the WDEGP ``ell``."
+
+In this example we reuse the 1D setup from Example 1 and compare the two prediction modes side-by-side on the same trained model.
+
+Step 1: Imports and problem setup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import numpy as np
+    import sympy as sp
+    import matplotlib.pyplot as plt
+    from jetgp.wdegp.wdegp import wdegp
+    import jetgp.utils as utils
+
+    # Same oscillatory-with-trend benchmark as Example 1
+    x_sym = sp.symbols('x')
+    f_sym  = sp.sin(10 * sp.pi * x_sym) / (2 * x_sym) + (x_sym - 1)**4
+    f1_sym = sp.diff(f_sym, x_sym)
+    f2_sym = sp.diff(f_sym, x_sym, 2)
+
+    f_fun  = sp.lambdify(x_sym, f_sym,  "numpy")
+    f1_fun = sp.lambdify(x_sym, f1_sym, "numpy")
+    f2_fun = sp.lambdify(x_sym, f2_sym, "numpy")
+
+    n_bases = 1
+    n_order = 2
+    lb_x, ub_x = 0.5, 2.5
+    num_points = 10
+
+    X_train = np.linspace(lb_x, ub_x, num_points).reshape(-1, 1)
+    y_function_values = f_fun(X_train.flatten()).reshape(-1, 1)
+
+---
+
+Step 2: Build the WDEGP model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Each submodel carries **all** function values plus its own 1st and 2nd derivatives. This is exactly the layout required by ``mode='full'``: every submodel's ``y_train[0]`` is identical, and every submodel shares the same ``der_indices``.
+
+.. jupyter-execute::
+
+    submodel_indices = [[[i], [i]] for i in range(num_points)]
+    derivative_specs = [utils.gen_OTI_indices(n_bases, n_order)
+                        for _ in range(num_points)]
+
+    submodel_data = []
+    for k in range(num_points):
+        xval = X_train[k, 0]
+        d1 = np.array([[f1_fun(xval)]])
+        d2 = np.array([[f2_fun(xval)]])
+        submodel_data.append([y_function_values, d1, d2])
+
+    gp_model = wdegp(
+        X_train,
+        submodel_data,
+        n_order,
+        n_bases,
+        derivative_specs,
+        derivative_locations=submodel_indices,
+        normalize=True,
+        kernel="SE",
+        kernel_type="anisotropic",
+    )
+
+    params = gp_model.optimize_hyperparameters(
+        optimizer='pso',
+        pop_size=100,
+        n_generations=15,
+        local_opt_every=15,
+        debug=False,
+    )
+    print("Optimized hyperparameters:", params)
+
+---
+
+Step 3: Predict with both modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once the hyperparameters are fixed, both ``mode='weighted'`` (default) and ``mode='full'`` can be called on the same model. The full model is built lazily the first time ``mode='full'`` is called and cached for subsequent calls.
+
+.. jupyter-execute::
+
+    X_test = np.linspace(lb_x, ub_x, 250).reshape(-1, 1)
+    y_true = f_fun(X_test.flatten())
+
+    # Default: weighted sum of submodels (WDEGP inference)
+    y_pred_w, var_w = gp_model.predict(
+        X_test, params, calc_cov=True, mode="weighted"
+    )
+
+    # New: dense full-kernel prediction with the same hyperparameters
+    y_pred_f, var_f = gp_model.predict(
+        X_test, params, calc_cov=True, mode="full"
+    )
+
+    nrmse_w = utils.nrmse(y_true, y_pred_w)
+    nrmse_f = utils.nrmse(y_true, y_pred_f)
+
+    print(f"NRMSE, mode='weighted': {nrmse_w:.6e}")
+    print(f"NRMSE, mode='full'    : {nrmse_f:.6e}")
+    print(f"Ratio (full / weighted): {nrmse_f / nrmse_w:.4f}")
+
+---
+
+Step 4: Visual comparison
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharey=True)
+
+    for ax, (label, y_pred, var, nrmse) in zip(
+        axes,
+        [("mode='weighted'", y_pred_w, var_w, nrmse_w),
+         ("mode='full'",     y_pred_f, var_f, nrmse_f)],
+    ):
+        y_flat  = np.asarray(y_pred).flatten()
+        std     = np.sqrt(np.abs(np.asarray(var).flatten()))
+        ax.plot(X_test, y_true, 'b-', linewidth=2, label="True")
+        ax.plot(X_test, y_flat, 'r--', linewidth=2, label="GP mean")
+        ax.fill_between(X_test.ravel(),
+                        y_flat - 2 * std,
+                        y_flat + 2 * std,
+                        color='red', alpha=0.25, label="95% CI")
+        ax.scatter(X_train, y_function_values, c='k', s=30, zorder=5,
+                   label="Training pts")
+        ax.set_title(f"{label}\nNRMSE = {nrmse:.3e}")
+        ax.set_xlabel("x")
+        ax.grid(alpha=0.3)
+
+    axes[0].set_ylabel("f(x)")
+    axes[0].legend(loc="best", fontsize=9)
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+
+- **``mode='weighted'``** (default) — standard WDEGP inference: each submodel posterior is computed on its own submatrix of the covariance and the test-point predictions are combined by softmax-style weights.
+- **``mode='full'``** — builds a dense GP on the union of all submodel observations (using stored, un-normalized training data) and calls its ``predict`` with the WDEGP hyperparameters. The full model is constructed once and cached on the WDEGP instance.
+
+When to prefer ``mode='full'``:
+
+- Inference accuracy matters more than inference cost, and the full :math:`n(1+d) \times n(1+d)` Cholesky fits comfortably in memory.
+- You are evaluating a one-shot batch of test points rather than running an acquisition loop that re-calls ``predict`` many times.
+
+When to stick with ``mode='weighted'``:
+
+- Inference is called inside a hot loop (e.g. Bayesian optimization acquisition maximization), where the per-call savings from submatrix Cholesky factorizations add up.
+- Your submodels do **not** share identical function-value data or ``der_indices`` — in that case ``mode='full'`` raises an error because hyperparameter transfer is no longer safe.
+
+The same ``mode='full'`` path is supported for WDEGP with DEGP, DDEGP, and GDDEGP submodel types. For GDDEGP, ``rays_predict`` is forwarded to the underlying full model when ``return_deriv=True``. The next two examples demonstrate it for the directional variants.
+
+
+Example 10: ``mode='full'`` with DDEGP Submodels
+-------------------------------------------------
+
+Overview
+~~~~~~~~
+
+This example reuses the 2D DDEGP setup from Example 6 — two submodels partitioned by distance from the origin, sharing a common pair of global rays at ±45° — and compares ``mode='weighted'`` and ``mode='full'`` on the same trained model. Both submodels share the same ``y_train[0]`` and the same ``der_indices``, which is all ``mode='full'`` requires. Internally, the full model is built using the un-normalized global rays (recovered by multiplying the stored normalized rays by ``sigmas_x``).
+
+Step 1: Setup
+~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from jetgp.wdegp.wdegp import wdegp
+
+    def f_2d(X):
+        return np.sin(np.pi * X[:, 0]) * np.cos(np.pi * X[:, 1]) + 0.5 * X[:, 0] * X[:, 1]
+
+    def grad_f_2d(X):
+        dfdx = np.pi * np.cos(np.pi * X[:, 0]) * np.cos(np.pi * X[:, 1]) + 0.5 * X[:, 1]
+        dfdy = -np.pi * np.sin(np.pi * X[:, 0]) * np.sin(np.pi * X[:, 1]) + 0.5 * X[:, 0]
+        return np.column_stack([dfdx, dfdy])
+
+    def directional_deriv(X, ray):
+        return grad_f_2d(X) @ ray
+
+    n_bases, n_order = 2, 1
+    x1 = np.linspace(-1, 1, 5)
+    x2 = np.linspace(-1, 1, 5)
+    X1, X2 = np.meshgrid(x1, x2)
+    X_train = np.column_stack([X1.ravel(), X2.ravel()])
+    num_points = X_train.shape[0]
+
+    # Global ±45° rays, shared by all submodels
+    rays = np.array([
+        [np.cos(np.pi / 4), np.cos(-np.pi / 4)],
+        [np.sin(np.pi / 4), np.sin(-np.pi / 4)],
+    ])
+
+    # Partition points by distance from origin
+    distances = np.linalg.norm(X_train, axis=1)
+    sm1_indices = [i for i in range(num_points) if distances[i] <= np.median(distances)]
+    sm2_indices = [i for i in range(num_points) if distances[i] >  np.median(distances)]
+
+    y_function_values = f_2d(X_train).reshape(-1, 1)
+    ray_0, ray_1 = rays[:, 0], rays[:, 1]
+
+    y_train = [
+        [y_function_values,
+         directional_deriv(X_train[sm1_indices], ray_0).reshape(-1, 1),
+         directional_deriv(X_train[sm1_indices], ray_1).reshape(-1, 1)],
+        [y_function_values,
+         directional_deriv(X_train[sm2_indices], ray_0).reshape(-1, 1),
+         directional_deriv(X_train[sm2_indices], ray_1).reshape(-1, 1)],
+    ]
+
+    derivative_locations = [
+        [sm1_indices, sm1_indices],
+        [sm2_indices, sm2_indices],
+    ]
+    der_indices = [
+        [[[[1, 1]]], [[[2, 1]]]],
+        [[[[1, 1]]], [[[2, 1]]]],
+    ]
+
+---
+
+Step 2: Train WDEGP and predict with both modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    gp_model = wdegp(
+        X_train, y_train,
+        n_order, n_bases,
+        der_indices,
+        derivative_locations=derivative_locations,
+        submodel_type='ddegp',
+        rays=rays,
+        normalize=True,
+        kernel="SE",
+        kernel_type="anisotropic",
+    )
+    params = gp_model.optimize_hyperparameters(
+        optimizer='lbfgs', n_restart_optimizer=20, debug=False
+    )
+
+    x1_test = np.linspace(-1, 1, 25)
+    x2_test = np.linspace(-1, 1, 25)
+    X1_test, X2_test = np.meshgrid(x1_test, x2_test)
+    X_test = np.column_stack([X1_test.ravel(), X2_test.ravel()])
+    y_true = f_2d(X_test)
+
+    y_pred_w = np.asarray(gp_model.predict(X_test, params, mode="weighted")).flatten()
+    y_pred_f = np.asarray(gp_model.predict(X_test, params, mode="full")).flatten()
+
+    denom = y_true.max() - y_true.min()
+    nrmse_w = np.sqrt(np.mean((y_true - y_pred_w) ** 2)) / denom
+    nrmse_f = np.sqrt(np.mean((y_true - y_pred_f) ** 2)) / denom
+
+    print(f"NRMSE, mode='weighted': {nrmse_w:.6e}")
+    print(f"NRMSE, mode='full'    : {nrmse_f:.6e}")
+    print(f"Ratio (full / weighted): {nrmse_f / nrmse_w:.4f}")
+
+---
+
+Step 3: Visualize
+~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    y_true_grid = y_true.reshape(25, 25)
+    err_w = np.abs(y_pred_w.reshape(25, 25) - y_true_grid)
+    err_f = np.abs(y_pred_f.reshape(25, 25) - y_true_grid)
+    vmax = max(err_w.max(), err_f.max())
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 5), sharey=True)
+    for ax, err, nrmse, label in zip(
+        axes, [err_w, err_f], [nrmse_w, nrmse_f],
+        ["mode='weighted'", "mode='full'"],
+    ):
+        im = ax.contourf(X1_test, X2_test, err, levels=30, cmap='hot',
+                         vmin=0, vmax=vmax)
+        ax.scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1],
+                   c='cyan', s=40, marker='o', edgecolors='k', label='SM1')
+        ax.scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1],
+                   c='cyan', s=40, marker='s', edgecolors='k', label='SM2')
+        ax.set_title(f"{label}\nNRMSE = {nrmse:.3e}")
+        ax.set_xlabel('x'); ax.set_ylabel('y')
+        plt.colorbar(im, ax=ax, format='%.1e')
+    axes[0].legend(fontsize=8, loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
+
+Example 11: ``mode='full'`` with GDDEGP Submodels
+--------------------------------------------------
+
+Overview
+~~~~~~~~
+
+This example reuses the gradient-aligned GDDEGP setup from Example 7. Each training point has its own pair of directions (gradient-aligned + perpendicular), and the WDEGP model partitions the points into two submodels by function value. When ``mode='full'`` is called, WDEGP stacks each submodel's point-wise rays per direction back into a single ``rays_list`` and hands them to ``full_gddegp.gddegp``, again un-normalizing rays on the fly so the full model can re-normalize consistently.
+
+Step 1: Setup
+~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+    from jetgp.wdegp.wdegp import wdegp
+
+    def f_2d(X):
+        return (1 - X[:, 0]) ** 2 + 10 * (X[:, 1] - X[:, 0] ** 2) ** 2
+
+    def grad_f_2d(X):
+        dfdx = -2 * (1 - X[:, 0]) - 40 * X[:, 0] * (X[:, 1] - X[:, 0] ** 2)
+        dfdy = 20 * (X[:, 1] - X[:, 0] ** 2)
+        return np.column_stack([dfdx, dfdy])
+
+    def directional_deriv(X, rays):
+        return np.sum(grad_f_2d(X) * rays.T, axis=1)
+
+    n_bases, n_order = 2, 1
+    x1 = np.linspace(-1.5, 1.5, 5)
+    x2 = np.linspace(-0.5, 2.0, 5)
+    X1, X2 = np.meshgrid(x1, x2)
+    X_train = np.column_stack([X1.ravel(), X2.ravel()])
+    num_points = X_train.shape[0]
+
+    # Point-wise rays: gradient-aligned + perpendicular
+    grad_all = grad_f_2d(X_train)
+    rays_dir1_all = np.zeros((2, num_points))
+    rays_dir2_all = np.zeros((2, num_points))
+    for i in range(num_points):
+        g = grad_all[i]; gn = np.linalg.norm(g)
+        if gn > 1e-10:
+            rays_dir1_all[:, i] = g / gn
+            rays_dir2_all[:, i] = np.array([-rays_dir1_all[1, i], rays_dir1_all[0, i]])
+        else:
+            rays_dir1_all[:, i] = np.array([1.0, 0.0])
+            rays_dir2_all[:, i] = np.array([0.0, 1.0])
+
+    # Partition by function value
+    f_vals = f_2d(X_train)
+    sm1_indices = [i for i in range(num_points) if f_vals[i] <= np.median(f_vals)]
+    sm2_indices = [i for i in range(num_points) if f_vals[i] >  np.median(f_vals)]
+
+    rays_list = [
+        [rays_dir1_all[:, sm1_indices], rays_dir2_all[:, sm1_indices]],
+        [rays_dir1_all[:, sm2_indices], rays_dir2_all[:, sm2_indices]],
+    ]
+
+    y_function_values = f_2d(X_train).reshape(-1, 1)
+    y_train = [
+        [y_function_values,
+         directional_deriv(X_train[sm1_indices], rays_list[0][0]).reshape(-1, 1),
+         directional_deriv(X_train[sm1_indices], rays_list[0][1]).reshape(-1, 1)],
+        [y_function_values,
+         directional_deriv(X_train[sm2_indices], rays_list[1][0]).reshape(-1, 1),
+         directional_deriv(X_train[sm2_indices], rays_list[1][1]).reshape(-1, 1)],
+    ]
+
+    derivative_locations = [
+        [sm1_indices, sm1_indices],
+        [sm2_indices, sm2_indices],
+    ]
+    der_indices = [
+        [[[[1, 1]]], [[[2, 1]]]],
+        [[[[1, 1]]], [[[2, 1]]]],
+    ]
+
+---
+
+Step 2: Train WDEGP and predict with both modes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    gp_model = wdegp(
+        X_train, y_train,
+        n_order, n_bases,
+        der_indices,
+        derivative_locations=derivative_locations,
+        submodel_type='gddegp',
+        rays_list=rays_list,
+        normalize=True,
+        kernel="SE",
+        kernel_type="anisotropic",
+    )
+    params = gp_model.optimize_hyperparameters(
+        optimizer='lbfgs', n_restart_optimizer=20, debug=False
+    )
+
+    x1_test = np.linspace(-1.5, 1.5, 25)
+    x2_test = np.linspace(-0.5, 2.0, 25)
+    X1_test, X2_test = np.meshgrid(x1_test, x2_test)
+    X_test = np.column_stack([X1_test.ravel(), X2_test.ravel()])
+    y_true = f_2d(X_test)
+
+    y_pred_w = np.asarray(gp_model.predict(X_test, params, mode="weighted")).flatten()
+    y_pred_f = np.asarray(gp_model.predict(X_test, params, mode="full")).flatten()
+
+    denom = y_true.max() - y_true.min()
+    nrmse_w = np.sqrt(np.mean((y_true - y_pred_w) ** 2)) / denom
+    nrmse_f = np.sqrt(np.mean((y_true - y_pred_f) ** 2)) / denom
+
+    print(f"NRMSE, mode='weighted': {nrmse_w:.6e}")
+    print(f"NRMSE, mode='full'    : {nrmse_f:.6e}")
+    print(f"Ratio (full / weighted): {nrmse_f / nrmse_w:.4f}")
+
+---
+
+Step 3: Visualize
+~~~~~~~~~~~~~~~~~
+
+.. jupyter-execute::
+
+    y_true_grid = y_true.reshape(25, 25)
+    err_w = np.abs(y_pred_w.reshape(25, 25) - y_true_grid)
+    err_f = np.abs(y_pred_f.reshape(25, 25) - y_true_grid)
+    vmax = max(err_w.max(), err_f.max())
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 5), sharey=True)
+    for ax, err, nrmse, label in zip(
+        axes, [err_w, err_f], [nrmse_w, nrmse_f],
+        ["mode='weighted'", "mode='full'"],
+    ):
+        im = ax.contourf(X1_test, X2_test, err, levels=30, cmap='hot',
+                         vmin=0, vmax=vmax)
+        ax.scatter(X_train[sm1_indices, 0], X_train[sm1_indices, 1],
+                   c='cyan', s=40, marker='o', edgecolors='k', label='SM1')
+        ax.scatter(X_train[sm2_indices, 0], X_train[sm2_indices, 1],
+                   c='cyan', s=40, marker='s', edgecolors='k', label='SM2')
+        ax.set_title(f"{label}\nNRMSE = {nrmse:.3e}")
+        ax.set_xlabel('x'); ax.set_ylabel('y')
+        plt.colorbar(im, ax=ax, format='%.1e')
+    axes[0].legend(fontsize=8, loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
+---
+
+Summary
+~~~~~~~
+
+The three ``mode='full'`` examples (Examples 9 / 10 / 11) cover the full set of WDEGP submodel types:
+
+- **Example 9 (DEGP)** — coordinate-aligned partial derivatives, the simplest path: observations unioned per partial-derivative component.
+- **Example 10 (DDEGP)** — global directional derivatives, shared rays across submodels; WDEGP un-normalizes the stored rays before passing them to ``full_ddegp``.
+- **Example 11 (GDDEGP)** — point-wise directional derivatives; WDEGP concatenates each submodel's per-direction ray block into a single ``rays_list`` matching the unioned point ordering.
+
+In all three cases the hyperparameters from WDEGP training transfer directly to the full model because the required safe-transfer conditions (identical ``y_train[0]``, identical ``der_indices``) are satisfied by the setups. Attempting ``mode='full'`` on a configuration that violates these conditions will raise ``ValueError`` rather than silently producing incorrect predictions.

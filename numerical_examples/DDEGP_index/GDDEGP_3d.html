@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -199,6 +199,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -216,6 +217,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -724,110 +729,118 @@ Data structure:
 Optimizing hyperparameters...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 1: [-1.13578663 -0.03183975  0.70908436  0.55759786 -6.62473884] 475.0879328265031
-Best after iteration 2: [-1.13578663 -0.03183975  0.70908436  0.55759786 -6.62473884] 475.0879328265031
-New best for swarm at iteration 3: [  0.06008182   0.14651738   0.16020523   0.16618446 -10.1958612 ] 291.02496846212415
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 1: [-1.13578663 -0.03183975  0.70908436  0.55759786 -6.62473884] 475.0879328348767
+Best after iteration 2: [-1.13578663 -0.03183975  0.70908436  0.55759786 -6.62473884] 475.0879328348767
+New best for swarm at iteration 3: [  0.06008182   0.14651738   0.16020523   0.16618446 -10.1958612 ] 291.0249684620877
+Best after iteration 3: [  0.06008182   0.14651738   0.16020523   0.16618446 -10.1958612 ] 291.0249684620877
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 3: [  0.06008182   0.14651738   0.16020523   0.16618446 -10.1958612 ] 291.02496846212415
-New best for swarm at iteration 4: [-0.2815003  -0.26037333  0.44382445  0.47166394 -8.26812236] 286.37708414440465
-New best for swarm at iteration 4: [-0.49009976  0.06745064  0.08122518  1.05028914 -6.06492915] 284.4406567925401
-Best after iteration 4: [-0.49009976  0.06745064  0.08122518  1.05028914 -6.06492915] 284.4406567925401
-New best for swarm at iteration 5: [-0.67419812 -0.02493449  0.45348343  0.62015136 -8.65039042] 279.80001963716524
-New best for swarm at iteration 5: [-0.07903037 -0.12040193  0.09115031  0.35779158 -6.11909554] 200.88799679053966
-New best for swarm at iteration 5: [-0.49835435 -0.03610454  0.09872779  0.82090678 -8.81026187] 124.37332631663081
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 4: [-0.2815003  -0.26037333  0.44382445  0.47166394 -8.26812236] 286.3770841489496
+New best for swarm at iteration 4: [-0.49009976  0.06745064  0.08122518  1.05028914 -6.06492915] 284.4406567842937
+Best after iteration 4: [-0.49009976  0.06745064  0.08122518  1.05028914 -6.06492915] 284.4406567842937
+New best for swarm at iteration 5: [-0.67419812 -0.02493449  0.45348343  0.62015136 -8.65039042] 279.8000196284819
+New best for swarm at iteration 5: [-0.07903037 -0.12040193  0.09115031  0.35779158 -6.11909554] 200.88799656922657
+New best for swarm at iteration 5: [-0.49835435 -0.03610454  0.09872779  0.82090678 -8.81026187] 124.37331808157734
+New best for swarm at iteration 5: [ -0.47072759   0.16787616   0.20904911   0.16227639 -10.08375482] 94.08479388535952
+Best after iteration 5: [ -0.47072759   0.16787616   0.20904911   0.16227639 -10.08375482] 94.08479388535952
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 5: [ -0.47072759   0.16787616   0.20904911   0.16227639 -10.08375482] 94.08479385453231
-Best after iteration 5: [ -0.47072759   0.16787616   0.20904911   0.16227639 -10.08375482] 94.08479385453231
-New best for swarm at iteration 6: [-0.40236877 -0.10176391  0.20694244  0.37708764 -9.0793952 ] 27.156822517370188
-Best after iteration 6: [-0.40236877 -0.10176391  0.20694244  0.37708764 -9.0793952 ] 27.156822517370188
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 7: [-3.43386289e-01  4.04031233e-03  1.63212116e-01  3.12858064e-02
- -7.61513832e+00] -19.654967764682198
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 6: [-0.40236877 -0.10176391  0.20694244  0.37708764 -9.0793952 ] 27.156822308340935
+Best after iteration 6: [-0.40236877 -0.10176391  0.20694244  0.37708764 -9.0793952 ] 27.156822308340935
+New best for swarm at iteration 7: [-3.43386289e-01  4.04031233e-03  1.63212116e-01  3.12858064e-02
+ -7.61513832e+00] -19.65496731456537
 Best after iteration 7: [-3.43386289e-01  4.04031233e-03  1.63212116e-01  3.12858064e-02
- -7.61513832e+00] -19.654967764682198
-Best after iteration 8: [-3.43386289e-01  4.04031233e-03  1.63212116e-01  3.12858064e-02
- -7.61513832e+00] -19.654967764682198
-New best for swarm at iteration 9: [-0.35619011  0.03753074  0.21161892 -0.13991146 -8.17541646] -33.59153324690723
+ -7.61513832e+00] -19.65496731456537
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 9: [-0.35619011  0.03753074  0.21161892 -0.13991146 -8.17541646] -33.59153324690723
-New best for swarm at iteration 10: [-0.37901092 -0.06942863  0.19534327  0.09943679 -8.60260551] -35.96025857780916
-New best for swarm at iteration 10: [-0.3388882  -0.07226647  0.21655321 -0.07406341 -8.45610894] -37.761788391773194
-New best for swarm at iteration 10: [-0.35356233 -0.02825659  0.21170166 -0.15980385 -8.45985944] -48.14464679458982
-Best after iteration 10: [-0.35356233 -0.02825659  0.21170166 -0.15980385 -8.45985944] -48.14464679458982
-New best for swarm at iteration 11: [-0.34854663 -0.03599816  0.20430775 -0.10850802 -8.17410294] -49.281042523053515
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 8: [-3.43386289e-01  4.04031233e-03  1.63212116e-01  3.12858064e-02
+ -7.61513832e+00] -19.65496731456537
+New best for swarm at iteration 9: [-0.35619011  0.03753074  0.21161892 -0.13991146 -8.17541646] -33.591533271948634
+Best after iteration 9: [-0.35619011  0.03753074  0.21161892 -0.13991146 -8.17541646] -33.591533271948634
+New best for swarm at iteration 10: [-0.37901092 -0.06942863  0.19534327  0.09943679 -8.60260551] -35.96025779086034
+New best for swarm at iteration 10: [-0.3388882  -0.07226647  0.21655321 -0.07406341 -8.45610894] -37.76178822131388
+New best for swarm at iteration 10: [-0.35356233 -0.02825659  0.21170166 -0.15980385 -8.45985944] -48.144646498625974
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 11: [-0.34854663 -0.03599816  0.20430775 -0.10850802 -8.17410294] -49.281042523053515
-New best for swarm at iteration 12: [-0.35580315 -0.01835342  0.20924881 -0.13045739 -8.08027696] -49.48333514640959
-Best after iteration 12: [-0.35580315 -0.01835342  0.20924881 -0.13045739 -8.08027696] -49.48333514640959
-New best for swarm at iteration 13: [-0.35322608 -0.02669736  0.20543192 -0.11740673 -8.05373262] -49.68711853424347
-New best for swarm at iteration 13: [-0.34639865 -0.03361641  0.20875908 -0.10489752 -8.27397307] -49.78935084381041
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 10: [-0.35356233 -0.02825659  0.21170166 -0.15980385 -8.45985944] -48.144646498625974
+New best for swarm at iteration 11: [-0.34854663 -0.03599816  0.20430775 -0.10850802 -8.17410294] -49.281042591584566
+Best after iteration 11: [-0.34854663 -0.03599816  0.20430775 -0.10850802 -8.17410294] -49.281042591584566
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 13: [-0.34639865 -0.03361641  0.20875908 -0.10489752 -8.27397307] -49.78935084381041
-New best for swarm at iteration 14: [-0.35764997 -0.03571737  0.21158331 -0.10201048 -8.10560696] -50.034517142754595
-Best after iteration 14: [-0.35764997 -0.03571737  0.21158331 -0.10201048 -8.10560696] -50.034517142754595
-New best for swarm at iteration 15: [-0.35081987 -0.02830354  0.2129719  -0.13396537 -8.26957478] -50.09713722797679
-New best for swarm at iteration 15: [-0.3524496  -0.03170645  0.21321497 -0.1223606  -8.13140763] -50.186086899331286
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 12: [-0.35580315 -0.01835342  0.20924881 -0.13045739 -8.08027696] -49.48333534003169
+Best after iteration 12: [-0.35580315 -0.01835342  0.20924881 -0.13045739 -8.08027696] -49.48333534003169
+New best for swarm at iteration 13: [-0.35322608 -0.02669736  0.20543192 -0.11740673 -8.05373262] -49.687118445629466
+New best for swarm at iteration 13: [-0.34639865 -0.03361641  0.20875908 -0.10489752 -8.27397307] -49.78935065280328
+Best after iteration 13: [-0.34639865 -0.03361641  0.20875908 -0.10489752 -8.27397307] -49.78935065280328
+New best for swarm at iteration 14: [-0.35764997 -0.03571737  0.21158331 -0.10201048 -8.10560696] -50.03451730335084
+Best after iteration 14: [-0.35764997 -0.03571737  0.21158331 -0.10201048 -8.10560696] -50.03451730335084
+New best for swarm at iteration 15: [-0.35081987 -0.02830354  0.2129719  -0.13396537 -8.26957478] -50.0971370770537
+New best for swarm at iteration 15: [-0.3524496  -0.03170645  0.21321497 -0.1223606  -8.13140763] -50.186086907291696
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 15: [-0.3524496  -0.03170645  0.21321497 -0.1223606  -8.13140763] -50.186086899331286
-New best for swarm at iteration 16: [-0.35411647 -0.03055337  0.21152798 -0.11807469 -8.11575705] -50.20830976309
-Best after iteration 16: [-0.35411647 -0.03055337  0.21152798 -0.11807469 -8.11575705] -50.20830976309
-New best for swarm at iteration 17: [-0.35361696 -0.02794712  0.21088713 -0.11546145 -8.13558745] -50.21869884630516
-New best for swarm at iteration 17: [-0.35422279 -0.03063639  0.21116141 -0.10891459 -8.08635577] -50.226341737458284
-Best after iteration 17: [-0.35422279 -0.03063639  0.21116141 -0.10891459 -8.08635577] -50.226341737458284
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 15: [-0.3524496  -0.03170645  0.21321497 -0.1223606  -8.13140763] -50.186086907291696
+New best for swarm at iteration 16: [-0.35411647 -0.03055337  0.21152798 -0.11807469 -8.11575705] -50.208310055669045
+Best after iteration 16: [-0.35411647 -0.03055337  0.21152798 -0.11807469 -8.11575705] -50.208310055669045
+New best for swarm at iteration 17: [-0.35361696 -0.02794712  0.21088713 -0.11546145 -8.13558745] -50.21869879869254
+New best for swarm at iteration 17: [-0.35422279 -0.03063639  0.21116141 -0.10891459 -8.08635577] -50.226342096872116
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 18: [-0.35422279 -0.03063639  0.21116141 -0.10891459 -8.08635577] -50.226341737458284
-New best for swarm at iteration 19: [-0.35297493 -0.02983513  0.21377705 -0.12320396 -8.11406661] -50.24501247065544
-New best for swarm at iteration 19: [-0.35386444 -0.03083157  0.21266836 -0.11278014 -8.09865097] -50.25153603597673
-Best after iteration 19: [-0.35386444 -0.03083157  0.21266836 -0.11278014 -8.09865097] -50.25153603597673
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 17: [-0.35422279 -0.03063639  0.21116141 -0.10891459 -8.08635577] -50.226342096872116
+New best for swarm at iteration 18: [-0.35242228 -0.0313257   0.21216162 -0.11726527 -8.10297224] -50.228065677020226
+Best after iteration 18: [-0.35242228 -0.0313257   0.21216162 -0.11726527 -8.10297224] -50.228065677020226
+New best for swarm at iteration 19: [-0.35481381 -0.02961665  0.21171648 -0.10953526 -8.11911033] -50.23022028175146
+New best for swarm at iteration 19: [-0.35186613 -0.03130629  0.21285913 -0.11540314 -8.08723689] -50.23676159808244
+New best for swarm at iteration 19: [-0.35348949 -0.03116434  0.21296803 -0.1154342  -8.10457685] -50.24989203090766
+New best for swarm at iteration 19: [-0.35460923 -0.02875174  0.21330631 -0.11728809 -8.14046803] -50.258946040903226
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 20: [-0.35386444 -0.03083157  0.21266836 -0.11278014 -8.09865097] -50.25153603597673
-New best for swarm at iteration 21: [-0.35360585 -0.03042565  0.2130143  -0.11883835 -8.09690109] -50.251656803956706
-Best after iteration 21: [-0.35360585 -0.03042565  0.2130143  -0.11883835 -8.09690109] -50.251656803956706
-New best for swarm at iteration 22: [-0.35368562 -0.02991519  0.21258921 -0.11426171 -8.07466459] -50.26063347396982
-New best for swarm at iteration 22: [-0.35360328 -0.02872821  0.21294079 -0.11751882 -8.09547114] -50.26580060436751
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 19: [-0.35460923 -0.02875174  0.21330631 -0.11728809 -8.14046803] -50.258946040903226
+New best for swarm at iteration 20: [-0.35284204 -0.02917065  0.21372438 -0.11705257 -8.17576811] -50.260329587396626
+New best for swarm at iteration 20: [-0.35313063 -0.02991004  0.21293178 -0.11819551 -8.12221417] -50.264323275062424
+Best after iteration 20: [-0.35313063 -0.02991004  0.21293178 -0.11819551 -8.12221417] -50.264323275062424
+New best for swarm at iteration 21: [-0.35363988 -0.02990889  0.21278446 -0.1159407  -8.08992575] -50.26446939967556
+New best for swarm at iteration 21: [-0.35309023 -0.02924775  0.21278242 -0.1166656  -8.09975002] -50.26590721072702
+Best after iteration 21: [-0.35309023 -0.02924775  0.21278242 -0.1166656  -8.09975002] -50.26590721072702
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 22: [-0.35360328 -0.02872821  0.21294079 -0.11751882 -8.09547114] -50.26580060436751
-New best for swarm at iteration 23: [-0.35363386 -0.02892215  0.21308072 -0.11721755 -8.09324823] -50.26654821771294
-New best for swarm at iteration 23: [-0.353491   -0.02909216  0.21280355 -0.117332   -8.08170678] -50.26687887686964
-Best after iteration 23: [-0.353491   -0.02909216  0.21280355 -0.117332   -8.08170678] -50.26687887686964
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 22: [-0.35309023 -0.02924775  0.21278242 -0.1166656  -8.09975002] -50.26590721072702
+New best for swarm at iteration 23: [-0.35364113 -0.02979667  0.2132073  -0.11663839 -8.10434346] -50.26612186838699
+New best for swarm at iteration 23: [-0.35305589 -0.0289035   0.21277448 -0.1175398  -8.10704015] -50.26621733537834
+New best for swarm at iteration 23: [-0.35340125 -0.02937746  0.21278127 -0.11700028 -8.11527131] -50.266916393243804
+New best for swarm at iteration 23: [-0.35307664 -0.0296836   0.21335033 -0.11872688 -8.12412363] -50.26756566246539
+Best after iteration 23: [-0.35307664 -0.0296836   0.21335033 -0.11872688 -8.12412363] -50.26756566246539
+New best for swarm at iteration 24: [-0.35357781 -0.02893875  0.21352476 -0.11946964 -8.11491439] -50.2678684154574
+New best for swarm at iteration 24: [-0.3534371  -0.02948952  0.21309372 -0.1174875  -8.10828077] -50.26810025018003
+New best for swarm at iteration 24: [-0.35305861 -0.02877812  0.21320252 -0.12016566 -8.11702375] -50.26812320057391
+New best for swarm at iteration 24: [-0.35324952 -0.02920548  0.21305647 -0.11770426 -8.10284775] -50.26856482744685
+Best after iteration 24: [-0.35324952 -0.02920548  0.21305647 -0.11770426 -8.10284775] -50.26856482744685
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 24: [-0.35339968 -0.02922593  0.21358401 -0.11993441 -8.09817317] -50.26748848054635
-Best after iteration 24: [-0.35339968 -0.02922593  0.21358401 -0.11993441 -8.09817317] -50.26748848054635
-New best for swarm at iteration 25: [-0.35354568 -0.02912478  0.21308101 -0.11729437 -8.08780036] -50.26768420067586
-New best for swarm at iteration 25: [-0.35337244 -0.02875332  0.21318135 -0.11934906 -8.09020998] -50.2680950787354
-New best for swarm at iteration 25: [-0.35320836 -0.02892774  0.2133559  -0.11841573 -8.08658801] -50.26877301499471
-Best after iteration 25: [-0.35320836 -0.02892774  0.2133559  -0.11841573 -8.08658801] -50.26877301499471
-New best for swarm at iteration 26: [-0.35315094 -0.02925176  0.21325727 -0.11930526 -8.09369175] -50.26878910691798
-New best for swarm at iteration 26: [-0.35335733 -0.02898701  0.2132605  -0.11864715 -8.08689128] -50.269041628296435
-New best for swarm at iteration 26: [-0.35307331 -0.0292698   0.21344633 -0.11920884 -8.0877483 ] -50.269314864063716
-New best for swarm at iteration 26: [-0.35284149 -0.02888719  0.21345155 -0.11958493 -8.09197102] -50.26940909305765
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 25: [-0.3533195  -0.02920801  0.21302573 -0.1179155  -8.10852954] -50.268569936962734
+New best for swarm at iteration 25: [-0.35296304 -0.02912701  0.21360709 -0.11911513 -8.10552998] -50.26905919171108
+New best for swarm at iteration 25: [-0.35327845 -0.02911687  0.21342188 -0.11865589 -8.11386965] -50.2692592406037
+Best after iteration 25: [-0.35327845 -0.02911687  0.21342188 -0.11865589 -8.11386965] -50.2692592406037
+Best after iteration 26: [-0.35327845 -0.02911687  0.21342188 -0.11865589 -8.11386965] -50.2692592406037
+New best for swarm at iteration 27: [-0.35302433 -0.02893642  0.21331109 -0.11905141 -8.105833  ] -50.26944694082593
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 26: [-0.35284149 -0.02888719  0.21345155 -0.11958493 -8.09197102] -50.26940909305765
-New best for swarm at iteration 27: [-0.35283097 -0.02889607  0.213482   -0.11973084 -8.09234817] -50.26943686266853
-New best for swarm at iteration 27: [-0.35317448 -0.02912993  0.21330932 -0.1186572  -8.09008878] -50.26945957652467
-Best after iteration 27: [-0.35317448 -0.02912993  0.21330932 -0.1186572  -8.09008878] -50.26945957652467
-New best for swarm at iteration 28: [-0.35303421 -0.02892457  0.21340741 -0.11967888 -8.09045859] -50.26950816543396
-New best for swarm at iteration 28: [-0.35291719 -0.02903541  0.21337612 -0.11930939 -8.08952154] -50.2695944823885
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 27: [-0.3530148  -0.02918131  0.21346139 -0.1190753  -8.11967165] -50.26949629029204
+New best for swarm at iteration 27: [-0.35312186 -0.02913569  0.21334663 -0.11875615 -8.11236888] -50.2695168830945
+Best after iteration 27: [-0.35312186 -0.02913569  0.21334663 -0.11875615 -8.11236888] -50.2695168830945
+New best for swarm at iteration 28: [-0.35298646 -0.02902986  0.21349547 -0.11965666 -8.11961374] -50.26956048804013
+Best after iteration 28: [-0.35298646 -0.02902986  0.21349547 -0.11965666 -8.11961374] -50.26956048804013
+New best for swarm at iteration 29: [-0.35310421 -0.02899501  0.21338119 -0.11918435 -8.11644901] -50.26957008704434
+New best for swarm at iteration 29: [-0.35302788 -0.02913702  0.21335267 -0.11911135 -8.11307762] -50.269586550430716
+New best for swarm at iteration 29: [-0.35308268 -0.02905815  0.21338376 -0.11904273 -8.11172258] -50.269591373799955
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 28: [-0.35291719 -0.02903541  0.21337612 -0.11930939 -8.08952154] -50.2695944823885
-Best after iteration 29: [-0.35291719 -0.02903541  0.21337612 -0.11930939 -8.08952154] -50.2695944823885
-New best for swarm at iteration 30: [-0.35298259 -0.0290237   0.21338118 -0.11945538 -8.09133588] -50.269609315513634
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 29: [-0.35308268 -0.02905815  0.21338376 -0.11904273 -8.11172258] -50.269591373799955
+New best for swarm at iteration 30: [-0.3530535  -0.02901774  0.21345609 -0.11935458 -8.1163262 ] -50.26959531786295
+New best for swarm at iteration 30: [-0.35305629 -0.02909152  0.21339867 -0.11929967 -8.11517296] -50.26959887020317
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 30: [-0.35298259 -0.0290237   0.21338118 -0.11945538 -8.09133588] -50.269609315513634
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gradient refinement improved
+Best after iteration 30: [-0.35300579 -0.02904946  0.21339827 -0.11928826 -8.11517296] -50.26963252082871
 Stopping: maximum iterations reached --&gt; 30
 </pre></div>
 </div>
@@ -884,7 +897,7 @@ Test set size: 1000 points
 Performance metrics:
   NRMSE: 0.004473
   MAE:   0.007262
-  Max error: 0.157742
+  Max error: 0.157739
 </pre></div>
 </div>
 </div>
@@ -1006,15 +1019,13 @@ Performance metrics:
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  Slice $x_3=0.5$: 5 training points nearby
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  Slice $x_2=0.5$: 4 training points nearby
+  Slice $x_2=0.5$: 4 training points nearby
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  Slice $x_1=0.5$: 6 training points nearby
 </pre></div>
 </div>
-<img alt="../../_images/GDDEGP_3d_6_4.png" src="../../_images/GDDEGP_3d_6_4.png" />
+<img alt="../../_images/GDDEGP_3d_6_3.png" src="../../_images/GDDEGP_3d_6_3.png" />
 </div>
 </div>
 </section>

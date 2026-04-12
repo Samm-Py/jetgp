@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -198,6 +198,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -215,6 +216,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -366,12 +371,31 @@ document.write(`
                   
   <h1>Source code for jetgp.full_degp.optimizer</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numba</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">cho_solve</span><span class="p">,</span> <span class="n">cho_factor</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.full_degp</span><span class="w"> </span><span class="kn">import</span> <span class="n">degp_utils</span> <span class="k">as</span> <span class="n">utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">line_profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">profile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gen_utils</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.hyperparameter_optimizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">OPTIMIZERS</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">jetgp.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">matern_kernel_grad_builder</span>
+
+
+<span class="nd">@numba</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">nopython</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_subtract_outer</span><span class="p">(</span><span class="n">K_inv</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">,</span> <span class="n">W</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fused: W[i,j] = K_inv[i,j] - alpha_v[i]*alpha_v[j]</span>
+<span class="sd">    Exploits symmetry — writes both (i,j) and (j,i) per inner iteration,</span>
+<span class="sd">    halving inner loop work vs a naive double loop.</span>
+<span class="sd">    Avoids the N×N temporary that np.outer allocates.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">K_inv</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">numba</span><span class="o">.</span><span class="n">prange</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">ai</span> <span class="o">=</span> <span class="n">alpha_v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">K_inv</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">ai</span> <span class="o">*</span> <span class="n">ai</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="n">K_inv</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">ai</span> <span class="o">*</span> <span class="n">alpha_v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="n">W</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
 
 <div class="viewcode-block" id="Optimizer">
 <a class="viewcode-back" href="../../../api/full_degp.html#jetgp.full_degp.optimizer.Optimizer">[docs]</a>
@@ -392,6 +416,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_factors</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_factors_key</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_K_buf</span> <span class="o">=</span> <span class="kc">None</span>
@@ -402,14 +427,15 @@ document.write(`
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_deriv_buf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a pre-allocated buffer for get_all_derivs, reusing if shape matches.&quot;&quot;&quot;</span>
-        <span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">comb</span>
-        <span class="n">ndir</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">n_bases</span> <span class="o">+</span> <span class="n">order</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
-        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">ndir</span><span class="p">,</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">comb</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span> <span class="o">=</span> <span class="n">comb</span><span class="p">(</span><span class="n">n_bases</span> <span class="o">+</span> <span class="n">order</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_ndir</span><span class="p">,</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">!=</span> <span class="n">shape</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">=</span> <span class="n">shape</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span>
-
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_expand_derivs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Expand OTI derivatives, using fast struct path if available.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;get_all_derivs_fast&#39;</span><span class="p">):</span>
@@ -514,7 +540,6 @@ document.write(`
 
 <div class="viewcode-block" id="Optimizer.negative_log_marginal_likelihood">
 <a class="viewcode-back" href="../../../api/full_degp.html#jetgp.full_degp.optimizer.Optimizer.negative_log_marginal_likelihood">[docs]</a>
-    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">negative_log_marginal_likelihood</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the negative log marginal likelihood (NLL) of the model.</span>
@@ -559,7 +584,7 @@ document.write(`
             <span class="p">)</span>
         <span class="n">noise_var</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
         <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">noise_var</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span><span class="o">**</span><span class="mi">2</span>
+        <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data_sq_diag</span>
         
         <span class="c1"># Debug: check kernel matrix sparsity</span>
         <span class="c1"># near_zero = np.sum(np.abs(K) &lt; 1e-10)</span>
@@ -569,11 +594,17 @@ document.write(`
         <span class="c1">#     print(f&quot;  WARNING: K is {sparsity*100:.1f}% sparse | ell={10**np.array(ell)} | sigma_n={10**sigma_n:.2e} | cond={np.linalg.cond(K.real):.2e}&quot;)</span>
         <span class="c1">#     input(&#39;i&#39;)</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span>
             <span class="p">)</span>
+
+            <span class="c1"># Cache for fast prediction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_L</span> <span class="o">=</span> <span class="n">L</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_low</span> <span class="o">=</span> <span class="n">low</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_params</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
             <span class="n">data_fit</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
             <span class="n">log_det_K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">L</span><span class="p">)))</span>
@@ -603,7 +634,7 @@ document.write(`
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">negative_log_marginal_likelihood</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span></div>
 
-
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">oti</span><span class="p">,</span> <span class="n">diffs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute the NLL gradient given pre-factorised W = K^{-1} - α α^T.</span>
@@ -647,7 +678,19 @@ document.write(`
                 <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;signs&#39;</span><span class="p">],</span> <span class="n">plan</span><span class="p">[</span><span class="s1">&#39;n_deriv_types&#39;</span><span class="p">],</span> <span class="n">row_off</span><span class="p">,</span> <span class="n">col_off</span><span class="p">,</span>
             <span class="p">)</span>
 
+        <span class="n">_use_vdot_fused</span> <span class="o">=</span> <span class="n">W_proj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;vdot_expand_fast&#39;</span><span class="p">)</span>
+        <span class="n">FW_T</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">_use_vdot_fused</span><span class="p">:</span>
+            <span class="n">_vdot_factors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_deriv_factors</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">)</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">comb</span>
+            <span class="n">_vdot_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">_vdot_factors</span><span class="p">)</span>
+            <span class="n">ndir_d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_vdot_arr</span><span class="p">)</span>
+            <span class="n">FW_T</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">base_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">base_shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ndir_d</span><span class="p">))</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">W_proj</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">ndir_d</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">_vdot_arr</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">FW_T</span><span class="p">)</span>
+
         <span class="k">def</span><span class="w"> </span><span class="nf">_gc</span><span class="p">(</span><span class="n">dphi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">_use_vdot_fused</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">dphi</span><span class="o">.</span><span class="n">vdot_expand_fast</span><span class="p">(</span><span class="n">_vdot_factors</span><span class="p">,</span> <span class="n">W_proj</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">dphi_exp</span> <span class="o">=</span> <span class="n">dphi</span><span class="o">.</span><span class="n">real</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
             <span class="k">else</span><span class="p">:</span>
@@ -681,7 +724,17 @@ document.write(`
             <span class="c1"># d phi/d log_ell_d = -ln10 * ell_d² * diff_d² * phi</span>
             <span class="k">if</span> <span class="n">kernel_type</span> <span class="o">==</span> <span class="s1">&#39;anisotropic&#39;</span><span class="p">:</span>
                 <span class="n">ell</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="n">x0</span><span class="p">[:</span><span class="n">D</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">_use_vdot_fused</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_grad_all_dims&#39;</span><span class="p">):</span>
+                    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">)])</span>
+                    <span class="n">grad_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+                    <span class="n">phi</span><span class="o">.</span><span class="n">fused_grad_all_dims</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">scales</span><span class="p">,</span> <span class="n">_vdot_factors</span><span class="p">,</span> <span class="n">W_proj</span><span class="p">,</span> <span class="n">grad_buf</span><span class="p">,</span> <span class="n">FW_T</span><span class="p">)</span>
+                    <span class="n">grad</span><span class="p">[:</span><span class="n">D</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_buf</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul_sparse&#39;</span><span class="p">):</span>
+                    <span class="n">dphi_buf</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+                        <span class="n">dphi_buf</span><span class="o">.</span><span class="n">fused_scale_sq_mul_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">phi</span><span class="p">,</span> <span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                        <span class="n">grad</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gc</span><span class="p">(</span><span class="n">dphi_buf</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul&#39;</span><span class="p">):</span>
                     <span class="n">dphi_buf</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
                         <span class="n">dphi_buf</span><span class="o">.</span><span class="n">fused_scale_sq_mul</span><span class="p">(</span><span class="n">diffs</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">phi</span><span class="p">,</span> <span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
@@ -693,7 +746,10 @@ document.write(`
                         <span class="n">grad</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gc</span><span class="p">(</span><span class="n">dphi_d</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># isotropic: single ell</span>
                 <span class="n">ell</span>    <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="nb">float</span><span class="p">(</span><span class="n">x0</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq_sparse&#39;</span><span class="p">):</span>
+                    <span class="n">sum_sq</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="n">sum_sq</span><span class="o">.</span><span class="n">fused_sum_sq_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq&#39;</span><span class="p">):</span>
                     <span class="n">sum_sq</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                     <span class="n">sum_sq</span><span class="o">.</span><span class="n">fused_sum_sq</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -717,7 +773,11 @@ document.write(`
                 <span class="n">alpha_idx</span> <span class="o">=</span> <span class="mi">1</span>
 
             <span class="c1"># Recompute r² and base in OTI</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sqdist&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sqdist_sparse&#39;</span><span class="p">):</span>
+                <span class="n">r2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">ell_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">ell</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">r2</span><span class="o">.</span><span class="n">fused_sqdist_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">ell_sq</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sqdist&#39;</span><span class="p">):</span>
                 <span class="n">r2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                 <span class="n">ell_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">ell</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
                 <span class="n">r2</span><span class="o">.</span><span class="n">fused_sqdist</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">ell_sq</span><span class="p">)</span>
@@ -732,7 +792,17 @@ document.write(`
             <span class="n">phi_over_base</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">inv_base</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">kernel_type</span> <span class="o">==</span> <span class="s1">&#39;anisotropic&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">_use_vdot_fused</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_grad_all_dims&#39;</span><span class="p">):</span>
+                    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">)])</span>
+                    <span class="n">grad_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+                    <span class="n">phi_over_base</span><span class="o">.</span><span class="n">fused_grad_all_dims</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">scales</span><span class="p">,</span> <span class="n">_vdot_factors</span><span class="p">,</span> <span class="n">W_proj</span><span class="p">,</span> <span class="n">grad_buf</span><span class="p">,</span> <span class="n">FW_T</span><span class="p">)</span>
+                    <span class="n">grad</span><span class="p">[:</span><span class="n">D</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_buf</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul_sparse&#39;</span><span class="p">):</span>
+                    <span class="n">dphi_buf</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+                        <span class="n">dphi_buf</span><span class="o">.</span><span class="n">fused_scale_sq_mul_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">phi_over_base</span><span class="p">,</span> <span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                        <span class="n">grad</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gc</span><span class="p">(</span><span class="n">dphi_buf</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul&#39;</span><span class="p">):</span>
                     <span class="n">dphi_buf</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
                         <span class="n">dphi_buf</span><span class="o">.</span><span class="n">fused_scale_sq_mul</span><span class="p">(</span><span class="n">diffs</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">phi_over_base</span><span class="p">,</span> <span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
@@ -743,7 +813,10 @@ document.write(`
                         <span class="n">dphi_d</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="o">-</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">d_sq</span><span class="p">,</span> <span class="n">phi_over_base</span><span class="p">))</span>
                         <span class="n">grad</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gc</span><span class="p">(</span><span class="n">dphi_d</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq_sparse&#39;</span><span class="p">):</span>
+                    <span class="n">sum_sq</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="n">sum_sq</span><span class="o">.</span><span class="n">fused_sum_sq_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq&#39;</span><span class="p">):</span>
                     <span class="n">sum_sq</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                     <span class="n">sum_sq</span><span class="o">.</span><span class="n">fused_sum_sq</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -843,7 +916,11 @@ document.write(`
             <span class="n">_eps</span> <span class="o">=</span> <span class="mf">1e-10</span>   <span class="c1"># regularise r, not each diff (matches kernel_funcs.py)</span>
 
             <span class="c1"># Recompute r in OTI (matches matern_kernel_anisotropic/isotropic)</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sqdist&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sqdist_sparse&#39;</span><span class="p">):</span>
+                <span class="n">r2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                <span class="n">ell_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">ell</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+                <span class="n">r2</span><span class="o">.</span><span class="n">fused_sqdist_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">ell_sq</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sqdist&#39;</span><span class="p">):</span>
                 <span class="n">r2</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                 <span class="n">ell_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">ell</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
                 <span class="n">r2</span><span class="o">.</span><span class="n">fused_sqdist</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">ell_sq</span><span class="p">)</span>
@@ -861,7 +938,17 @@ document.write(`
             <span class="c1"># grad[d] = _gc(base * ln10 * ell_d² * diff_d²)</span>
             <span class="n">base_matern</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">sigma_f_sq</span><span class="p">,</span> <span class="n">oti</span><span class="o">.</span><span class="n">mul</span><span class="p">(</span><span class="n">f_prime_r</span><span class="p">,</span> <span class="n">inv_r</span><span class="p">))</span>
             <span class="k">if</span> <span class="n">kernel_type</span> <span class="o">==</span> <span class="s1">&#39;anisotropic&#39;</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">_use_vdot_fused</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_grad_all_dims&#39;</span><span class="p">):</span>
+                    <span class="n">scales</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">)])</span>
+                    <span class="n">grad_buf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+                    <span class="n">base_matern</span><span class="o">.</span><span class="n">fused_grad_all_dims</span><span class="p">(</span><span class="n">diffs</span><span class="p">,</span> <span class="n">scales</span><span class="p">,</span> <span class="n">_vdot_factors</span><span class="p">,</span> <span class="n">W_proj</span><span class="p">,</span> <span class="n">grad_buf</span><span class="p">,</span> <span class="n">FW_T</span><span class="p">)</span>
+                    <span class="n">grad</span><span class="p">[:</span><span class="n">D</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_buf</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul_sparse&#39;</span><span class="p">):</span>
+                    <span class="n">dphi_buf</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
+                        <span class="n">dphi_buf</span><span class="o">.</span><span class="n">fused_scale_sq_mul_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">base_matern</span><span class="p">,</span> <span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+                        <span class="n">grad</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gc</span><span class="p">(</span><span class="n">dphi_buf</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_scale_sq_mul&#39;</span><span class="p">):</span>
                     <span class="n">dphi_buf</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">D</span><span class="p">):</span>
                         <span class="n">dphi_buf</span><span class="o">.</span><span class="n">fused_scale_sq_mul</span><span class="p">(</span><span class="n">diffs</span><span class="p">[</span><span class="n">d</span><span class="p">],</span> <span class="n">base_matern</span><span class="p">,</span> <span class="n">ln10</span> <span class="o">*</span> <span class="n">ell</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
@@ -873,7 +960,10 @@ document.write(`
                         <span class="n">grad</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">=</span> <span class="n">_gc</span><span class="p">(</span><span class="n">dphi_d</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">ell_val</span> <span class="o">=</span> <span class="n">ell</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq_sparse&#39;</span><span class="p">):</span>
+                    <span class="n">sum_dsq</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+                    <span class="n">sum_dsq</span><span class="o">.</span><span class="n">fused_sum_sq_sparse</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;fused_sum_sq&#39;</span><span class="p">):</span>
                     <span class="n">sum_dsq</span> <span class="o">=</span> <span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">phi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
                     <span class="n">sum_dsq</span><span class="o">.</span><span class="n">fused_sum_sq</span><span class="p">(</span><span class="n">diffs</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
@@ -945,22 +1035,23 @@ document.write(`
                 <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sigma_n_sq</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data_sq_diag</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">alpha_v</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
             <span class="n">N</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
             <span class="n">K_inv</span>   <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
-            <span class="n">W</span>       <span class="o">=</span> <span class="n">K_inv</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">alpha_v</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">)</span>
+            <span class="n">W</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+            <span class="n">_subtract_outer</span><span class="p">(</span><span class="n">K_inv</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">))</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_grad</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">oti</span><span class="p">,</span> <span class="n">diffs</span><span class="p">)</span></div>
 
-
 <div class="viewcode-block" id="Optimizer.nll_and_grad">
 <a class="viewcode-back" href="../../../api/full_degp.html#jetgp.full_degp.optimizer.Optimizer.nll_and_grad">[docs]</a>
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">nll_and_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compute NLL and its gradient in a single pass, sharing one Cholesky.</span>
@@ -996,10 +1087,10 @@ document.write(`
                 <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">derivative_locations</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">sigma_n_sq</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">sigma_data_sq_diag</span>
 
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">low</span>  <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="n">alpha_v</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
             <span class="n">N</span>       <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
 
@@ -1008,9 +1099,16 @@ document.write(`
                    <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">N</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">))</span>
 
             <span class="n">K_inv</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
-            <span class="n">W</span>     <span class="o">=</span> <span class="n">K_inv</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">outer</span><span class="p">(</span><span class="n">alpha_v</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">)</span>
+            <span class="n">W</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
+            <span class="n">_subtract_outer</span><span class="p">(</span><span class="n">K_inv</span><span class="p">,</span> <span class="n">alpha_v</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">1e6</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">))</span>
+
+        <span class="c1"># Cache for fast prediction (reused by degp.predict)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_L</span> <span class="o">=</span> <span class="n">L</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_low</span> <span class="o">=</span> <span class="n">low</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">alpha_v</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_params</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="n">grad</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_grad</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">oti</span><span class="p">,</span> <span class="n">diffs</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">nll</span><span class="p">),</span> <span class="n">grad</span></div>

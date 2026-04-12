@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -198,6 +198,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -215,6 +216,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -1824,7 +1829,7 @@ document.write(`
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">g_best</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
                                <span class="n">bounds</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
-                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span><span class="mi">50</span><span class="p">})</span>
+                               <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>
             <span class="k">if</span> <span class="n">is_feasible</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="ow">and</span> <span class="n">res</span><span class="o">.</span><span class="n">fun</span> <span class="o">&lt;</span> <span class="n">f_best</span><span class="p">:</span>
                 <span class="n">g_best</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                 <span class="n">f_best</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">fun</span>
@@ -2006,7 +2011,7 @@ document.write(`
                 <span class="n">bounds</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lb</span><span class="p">,</span> <span class="n">ub</span><span class="p">))</span>
                 <span class="n">local_res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">func_and_grad</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;L-BFGS-B&quot;</span><span class="p">,</span>
                                      <span class="n">jac</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-                                     <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                                     <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">local_res</span><span class="p">,</span> <span class="s1">&#39;recovered_from_abnormal&#39;</span><span class="p">):</span>
                     <span class="n">local_res</span><span class="o">.</span><span class="n">recovered_from_abnormal</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">elif</span> <span class="nb">callable</span><span class="p">(</span><span class="n">grad_func</span><span class="p">):</span>
@@ -2014,7 +2019,7 @@ document.write(`
                 <span class="k">def</span><span class="w"> </span><span class="nf">_fg</span><span class="p">(</span><span class="n">x</span><span class="p">):</span> <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">grad_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
                 <span class="n">local_res</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">_fg</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;L-BFGS-B&quot;</span><span class="p">,</span>
                                      <span class="n">jac</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span>
-                                     <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">})</span>
+                                     <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;maxiter&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">local_res</span><span class="p">,</span> <span class="s1">&#39;recovered_from_abnormal&#39;</span><span class="p">):</span>
                     <span class="n">local_res</span><span class="o">.</span><span class="n">recovered_from_abnormal</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>

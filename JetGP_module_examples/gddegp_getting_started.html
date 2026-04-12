@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -847,7 +852,7 @@ Optimizing hyperparameters...
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
 Optimization complete!
-Optimized parameters: [-0.0930308  -1.24946515  1.8046176  -6.98599102]
+Optimized parameters: [-0.09325508 -1.25040033  1.80778294 -7.01425573]
 </pre></div>
 </div>
 </div>
@@ -898,9 +903,9 @@ The GDDEGP model is initialized with:</p>
 Making predictions...
 
 Model Performance:
-  NRMSE: 0.000220
-  Max absolute error: 0.478355
-  Mean absolute error: 0.020303
+  NRMSE: 0.000219
+  Max absolute error: 0.478080
+  Mean absolute error: 0.020259
 </pre></div>
 </div>
 </div>
@@ -994,29 +999,28 @@ The model is evaluated on a 100×100 grid. For function value predictions (witho
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]]]
-Function value interpolation errors:
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function value interpolation errors:
 ================================================================================
-Point 0 (x=-0.8839, y=11.2872): Abs Error = 2.07e-06, Rel Error = 6.81e-08
-Point 1 (x=3.8919, y=0.7885): Abs Error = 1.37e-06, Rel Error = 3.48e-07
-Point 2 (x=7.5161, y=10.9325): Abs Error = 2.85e-06, Rel Error = 2.71e-08
-Point 3 (x=-2.6208, y=4.1931): Abs Error = 8.74e-07, Rel Error = 1.79e-08
+Point 0 (x=-0.8839, y=11.2872): Abs Error = 1.68e-06, Rel Error = 5.53e-08
+Point 1 (x=3.8919, y=0.7885): Abs Error = 2.30e-06, Rel Error = 5.87e-07
+Point 2 (x=7.5161, y=10.9325): Abs Error = 9.79e-07, Rel Error = 9.30e-09
+Point 3 (x=-2.6208, y=4.1931): Abs Error = 1.00e-06, Rel Error = 2.05e-08
 Point 4 (x=5.8378, y=5.2293): Abs Error = 3.18e-06, Rel Error = 8.93e-08
 Point 5 (x=4.9349, y=7.8464): Abs Error = 2.11e-06, Rel Error = 3.83e-08
 Point 6 (x=6.7527, y=12.9087): Abs Error = 2.86e-06, Rel Error = 1.82e-08
-Point 7 (x=1.5226, y=6.4099): Abs Error = 1.83e-07, Rel Error = 1.08e-08
-Point 8 (x=-2.8505, y=9.4477): Abs Error = 6.68e-08, Rel Error = 1.24e-08
-Point 9 (x=0.0974, y=2.8033): Abs Error = 6.74e-06, Rel Error = 2.34e-07
-Point 10 (x=7.9372, y=8.7897): Abs Error = 1.87e-07, Rel Error = 3.00e-09
-Point 11 (x=-4.6139, y=1.5144): Abs Error = 2.12e-06, Rel Error = 9.55e-09
-Point 12 (x=-1.9712, y=12.2064): Abs Error = 1.93e-06, Rel Error = 1.50e-07
-Point 13 (x=8.8441, y=5.7923): Abs Error = 1.39e-06, Rel Error = 8.59e-08
-Point 14 (x=9.8795, y=13.5226): Abs Error = 1.99e-07, Rel Error = 1.74e-09
-Point 15 (x=0.6129, y=7.4131): Abs Error = 3.82e-06, Rel Error = 1.64e-07
+Point 7 (x=1.5226, y=6.4099): Abs Error = 7.55e-07, Rel Error = 4.47e-08
+Point 8 (x=-2.8505, y=9.4477): Abs Error = 6.49e-06, Rel Error = 1.21e-06
+Point 9 (x=0.0974, y=2.8033): Abs Error = 2.63e-06, Rel Error = 9.14e-08
+Point 10 (x=7.9372, y=8.7897): Abs Error = 1.69e-06, Rel Error = 2.71e-08
+Point 11 (x=-4.6139, y=1.5144): Abs Error = 2.42e-07, Rel Error = 1.09e-09
+Point 12 (x=-1.9712, y=12.2064): Abs Error = 3.81e-06, Rel Error = 2.96e-07
+Point 13 (x=8.8441, y=5.7923): Abs Error = 4.88e-07, Rel Error = 3.03e-08
+Point 14 (x=9.8795, y=13.5226): Abs Error = 7.38e-07, Rel Error = 6.44e-09
+Point 15 (x=0.6129, y=7.4131): Abs Error = 1.81e-06, Rel Error = 7.75e-08
 Point 16 (x=2.0324, y=14.4175): Abs Error = 7.85e-07, Rel Error = 6.07e-09
-Point 17 (x=2.7902, y=3.0620): Abs Error = 4.54e-06, Rel Error = 3.69e-06
-Point 18 (x=4.7203, y=10.1036): Abs Error = 2.68e-06, Rel Error = 3.10e-08
-Point 19 (x=-3.8445, y=0.7032): Abs Error = 3.51e-06, Rel Error = 1.95e-08
+Point 17 (x=2.7902, y=3.0620): Abs Error = 2.67e-06, Rel Error = 2.17e-06
+Point 18 (x=4.7203, y=10.1036): Abs Error = 4.82e-06, Rel Error = 5.57e-08
+Point 19 (x=-3.8445, y=0.7032): Abs Error = 2.11e-06, Rel Error = 1.17e-08
 
 Maximum absolute function value error: 2.20e+02
 
@@ -1038,23 +1042,23 @@ Point 0 (x=-0.8839, y=11.2872):
 
 Point 1 (x=3.8919, y=0.7885):
   Ray direction: [+0.940766, -0.339056] (angle: -19.8°)
-  Analytic: +5.745894, Predicted: +5.745895
-  Abs Error: 3.46e-07, Rel Error: 6.02e-08
+  Analytic: +5.745894, Predicted: +5.745894
+  Abs Error: 5.30e-08, Rel Error: 9.22e-09
 
 Point 2 (x=7.5161, y=10.9325):
   Ray direction: [-0.635176, +0.772367] (angle: 129.4°)
   Analytic: +24.850562, Predicted: +24.850562
-  Abs Error: 1.33e-07, Rel Error: 5.34e-09
+  Abs Error: 4.31e-08, Rel Error: 1.73e-09
 
 Point 3 (x=-2.6208, y=4.1931):
   Ray direction: [-0.886983, -0.461801] (angle: -152.5°)
   Analytic: +29.732670, Predicted: +29.732670
-  Abs Error: 4.59e-07, Rel Error: 1.54e-08
+  Abs Error: 2.25e-07, Rel Error: 7.57e-09
 
 Point 4 (x=5.8378, y=5.2293):
   Ray direction: [+0.505275, +0.862958] (angle: 59.7°)
   Analytic: +9.543639, Predicted: +9.543639
-  Abs Error: 1.74e-08, Rel Error: 1.82e-09
+  Abs Error: 2.76e-07, Rel Error: 2.89e-08
 
 Point 5 (x=4.9349, y=7.8464):
   Ray direction: [+0.717805, +0.696244] (angle: 44.1°)
@@ -1064,72 +1068,72 @@ Point 5 (x=4.9349, y=7.8464):
 Point 6 (x=6.7527, y=12.9087):
   Ray direction: [-0.320011, +0.947414] (angle: 108.7°)
   Analytic: +24.836568, Predicted: +24.836568
-  Abs Error: 5.49e-08, Rel Error: 2.21e-09
+  Abs Error: 6.22e-08, Rel Error: 2.51e-09
 
 Point 7 (x=1.5226, y=6.4099):
   Ray direction: [-0.570446, +0.821335] (angle: 124.8°)
   Analytic: +6.169674, Predicted: +6.169674
-  Abs Error: 3.24e-07, Rel Error: 5.25e-08
+  Abs Error: 1.64e-08, Rel Error: 2.65e-09
 
 Point 8 (x=-2.8505, y=9.4477):
   Ray direction: [-0.859808, -0.510617] (angle: -149.3°)
-  Analytic: +8.377277, Predicted: +8.377278
-  Abs Error: 4.96e-07, Rel Error: 5.92e-08
+  Analytic: +8.377277, Predicted: +8.377277
+  Abs Error: 1.44e-07, Rel Error: 1.72e-08
 
 Point 9 (x=0.0974, y=2.8033):
   Ray direction: [-0.864485, -0.502658] (angle: -149.8°)
   Analytic: +12.107357, Predicted: +12.107357
-  Abs Error: 2.14e-07, Rel Error: 1.76e-08
+  Abs Error: 3.31e-07, Rel Error: 2.73e-08
 
 Point 10 (x=7.9372, y=8.7897):
   Ray direction: [-0.744770, +0.667321] (angle: 138.1°)
   Analytic: +21.829417, Predicted: +21.829416
-  Abs Error: 2.86e-07, Rel Error: 1.31e-08
+  Abs Error: 1.68e-07, Rel Error: 7.72e-09
 
 Point 11 (x=-4.6139, y=1.5144):
   Ray direction: [-0.952036, -0.305987] (angle: -162.2°)
   Analytic: +95.290703, Predicted: +95.290703
-  Abs Error: 2.79e-07, Rel Error: 2.93e-09
+  Abs Error: 7.22e-08, Rel Error: 7.57e-10
 
 Point 12 (x=-1.9712, y=12.2064):
   Ray direction: [+0.967453, +0.253053] (angle: 14.7°)
-  Analytic: +20.289006, Predicted: +20.289006
-  Abs Error: 7.24e-07, Rel Error: 3.57e-08
+  Analytic: +20.289006, Predicted: +20.289005
+  Abs Error: 3.30e-07, Rel Error: 1.63e-08
 
 Point 13 (x=8.8441, y=5.7923):
   Ray direction: [-0.812416, +0.583079] (angle: 144.3°)
   Analytic: +12.909410, Predicted: +12.909410
-  Abs Error: 2.95e-07, Rel Error: 2.28e-08
+  Abs Error: 6.02e-08, Rel Error: 4.67e-09
 
 Point 14 (x=9.8795, y=13.5226):
   Ray direction: [-0.606478, +0.795100] (angle: 127.3°)
   Analytic: +26.757054, Predicted: +26.757054
-  Abs Error: 1.06e-07, Rel Error: 3.95e-09
+  Abs Error: 1.87e-07, Rel Error: 7.00e-09
 
 Point 15 (x=0.6129, y=7.4131):
   Ray direction: [+0.245190, +0.969475] (angle: 75.8°)
   Analytic: +4.827568, Predicted: +4.827568
-  Abs Error: 6.73e-08, Rel Error: 1.39e-08
+  Abs Error: 5.89e-09, Rel Error: 1.22e-09
 
 Point 16 (x=2.0324, y=14.4175):
   Ray direction: [+0.562212, +0.826993] (angle: 55.8°)
   Analytic: +26.889030, Predicted: +26.889030
-  Abs Error: 2.31e-08, Rel Error: 8.60e-10
+  Abs Error: 5.24e-08, Rel Error: 1.95e-09
 
 Point 17 (x=2.7902, y=3.0620):
   Ray direction: [-0.926033, +0.377441] (angle: 157.8°)
   Analytic: +2.633946, Predicted: +2.633946
-  Abs Error: 2.48e-07, Rel Error: 9.42e-08
+  Abs Error: 4.32e-08, Rel Error: 1.64e-08
 
 Point 18 (x=4.7203, y=10.1036):
   Ray direction: [+0.677619, +0.735413] (angle: 47.3°)
   Analytic: +23.762858, Predicted: +23.762858
-  Abs Error: 2.05e-07, Rel Error: 8.62e-09
+  Abs Error: 8.77e-08, Rel Error: 3.69e-09
 
 Point 19 (x=-3.8445, y=0.7032):
   Ray direction: [-0.942412, -0.334454] (angle: -160.5°)
   Analytic: +79.681322, Predicted: +79.681322
-  Abs Error: 1.03e-07, Rel Error: 1.29e-09
+  Abs Error: 1.31e-07, Rel Error: 1.65e-09
 
 ================================================================================
 Maximum absolute derivative error: 9.27e+01
@@ -1212,7 +1216,7 @@ This verification step ensures that the GDDEGP model correctly interpolates both
 <div class="cell_output docutils container">
 <img alt="../_images/gddegp_getting_started_8_0.png" src="../_images/gddegp_getting_started_8_0.png" />
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
-Final NRMSE: 0.000220
+Final NRMSE: 0.000219
 </pre></div>
 </div>
 </div>
@@ -1809,7 +1813,6 @@ Evaluation is performed on a 50×50 grid. The NRMSE quantifies prediction accura
 ================================================================================
 Verifying interpolation of training data...
 ================================================================================
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]], [[2, 1]]]
 
 Function value interpolation errors:
 --------------------------------------------------------------------------------
@@ -2533,78 +2536,57 @@ Initializing GDDEGP model with mixed derivative coverage...
 ======================================================================
 GDDEGP model initialized!
 Optimizing hyperparameters...
-New best for swarm at iteration 1: [-0.05975695 -0.89985154  0.82150297 -7.14236051] -127.01673385783165
-Best after iteration 1: [-0.05975695 -0.89985154  0.82150297 -7.14236051] -127.01673385783165
+New best for swarm at iteration 1: [-0.05975695 -0.89985154  0.82150297 -7.14236051] -126.99107193114754
+Best after iteration 1: [-0.05975695 -0.89985154  0.82150297 -7.14236051] -126.99107193114754
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 2: [-2.30758975e-03 -1.04043834e+00  1.81496818e+00 -1.36110435e+01] -147.52169479688217
-Best after iteration 2: [-2.30758975e-03 -1.04043834e+00  1.81496818e+00 -1.36110435e+01] -147.52169479688217
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 2: [-2.30758975e-03 -1.04043834e+00  1.81496818e+00 -1.36110435e+01] -147.32885799002378
+Best after iteration 2: [-2.30758975e-03 -1.04043834e+00  1.81496818e+00 -1.36110435e+01] -147.32885799002378
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 3: [-9.89015700e-03 -6.18065725e-01  5.48154411e-01 -1.53464673e+01] -147.9341298402955
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 3: [-9.89015700e-03 -6.18065725e-01  5.48154411e-01 -1.53464673e+01] -147.93200074427926
+Best after iteration 3: [-9.89015700e-03 -6.18065725e-01  5.48154411e-01 -1.53464673e+01] -147.93200074427926
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 3: [-9.89015700e-03 -6.18065725e-01  5.48154411e-01 -1.53464673e+01] -147.9341298402955
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 4: [-5.96032270e-03 -1.31590551e+00  1.62514241e+00 -1.00612742e+01] -162.85553261215443
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 4: [-5.96032270e-03 -1.31590551e+00  1.62514241e+00 -1.00612742e+01] -161.4272571974413
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 4: [-5.96032270e-03 -1.31590551e+00  1.62514241e+00 -1.00612742e+01] -162.85553261215443
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 4: [-5.96032270e-03 -1.31590551e+00  1.62514241e+00 -1.00612742e+01] -161.4272571974413
-New best for swarm at iteration 5: [-1.22213025e-02 -7.47842704e-01  9.05691231e-01 -1.39281164e+01] -181.06773022404138
-Best after iteration 5: [-1.22213025e-02 -7.47842704e-01  9.05691231e-01 -1.39281164e+01] -181.06773022404138
-New best for swarm at iteration 6: [ -0.01774978  -1.14309576   1.38158949 -12.2713231 ] -184.15620303447497
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 5: [  0.01652606  -1.00810411   1.29787259 -13.23587906] -174.9449414205534
+New best for swarm at iteration 5: [ -0.01392043  -0.85882935   1.26398009 -12.20967411] -176.47315491139676
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 6: [ -0.06294144  -0.88068066   1.29245585 -11.86964573] -191.34263609057825
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gradient refinement improved
+Best after iteration 5: [ -0.0599876   -0.9877374    1.23917945 -12.20967411] -202.2350244525481
+Best after iteration 6: [ -0.0599876   -0.9877374    1.23917945 -12.20967411] -202.2350244525481
+New best for swarm at iteration 7: [ -0.05468686  -1.1391212    1.45426164 -13.33295924] -202.62572972261302
+Best after iteration 7: [ -0.05468686  -1.1391212    1.45426164 -13.33295924] -202.62572972261302
+Best after iteration 8: [ -0.05468686  -1.1391212    1.45426164 -13.33295924] -202.62572972261302
+New best for swarm at iteration 9: [ -0.07307199  -1.02962908   1.46499908 -13.8404907 ] -204.4594522690494
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 6: [ -0.06294144  -0.88068066   1.29245585 -11.86964573] -191.34263609057825
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 7: [ -0.04046498  -0.96355202   1.27919924 -12.7815144 ] -196.57190666503925
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 7: [ -0.05371277  -1.11698323   1.39471929 -13.37310818] -201.4781876931956
-Best after iteration 7: [ -0.05371277  -1.11698323   1.39471929 -13.37310818] -201.4781876931956
-New best for swarm at iteration 8: [ -0.05399255  -1.00428344   1.2276448  -12.05810887] -201.7912246081874
-Best after iteration 8: [ -0.05399255  -1.00428344   1.2276448  -12.05810887] -201.7912246081874
-New best for swarm at iteration 9: [ -0.06834428  -1.00097244   1.26980425 -13.03585479] -202.11908507845578
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 9: [ -0.06834428  -1.00097244   1.26980425 -13.03585479] -202.11908507845578
-New best for swarm at iteration 10: [ -0.06300646  -0.98652313   1.25519614 -13.07104062] -202.29270931135022
-New best for swarm at iteration 10: [ -0.06704202  -0.99522887   1.27351237 -12.86610568] -202.63307320024774
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 10: [ -0.06055641  -1.06478688   1.47535944 -13.33686537] -202.9466747655565
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 9: [ -0.07307199  -1.02962908   1.46499908 -13.8404907 ] -204.4594522690494
+New best for swarm at iteration 10: [ -0.06318055  -1.06763824   1.447425   -13.2649649 ] -204.56132855647428
 Gradient refinement improved
-Best after iteration 10: [ -0.06080837  -1.06490837   1.47503787 -13.33686537] -203.6011210472446
+Best after iteration 10: [ -0.06318055  -1.06763824   1.447425   -13.2649649 ] -204.92456283572432
+New best for swarm at iteration 11: [ -0.06316035  -1.07579473   1.43496441 -13.68172321] -205.06210842307468
+New best for swarm at iteration 11: [ -0.06608164  -1.04866812   1.40423848 -12.68999043] -205.43349911090485
+New best for swarm at iteration 11: [ -0.08345353  -1.06285677   1.47494478 -13.36335536] -205.73085610092596
+Best after iteration 11: [ -0.08345353  -1.06285677   1.47494478 -13.36335536] -205.73085610092596
+New best for swarm at iteration 12: [ -0.07060019  -1.07436587   1.45573163 -13.45141191] -206.6856401407485
+Best after iteration 12: [ -0.07060019  -1.07436587   1.45573163 -13.45141191] -206.6856401407485
+New best for swarm at iteration 13: [ -0.06795918  -1.09799526   1.45528668 -13.41059084] -208.11244825933784
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 11: [ -0.0853344   -1.05942049   1.52923873 -12.64275511] -203.81616990170295
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 11: [ -0.06276941  -1.05081869   1.35481998 -13.0759044 ] -204.74914926543636
-Best after iteration 11: [ -0.06276941  -1.05081869   1.35481998 -13.0759044 ] -204.74914926543636
-New best for swarm at iteration 12: [ -0.06282024  -1.07209807   1.36687453 -12.93736564] -205.10064528183676
-New best for swarm at iteration 12: [ -0.06542885  -1.04703914   1.39701843 -12.42923892] -205.17862144976795
-Best after iteration 12: [ -0.06542885  -1.04703914   1.39701843 -12.42923892] -205.17862144976795
-New best for swarm at iteration 13: [ -0.06781423  -1.05602187   1.40202334 -13.78588706] -205.4138356319786
-New best for swarm at iteration 13: [ -0.07339875  -1.05016206   1.43183376 -12.73347808] -205.97638624164927
-Best after iteration 13: [ -0.07339875  -1.05016206   1.43183376 -12.73347808] -205.97638624164927
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 14: [ -0.07314984  -1.05953129   1.42097946 -13.35282028] -206.86342389941234
-Best after iteration 14: [ -0.07314984  -1.05953129   1.42097946 -13.35282028] -206.86342389941234
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 15: [ -0.06923866  -1.11549155   1.4803229  -12.8926895 ] -207.3349316536997
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 13: [ -0.06795918  -1.09799526   1.45528668 -13.41059084] -208.11244825933784
+Best after iteration 14: [ -0.06795918  -1.09799526   1.45528668 -13.41059084] -208.11244825933784
 Local optimization did not improve:
-Best after iteration 15: [ -0.06923866  -1.11549155   1.4803229  -12.8926895 ] -207.3349316536997
+Best after iteration 15: [ -0.06795918  -1.09799526   1.45528668 -13.41059084] -208.11244825933784
 Stopping: maximum iterations reached --&gt; 15
 Optimization complete!
-Optimized parameters: [ -0.06923866  -1.11549155   1.4803229  -12.8926895 ]
+Optimized parameters: [ -0.06795918  -1.09799526   1.45528668 -13.41059084]
 </pre></div>
 </div>
 </div>
@@ -2658,19 +2640,16 @@ Optimized parameters: [ -0.06923866  -1.11549155   1.4803229  -12.8926895 ]
 Evaluating model on test grid...
 ======================================================================
 Test grid: 25×25 = 625 points
-Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+
 Model Performance:
-  NRMSE: 0.000073
-  Max absolute error: 0.127968
-  Mean absolute error: 0.008617
+  NRMSE: 0.000072
+  Max absolute error: 0.138916
+  Mean absolute error: 0.008131
 
 Regional NRMSE:
-  Left region (Dir 1 only):   0.000091
-  Center region (Both dirs):  0.000005
-  Right region (Dir 2 only):  0.000124
+  Left region (Dir 1 only):   0.000112
+  Center region (Both dirs):  0.000004
+  Right region (Dir 2 only):  0.000084
 </pre></div>
 </div>
 </div>
@@ -2704,11 +2683,10 @@ Regional NRMSE:
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>======================================================================
 Verifying interpolation at training points...
 ======================================================================
-Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
 
 Function value interpolation (all 25 points):
-  Max error: 5.38e-05
-  Mean error: 2.04e-05
+  Max error: 4.88e-05
+  Mean error: 1.90e-05
 </pre></div>
 </div>
 </div>
@@ -2746,14 +2724,12 @@ Function value interpolation (all 25 points):
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
 --- Verifying Direction 1 derivatives ---
 Direction 1 exists at 11 points: [12, 16, 21, 22, 4, 5, 8, 14, 15, 17, 18]
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]], [[2, 1]]]
-Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
 Prediction shape: (3, 11)
 Expected: [2 rows, 11 columns]
 
 Direction 1 interpolation:
-  Max error: 5.20e-06
-  Mean error: 2.44e-06
+  Max error: 8.35e-06
+  Mean error: 3.17e-06
 </pre></div>
 </div>
 </div>
@@ -2789,14 +2765,12 @@ Direction 1 interpolation:
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
 --- Verifying Direction 2 derivatives ---
 Direction 2 exists at 13 points: [4, 5, 8, 14, 15, 17, 18, 0, 2, 3, 7, 10, 11]
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]], [[2, 1]]]
-Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
 Prediction shape: (3, 13)
 Expected: [2 rows, 13 columns]
 
 Direction 2 interpolation:
-  Max error: 5.37e-06
-  Mean error: 1.67e-06
+  Max error: 3.56e-06
+  Mean error: 1.76e-06
 </pre></div>
 </div>
 </div>
@@ -2862,18 +2836,16 @@ Direction 2 interpolation:
 Center region has 7 points with both directions: [4, 5, 8, 14, 15, 17, 18]
   rays_center_dir1.shape: (2, 7)
   rays_center_dir2.shape: (2, 7)
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]], [[2, 1]]]
-Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
 Prediction shape: (3, 7)
 Expected: [3 rows, 7 columns]
 
 Center region - Direction 1:
-  Max error: 5.20e-06
-  Mean error: 2.36e-06
+  Max error: 5.68e-06
+  Mean error: 2.56e-06
 
 Center region - Direction 2:
-  Max error: 2.23e-06
-  Mean error: 1.16e-06
+  Max error: 3.47e-06
+  Mean error: 1.62e-06
 </pre></div>
 </div>
 </div>
@@ -3044,11 +3016,14 @@ Center region - Direction 2:
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>======================================================================
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
 Creating visualization...
 ======================================================================
 </pre></div>
 </div>
-<img alt="../_images/gddegp_getting_started_32_1.png" src="../_images/gddegp_getting_started_32_1.png" />
+<img alt="../_images/gddegp_getting_started_32_2.png" src="../_images/gddegp_getting_started_32_2.png" />
 </div>
 </div>
 <p>—</p>
@@ -3121,10 +3096,10 @@ Coverage summary:
   - Total derivative constraints: 24
 
 Model performance:
-  - Overall NRMSE: 0.000073
-  - Function max interpolation error: 5.38e-05
-  - Dir 1 max interpolation error: 5.20e-06
-  - Dir 2 max interpolation error: 5.37e-06
+  - Overall NRMSE: 0.000072
+  - Function max interpolation error: 4.88e-05
+  - Dir 1 max interpolation error: 8.35e-06
+  - Dir 2 max interpolation error: 3.56e-06
 ======================================================================
 Figure saved to gddegp_mixed_coverage.png
 </pre></div>
@@ -3367,7 +3342,7 @@ der_indices       : [[[[1, 1]], [[2, 1]], [[3, 1]]]]
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 30
-Optimized hyperparameters: [-0.8988436  -0.5990696   0.54890597 -7.02446261]
+Optimized hyperparameters: [-0.93381455 -0.73393672  0.74402373 -6.89207526]
 </pre></div>
 </div>
 </div>
@@ -3421,13 +3396,12 @@ Optimized hyperparameters: [-0.8988436  -0.5990696   0.54890597 -7.02446261]
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
-Quantity                        RMSE   Correlation
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Quantity                        RMSE   Correlation
 ----------------------------------------------------
-f(x)                      3.5038e-08        1.0000
-df/dr1 (x1-axis)          5.1686e-08        1.0000
-df/dr2 (x2-axis)          8.1851e-08        1.0000
-df/dr3 (45° diag)         6.7183e-08        1.0000
+f(x)                      2.7678e-07        1.0000
+df/dr1 (x1-axis)          1.5104e-07        1.0000
+df/dr2 (x2-axis)          2.8975e-07        1.0000
+df/dr3 (45° diag)         2.4226e-07        1.0000
 </pre></div>
 </div>
 </div>
@@ -3614,7 +3588,7 @@ must be provided explicitly. For two first-order directional derivatives set <co
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimised hyperparameters: [-1.39083569e-02  4.47278616e-02  4.47652758e-01 -1.51974132e+01]
+Optimised hyperparameters: [-1.39070917e-02  4.47276858e-02  4.47650956e-01 -1.58119282e+01]
 </pre></div>
 </div>
 </div>

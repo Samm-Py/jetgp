@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -773,7 +778,7 @@ Optimizing hyperparameters...
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
 Optimization complete!
-Optimized parameters: [-0.07225154 -1.03990251  1.74216936 -6.78407467]
+Optimized parameters: [-0.04558376 -1.09379569  1.62836083 -6.89511062]
 </pre></div>
 </div>
 </div>
@@ -821,9 +826,9 @@ The DDEGP model is initialized with:</p>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Test grid: 25×25 = 625 points
 
 Model Performance:
-  NRMSE: 0.000608
-  Max absolute error: 2.235694
-  Mean absolute error: 0.040376
+  NRMSE: 0.000642
+  Max absolute error: 2.363763
+  Mean absolute error: 0.042050
 </pre></div>
 </div>
 </div>
@@ -869,24 +874,24 @@ The model is evaluated on a 50×50 grid covering the entire domain.</p>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function value interpolation errors:
 ======================================================================
-Point 0 (x1=2.9577, x2=2.8589): Abs Error = 2.71e-05, Rel Error = 3.61e-05
-Point 1 (x1=-4.1976, x2=12.2356): Abs Error = 2.60e-06, Rel Error = 2.05e-07
-Point 2 (x1=8.7702, x2=8.0406): Abs Error = 4.45e-06, Rel Error = 1.14e-07
-Point 3 (x1=9.2240, x2=13.6789): Abs Error = 8.79e-06, Rel Error = 6.77e-08
-Point 4 (x1=3.8598, x2=5.5992): Abs Error = 8.30e-06, Rel Error = 4.79e-07
-Point 5 (x1=-2.8939, x2=10.7455): Abs Error = 3.72e-06, Rel Error = 2.35e-06
-Point 6 (x1=5.9409, x2=5.8233): Abs Error = 9.94e-06, Rel Error = 2.41e-07
-Point 7 (x1=6.9033, x2=2.3873): Abs Error = 2.37e-07, Rel Error = 1.23e-08
-Point 8 (x1=0.4993, x2=0.5596): Abs Error = 8.01e-06, Rel Error = 1.99e-07
-Point 9 (x1=2.3093, x2=4.4416): Abs Error = 5.70e-06, Rel Error = 1.02e-06
-Point 10 (x1=-1.9535, x2=1.6121): Abs Error = 1.53e-05, Rel Error = 2.18e-07
-Point 11 (x1=4.8576, x2=6.5806): Abs Error = 4.01e-05, Rel Error = 1.02e-06
-Point 12 (x1=0.6609, x2=8.6955): Abs Error = 1.41e-05, Rel Error = 4.53e-07
-Point 13 (x1=-3.6324, x2=14.7404): Abs Error = 6.13e-06, Rel Error = 1.97e-06
-Point 14 (x1=7.9744, x2=11.2782): Abs Error = 2.81e-06, Rel Error = 2.71e-08
-Point 15 (x1=-0.7963, x2=10.2039): Abs Error = 5.71e-07, Rel Error = 2.30e-08
+Point 0 (x1=2.9577, x2=2.8589): Abs Error = 2.39e-05, Rel Error = 3.18e-05
+Point 1 (x1=-4.1976, x2=12.2356): Abs Error = 8.99e-06, Rel Error = 7.09e-07
+Point 2 (x1=8.7702, x2=8.0406): Abs Error = 1.11e-05, Rel Error = 2.84e-07
+Point 3 (x1=9.2240, x2=13.6789): Abs Error = 5.36e-07, Rel Error = 4.13e-09
+Point 4 (x1=3.8598, x2=5.5992): Abs Error = 7.67e-06, Rel Error = 4.42e-07
+Point 5 (x1=-2.8939, x2=10.7455): Abs Error = 1.76e-05, Rel Error = 1.11e-05
+Point 6 (x1=5.9409, x2=5.8233): Abs Error = 1.15e-05, Rel Error = 2.79e-07
+Point 7 (x1=6.9033, x2=2.3873): Abs Error = 7.69e-06, Rel Error = 3.98e-07
+Point 8 (x1=0.4993, x2=0.5596): Abs Error = 2.50e-05, Rel Error = 6.21e-07
+Point 9 (x1=2.3093, x2=4.4416): Abs Error = 3.81e-07, Rel Error = 6.83e-08
+Point 10 (x1=-1.9535, x2=1.6121): Abs Error = 1.96e-05, Rel Error = 2.79e-07
+Point 11 (x1=4.8576, x2=6.5806): Abs Error = 5.19e-06, Rel Error = 1.33e-07
+Point 12 (x1=0.6609, x2=8.6955): Abs Error = 2.05e-05, Rel Error = 6.58e-07
+Point 13 (x1=-3.6324, x2=14.7404): Abs Error = 8.06e-07, Rel Error = 2.60e-07
+Point 14 (x1=7.9744, x2=11.2782): Abs Error = 1.77e-05, Rel Error = 1.70e-07
+Point 15 (x1=-0.7963, x2=10.2039): Abs Error = 1.92e-05, Rel Error = 7.72e-07
 
-Maximum absolute function value error: 4.01e-05
+Maximum absolute function value error: 2.50e-05
 </pre></div>
 </div>
 </div>
@@ -963,7 +968,6 @@ Ray directions:
   Ray 2: [+0.0000, +1.0000] (angle: 90.0°)
   Ray 3: [-0.7071, +0.7071] (angle: 135.0°)
 ======================================================================
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]], [[2, 1]], [[3, 1]]]
 
 Prediction with derivatives shape: (4, 16)
 Expected: [4 rows, 16 columns]
@@ -976,163 +980,163 @@ Expected: [4 rows, 16 columns]
 Ray 1 - Direction: [+0.7071, +0.7071]
 ----------------------------------------------------------------------
 Point 0 (x1=2.9577, x2=2.8589):
-  Analytic: -0.114669, Predicted: -0.114666
-  Abs Error: 2.61e-06, Rel Error: 2.28e-05
+  Analytic: -0.114669, Predicted: -0.114670
+  Abs Error: 5.84e-07, Rel Error: 5.09e-06
 Point 1 (x1=-4.1976, x2=12.2356):
-  Analytic: -20.057824, Predicted: -20.057823
-  Abs Error: 1.20e-06, Rel Error: 6.00e-08
+  Analytic: -20.057824, Predicted: -20.057825
+  Abs Error: 1.46e-06, Rel Error: 7.27e-08
 Point 2 (x1=8.7702, x2=8.0406):
-  Analytic: -1.342300, Predicted: -1.342300
-  Abs Error: 6.09e-08, Rel Error: 4.54e-08
+  Analytic: -1.342300, Predicted: -1.342299
+  Abs Error: 1.27e-06, Rel Error: 9.46e-07
 Point 3 (x1=9.2240, x2=13.6789):
-  Analytic: +1.995643, Predicted: +1.995644
-  Abs Error: 5.58e-07, Rel Error: 2.79e-07
+  Analytic: +1.995643, Predicted: +1.995643
+  Abs Error: 2.53e-08, Rel Error: 1.27e-08
 Point 4 (x1=3.8598, x2=5.5992):
-  Analytic: +13.075170, Predicted: +13.075170
-  Abs Error: 3.52e-07, Rel Error: 2.69e-08
+  Analytic: +13.075170, Predicted: +13.075171
+  Abs Error: 1.55e-06, Rel Error: 1.19e-07
 Point 5 (x1=-2.8939, x2=10.7455):
-  Analytic: -2.785022, Predicted: -2.785021
-  Abs Error: 1.12e-07, Rel Error: 4.03e-08
+  Analytic: -2.785022, Predicted: -2.785022
+  Abs Error: 4.20e-07, Rel Error: 1.51e-07
 Point 6 (x1=5.9409, x2=5.8233):
-  Analytic: +9.330693, Predicted: +9.330694
-  Abs Error: 7.94e-07, Rel Error: 8.51e-08
+  Analytic: +9.330693, Predicted: +9.330693
+  Abs Error: 4.15e-09, Rel Error: 4.44e-10
 Point 7 (x1=6.9033, x2=2.3873):
-  Analytic: -2.553795, Predicted: -2.553795
-  Abs Error: 1.46e-07, Rel Error: 5.73e-08
+  Analytic: -2.553795, Predicted: -2.553791
+  Abs Error: 4.11e-06, Rel Error: 1.61e-06
 Point 8 (x1=0.4993, x2=0.5596):
   Analytic: -19.542278, Predicted: -19.542279
-  Abs Error: 8.31e-07, Rel Error: 4.25e-08
+  Abs Error: 1.63e-06, Rel Error: 8.34e-08
 Point 9 (x1=2.3093, x2=4.4416):
-  Analytic: -0.992354, Predicted: -0.992353
-  Abs Error: 1.34e-06, Rel Error: 1.35e-06
+  Analytic: -0.992354, Predicted: -0.992356
+  Abs Error: 1.85e-06, Rel Error: 1.87e-06
 Point 10 (x1=-1.9535, x2=1.6121):
-  Analytic: -28.687364, Predicted: -28.687365
-  Abs Error: 8.09e-07, Rel Error: 2.82e-08
+  Analytic: -28.687364, Predicted: -28.687366
+  Abs Error: 2.41e-06, Rel Error: 8.39e-08
 Point 11 (x1=4.8576, x2=6.5806):
-  Analytic: +16.666480, Predicted: +16.666479
-  Abs Error: 9.59e-07, Rel Error: 5.75e-08
+  Analytic: +16.666480, Predicted: +16.666481
+  Abs Error: 9.04e-07, Rel Error: 5.43e-08
 Point 12 (x1=0.6609, x2=8.6955):
-  Analytic: +8.468193, Predicted: +8.468189
-  Abs Error: 4.42e-06, Rel Error: 5.22e-07
+  Analytic: +8.468193, Predicted: +8.468195
+  Abs Error: 1.17e-06, Rel Error: 1.38e-07
 Point 13 (x1=-3.6324, x2=14.7404):
-  Analytic: +3.063847, Predicted: +3.063846
-  Abs Error: 1.34e-06, Rel Error: 4.37e-07
+  Analytic: +3.063847, Predicted: +3.063848
+  Abs Error: 1.24e-07, Rel Error: 4.04e-08
 Point 14 (x1=7.9744, x2=11.2782):
-  Analytic: +0.587794, Predicted: +0.587793
-  Abs Error: 1.43e-06, Rel Error: 2.44e-06
+  Analytic: +0.587794, Predicted: +0.587796
+  Abs Error: 1.89e-06, Rel Error: 3.22e-06
 Point 15 (x1=-0.7963, x2=10.2039):
-  Analytic: +16.145825, Predicted: +16.145824
-  Abs Error: 9.09e-07, Rel Error: 5.63e-08
+  Analytic: +16.145825, Predicted: +16.145825
+  Abs Error: 2.88e-07, Rel Error: 1.79e-08
 
-Maximum absolute error for Ray 1: 4.42e-06
+Maximum absolute error for Ray 1: 4.11e-06
 
 ----------------------------------------------------------------------
 Ray 2 - Direction: [+0.0000, +1.0000]
 ----------------------------------------------------------------------
 Point 0 (x1=2.9577, x2=2.8589):
-  Analytic: +0.872268, Predicted: +0.872269
-  Abs Error: 2.72e-07, Rel Error: 3.11e-07
+  Analytic: +0.872268, Predicted: +0.872267
+  Abs Error: 1.92e-06, Rel Error: 2.20e-06
 Point 1 (x1=-4.1976, x2=12.2356):
-  Analytic: -5.442781, Predicted: -5.442781
-  Abs Error: 8.73e-07, Rel Error: 1.60e-07
+  Analytic: -5.442781, Predicted: -5.442782
+  Abs Error: 6.19e-07, Rel Error: 1.14e-07
 Point 2 (x1=8.7702, x2=8.0406):
-  Analytic: +12.124916, Predicted: +12.124918
-  Abs Error: 1.30e-06, Rel Error: 1.07e-07
+  Analytic: +12.124916, Predicted: +12.124915
+  Abs Error: 1.49e-06, Rel Error: 1.23e-07
 Point 3 (x1=9.2240, x2=13.6789):
-  Analytic: +22.736012, Predicted: +22.736009
-  Abs Error: 2.15e-06, Rel Error: 9.47e-08
+  Analytic: +22.736012, Predicted: +22.736013
+  Abs Error: 1.36e-06, Rel Error: 6.00e-08
 Point 4 (x1=3.8598, x2=5.5992):
-  Analytic: +7.635203, Predicted: +7.635204
-  Abs Error: 4.16e-07, Rel Error: 5.44e-08
+  Analytic: +7.635203, Predicted: +7.635206
+  Abs Error: 2.60e-06, Rel Error: 3.41e-07
 Point 5 (x1=-2.8939, x2=10.7455):
-  Analytic: -1.884427, Predicted: -1.884423
-  Abs Error: 4.06e-06, Rel Error: 2.15e-06
+  Analytic: -1.884427, Predicted: -1.884428
+  Abs Error: 3.57e-07, Rel Error: 1.89e-07
 Point 6 (x1=5.9409, x2=5.8233):
-  Analytic: +9.438214, Predicted: +9.438214
-  Abs Error: 1.88e-07, Rel Error: 1.99e-08
+  Analytic: +9.438214, Predicted: +9.438215
+  Abs Error: 1.32e-06, Rel Error: 1.39e-07
 Point 7 (x1=6.9033, x2=2.3873):
-  Analytic: +2.435877, Predicted: +2.435875
-  Abs Error: 1.80e-06, Rel Error: 7.40e-07
+  Analytic: +2.435877, Predicted: +2.435878
+  Abs Error: 6.84e-07, Rel Error: 2.81e-07
 Point 8 (x1=0.4993, x2=0.5596):
-  Analytic: -9.355822, Predicted: -9.355825
-  Abs Error: 2.78e-06, Rel Error: 2.97e-07
+  Analytic: -9.355822, Predicted: -9.355820
+  Abs Error: 2.40e-06, Rel Error: 2.56e-07
 Point 9 (x1=2.3093, x2=4.4416):
-  Analytic: +2.855967, Predicted: +2.855966
-  Abs Error: 6.48e-07, Rel Error: 2.27e-07
+  Analytic: +2.855967, Predicted: +2.855970
+  Abs Error: 2.51e-06, Rel Error: 8.78e-07
 Point 10 (x1=-1.9535, x2=1.6121):
-  Analytic: -15.979789, Predicted: -15.979787
-  Abs Error: 2.67e-06, Rel Error: 1.67e-07
+  Analytic: -15.979789, Predicted: -15.979791
+  Abs Error: 1.28e-06, Rel Error: 8.04e-08
 Point 11 (x1=4.8576, x2=6.5806):
-  Analytic: +10.526814, Predicted: +10.526814
-  Abs Error: 2.57e-07, Rel Error: 2.44e-08
+  Analytic: +10.526814, Predicted: +10.526812
+  Abs Error: 1.90e-06, Rel Error: 1.80e-07
 Point 12 (x1=0.6609, x2=8.6955):
   Analytic: +7.382008, Predicted: +7.382008
-  Abs Error: 2.25e-07, Rel Error: 3.05e-08
+  Abs Error: 2.00e-07, Rel Error: 2.71e-08
 Point 13 (x1=-3.6324, x2=14.7404):
-  Analytic: +2.509534, Predicted: +2.509538
-  Abs Error: 4.18e-06, Rel Error: 1.67e-06
+  Analytic: +2.509534, Predicted: +2.509533
+  Abs Error: 2.81e-07, Rel Error: 1.12e-07
 Point 14 (x1=7.9744, x2=11.2782):
-  Analytic: +19.509745, Predicted: +19.509747
-  Abs Error: 1.12e-06, Rel Error: 5.72e-08
+  Analytic: +19.509745, Predicted: +19.509744
+  Abs Error: 9.71e-07, Rel Error: 4.98e-08
 Point 15 (x1=-0.7963, x2=10.2039):
-  Analytic: +5.709169, Predicted: +5.709167
-  Abs Error: 2.02e-06, Rel Error: 3.53e-07
+  Analytic: +5.709169, Predicted: +5.709170
+  Abs Error: 1.33e-06, Rel Error: 2.32e-07
 
-Maximum absolute error for Ray 2: 4.18e-06
+Maximum absolute error for Ray 2: 2.60e-06
 
 ----------------------------------------------------------------------
 Ray 3 - Direction: [-0.7071, +0.7071]
 ----------------------------------------------------------------------
 Point 0 (x1=2.9577, x2=2.8589):
-  Analytic: +1.348243, Predicted: +1.348245
-  Abs Error: 1.79e-06, Rel Error: 1.33e-06
+  Analytic: +1.348243, Predicted: +1.348243
+  Abs Error: 2.07e-07, Rel Error: 1.53e-07
 Point 1 (x1=-4.1976, x2=12.2356):
-  Analytic: +12.360569, Predicted: +12.360571
-  Abs Error: 1.85e-06, Rel Error: 1.49e-07
+  Analytic: +12.360569, Predicted: +12.360568
+  Abs Error: 2.82e-07, Rel Error: 2.28e-08
 Point 2 (x1=8.7702, x2=8.0406):
-  Analytic: +18.489521, Predicted: +18.489519
-  Abs Error: 1.87e-06, Rel Error: 1.01e-07
+  Analytic: +18.489521, Predicted: +18.489520
+  Abs Error: 8.05e-07, Rel Error: 4.36e-08
 Point 3 (x1=9.2240, x2=13.6789):
   Analytic: +30.157933, Predicted: +30.157931
-  Abs Error: 1.23e-06, Rel Error: 4.06e-08
+  Abs Error: 1.76e-06, Rel Error: 5.83e-08
 Point 4 (x1=3.8598, x2=5.5992):
-  Analytic: -2.277362, Predicted: -2.277361
-  Abs Error: 9.79e-07, Rel Error: 4.30e-07
+  Analytic: -2.277362, Predicted: -2.277360
+  Abs Error: 1.78e-06, Rel Error: 7.81e-07
 Point 5 (x1=-2.8939, x2=10.7455):
-  Analytic: +0.120039, Predicted: +0.120045
-  Abs Error: 6.44e-06, Rel Error: 5.36e-05
+  Analytic: +0.120039, Predicted: +0.120040
+  Abs Error: 1.38e-06, Rel Error: 1.15e-05
 Point 6 (x1=5.9409, x2=5.8233):
-  Analytic: +4.016957, Predicted: +4.016959
-  Abs Error: 2.52e-06, Rel Error: 6.28e-07
+  Analytic: +4.016957, Predicted: +4.016955
+  Abs Error: 2.27e-06, Rel Error: 5.64e-07
 Point 7 (x1=6.9033, x2=2.3873):
   Analytic: +5.998646, Predicted: +5.998645
   Abs Error: 1.15e-06, Rel Error: 1.92e-07
 Point 8 (x1=0.4993, x2=0.5596):
-  Analytic: +6.311147, Predicted: +6.311148
-  Abs Error: 9.09e-07, Rel Error: 1.44e-07
+  Analytic: +6.311147, Predicted: +6.311149
+  Abs Error: 1.71e-06, Rel Error: 2.71e-07
 Point 9 (x1=2.3093, x2=4.4416):
-  Analytic: +5.031302, Predicted: +5.031301
-  Abs Error: 5.30e-07, Rel Error: 1.05e-07
+  Analytic: +5.031302, Predicted: +5.031304
+  Abs Error: 2.40e-06, Rel Error: 4.77e-07
 Point 10 (x1=-1.9535, x2=1.6121):
-  Analytic: +6.088529, Predicted: +6.088527
-  Abs Error: 2.49e-06, Rel Error: 4.10e-07
+  Analytic: +6.088529, Predicted: +6.088531
+  Abs Error: 2.30e-06, Rel Error: 3.77e-07
 Point 11 (x1=4.8576, x2=6.5806):
-  Analytic: -1.779317, Predicted: -1.779313
-  Abs Error: 4.44e-06, Rel Error: 2.50e-06
+  Analytic: -1.779317, Predicted: -1.779320
+  Abs Error: 2.48e-06, Rel Error: 1.39e-06
 Point 12 (x1=0.6609, x2=8.6955):
-  Analytic: +1.971542, Predicted: +1.971544
-  Abs Error: 1.96e-06, Rel Error: 9.92e-07
+  Analytic: +1.971542, Predicted: +1.971542
+  Abs Error: 4.39e-07, Rel Error: 2.23e-07
 Point 13 (x1=-3.6324, x2=14.7404):
-  Analytic: +0.485169, Predicted: +0.485172
-  Abs Error: 3.08e-06, Rel Error: 6.34e-06
+  Analytic: +0.485169, Predicted: +0.485170
+  Abs Error: 5.47e-07, Rel Error: 1.13e-06
 Point 14 (x1=7.9744, x2=11.2782):
-  Analytic: +27.003152, Predicted: +27.003152
-  Abs Error: 2.21e-07, Rel Error: 8.17e-09
+  Analytic: +27.003152, Predicted: +27.003150
+  Abs Error: 1.64e-06, Rel Error: 6.08e-08
 Point 15 (x1=-0.7963, x2=10.2039):
-  Analytic: -8.071841, Predicted: -8.071839
-  Abs Error: 1.87e-06, Rel Error: 2.32e-07
+  Analytic: -8.071841, Predicted: -8.071843
+  Abs Error: 1.59e-06, Rel Error: 1.97e-07
 
-Maximum absolute error for Ray 3: 6.44e-06
+Maximum absolute error for Ray 3: 2.48e-06
 </pre></div>
 </div>
 </div>
@@ -1272,7 +1276,7 @@ This verification step ensures that the DDEGP model correctly interpolates both 
 <div class="cell_output docutils container">
 <img alt="../_images/ddegp_getting_started_9_0.png" src="../_images/ddegp_getting_started_9_0.png" />
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
-Final NRMSE: 0.000608
+Final NRMSE: 0.000642
 </pre></div>
 </div>
 </div>
@@ -1657,7 +1661,7 @@ Optimizing hyperparameters...
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
 Optimization complete!
-Optimized parameters: [-0.11477151 -1.334613    2.09600659 -5.89146455]
+Optimized parameters: [-0.11977696 -1.42966179  2.21408821 -5.781427  ]
 </pre></div>
 </div>
 </div>
@@ -1705,9 +1709,9 @@ Evaluating model on test grid...
 Test grid: 25×25 = 625 points
 
 Model Performance:
-  NRMSE: 0.000015
-  Max absolute error: 0.047640
-  Mean absolute error: 0.001141
+  NRMSE: 0.000022
+  Max absolute error: 0.084911
+  Mean absolute error: 0.001540
 </pre></div>
 </div>
 </div>
@@ -1729,8 +1733,8 @@ Model Performance:
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Regional Performance:
-  Left region NRMSE (rays 1,2):  0.000017
-  Right region NRMSE (rays 2,3): 0.000019
+  Left region NRMSE (rays 1,2):  0.000013
+  Right region NRMSE (rays 2,3): 0.000040
 </pre></div>
 </div>
 </div>
@@ -1769,8 +1773,8 @@ Verifying interpolation at training points...
 ======================================================================
 
 Function value interpolation:
-  Max error: 9.51e-05
-  Mean error: 4.17e-05
+  Max error: 3.42e-04
+  Mean error: 1.10e-04
 </pre></div>
 </div>
 </div>
@@ -1798,8 +1802,7 @@ Function value interpolation:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]], [[2, 1]], [[3, 1]]]
-Prediction with derivatives shape: (4, 20)
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Prediction with derivatives shape: (4, 20)
 Expected structure: [4 rows, 20 columns]
   Row 0: function values (20 points)
   Row 1: Ray 1 derivatives (10 points at indices [1, 2, 4, 6, 7, 8, 13, 14, 15, 18])
@@ -1833,9 +1836,9 @@ Expected structure: [4 rows, 20 columns]
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Directional derivative interpolation errors:
-  Ray 1 (45°): max error = 1.94e-05, mean error = 8.54e-06 (10 points)
-  Ray 2 (90°): max error = 4.32e-05, mean error = 1.04e-05 (20 points)
-  Ray 3 (135°): max error = 2.63e-05, mean error = 9.06e-06 (10 points)
+  Ray 1 (45°): max error = 5.11e-05, mean error = 1.50e-05 (10 points)
+  Ray 2 (90°): max error = 4.78e-05, mean error = 2.06e-05 (20 points)
+  Ray 3 (135°): max error = 6.31e-05, mean error = 1.73e-05 (10 points)
 </pre></div>
 </div>
 </div>
@@ -2022,9 +2025,9 @@ derivative_locations structure:
   ]
 
 Model performance:
-  - Overall NRMSE: 0.000015
-  - Left region NRMSE: 0.000017
-  - Right region NRMSE: 0.000019
+  - Overall NRMSE: 0.000022
+  - Left region NRMSE: 0.000013
+  - Right region NRMSE: 0.000040
 ======================================================================
 </pre></div>
 </div>
@@ -2240,7 +2243,7 @@ Untrained ray   : 4 (180°)  — in RAYS array, not in der_indices
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-0.73682819 -0.2070736   1.24776226 -6.22027315]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-0.65855563 -0.12811236  1.19760986 -6.21212959]
 </pre></div>
 </div>
 </div>
@@ -2280,9 +2283,8 @@ Untrained ray   : 4 (180°)  — in RAYS array, not in der_indices
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
-Function RMSE                : 4.4259e-06
-Ray-4 RMSE (untrained)       : 8.1277e-07
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function RMSE                : 1.7159e-05
+Ray-4 RMSE (untrained)       : 2.1375e-06
 Ray-4 correlation            : 1.0000
 </pre></div>
 </div>
@@ -2330,10 +2332,7 @@ Ray-4 correlation            : 1.0000
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Warning: Cholesky decomposition failed via scipy, using standard np solve instead.
-</pre></div>
-</div>
-<img alt="../_images/ddegp_getting_started_30_1.png" src="../_images/ddegp_getting_started_30_1.png" />
+<img alt="../_images/ddegp_getting_started_30_0.png" src="../_images/ddegp_getting_started_30_0.png" />
 </div>
 </div>
 <p>—</p>
@@ -2485,7 +2484,7 @@ y_train[0] shape : (36, 1)
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimised hyperparameters: [-1.39083569e-02  4.47278616e-02  4.47652758e-01 -1.51974132e+01]
+Optimised hyperparameters: [-1.39070917e-02  4.47276858e-02  4.47650956e-01 -1.58119282e+01]
 </pre></div>
 </div>
 </div>

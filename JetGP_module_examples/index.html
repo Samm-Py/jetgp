@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -448,7 +453,7 @@ document.write(`
                   
   <section id="jetgp-module-examples">
 <h1>JetGP Module Examples<a class="headerlink" href="#jetgp-module-examples" title="Link to this heading">#</a></h1>
-<p>This section provides <strong>examples</strong> for using JetGP classes, including DEGP, WDEGP, DDEGP, GDDEGP, and WDDEGP.</p>
+<p>This section provides <strong>examples</strong> for using JetGP classes, including DEGP, WDEGP, SDEGP, DDEGP, GDDEGP, and WDDEGP.</p>
 <div class="toctree-wrapper compound">
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
@@ -538,6 +543,30 @@ document.write(`
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html#example-7-wdegp-with-gddegp-submodels-point-wise-directional-derivatives">Example 7: WDEGP with GDDEGP Submodels (Point-Wise Directional Derivatives)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html#example-predicting-derivatives-not-common-to-all-submodels">Example: Predicting Derivatives Not Common to All Submodels</a></li>
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html#example-8-2d-function-only-wdegp-with-derivative-predictions">Example 8: 2D Function-Only WDEGP with Derivative Predictions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html#example-9-weighted-vs-full-prediction-mode-full">Example 9: Weighted vs Full Prediction (<code class="docutils literal notranslate"><span class="pre">mode='full'</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html#example-10-mode-full-with-ddegp-submodels">Example 10: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with DDEGP Submodels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html#example-11-mode-full-with-gddegp-submodels">Example 11: <code class="docutils literal notranslate"><span class="pre">mode='full'</span></code> with GDDEGP Submodels</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html#example-1-first-order-sdegp-on-2d-branin-hoo">Example 1: First-Order SDEGP on 2D Branin-Hoo</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html#example-2-second-order-sdegp-on-2d-branin-hoo">Example 2: Second-Order SDEGP on 2D Branin-Hoo</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html#example-1-2d-first-order-derivatives-with-sparse-cholesky">Example 1: 2D First-Order Derivatives with Sparse Cholesky</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html#example-1-global-directional-gp-on-the-branin-function-with-sparse-cholesky">Example 1: Global Directional GP on the Branin Function with Sparse Cholesky</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html#example-1-generalized-directional-gp-with-gradient-aligned-rays-on-the-branin-function">Example 1: Generalized Directional GP with Gradient-Aligned Rays on the Branin Function</a></li>
 </ul>
 </li>
 </ul>

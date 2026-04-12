@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -198,6 +198,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -215,6 +216,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -796,7 +801,8 @@ document.write(`
 <a class="viewcode-back" href="../../../api/full_gddegp.html#jetgp.full_gddegp.gddegp_utils.compute_dimension_differences">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">compute_dimension_differences</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">rays_X1</span><span class="p">,</span> <span class="n">rays_X2</span><span class="p">,</span>
                                   <span class="n">derivative_locations_X1</span><span class="p">,</span> <span class="n">derivative_locations_X2</span><span class="p">,</span>
-                                  <span class="n">e_tags_1</span><span class="p">,</span> <span class="n">e_tags_2</span><span class="p">,</span> <span class="n">oti_module</span><span class="p">):</span>
+                                  <span class="n">e_tags_1</span><span class="p">,</span> <span class="n">e_tags_2</span><span class="p">,</span> <span class="n">oti_module</span><span class="p">,</span>
+                                  <span class="n">X1_np</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">X2_np</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_fused</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute differences for a single dimension k.</span>
 <span class="sd">    Only perturbs points at specified derivative_locations with their corresponding rays.</span>
@@ -805,8 +811,8 @@ document.write(`
 <span class="sd">    ----------</span>
 <span class="sd">    k : int</span>
 <span class="sd">        Dimension index.</span>
-<span class="sd">    X1, X2 : oti.array</span>
-<span class="sd">        Input point arrays of shape (n1, d) and (n2, d).</span>
+<span class="sd">    X1, X2 : oti.array or None</span>
+<span class="sd">        Input point arrays of shape (n1, d) and (n2, d). Can be None if use_fused=True.</span>
 <span class="sd">    n1, n2 : int</span>
 <span class="sd">        Number of points in X1, X2.</span>
 <span class="sd">    rays_X1 : list of ndarray or None</span>
@@ -821,6 +827,10 @@ document.write(`
 <span class="sd">        OTI basis elements for each direction.</span>
 <span class="sd">    oti_module : module</span>
 <span class="sd">        The PyOTI static module.</span>
+<span class="sd">    X1_np, X2_np : ndarray or None</span>
+<span class="sd">        Numpy arrays of shape (n1, d) and (n2, d). Required if use_fused=True.</span>
+<span class="sd">    use_fused : bool</span>
+<span class="sd">        If True, use fused_from_real_with_perturbations C-level function.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -849,6 +859,19 @@ document.write(`
     <span class="n">perturb_X1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">perturb_X1_values</span><span class="p">)</span>
     <span class="n">perturb_X2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">perturb_X2_values</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">use_fused</span><span class="p">:</span>
+        <span class="c1"># --- Fused path ---</span>
+        <span class="n">real_diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+            <span class="n">X1_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+        <span class="p">)</span>
+        <span class="c1"># Reshape perturbations from (n,) to (n, 1) for fused function</span>
+        <span class="n">perturb1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">perturb_X1</span>
+        <span class="n">perturb2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">perturb_X2</span>
+        <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+        <span class="n">diffs_k</span><span class="o">.</span><span class="n">fused_from_real_with_perturbations</span><span class="p">(</span><span class="n">real_diffs</span><span class="p">,</span> <span class="n">perturb1</span><span class="p">,</span> <span class="n">perturb2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">diffs_k</span>
+
+    <span class="c1"># --- Fallback path ---</span>
     <span class="c1"># Tag coordinates</span>
     <span class="n">X1_k_tagged</span> <span class="o">=</span> <span class="n">X1</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">perturb_X1</span>
     <span class="n">X2_k_tagged</span> <span class="o">=</span> <span class="n">X2</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">perturb_X2</span>
@@ -909,10 +932,13 @@ document.write(`
 <span class="sd">    differences_by_dim : list of oti.array</span>
 <span class="sd">        List of length d, each element is an (n1, n2) OTI array.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">X1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1</span><span class="p">)</span>
-    <span class="n">X2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2</span><span class="p">)</span>
-    <span class="n">n1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">X1</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">n2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">X2</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">X1_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">X2_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="n">n1</span><span class="p">,</span> <span class="n">d</span> <span class="o">=</span> <span class="n">X1_np</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">n2</span> <span class="o">=</span> <span class="n">X2_np</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Check if the fused C-level function is available</span>
+    <span class="n">_use_fused</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="s1">&#39;fused_from_real_with_perturbations&#39;</span><span class="p">)</span>
 
     <span class="c1"># Determine number of derivative directions</span>
     <span class="n">m1</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rays_X1</span><span class="p">)</span> <span class="k">if</span> <span class="n">rays_X1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
@@ -935,13 +961,39 @@ document.write(`
             <span class="n">e_tags_1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti_module</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">))</span>
             <span class="n">e_tags_2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">oti_module</span><span class="o">.</span><span class="n">e</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n_order</span><span class="p">))</span>
 
+    <span class="c1"># Only convert to OTI arrays if using fallback path</span>
+    <span class="n">_use_fused_path</span> <span class="o">=</span> <span class="n">_use_fused</span> <span class="ow">and</span> <span class="n">n_order</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">_use_fused_n0</span> <span class="o">=</span> <span class="n">_use_fused</span> <span class="ow">and</span> <span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">_use_fused_path</span> <span class="ow">or</span> <span class="n">_use_fused_n0</span><span class="p">:</span>
+        <span class="n">X1_oti</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">X2_oti</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">X1_oti</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X1_np</span><span class="p">)</span>
+        <span class="n">X2_oti</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X2_np</span><span class="p">)</span>
+
     <span class="c1"># Compute differences for each dimension</span>
     <span class="n">differences_by_dim</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">_use_fused_n0</span><span class="p">:</span>
+        <span class="c1"># n_order == 0: no perturbation, just real differences via fused path</span>
+        <span class="n">perturb1</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">perturb2</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
+            <span class="n">real_diffs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+                <span class="n">X1_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">X2_np</span><span class="p">[:,</span> <span class="n">k</span><span class="p">:</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+            <span class="p">)</span>
+            <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">))</span>
+            <span class="n">diffs_k</span><span class="o">.</span><span class="n">fused_from_real_with_perturbations</span><span class="p">(</span><span class="n">real_diffs</span><span class="p">,</span> <span class="n">perturb1</span><span class="p">,</span> <span class="n">perturb2</span><span class="p">)</span>
+            <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">differences_by_dim</span>
+
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d</span><span class="p">):</span>
         <span class="n">diffs_k</span> <span class="o">=</span> <span class="n">compute_dimension_differences</span><span class="p">(</span>
-            <span class="n">k</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">rays_X1</span><span class="p">,</span> <span class="n">rays_X2</span><span class="p">,</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">X1_oti</span><span class="p">,</span> <span class="n">X2_oti</span><span class="p">,</span> <span class="n">n1</span><span class="p">,</span> <span class="n">n2</span><span class="p">,</span> <span class="n">rays_X1</span><span class="p">,</span> <span class="n">rays_X2</span><span class="p">,</span>
             <span class="n">derivative_locations_X1</span><span class="p">,</span> <span class="n">derivative_locations_X2</span><span class="p">,</span>
-            <span class="n">e_tags_1</span><span class="p">,</span> <span class="n">e_tags_2</span><span class="p">,</span> <span class="n">oti_module</span>
+            <span class="n">e_tags_1</span><span class="p">,</span> <span class="n">e_tags_2</span><span class="p">,</span> <span class="n">oti_module</span><span class="p">,</span>
+            <span class="n">X1_np</span><span class="o">=</span><span class="n">X1_np</span><span class="p">,</span> <span class="n">X2_np</span><span class="o">=</span><span class="n">X2_np</span><span class="p">,</span>
+            <span class="n">use_fused</span><span class="o">=</span><span class="n">_use_fused_path</span>
         <span class="p">)</span>
         <span class="n">differences_by_dim</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffs_k</span><span class="p">)</span>
 

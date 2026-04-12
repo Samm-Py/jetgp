@@ -29,7 +29,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -198,6 +198,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -215,6 +216,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -480,7 +485,12 @@ document.write(`
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-            <span class="k">if</span> <span class="n">sigma_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sigma_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data_sq_diag</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">sigma_data</span> <span class="ow">is</span> <span class="kc">None</span>
+            <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">sigma_data</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
         <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span> <span class="o">=</span> <span class="n">KernelFactory</span><span class="p">(</span>
@@ -489,7 +499,8 @@ document.write(`
             <span class="n">n_order</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_order</span><span class="p">,</span>
             <span class="n">differences_by_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span>
             <span class="n">smoothness_parameter</span><span class="o">=</span><span class="n">smoothness_parameter</span><span class="p">,</span>
-            <span class="n">oti_module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span>
+            <span class="n">oti_module</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="p">,</span>
+            <span class="n">sparse_diffs</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_factory</span><span class="o">.</span><span class="n">create_kernel</span><span class="p">(</span>
             <span class="n">kernel_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span>
@@ -616,16 +627,7 @@ document.write(`
             <span class="k">if</span> <span class="n">derivs_to_predict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">common_derivs</span> <span class="o">=</span> <span class="n">derivs_to_predict</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="s2">&quot;derivs_to_predict must be provided when predicting derivatives &quot;</span>
-                        <span class="s2">&quot;from a model trained with n_order=0 (no derivative training data).&quot;</span>
-                    <span class="p">)</span>
                 <span class="n">common_derivs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Note: derivs_to_predict is None. Predictions will include all derivatives &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;used in training: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
 
             <span class="c1"># Determine prediction order from requested derivatives</span>
             <span class="n">required_order</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
@@ -643,7 +645,8 @@ document.write(`
                     <span class="n">differences_by_dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span>
                     <span class="n">n_order</span><span class="o">=</span><span class="n">predict_order</span><span class="p">,</span>
                     <span class="n">smoothness_parameter</span><span class="o">=</span><span class="n">smoothness_param</span><span class="p">,</span>
-                    <span class="n">oti_module</span><span class="o">=</span><span class="n">predict_oti</span>
+                    <span class="n">oti_module</span><span class="o">=</span><span class="n">predict_oti</span><span class="p">,</span>
+                    <span class="n">sparse_diffs</span><span class="o">=</span><span class="kc">False</span>
                 <span class="p">)</span>
                 <span class="n">predict_kernel_func</span> <span class="o">=</span> <span class="n">predict_kernel_factory</span><span class="o">.</span><span class="n">create_kernel</span><span class="p">(</span>
                     <span class="n">kernel_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel</span><span class="p">,</span> <span class="n">kernel_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kernel_type</span>
@@ -657,40 +660,54 @@ document.write(`
             <span class="n">predict_oti</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span>
             <span class="n">predict_kernel_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span>
 
-        <span class="c1"># Build training kernel matrix</span>
-        <span class="n">phi_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="mi">0</span>
-            <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">real</span>
-            <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_exp_train</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Take the max so that an explicitly-set n_bases (e.g. for function-only</span>
-            <span class="c1"># training or for predicting more directions than were observed) is never</span>
-            <span class="c1"># silently reduced to the number of bases active in the training kernel.</span>
-            <span class="n">active</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">active</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">active</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
-            <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
-
-        <span class="c1"># Placeholder for powers (GDDEGP doesn&#39;t use sign powers like DEGP/DDEGP)</span>
-        <span class="n">powers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-
-        <span class="n">K</span> <span class="o">=</span> <span class="n">gddegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
-            <span class="n">phi_train</span><span class="p">,</span> <span class="n">phi_exp_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">,</span> 
-            <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span>
+        <span class="c1"># Check for cached Cholesky from optimizer</span>
+        <span class="n">_cache_hit</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_cached_params&#39;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_params</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cached_params</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
         <span class="p">)</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">**</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">K_train</span> <span class="o">=</span> <span class="n">K</span>
-        <span class="c1"># Solve linear system</span>
-        <span class="k">try</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="n">_cache_hit</span><span class="p">:</span>
+            <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_L</span>
+            <span class="n">low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_low</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_n_bases</span>
             <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Cholesky decomposition failed via scipy, using standard np solve instead.&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Build training kernel matrix</span>
+            <span class="n">phi_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">real</span>
+                <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_exp_train</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Take the max so that an explicitly-set n_bases (e.g. for function-only</span>
+                <span class="c1"># training or for predicting more directions than were observed) is never</span>
+                <span class="c1"># silently reduced to the number of bases active in the training kernel.</span>
+                <span class="n">active</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">active</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">active</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+
+            <span class="c1"># Placeholder for powers (GDDEGP doesn&#39;t use sign powers like DEGP/DDEGP)</span>
+            <span class="n">powers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">K</span> <span class="o">=</span> <span class="n">gddegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
+                <span class="n">phi_train</span><span class="p">,</span> <span class="n">phi_exp_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">,</span>
+                <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span>
+            <span class="p">)</span>
+            <span class="n">K</span><span class="o">.</span><span class="n">flat</span><span class="p">[::</span><span class="n">K</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="n">sigma_n</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="n">K</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_data</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">K_train</span> <span class="o">=</span> <span class="n">K</span>
+            <span class="c1"># Solve linear system</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">L</span><span class="p">,</span> <span class="n">low</span> <span class="o">=</span> <span class="n">cho_factor</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">cho_solve</span><span class="p">((</span><span class="n">L</span><span class="p">,</span> <span class="n">low</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">alpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_train</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Cholesky decomposition failed via scipy, using standard np solve instead.&#39;</span><span class="p">)</span>
 
         <span class="c1"># Normalize test inputs and rays</span>
         <span class="n">rays_test</span> <span class="o">=</span> <span class="n">rays_predict</span>

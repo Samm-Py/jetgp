@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -559,7 +564,6 @@ It is the most common GP kernel and produces very smooth predictions.</p>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]]]
 SE -- Function RMSE: 3.0232e-06
 SE -- Derivative RMSE: 4.8618e-05
 </pre></div>
@@ -598,7 +602,6 @@ SE -- Derivative RMSE: 4.8618e-05
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]]]
 Matern -- Function RMSE: 1.1303e-03
 Matern -- Derivative RMSE: 1.6287e-02
 </pre></div>
@@ -633,7 +636,6 @@ the RQ kernel converges to the SE kernel.</p>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]]]
 RQ -- Function RMSE: 3.0277e-06
 RQ -- Derivative RMSE: 4.8583e-05
 </pre></div>
@@ -668,9 +670,8 @@ natural fit.</p>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Note: derivs_to_predict is None. Predictions will include all derivatives used in training: [[[1, 1]]]
-SineExp -- Function RMSE: 2.9161e-06
-SineExp -- Derivative RMSE: 4.6950e-05
+SineExp -- Function RMSE: 3.1205e-06
+SineExp -- Derivative RMSE: 5.0176e-05
 </pre></div>
 </div>
 </div>
@@ -763,7 +764,7 @@ Kernel                     f(x) RMSE      f&#39;(x) RMSE
 SE                        3.0232e-06      4.8618e-05
 Matern (nu=2.5)           1.1303e-03      1.6287e-02
 RQ                        3.0277e-06      4.8583e-05
-SineExp                   2.9161e-06      4.6950e-05
+SineExp                   3.1205e-06      5.0176e-05
 =======================================================
 </pre></div>
 </div>
@@ -942,7 +943,7 @@ Training Matern (aniso) ...
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-RMSE = 7.3624e-03
+RMSE = 7.3733e-03
 Training Matern (isotr) ... 
 </pre></div>
 </div>
@@ -962,7 +963,7 @@ Training SineExp (aniso) ...
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-RMSE = 1.0151e-02
+RMSE = 9.8313e-03
 Training SineExp (isotr) ... 
 </pre></div>
 </div>
@@ -993,11 +994,11 @@ Kernel                               RMSE
 ---------------------------------------------
 SE (aniso)                     1.0447e-02
 SE (isotr)                     1.0111e-02
-Matern (aniso)                 7.3624e-03
+Matern (aniso)                 7.3733e-03
 Matern (isotr)                 7.0947e-03
 RQ (aniso)                     8.3784e-03
 RQ (isotr)                     7.9168e-03
-SineExp (aniso)                1.0151e-02
+SineExp (aniso)                9.8313e-03
 SineExp (isotr)                1.0111e-02
 =============================================
 </pre></div>

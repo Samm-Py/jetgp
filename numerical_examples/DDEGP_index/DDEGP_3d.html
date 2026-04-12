@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -199,6 +199,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -216,6 +217,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -713,55 +718,57 @@ how to analyze the performance of a 3D model by taking a <strong>2D slice</stron
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=-599.2026326470244
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=-599.2026331557621
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=-1028.7382821038234
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=-1028.7956488154352
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=-1028.7382821038234
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=-1028.7956488154352
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=-1036.5167874258514
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=-1036.5167847815726
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 5: nit=22, nfev=187, f=-1.808610e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
-Gen 5: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 5: nit=9, nfev=46, f=-1.733198e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
+Gen 5: best f=-1733.1976023909367
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=-1733.1976023909367
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=-1733.1976023909367
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=-1733.1976023909367
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=-1733.1976023909367
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 10: nit=2, nfev=16, f=-1.755006e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
+Gen 10: best f=-1755.0061718341
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=-1755.0061718341
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=-1755.0061718341
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=-1755.0061718341
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=-1765.2322981344057
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=-1808.6104849289716
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 15: nit=6, nfev=47, f=-1.799772e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
+Gen 15: best f=-1799.771875056472
 </pre></div>
 </div>
 <img alt="../../_images/DDEGP_3d_7_15.png" src="../../_images/DDEGP_3d_7_15.png" />
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  Visualization of slice at x₃=0.5 created.
-Final NRMSE on slice (x₃=0.5): 0.000008
+Final NRMSE on slice (x₃=0.5): 0.000002
 </pre></div>
 </div>
 </div>

@@ -30,7 +30,7 @@
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
-    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -200,6 +200,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/otilib_setup.html">otilib Setup</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../getting_started/making_predictions.html">Making Predictions</a></li>
@@ -217,6 +218,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -675,10 +680,10 @@ Once trained, <cite>gp.predict</cite> computes:
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Processing Order 0...
-Gen 1: best f=8.555515100592274
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=8.555515100592274
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=8.555515100592274
+Gen 2: best f=8.555515100592274
 Gen 3: best f=8.555515100592274
 Gen 4: best f=8.555515100592274
 Gen 5: best f=8.199102832031281
@@ -689,73 +694,75 @@ Gen 9: best f=8.108279627133218
 Gen 10: best f=8.060756341668167
 Gen 11: best f=8.060756341668167
 Gen 12: best f=8.060756341668167
-Gen 13: best f=8.053839290000669
-Gen 14: best f=8.053839290000669
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=8.053556753787092
-  MSE: 1.490532, Time: 0.46s
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=8.053839290000669
+Gen 14: best f=8.053839290000669
+Gen 15: best f=8.053556753787092
+  MSE: 1.490532, Time: 0.50s
 Processing Order 1...
 Gen 1: best f=23.265770371412046
 Gen 2: best f=23.265770371412046
-Gen 3: best f=18.860075205895782
-Gen 4: best f=18.860075205895782
-Gen 5: best f=18.860075205895782
-Gen 6: best f=18.860075205895782
-Gen 7: best f=18.718450216471183
+Gen 3: best f=18.864341106107766
+Gen 4: best f=18.864341106107766
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=18.718450216471183
-Gen 9: best f=18.718450216471183
-Gen 10: best f=18.663849108710146
-Gen 11: best f=18.663849108710146
-Gen 12: best f=18.663849108710146
-Gen 13: best f=18.663849108710146
-Gen 14: best f=18.663849108710146
-Gen 15: best f=18.663849108710146
-  MSE: 0.358957, Time: 0.39s
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=18.864341106107766
+Gen 6: best f=18.864341106107766
+Gen 7: best f=18.705168369064342
+Gen 8: best f=18.705168369064342
+Gen 9: best f=18.705168369064342
+Gen 10: best f=18.652116149281426
+Gen 11: best f=18.652116149281426
+Gen 12: best f=18.641173522932522
+Gen 13: best f=18.641173522932522
+Gen 14: best f=18.641173522932522
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=18.641173522932522
+  MSE: 0.405550, Time: 0.42s
 Processing Order 2...
+Gen 1: best f=30.7077866284139
+Gen 2: best f=30.653381152266228
+Gen 3: best f=30.653381152266228
+Gen 4: best f=30.653381152266228
+Gen 5: best f=29.668770136712908
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=30.7077866284139
-Gen 2: best f=30.657936786251177
-Gen 3: best f=30.657936786251177
-Gen 4: best f=30.657936786251177
-Gen 5: best f=29.66586574120022
-Gen 6: best f=29.66586574120022
-Gen 7: best f=29.32791640335701
-Gen 8: best f=29.32791640335701
-Gen 9: best f=29.32791640335701
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=29.668770136712908
+Gen 7: best f=29.238581681543018
+Gen 8: best f=29.238581681543018
+Gen 9: best f=29.238581681543018
+Gen 10: best f=29.238581681543018
+Gen 11: best f=29.238581681543018
+Gen 12: best f=29.02767446037833
+Gen 13: best f=28.958424754644412
+Gen 14: best f=28.958424754644412
+Gen 15: best f=28.75714337903282
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=28.898506157593737
-Gen 11: best f=28.883194646122618
-Gen 12: best f=28.883194646122618
-Gen 13: best f=28.883194646122618
-Gen 14: best f=28.775505908596926
-Gen 15: best f=28.775505908596926
-  MSE: 0.000147, Time: 0.40s
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  MSE: 0.000176, Time: 0.42s
 Processing Order 4...
-Gen 1: best f=49.39731990574795
+Gen 1: best f=49.397317422741395
+Gen 2: best f=41.45380858655557
+Gen 3: best f=41.45380858655557
+Gen 4: best f=40.004110625540164
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=41.41641841823673
-Gen 3: best f=41.41641841823673
-Gen 4: best f=34.111617946575386
-Gen 5: best f=34.111617946575386
-Gen 6: best f=34.111617946575386
-Gen 7: best f=34.111617946575386
-Gen 8: best f=34.111617946575386
-Gen 9: best f=33.87589338245215
-Gen 10: best f=33.87589338245215
-Gen 11: best f=33.87589338245215
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=40.004110625540164
+Gen 6: best f=35.19297036911484
+Gen 7: best f=33.26289537337141
+Gen 8: best f=33.26289537337141
+Gen 9: best f=33.26289537337141
+Gen 10: best f=33.13482167492796
+Gen 11: best f=33.13482167492796
+Gen 12: best f=33.13482167492796
+Gen 13: best f=33.13482167492796
+Gen 14: best f=33.13482167492796
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=33.87589338245215
-Gen 13: best f=33.30821780593601
-Gen 14: best f=33.30821780593601
-Gen 15: best f=33.30821780593601
-  MSE: 0.000000, Time: 0.41s
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=33.09093176452107
+  MSE: 0.000000, Time: 0.46s
 </pre></div>
 </div>
 </div>
@@ -779,10 +786,10 @@ Gen 15: best f=33.30821780593601
 ============================================================
 Order   MSE         Time (s)  Observations
 ------------------------------------------------------------
-0       1.490532    0.46      4
-1       0.358957    0.39      8
-2       0.000147    0.40      12
-4       0.000000    0.41      20
+0       1.490532    0.50      4
+1       0.405550    0.42      8
+2       0.000176    0.42      12
+4       0.000000    0.46      20
 </pre></div>
 </div>
 </div>
