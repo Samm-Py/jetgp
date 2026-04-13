@@ -305,6 +305,7 @@ class KernelFactory:
         self.true_noise_std = true_noise_std
         self.bounds = []
         self.oti = oti_module
+        self._alloc = getattr(oti_module, 'empty', oti_module.zeros)
         self.sparse_diffs = sparse_diffs
         if smoothness_parameter is not None:
             self.alpha = smoothness_parameter
@@ -361,11 +362,11 @@ class KernelFactory:
         tuple
             (tmp1, tmp2, sqdist) temporary arrays.
         """
-        if tuple(shape) != self._cached_shape:
-            self._cached_shape = tuple(shape)
-            self._tmp1 = self.oti.zeros(shape)
-            self._tmp2 = self.oti.zeros(shape)
-            self._sqdist = self.oti.zeros(shape)
+        if shape != self._cached_shape:
+            self._cached_shape = shape
+            self._tmp1 = self._alloc(shape)
+            self._tmp2 = self._alloc(shape)
+            self._sqdist = self._alloc(shape)
         return self._tmp1, self._tmp2, self._sqdist
 
     def _reset_sqdist(self):
