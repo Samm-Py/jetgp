@@ -217,9 +217,6 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -453,6 +450,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf_shape</span> <span class="o">=</span> <span class="n">shape</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_deriv_buf</span>
 
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_expand_derivs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Expand OTI derivatives, using fast struct path if available.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="s1">&#39;get_all_derivs_fast&#39;</span><span class="p">):</span>
@@ -569,6 +567,7 @@ document.write(`
 
 <div class="viewcode-block" id="Optimizer.negative_log_marginal_likelihood">
 <a class="viewcode-back" href="../../../api/weighted_degp.html#jetgp.wdegp.optimizer.Optimizer.negative_log_marginal_likelihood">[docs]</a>
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">negative_log_marginal_likelihood</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">x0</span><span class="p">,</span>
@@ -1027,9 +1026,9 @@ document.write(`
 
         <span class="k">return</span> <span class="n">grad</span></div>
 
-
 <div class="viewcode-block" id="Optimizer.nll_and_grad">
 <a class="viewcode-back" href="../../../api/weighted_degp.html#jetgp.wdegp.optimizer.Optimizer.nll_and_grad">[docs]</a>
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">nll_and_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
 <span class="w">        </span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute NLL and its gradient in a single pass, sharing one Cholesky per submodel.&quot;&quot;&quot;</span>
