@@ -682,6 +682,7 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">true_noise_std</span> <span class="o">=</span> <span class="n">true_noise_std</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bounds</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">oti</span> <span class="o">=</span> <span class="n">oti_module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alloc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">oti_module</span><span class="p">,</span> <span class="s1">&#39;empty&#39;</span><span class="p">,</span> <span class="n">oti_module</span><span class="o">.</span><span class="n">zeros</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sparse_diffs</span> <span class="o">=</span> <span class="n">sparse_diffs</span>
         <span class="k">if</span> <span class="n">smoothness_parameter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">smoothness_parameter</span>
@@ -741,11 +742,11 @@ document.write(`
 <span class="sd">        tuple</span>
 <span class="sd">            (tmp1, tmp2, sqdist) temporary arrays.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">oti</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">shape</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_cached_shape</span> <span class="o">=</span> <span class="n">shape</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alloc</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alloc</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alloc</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sqdist</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_reset_sqdist</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
