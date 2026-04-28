@@ -49,9 +49,10 @@ docs/build/*
 tests/__pycache__/
 
 
-# Active learning experiments
-active_learning/
-active_learning/*
+# Active learning generated outputs
+active_learning/__pycache__/
+active_learning/*_figures/
+active_learning/plotting_utils/__pycache__/
 
 # Local scripts (benchmarking, verification, utilities)
 benchmark_optimizers.py
