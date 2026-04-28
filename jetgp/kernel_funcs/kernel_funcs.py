@@ -305,7 +305,10 @@ class KernelFactory:
         self.true_noise_std = true_noise_std
         self.bounds = []
         self.oti = oti_module
-        self._alloc = getattr(oti_module, 'empty', oti_module.zeros)
+        # These cached buffers are reused across kernel evaluations. They must
+        # start zeroed because some fused OTI kernels only write the components
+        # they touch, leaving any uninitialized entries to leak NaNs/Infs.
+        self._alloc = oti_module.zeros
         self.sparse_diffs = sparse_diffs
         if smoothness_parameter is not None:
             self.alpha = smoothness_parameter
@@ -342,6 +345,7 @@ class KernelFactory:
         # Fused sqdist cache
         self._cached_ell_sq = None
         self._has_fused_sqdist_sparse = None
+        self._has_fused_sqdist_linear = None
         self._has_fused_sqdist = None
 
     def clear_caches(self):
@@ -382,16 +386,27 @@ class KernelFactory:
             # Fallback: multiply by zero
             self.oti.mul(0.0, self._sqdist, out=self._sqdist)
 
+    def _init_fused_sqdist_caps(self, sqdist):
+        """Lazily detect which fused squared-distance kernels are available."""
+        if self._has_fused_sqdist_sparse is None:
+            self._has_fused_sqdist_sparse = (
+                self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
+            )
+        if self._has_fused_sqdist_linear is None:
+            self._has_fused_sqdist_linear = hasattr(sqdist, 'fused_sqdist_linear')
+        if self._has_fused_sqdist is None:
+            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+
     @profile
     def _compute_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell[i]² * diff[i]², using fused C kernel when available."""
-        if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
-        if self._has_fused_sqdist is None:
-            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        self._init_fused_sqdist_caps(sqdist)
         if self._has_fused_sqdist_sparse:
             ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist_linear:
+            ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist_linear(differences_by_dim, ell_sq)
         elif self._has_fused_sqdist:
             ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist(differences_by_dim, ell_sq)
@@ -404,14 +419,15 @@ class KernelFactory:
 
     def _compute_sqdist_iso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute sqdist = Σ ell² * diff[i]², using fused C kernel when available."""
-        if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
-        if self._has_fused_sqdist is None:
-            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        self._init_fused_sqdist_caps(sqdist)
         if self._has_fused_sqdist_sparse:
             ell_sq_val = float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
             sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist_linear:
+            ell_sq_val = float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist_linear(differences_by_dim, ell_sq)
         elif self._has_fused_sqdist:
             ell_sq_val = float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
@@ -422,17 +438,17 @@ class KernelFactory:
                 self.oti.mul(ell, differences_by_dim[i], out=tmp1)
                 self.oti.mul(tmp1, tmp1, out=tmp2)
                 self.oti.sum(sqdist, tmp2, out=sqdist)
-
+    @profile
     def _compute_neg_half_sqdist_aniso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute -0.5 * Σ ell[i]² * diff[i]² directly, absorbing the -0.5 into ell_sq
         on the fused path to avoid a separate mul step."""
-        if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
-        if self._has_fused_sqdist is None:
-            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        self._init_fused_sqdist_caps(sqdist)
         if self._has_fused_sqdist_sparse:
             ell_sq = np.ascontiguousarray(-0.5 * ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist_linear:
+            ell_sq = np.ascontiguousarray(-0.5 * ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist_linear(differences_by_dim, ell_sq)
         elif self._has_fused_sqdist:
             ell_sq = np.ascontiguousarray(-0.5 * ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist(differences_by_dim, ell_sq)
@@ -447,14 +463,15 @@ class KernelFactory:
     def _compute_neg_half_sqdist_iso(self, differences_by_dim, ell, sqdist, tmp1, tmp2):
         """Compute -0.5 * Σ ell² * diff[i]² directly, absorbing the -0.5 into ell_sq
         on the fused path to avoid a separate mul step."""
-        if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
-        if self._has_fused_sqdist is None:
-            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        self._init_fused_sqdist_caps(sqdist)
         if self._has_fused_sqdist_sparse:
             ell_sq_val = -0.5 * float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
             sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist_linear:
+            ell_sq_val = -0.5 * float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist_linear(differences_by_dim, ell_sq)
         elif self._has_fused_sqdist:
             ell_sq_val = -0.5 * float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
@@ -470,13 +487,13 @@ class KernelFactory:
     def _compute_scaled_sqdist_aniso(self, differences_by_dim, ell, scale, sqdist, tmp1, tmp2):
         """Compute scale * Σ ell[i]² * diff[i]², absorbing scale into ell_sq on the fused
         path to avoid a separate mul step after sqdist construction."""
-        if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
-        if self._has_fused_sqdist is None:
-            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        self._init_fused_sqdist_caps(sqdist)
         if self._has_fused_sqdist_sparse:
             ell_sq = np.ascontiguousarray(scale * ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist_linear:
+            ell_sq = np.ascontiguousarray(scale * ell ** 2, dtype=np.float64)
+            sqdist.fused_sqdist_linear(differences_by_dim, ell_sq)
         elif self._has_fused_sqdist:
             ell_sq = np.ascontiguousarray(scale * ell ** 2, dtype=np.float64)
             sqdist.fused_sqdist(differences_by_dim, ell_sq)
@@ -491,14 +508,15 @@ class KernelFactory:
     def _compute_scaled_sqdist_iso(self, differences_by_dim, ell, scale, sqdist, tmp1, tmp2):
         """Compute scale * Σ ell² * diff[i]², absorbing scale into ell_sq on the fused
         path to avoid a separate mul step after sqdist construction."""
-        if self._has_fused_sqdist_sparse is None:
-            self._has_fused_sqdist_sparse = self.sparse_diffs and hasattr(sqdist, 'fused_sqdist_sparse')
-        if self._has_fused_sqdist is None:
-            self._has_fused_sqdist = hasattr(sqdist, 'fused_sqdist')
+        self._init_fused_sqdist_caps(sqdist)
         if self._has_fused_sqdist_sparse:
             ell_sq_val = scale * float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
             sqdist.fused_sqdist_sparse(differences_by_dim, ell_sq)
+        elif self._has_fused_sqdist_linear:
+            ell_sq_val = scale * float(ell) ** 2
+            ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)
+            sqdist.fused_sqdist_linear(differences_by_dim, ell_sq)
         elif self._has_fused_sqdist:
             ell_sq_val = scale * float(ell) ** 2
             ell_sq = np.full(self.dim, ell_sq_val, dtype=np.float64)

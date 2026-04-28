@@ -149,7 +149,8 @@ class degp:
         self.params = self.optimizer.optimize_hyperparameters(*args, **kwargs)
         return self.params
 
-    def predict(self, X_test, params, calc_cov=False, return_deriv=False, derivs_to_predict=None):
+    def predict(self, X_test, params, calc_cov=False, return_deriv=False,
+                derivs_to_predict=None, return_full_cov=False):
         """
         Compute posterior predictive mean and (optionally) covariance at X_test.
 
@@ -177,6 +178,9 @@ class degp:
             Predictive mean vector.
         f_var : ndarray, optional
             Predictive variance vector (only if calc_cov=True).
+        f_cov_full : ndarray, optional
+            Full predictive covariance matrix (only if calc_cov=True and
+            return_full_cov=True).
         """
         length_scales = params[:-1]
         sigma_n = params[-1]
@@ -322,6 +326,9 @@ class degp:
         num_derivs = m // n
         reshaped_mean = f_mean.reshape(num_derivs, n)
 
+        if return_full_cov and not calc_cov:
+            raise ValueError("return_full_cov=True requires calc_cov=True.")
+
         if not calc_cov:
             return reshaped_mean
 
@@ -361,10 +368,26 @@ class degp:
                 f_var = utils.transform_cov(
                     f_cov, self.sigma_y, self.sigmas_x,
                     common_derivs, X_test)
+                scale_vec = np.full(f_cov.shape[0], self.sigma_y, dtype=float)
+                n_test = X_test.shape[0]
+                for i, deriv_spec in enumerate(common_derivs):
+                    factor = self.sigma_y
+                    for pair in deriv_spec:
+                        factor = factor / (
+                            self.sigmas_x[0][pair[0] - 1] ** pair[1]
+                        )
+                    start = (i + 1) * n_test
+                    stop = (i + 2) * n_test
+                    scale_vec[start:stop] = factor
+                f_cov_full = f_cov * np.outer(scale_vec, scale_vec)
             else:
                 f_var = self.sigma_y ** 2 * np.diag(np.abs(f_cov))
+                f_cov_full = f_cov * self.sigma_y ** 2
         else:
             f_var = np.diag(np.abs(f_cov))
+            f_cov_full = f_cov
 
         reshaped_var = f_var.reshape(num_derivs, n)
+        if return_full_cov:
+            return reshaped_mean, reshaped_var, f_cov_full
         return reshaped_mean, reshaped_var

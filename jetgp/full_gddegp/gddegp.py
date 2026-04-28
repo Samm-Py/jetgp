@@ -144,7 +144,8 @@ class gddegp:
         return self.params
 
     def predict(self, X_test, params, rays_predict=None, calc_cov=False,
-                return_deriv=False, derivs_to_predict=None):
+                return_deriv=False, derivs_to_predict=None,
+                return_full_cov=False):
         """
         Predict posterior mean and optional variance at test points.
 
@@ -166,6 +167,10 @@ class gddegp:
             and does not require the requested derivative to have been observed during
             training. Each entry must be a valid derivative spec within n_bases and n_order.
             If None, defaults to all derivatives used in training.
+        return_full_cov : bool, default=False
+            If True, return the full posterior covariance matrix in addition to the
+            reshaped marginal variances. Requires calc_cov=True. This is opt-in to
+            preserve the existing predict return contract.
 
         Returns
         -------
@@ -208,12 +213,16 @@ class gddegp:
 
         # Validate rays_predict structure when predicting derivatives
         if return_deriv and rays_predict is not None:
-            # Check number of rays doesn't exceed training rays
-            if len(self.rays_list) > 0 and len(rays_predict) > len(self.rays_list):
+            # Check number of requested prediction directions does not exceed
+            # the reserved OTI direction capacity. Prediction derivatives do not
+            # need to have been observed in training; function-only and sparse
+            # directional models can reserve extra bases for this purpose.
+            max_prediction_rays = self.n_bases // 2
+            if len(rays_predict) > max_prediction_rays:
                 raise ValueError(
-                    f"Number of prediction rays ({len(rays_predict)}) exceeds the number of "
-                    f"training rays ({len(self.rays_list)}). rays_predict must have at most "
-                    f"{len(self.rays_list)} ray array(s)."
+                    f"Number of prediction rays ({len(rays_predict)}) exceeds the reserved "
+                    f"direction capacity ({max_prediction_rays}). Increase n_bases when "
+                    f"constructing the model to predict more derivative directions."
                 )
 
             # Check shape of each ray array
@@ -292,28 +301,30 @@ class gddegp:
             L = self._cached_L
             low = self._cached_low
             alpha = self._cached_alpha
-            self.n_bases = self._cached_n_bases
             cho_solve_failed = False
         else:
             # Build training kernel matrix
             phi_train = self.kernel_func(self.differences_by_dim, length_scales)
             if self.n_order == 0:
-                self.n_bases = 0
+                # Use a local variable so self.n_bases (which may have been set
+                # explicitly for derivative *prediction*) is never overwritten.
+                train_n_bases = 0
                 phi_exp_train = phi_train.real
                 phi_exp_train = phi_exp_train[np.newaxis,:,:]
             else:
-                # Take the max so that an explicitly-set n_bases (e.g. for function-only
-                # training or for predicting more directions than were observed) is never
-                # silently reduced to the number of bases active in the training kernel.
-                active = phi_train.get_active_bases()
-                self.n_bases = max(self.n_bases, active[-1] if active else 0)
-                phi_exp_train = phi_train.get_all_derivs(self.n_bases, 2 * self.n_order)
+                # Respect the configured GDDEGP directional slot count. The OTI
+                # kernel algebra may report many active scalar basis tags when a
+                # direction is dense in the ambient coordinates, but that should
+                # not expand the model beyond the number of trained directional
+                # slots.
+                train_n_bases = self.n_bases
+                phi_exp_train = phi_train.get_all_derivs(train_n_bases, 2 * self.n_order)
 
             # Placeholder for powers (GDDEGP doesn't use sign powers like DEGP/DDEGP)
             powers = [0] * (len(self.flattened_der_indices) + 1)
 
             K = gddegp_utils.rbf_kernel(
-                phi_train, phi_exp_train, self.n_order, self.n_bases,
+                phi_train, phi_exp_train, self.n_order, train_n_bases,
                 self.flattened_der_indices,
                 index=self.derivative_locations
             )
@@ -390,6 +401,9 @@ class gddegp:
         num_derivs = m // n
         reshaped_mean = f_mean.reshape(num_derivs, n)
 
+        if return_full_cov and not calc_cov:
+            raise ValueError("return_full_cov=True requires calc_cov=True.")
+
         if not calc_cov:
             return reshaped_mean
 
@@ -432,10 +446,15 @@ class gddegp:
                 f_var = utils.transform_cov_directional(
                     f_cov, self.sigma_y, self.sigmas_x,
                     common_derivs, X_test)
+                f_cov_full = f_cov * self.sigma_y**2
             else:
                 f_var = self.sigma_y ** 2 * np.diag(np.abs(f_cov))
+                f_cov_full = f_cov * self.sigma_y**2
         else:
             f_var = np.diag(np.abs(f_cov))
+            f_cov_full = f_cov
 
         reshaped_var = f_var.reshape(num_derivs, n)
+        if return_full_cov:
+            return reshaped_mean, reshaped_var, f_cov_full
         return reshaped_mean, reshaped_var

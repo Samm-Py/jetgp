@@ -12,6 +12,7 @@ __pycache__/*
 
 #Ignore .coverage files
 *.coverage
+*.lprof
 
 # Personal notes
 docs/notes/
@@ -47,6 +48,10 @@ docs/build/*
 # Tests: ignore pycache only
 tests/__pycache__/
 
+
+# Active learning experiments
+active_learning/
+active_learning/*
 
 # Local scripts (benchmarking, verification, utilities)
 benchmark_optimizers.py

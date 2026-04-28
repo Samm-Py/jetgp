@@ -153,7 +153,7 @@ class Optimizer:
             if 'row_offsets_abs' not in self._kernel_plan:
                 self._kernel_plan['row_offsets_abs'] = self._kernel_plan['row_offsets'] + n_rows_func
                 self._kernel_plan['col_offsets_abs'] = self._kernel_plan['col_offsets'] + n_rows_func
-
+    @profile
     def _build_K(self, phi_exp, phi, n_bases):
         """Build kernel matrix using fast path if available."""
         self._ensure_kernel_plan(n_bases)
@@ -195,10 +195,11 @@ class Optimizer:
             phi_exp = phi.real
             phi_exp = phi_exp[np.newaxis,:,:]
         else:
-            active = phi.get_active_bases()
-            n_bases = active[-1] if active else self.model.n_bases
+            n_bases = self.model.n_bases
 
-        # Extract ALL derivative components
+            # Extract ALL derivative components using the configured number of
+            # directional slots, not the ambient active basis count implied by
+            # dense rays.
             deriv_order = 2 * self.model.n_order
             phi_exp = self._expand_derivs(phi, n_bases, deriv_order)
         K = self._build_K(phi_exp, phi, n_bases)
@@ -216,7 +217,7 @@ class Optimizer:
             self.model._cached_L = L
             self.model._cached_low = low
             self.model._cached_alpha = alpha
-            self.model._cached_n_bases = n_bases
+            self.model._cached_n_bases = self.model.n_bases
             self.model._cached_params = x0.copy()
 
             data_fit = 0.5 * np.dot(self.model.y_train, alpha)
@@ -478,6 +479,7 @@ class Optimizer:
 
         return grad
 
+    @profile
     def nll_and_grad(self, x0):
         """Compute NLL and its gradient in a single pass, sharing one Cholesky."""
         ln10 = np.log(10.0)
@@ -525,7 +527,9 @@ class Optimizer:
         self.model._cached_L = L
         self.model._cached_low = low
         self.model._cached_alpha = alpha_v
-        self.model._cached_n_bases = n_bases
+        # Preserve any explicitly-set n_bases (e.g. function-only training
+        # with n_order=0 but n_bases>0 reserved for derivative prediction).
+        self.model._cached_n_bases = max(n_bases, self.model.n_bases)
         self.model._cached_params = x0.copy()
 
         # --- gradient from W (no second kernel build / Cholesky) ---

@@ -3584,6 +3584,39 @@ class writer:
 
   #---------------------------------------------------------------------------------------------------
   #***************************************************************************************************
+  def _get_linear_sq_terms(self):
+    """
+    Compute multiplication info for squaring a linear OTI quantity.
+
+    The kernel difference objects used by DEGP/DDEGP/GDDEGP are linear in the
+    OTI bases: each entry has a real part plus some first-order coefficients,
+    but no higher-order terms. Squaring such a quantity only produces real,
+    first-order, and second-order outputs, so we can generate direct arithmetic
+    instead of calling the fully generic OTI multiply kernel.
+    """
+    nz_a = set()
+    nz_a.add('r')
+    if self.order >= 1:
+      nz_a.update(self.name_imdir[1])
+
+    sq_terms = {}
+    for ord_out in range(self.order + 1):
+      for comp_idx in range(len(self.name_imdir[ord_out])):
+        comp_name = self.name_imdir[ord_out][comp_idx]
+        mults = self.mult_res_total[ord_out][comp_idx]
+        surviving = []
+        for term in mults:
+          lhs_name = term[0][2]
+          rhs_name = term[1][2]
+          if lhs_name in nz_a and rhs_name in nz_a:
+            surviving.append((lhs_name, rhs_name))
+        if surviving:
+          sq_terms[comp_name] = surviving
+
+    return sq_terms
+
+  #---------------------------------------------------------------------------------------------------
+  #***************************************************************************************************
   def gen_get_all_derivs_array(self, level="  ", tab="  "):
     """
     PURPOSE: Generate the get_all_derivs function for array class (omat/omatm*n*).
@@ -3875,6 +3908,82 @@ class writer:
     str_out += level + tab + tab + tab + tab + tab + "d = dlptr[ta * <long>deriv_lookup.shape[1] + tb]" + endl
     str_out += level + tab + tab + tab + tab + tab + "kptr[<uint64_t>d * plane + <uint64_t>pa * n_func + <uint64_t>pb] += sptr[tb] * vv" + endl
     str_out += level + tab + "" + endl
+    str_out += level + "" + endl
+    str_out += level + "#---------------------------------------------------------------------------------------------------" + endl
+
+    all_comps = []
+    for ordi in range(self.order + 1):
+      all_comps.extend(self.name_imdir[ordi])
+
+    linear_sq_terms = self._get_linear_sq_terms()
+    linear_out_comps = []
+    for comp in all_comps:
+      if comp in linear_sq_terms:
+        linear_out_comps.append(comp)
+    first_order_comps = list(self.name_imdir[1]) if self.order >= 1 else []
+
+    # ── fused_sqdist_linear: square a linear OTI quantity with direct arithmetic ───────────
+    str_out += level + "" + endl
+    str_out += level + "#***************************************************************************************************" + endl
+    str_out += level + "def fused_sqdist_linear(self, list diffs, double[:] ell_sq):" + endl
+    str_out += level + tab + '"""' + endl
+    str_out += level + tab + "Specialized fused squared-distance for linear OTI diffs." + endl
+    str_out += level + tab + "Assumes each diff entry contains only a real component plus" + endl
+    str_out += level + tab + "first-order basis coefficients, which is the structure produced" + endl
+    str_out += level + tab + "by JetGP difference builders. This avoids generic OTI multiply" + endl
+    str_out += level + tab + "calls when squaring diff[d][kk]." + endl
+    str_out += level + tab + '"""' + endl
+    str_out += level + tab + "cdef uint64_t size = self.arr.size" + endl
+    str_out += level + tab + "cdef uint64_t dim = <uint64_t>len(diffs)" + endl
+    str_out += level + tab + "cdef uint64_t kk, d" + endl
+    str_out += level + tab + "cdef " + self.type_name + "* res_data = self.arr.p_data" + endl
+    str_out += level + tab + "cdef double* ell_ptr = &ell_sq[0]" + endl
+    str_out += level + tab + "cdef double ell_d, a_r" + endl
+    for comp in first_order_comps:
+      str_out += level + tab + "cdef double a_" + comp + endl
+    for comp in linear_out_comps:
+      str_out += level + tab + "cdef double acc_" + comp + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "# Build C array of pointers to diff data" + endl
+    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = <" + self.type_name + "**>malloc(dim * sizeof(" + self.type_name + "*))" + endl
+    str_out += level + tab + "if diff_ptrs == NULL:" + endl
+    str_out += level + tab + tab + 'raise MemoryError("Failed to allocate diff pointer array")' + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
+    str_out += level + tab + "for d in range(dim):" + endl
+    str_out += level + tab + tab + "diff_arr = <" + self.pytype_name_arr + ">diffs[d]" + endl
+    str_out += level + tab + tab + "diff_ptrs[d] = diff_arr.arr.p_data" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "try:" + endl
+    str_out += level + tab + tab + "with nogil:" + endl
+    str_out += level + tab + tab + tab + "for kk in range(size):" + endl
+    for comp in linear_out_comps:
+      str_out += level + tab + tab + tab + tab + "acc_" + comp + " = 0.0" + endl
+    str_out += level + tab + tab + tab + "" + endl
+    str_out += level + tab + tab + tab + tab + "for d in range(dim):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "ell_d = ell_ptr[d]" + endl
+    indent2 = level + tab + tab + tab + tab + tab
+    str_out += indent2 + "a_r = diff_ptrs[d][kk].r" + endl
+    for comp in first_order_comps:
+      str_out += indent2 + "a_" + comp + " = diff_ptrs[d][kk]." + comp + endl
+    for comp in linear_out_comps:
+      terms = linear_sq_terms[comp]
+      expr_parts = []
+      for (lhs, rhs) in terms:
+        lhs_var = "a_r" if lhs == "r" else "a_" + lhs
+        rhs_var = "a_r" if rhs == "r" else "a_" + rhs
+        expr_parts.append(lhs_var + " * " + rhs_var)
+      expr = " + ".join(expr_parts)
+      str_out += indent2 + "acc_" + comp + " += ell_d * (" + expr + ")" + endl
+    for comp in linear_out_comps:
+      str_out += level + tab + tab + tab + tab + "res_data[kk]." + comp + " = acc_" + comp + endl
+    for comp in all_comps:
+      if comp not in linear_sq_terms:
+        str_out += level + tab + tab + tab + tab + "res_data[kk]." + comp + " = 0.0" + endl
+    str_out += level + tab + "finally:" + endl
+    str_out += level + tab + tab + "free(diff_ptrs)" + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "return self" + endl
     str_out += level + "" + endl
     str_out += level + "#---------------------------------------------------------------------------------------------------" + endl
 
@@ -4683,4 +4792,3 @@ def remove_annotations(string):
     str_nocomm = str_nocomm.replace("\n\n","\n")
 
   return str_nocomm
-
