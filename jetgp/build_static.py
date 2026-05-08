@@ -78,8 +78,8 @@ def build_module(module_target, otilib_path, build_dir=None):
             ],
             define_macros=[("CYTHON_TRACE_NOGIL", "1")],
             libraries=['oti', 'oticwrap', 'otistatic', 'gfortran', module_target],
-            extra_compile_args=["-O3", "-fopenmp"],
-            extra_link_args=["-O3", "-fopenmp", f"-L{build_dir}/lib"],
+            extra_compile_args=["-O1", "-fopenmp"],
+            extra_link_args=["-O1", "-fopenmp", f"-L{build_dir}/lib"],
         )
     ]
 

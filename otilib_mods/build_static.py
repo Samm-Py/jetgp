@@ -41,8 +41,8 @@ libraries = ['oti', 'oticwrap', 'otistatic', 'gfortran', mn]
 print(f"Libraries: {libraries}")
 
 include_dirs = [numpy.get_include(), f"{PROJECT_ROOT}/include", f"{BUILD_DIR}/lib/"]
-extra_compile_args = ["-O3", "-fopenmp"]
-extra_link_args = ["-O3", "-fopenmp", f"-L{BUILD_DIR}/lib"]
+extra_compile_args = ["-O1", "-fopenmp"]
+extra_link_args = ["-O1", "-fopenmp", f"-L{BUILD_DIR}/lib"]
 macros = [("CYTHON_TRACE_NOGIL", "1")]
 
 pyx_path = f"{PROJECT_ROOT}/src/python/pyoti/cython/static/{module_name}.pyx"

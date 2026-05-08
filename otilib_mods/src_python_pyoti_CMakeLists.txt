@@ -204,7 +204,7 @@ foreach(PYX_FILE ${OTI_CYTHON_SOURCES})
             ${PYX_PATH}
         
         # Step 2: Compile to shared object
-        COMMAND ${CMAKE_C_COMPILER} -shared -fPIC -O3
+        COMMAND ${CMAKE_C_COMPILER} -shared -fPIC -O1
             -I${PYTHON_INCLUDE_DIR}
             -I${PROJECT_SOURCE_DIR}/include
             -I${NUMPY_INCLUDE_DIR}

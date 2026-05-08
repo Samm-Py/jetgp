@@ -53,6 +53,24 @@ FILE_MAP = [
 # ---------------------------------------------------------------------------
 SCRIPT_PATCHES = [
     (
+        "CMakeLists.txt",
+        [
+            (
+                r'set\(CMAKE_C_FLAGS_RELEASE\s+"-O3 -Wall -std=c99"\)',
+                'set(CMAKE_C_FLAGS_RELEASE "-O1 -Wall -std=c99")',
+            ),
+        ],
+    ),
+    (
+        "src/python/pyoti/cython/setup.py.in",
+        [
+            (
+                r'-O3',
+                '-O1',
+            ),
+        ],
+    ),
+    (
         "build/regenerate_all_c.py",
         [
             (

@@ -23,14 +23,14 @@
 
 if(APPLE)
     # This is for the case of apple macOS
-    # SET(GCC_COVERAGE_COMPILE_FLAGS "-arch i386 -arch x86_64 -g -fwrapv -O3 -Wall -Wstrict-prototypes")
-    # SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -g -fwrapv -O3 -Wall -Wstrict-prototypes -arch x86_64 ${OpenMP_EXTRA_INLCUDE_FLAGS}")
-    SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -fwrapv -O3 -Wall -Wstrict-prototypes ${OpenMP_EXTRA_INLCUDE_FLAGS}")
+    # SET(GCC_COVERAGE_COMPILE_FLAGS "-arch i386 -arch x86_64 -g -fwrapv -O1 -Wall -Wstrict-prototypes")
+    # SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -g -fwrapv -O1 -Wall -Wstrict-prototypes -arch x86_64 ${OpenMP_EXTRA_INLCUDE_FLAGS}")
+    SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -fwrapv -O1 -Wall -Wstrict-prototypes ${OpenMP_EXTRA_INLCUDE_FLAGS}")
     SET(GCC_COVERAGE_LINK_FLAGS "${OpenMP_EXTRA_LINK_FLAGS} ")
   
 elseif(UNIX)
     # This is for the case of Unix (Linux systems.)
-    SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -fwrapv -O3 -Wall -Wstrict-prototypes")
+    SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -fwrapv -O1 -Wall -Wstrict-prototypes")
     SET(GCC_COVERAGE_LINK_FLAGS "")
     # SET(GCC_COVERAGE_COMPILE_FLAGS "-fPIC -fwrapv -Ofast -Wall -Wstrict-prototypes")
 endif(APPLE)
@@ -203,7 +203,7 @@ target_link_libraries(oti
 # BUILD DATAGEN.
 
 # To compile with linux uncomment the following line
-# SET(GCC_COVERAGE_COMPILE_FLAGS "-g -fwrapv -O3 -Wall -Wstrict-prototypes ")
+# SET(GCC_COVERAGE_COMPILE_FLAGS "-g -fwrapv -O1 -Wall -Wstrict-prototypes ")
 # SET(GCC_COVERAGE_LINK_FLAGS "")
 
 add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
@@ -273,10 +273,10 @@ FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/data)
 
 # # set(CMAKE_BUILD_TYPE RELEASE)
 # # set(CMAKE_C_FLAGS_DEBUG "-O2 -g")
-# # set(CMAKE_C_FLAGS_RELEASE "-O3 -Wall")
+# # set(CMAKE_C_FLAGS_RELEASE "-O1 -Wall")
 
 
-# # SET(GCC_COVERAGE_COMPILE_FLAGS "-arch i386 -arch x86_64 -g -fwrapv -O3 -Wall -Wstrict-prototypes")
+# # SET(GCC_COVERAGE_COMPILE_FLAGS "-arch i386 -arch x86_64 -g -fwrapv -O1 -Wall -Wstrict-prototypes")
 # # add_definitions(${GCC_COVERAGE_COMPILE_FLAGS})
 
 # # SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
@@ -397,7 +397,7 @@ foreach(SOURCE_FILE ${OTI_STATIC_SOURCES})
     )
     
     target_compile_options(${TARGET_NAME} PRIVATE
-        -fPIC -fwrapv -O3 -Wall -fopenmp
+        -fPIC -fwrapv -O1 -Wall -fopenmp
     )
     
     target_link_libraries(${TARGET_NAME}

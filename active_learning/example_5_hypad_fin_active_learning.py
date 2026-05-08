@@ -30,6 +30,7 @@ from adaptive_doe import (
     fit_directional_gp,
     fit_function_only_gp,
     lhs_design,
+    make_as_basis_provider,
     query_function_posterior,
     select_derivatives_at_observed_point,
 )
@@ -55,6 +56,8 @@ D = 7
 DEFAULT_ACTIVE_CASE = 2
 DEFAULT_TIMES = [10.0, 100.0, 200.0]
 DEFAULT_DERIVATIVE_VARIANCE_TOL = 1e-8
+DEFAULT_REL_TOL = 0.05  # prior-relative gate: keep vⱼ if λⱼ_post / vⱼᵀ K_prior vⱼ > REL_TOL
+REL_TOL = DEFAULT_REL_TOL
 TRANSIENT_SERIES_TERMS = 100
 # The paper assumes the fin starts at ambient temperature, so
 # h_0 = (T_0 - T_infinity) / (T_W - T_infinity) = 0.
@@ -379,8 +382,18 @@ def compare_distributions(analytic, gp_predictions):
 # Active learning
 # ---------------------------------------------------------------------------
 
-def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True):
+def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
+                        n_as_sample=200):
     rng = np.random.default_rng(seed)
+
+    # Z_AS: fixed Monte-Carlo sample from the active input distribution used
+    # by the GDDEGP direction selector to estimate the GP's active subspace.
+    # Drawn once and reused at every selection call so the basis is stable.
+    rng_as = np.random.default_rng(seed + 991)
+    Z_AS = sample_active_case_z(n_as_sample, rng_as)
+    as_basis_provider = make_as_basis_provider(Z_AS)
+    if verbose:
+        print(f"AS-basis Monte-Carlo sample: M = {n_as_sample}")
 
     # Training data (z-space). Mean point + (n_init - 1) LHS points.
     if n_init < 2:
@@ -443,9 +456,10 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True):
     # directions from the current posterior, append the real projected
     # directional derivatives, refit, and then move to the next point.
     for i in range(n_init):
+        as_basis = as_basis_provider(dir_model, dir_params)
         selection = select_derivatives_at_observed_point(
-            dir_model, dir_params, x_point=Z0[i], tau=0.05,
-            lambda_abs_tol=DERIVATIVE_VARIANCE_TOL,
+            dir_model, dir_params, x_point=Z0[i], rel_tol=REL_TOL,
+            as_basis=as_basis,
         )
         n_picked = 0
         for slot, direction in enumerate(selection["selected_directions"]):
@@ -458,10 +472,13 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True):
             })
             n_picked += 1
         if verbose:
-            print(f"  [init] point {i}: picked {n_picked} directions "
-                  f"(lambda_1={selection['var1']:.3g}, "
-                  f"tol={DERIVATIVE_VARIANCE_TOL:.1e}, "
-                  f"cumulative={len(directional_observations)})")
+            rho_arr = np.round(selection["rho"], 3)
+            print(f"  [init] point {i}: picked {n_picked} directions  "
+                  f"[{selection['basis_source']} basis]  "
+                  f"(rho={rho_arr}, rel_tol={REL_TOL})  "
+                  f"cumulative={len(directional_observations)}")
+            for k, v in enumerate(selection["selected_directions"]):
+                print(f"           v{k+1} = {np.round(v, 4)}")
         if directional_observations and i < n_init - 1:
             dir_model, dir_params = fit_directional_model(
                 X_dir, y_dir, directional_observations,
@@ -481,79 +498,102 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True):
         dir_model=dir_model, dir_params=dir_params,
         n_full_grads=len(full_gradient_observations),
         n_dir_obs=len(directional_observations),
+        n_func_full=X_full.shape[0],
+        n_func_dir=X_dir.shape[0],
     ))
 
     for it in range(1, n_iter + 1):
         if verbose:
             print(f"\n--- iter {it}/{n_iter} ---")
 
-        # PDF-weighted MPV acquisition: max over z of sigma_f^2(z) * p(z),
-        # where p(z) is the active input density in standardized z-space.
-        z_new, log_acq = find_next_point_weighted_mpv(
+        seed_it = seed + it
+
+        # --- Function-only GP: drives its own acquisition ---
+        z_func_new, _ = find_next_point_weighted_mpv(
+            func_model, func_params, BOUNDS_Z,
+            log_weight_fn=active_case_log_pdf,
+            n_restarts=12, seed=seed_it,
+        )
+        f_func_new, _ = T_tip_val_and_grad_z(z_func_new)
+        X_func = np.vstack([X_func, z_func_new[None, :]])
+        y_func = np.vstack([y_func, [[f_func_new]]])
+        func_model, func_params = fit_function_only_gp(
+            X_func, y_func, n_dir_types=D,
+            optimizer_kwargs=OPTIMIZER_KWARGS,
+            normalize=True,
+            initial_params=func_params,
+        )
+        if verbose:
+            print(f"  [func]  z_new = {np.round(z_func_new, 3)}")
+
+        # --- Full-gradient DEGP: drives its own acquisition ---
+        z_full_new, _ = find_next_point_weighted_mpv(
+            full_model, full_params, BOUNDS_Z,
+            log_weight_fn=active_case_log_pdf,
+            n_restarts=12, seed=seed_it,
+        )
+        f_full_new, g_full_new = T_tip_val_and_grad_z(z_full_new)
+        new_idx_full = X_full.shape[0]
+        X_full = np.vstack([X_full, z_full_new[None, :]])
+        y_full = np.vstack([y_full, [[f_full_new]]])
+        full_gradient_observations.append(
+            {"x_index": new_idx_full, "gradient": g_full_new.copy()}
+        )
+        full_model, full_params = fit_full_gradient_degp(
+            X_full, y_full, full_gradient_observations,
+            initial_params=full_params)
+        if verbose:
+            print(f"  [full]  z_new = {np.round(z_full_new, 3)}")
+
+        # --- Eigenbasis GDDEGP: drives its own acquisition ---
+        z_dir_new, log_acq = find_next_point_weighted_mpv(
             dir_model, dir_params, BOUNDS_Z,
             log_weight_fn=active_case_log_pdf,
-            n_restarts=12, seed=seed + it,
+            n_restarts=12, seed=seed_it,
         )
         _, var_at_new = query_function_posterior(
-            dir_model, dir_params, np.atleast_2d(z_new)
+            dir_model, dir_params, np.atleast_2d(z_dir_new)
         )
         mpv = float(var_at_new[0])
         if verbose:
-            print(f"  z_new = {np.round(z_new, 3)}  |z|={np.linalg.norm(z_new):.2f}"
-                  f"  sigma_f^2={mpv:.4g}  log(a)={log_acq:.3g}")
-
-        # New scheme: evaluate the truth at z_new first, register it as an
-        # observed function point in the directional GP, refit, then pick
-        # eigenbasis directions from the REAL posterior at z_new (no fantasy).
-        # Finally, project the already-computed true gradient onto those
-        # directions to obtain the directional-derivative observations.
-        f_new, g_new = T_tip_val_and_grad_z(z_new)
-
-        new_idx_func = X_func.shape[0]
-        X_func = np.vstack([X_func, z_new[None, :]])
-        y_func = np.vstack([y_func, [[f_new]]])
-
-        X_full = np.vstack([X_full, z_new[None, :]])
-        y_full = np.vstack([y_full, [[f_new]]])
-        full_gradient_observations.append(
-            {"x_index": new_idx_func, "gradient": g_new.copy()}
-        )
-
-        X_dir = np.vstack([X_dir, z_new[None, :]])
-        y_dir = np.vstack([y_dir, [[f_new]]])
-
-        # Refit directional GP with z_new as a new function observation
-        # (existing directional obs preserved) so z_new is a real training
-        # point when we pick directions at it.
+            print(f"  [dir]   z_new = {np.round(z_dir_new, 3)}  "
+                  f"|z|={np.linalg.norm(z_dir_new):.2f}  "
+                  f"sigma_f^2={mpv:.4g}  log(a)={log_acq:.3g}")
+        f_dir_new, g_dir_new = T_tip_val_and_grad_z(z_dir_new)
+        new_idx_dir = X_dir.shape[0]
+        X_dir = np.vstack([X_dir, z_dir_new[None, :]])
+        y_dir = np.vstack([y_dir, [[f_dir_new]]])
         dir_model, dir_params = fit_directional_model(
             X_dir, y_dir, directional_observations,
             initial_params=dir_params)
-
+        as_basis = as_basis_provider(dir_model, dir_params)
         selection = select_derivatives_at_observed_point(
-            dir_model, dir_params, x_point=z_new, tau=0.05,
-            lambda_abs_tol=DERIVATIVE_VARIANCE_TOL,
+            dir_model, dir_params, x_point=z_dir_new, rel_tol=REL_TOL,
+            as_basis=as_basis,
         )
         if verbose:
-            print(f"  selected {len(selection['selected_directions'])} direction(s) "
-                  f"(lambda_1={selection['var1']:.3g}, "
-                  f"tol={DERIVATIVE_VARIANCE_TOL:.1e})")
+            rho_arr = np.round(selection["rho"], 3)
+            print(f"  [dir]   selected {len(selection['selected_directions'])} direction(s)  "
+                  f"[{selection['basis_source']} basis]  "
+                  f"rho={rho_arr}  rel_tol={REL_TOL}")
+            for k, v in enumerate(selection["selected_directions"]):
+                print(f"          v{k+1} = {np.round(v, 4)}")
         for slot, direction in enumerate(selection["selected_directions"]):
-            d_val = float(g_new @ direction)
+            d_val = float(g_dir_new @ direction)
             directional_observations.append({
-                "x_index": new_idx_func,
+                "x_index": new_idx_dir,
                 "direction": direction.copy(),
                 "value": d_val,
                 "slot": slot,
             })
+        dir_model, dir_params = fit_directional_model(
+            X_dir, y_dir, directional_observations,
+            initial_params=dir_params)
 
-        (func_model, func_params,
-         full_model, full_params,
-         dir_model, dir_params) = fit_all(
-             f"iter{it}",
-             func_initial=func_params,
-             full_initial=full_params,
-             dir_initial=dir_params,
-         )
+        if verbose:
+            print(f"  [sizes] func={X_func.shape[0]}  "
+                  f"full={X_full.shape[0]} (+{len(full_gradient_observations)} grads)  "
+                  f"dir={X_dir.shape[0]} (+{len(directional_observations)} dir-obs)")
 
         history.append(dict(
             iteration=it,
@@ -563,6 +603,8 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True):
             dir_model=dir_model, dir_params=dir_params,
             n_full_grads=len(full_gradient_observations),
             n_dir_obs=len(directional_observations),
+            n_func_full=X_full.shape[0],
+            n_func_dir=X_dir.shape[0],
         ))
 
     # Annotate each history entry with a copy of the cumulative directional
@@ -660,6 +702,15 @@ METHOD_KINDS = {
 }
 
 
+def _h_n_func(h, label):
+    """Per-model function-evaluation count from a history entry."""
+    if label == "Full-gradient DEGP":
+        return h.get("n_func_full", h["X_func"].shape[0])
+    if label == "Eigenbasis GDDEGP":
+        return h.get("n_func_dir", h["X_func"].shape[0])
+    return h["X_func"].shape[0]
+
+
 def gp_active_subspace_history(history, AS_eigvals_truth, AS_eigvecs_truth,
                                k_active=5, n_samples=1500, seed=23):
     """
@@ -706,7 +757,7 @@ def gp_active_subspace_history(history, AS_eigvals_truth, AS_eigvecs_truth,
             dom_cos = float(abs(w1_gp @ w1_tr))
 
             out[label]["iterations"].append(h["iteration"])
-            out[label]["n_func"].append(h["X_func"].shape[0])
+            out[label]["n_func"].append(_h_n_func(h, label))
             out[label]["eigvals"].append(ev)
             out[label]["activity"].append(activity)
             out[label]["align_k"].append(align)
@@ -820,7 +871,7 @@ def metric_history(history, n_mc=5000, seed=7):
 
     metric_keys = ["mean", "variance", "skewness", "kurtosis", "W1_to_truth"]
     iterations = []
-    n_func_list = []
+    n_func_per_label = {lbl: [] for lbl, _, _ in METHOD_KEYS}
     n_deriv = {lbl: [] for lbl, _, _ in METHOD_KEYS}
     metrics = {lbl: {k: [] for k in metric_keys} for lbl, _, _ in METHOD_KEYS}
 
@@ -828,7 +879,8 @@ def metric_history(history, n_mc=5000, seed=7):
 
     for h in history:
         iterations.append(h["iteration"])
-        n_func_list.append(h["X_func"].shape[0])
+        for lbl, _, _ in METHOD_KEYS:
+            n_func_per_label[lbl].append(_h_n_func(h, lbl))
         preds = _predict_all(h, Z_mc)
 
         # Derivative-observation counts per method at this iteration.
@@ -848,7 +900,8 @@ def metric_history(history, n_mc=5000, seed=7):
 
     return dict(
         iterations=iterations,
-        n_func=n_func_list,
+        n_func=n_func_per_label["Function-only GP"],
+        n_func_per_label=n_func_per_label,
         n_deriv=n_deriv,
         metrics=metrics,
         truth_moments=truth_moments,
@@ -864,15 +917,17 @@ def plot_learning_curves(history, Z_val, y_val, outdir, case_label=None):
     if case_label is None:
         case_label = CASE_LABEL
     its = [h["iteration"] for h in history]
-    n_func = [h["X_func"].shape[0] for h in history]
+    n_func_func = [h["X_func"].shape[0] for h in history]
+    n_func_full = [_h_n_func(h, "Full-gradient DEGP") for h in history]
+    n_func_dir  = [_h_n_func(h, "Eigenbasis GDDEGP") for h in history]
     func_nrmse = [gp_nrmse(h["func_model"], h["func_params"], Z_val, y_val) for h in history]
     full_nrmse = [gp_nrmse(h["full_model"], h["full_params"], Z_val, y_val) for h in history]
     dir_nrmse = [gp_nrmse(h["dir_model"], h["dir_params"], Z_val, y_val) for h in history]
 
     fig, ax = plt.subplots(figsize=(6.5, 4))
-    ax.semilogy(n_func, func_nrmse, "o-", label="Function-only GP")
-    ax.semilogy(n_func, full_nrmse, "s-", label="Full-gradient DEGP")
-    ax.semilogy(n_func, dir_nrmse, "^-", label="Eigenbasis GDDEGP")
+    ax.semilogy(n_func_func, func_nrmse, "o-", label="Function-only GP")
+    ax.semilogy(n_func_full, full_nrmse, "s-", label="Full-gradient DEGP")
+    ax.semilogy(n_func_dir, dir_nrmse, "^-", label="Eigenbasis GDDEGP")
     ax.set_xlabel("# function evaluations")
     ax.set_ylabel("Validation NRMSE")
     ax.set_title(f"Active-learning progress ({case_label})")
@@ -881,7 +936,8 @@ def plot_learning_curves(history, Z_val, y_val, outdir, case_label=None):
     fig.tight_layout()
     fig.savefig(outdir / "learning_curves.png", dpi=180)
     plt.close(fig)
-    return dict(its=its, n_func=n_func,
+    return dict(its=its,
+                n_func_func=n_func_func, n_func_full=n_func_full, n_func_dir=n_func_dir,
                 func=func_nrmse, full=full_nrmse, dir=dir_nrmse)
 
 
@@ -901,7 +957,9 @@ def plot_learning_curves_vs_cost(history, Z_val, y_val, outdir,
     """
     d = history[0]["X_func"].shape[1]
 
-    n_func = np.array([h["X_func"].shape[0] for h in history])
+    n_func_func = np.array([h["X_func"].shape[0] for h in history])
+    n_func_full = np.array([_h_n_func(h, "Full-gradient DEGP") for h in history])
+    n_func_dir  = np.array([_h_n_func(h, "Eigenbasis GDDEGP") for h in history])
     func_nrmse = np.array([gp_nrmse(h["func_model"], h["func_params"], Z_val, y_val)
                            for h in history])
     full_nrmse = np.array([gp_nrmse(h["full_model"], h["full_params"], Z_val, y_val)
@@ -909,9 +967,9 @@ def plot_learning_curves_vs_cost(history, Z_val, y_val, outdir,
     dir_nrmse = np.array([gp_nrmse(h["dir_model"], h["dir_params"], Z_val, y_val)
                           for h in history])
 
-    cost_func = n_func
-    cost_full = n_func + d * np.array([h["n_full_grads"] for h in history])
-    cost_dir = n_func + np.array([h["n_dir_obs"] for h in history])
+    cost_func = n_func_func
+    cost_full = n_func_full + d * np.array([h["n_full_grads"] for h in history])
+    cost_dir  = n_func_dir  + np.array([h["n_dir_obs"] for h in history])
 
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ax.semilogy(cost_full, full_nrmse, "s-", label="Full-gradient DEGP")
@@ -993,24 +1051,26 @@ def plot_relative_metric_errors(mh, outdir, case_label="Case 1"):
     fig.savefig(outdir / "relative_metric_errors_vs_n_deriv.png", dpi=180)
     plt.close(fig)
 
-    # Also a version against # function evaluations for apples-to-apples.
+    # Also a version against # function evaluations (per-model x-axis).
     fig, axes = plt.subplots(1, 5, figsize=(20, 3.8))
     for ax, key in zip(axes[:4], moment_keys):
         denom = max(abs(truth_lookup[key]), eps)
         for label in mh["metrics"]:
+            n_f = mh["n_func_per_label"][label]
             y_abs = np.array(mh["metrics"][label][key])
             rel = np.abs(y_abs - truth_lookup[key]) / denom
             rel = np.maximum(rel, eps)
-            ax.semilogy(mh["n_func"], rel, markers[label] + "-", label=label)
+            ax.semilogy(n_f, rel, markers[label] + "-", label=label)
         ax.set_xlabel("# function evaluations")
         ax.set_ylabel(f"relative error in {key}")
         ax.set_title(f"{key} (truth={truth_lookup[key]:.4g})")
         ax.grid(True, which="both", alpha=0.3)
     ax = axes[4]
     for label in mh["metrics"]:
+        n_f = mh["n_func_per_label"][label]
         y = np.array(mh["metrics"][label]["W1_to_truth"])
         y = np.maximum(y, eps)
-        ax.semilogy(mh["n_func"], y, markers[label] + "-", label=label)
+        ax.semilogy(n_f, y, markers[label] + "-", label=label)
     ax.set_xlabel("# function evaluations")
     ax.set_ylabel(r"$W_1$ to truth")
     ax.set_title("W1 (absolute)")
@@ -1069,7 +1129,7 @@ def plot_metric_evolution(mh, outdir, case_label="Case 1"):
     for ax, key in zip(axes, metric_keys):
         plotted_values = []
         for label in derivative_labels:
-            x = np.asarray(mh["n_func"]) + np.asarray(mh["n_deriv"][label])
+            x = np.asarray(mh["n_func_per_label"][label]) + np.asarray(mh["n_deriv"][label])
             y = mh["metrics"][label][key]
             plotted_values.extend(y)
             ax.plot(x, y, markers[label] + "-", label=label)
@@ -1089,11 +1149,12 @@ def plot_metric_evolution(mh, outdir, case_label="Case 1"):
     fig.savefig(outdir / "metric_evolution_vs_n_deriv.png", dpi=180)
     plt.close(fig)
 
-    # Also plot vs # function evaluations (shared x-axis across methods).
+    # Also plot vs # function evaluations (per-model x-axis).
     fig, axes = plt.subplots(1, 5, figsize=(20, 3.8))
     for ax, key in zip(axes, metric_keys):
         for label in mh["metrics"]:
-            ax.plot(mh["n_func"], mh["metrics"][label][key],
+            n_f = mh["n_func_per_label"][label]
+            ax.plot(n_f, mh["metrics"][label][key],
                     markers[label] + "-", label=label)
         ax.axhline(truth_lookup[key], color="k", lw=1.2, ls="--")
         ax.set_xlabel("# function evaluations")
@@ -1111,15 +1172,16 @@ def plot_metric_evolution(mh, outdir, case_label="Case 1"):
 
 def print_metric_history(mh):
     print("\nMetric evolution (per iteration):")
-    header = ("  iter  N_f  " +
-              "".join(f"{lbl[:18]:>20s} N_deriv " for lbl in mh["metrics"]))
+    header = ("  iter  " +
+              "".join(f"  {lbl[:18]:>18s}  N_f  N_deriv" for lbl in mh["metrics"]))
     print(header)
     for i, it in enumerate(mh["iterations"]):
-        line = f"  {it:>3d} {mh['n_func'][i]:>5d}"
+        line = f"  {it:>3d}"
         for lbl in mh["metrics"]:
             w1 = mh["metrics"][lbl]["W1_to_truth"][i]
             nd = mh["n_deriv"][lbl][i]
-            line += f"  W1={w1:>8.4g} nD={nd:>4d}"
+            nf = mh["n_func_per_label"][lbl][i]
+            line += f"  W1={w1:>8.4g} nF={nf:>3d} nD={nd:>4d}"
         print(line)
 
 
@@ -1369,6 +1431,12 @@ def parse_args():
         help="Number of active-learning iterations per time point.",
     )
     parser.add_argument(
+        "--n-init",
+        type=int,
+        default=2,
+        help="Initial DOE size: mean point + (n_init - 1) LHS samples. Must be >= 2.",
+    )
+    parser.add_argument(
         "--seed",
         type=int,
         default=42,
@@ -1384,10 +1452,21 @@ def parse_args():
             "derivatives are acquired at that point."
         ),
     )
+    parser.add_argument(
+        "--rel-tol",
+        type=float,
+        default=DEFAULT_REL_TOL,
+        help=(
+            "Prior-relative gate threshold: keep eigenvector vⱼ if "
+            "ρⱼ = λⱼ_post / vⱼᵀ K_prior vⱼ exceeds this value. "
+            "ρⱼ ∈ [0, 1] reads as 'fraction of prior gradient variance "
+            "in direction vⱼ still unexplained by the data.'"
+        ),
+    )
     return parser.parse_args()
 
 
-def run_complete_study(n_iter=20, seed=42, verbose=True):
+def run_complete_study(n_iter=20, n_init=2, seed=42, verbose=True):
     label = study_label()
     print("=" * 72)
     print(f"Example 5 - HYPAD-UQ fin ({label}): active learning from two points")
@@ -1400,7 +1479,7 @@ def run_complete_study(n_iter=20, seed=42, verbose=True):
     outdir.mkdir(exist_ok=True)
 
     history, directional_observations = run_active_learning(
-        n_iter=n_iter, seed=seed, verbose=verbose
+        n_iter=n_iter, n_init=n_init, seed=seed, verbose=verbose
     )
 
     # Validation set in z-space sampled from the active input distribution.
@@ -1411,9 +1490,11 @@ def run_complete_study(n_iter=20, seed=42, verbose=True):
     print("\nLearning curves (NRMSE vs iteration):")
     curves = plot_learning_curves(history, Z_val, y_val, outdir,
                                   case_label=label)
-    for i, n in enumerate(curves["n_func"]):
-        print(f"  N_f={n:2d} | func={curves['func'][i]:.4g} | "
-              f"DEGP={curves['full'][i]:.4g} | GDDEGP={curves['dir'][i]:.4g}")
+    for i, (nf, nd, ng) in enumerate(zip(
+            curves["n_func_func"], curves["n_func_full"], curves["n_func_dir"])):
+        print(f"  func N_f={nf:2d} NRMSE={curves['func'][i]:.4g} | "
+              f"DEGP N_f={nd:2d} NRMSE={curves['full'][i]:.4g} | "
+              f"GDDEGP N_f={ng:2d} NRMSE={curves['dir'][i]:.4g}")
 
     plot_learning_curves_vs_cost(history, Z_val, y_val, outdir,
                                  case_label=label)
@@ -1462,6 +1543,8 @@ if __name__ == "__main__":
     args = parse_args()
     configure_active_case(args.case)
     configure_derivative_variance_tol(args.deriv_var_tol)
+    REL_TOL = args.rel_tol
     for time_seconds in args.times:
         configure_active_time(time_seconds)
-        run_complete_study(n_iter=args.n_iter, seed=args.seed, verbose=True)
+        run_complete_study(n_iter=args.n_iter, n_init=args.n_init,
+                           seed=args.seed, verbose=True)

@@ -4111,6 +4111,41 @@ class writer:
     all_comps = []
     for ordi in range(self.order + 1):
       all_comps.extend(self.name_imdir[ordi])
+    ncomp = len(all_comps)
+    comp_to_idx = {comp: idx for idx, comp in enumerate(all_comps)}
+
+    # Compact sparse arithmetic tables.  The static OTI structs are laid out as
+    # contiguous coeff_t fields in all_comps order, so generated Cython can work
+    # through double* coefficient views instead of unrolling every field access.
+    sparse_ed_indices = []
+    sparse_edd_indices = []
+    sparse_shift_ed = []
+    sparse_shift_edd = []
+    for basis_d in range(self.nbases):
+      nz_a, sq_nz, sq_terms, mul_terms = self._get_sparse_sq_info(basis_d)
+      ed_name = self.name_imdir[1][basis_d] if self.order >= 1 else None
+      ed_idx = comp_to_idx[ed_name] if ed_name is not None else ncomp
+
+      edd_name = None
+      for comp in sq_nz:
+        if comp != 'r' and comp != ed_name:
+          edd_name = comp
+          break
+
+      sparse_ed_indices.append(ed_idx)
+      sparse_edd_indices.append(comp_to_idx[edd_name] if edd_name is not None else ncomp)
+
+      shift_ed = [ncomp] * ncomp
+      shift_edd = [ncomp] * ncomp
+      for out_comp, terms in mul_terms.items():
+        out_idx = comp_to_idx[out_comp]
+        for lhs, rhs in terms:
+          if lhs == ed_name:
+            shift_ed[comp_to_idx[rhs]] = out_idx
+          elif edd_name is not None and lhs == edd_name:
+            shift_edd[comp_to_idx[rhs]] = out_idx
+      sparse_shift_ed.append(shift_ed)
+      sparse_shift_edd.append(shift_edd)
 
     # ── fused_sqdist_sparse ──────────────────────────────────────────────────────
     # Loop-swapped: d outside kk to eliminate branching from the hot inner loop.
@@ -4125,18 +4160,36 @@ class writer:
     str_out += level + tab + '"""' + endl
     str_out += level + tab + "cdef uint64_t size = self.arr.size" + endl
     str_out += level + tab + "cdef uint64_t dim = <uint64_t>len(diffs)" + endl
-    str_out += level + tab + "cdef uint64_t kk" + endl
+    str_out += level + tab + "cdef uint64_t active_dim = dim" + endl
+    str_out += level + tab + "cdef uint64_t alloc_dim" + endl
+    str_out += level + tab + "cdef uint64_t ncomp = " + str(ncomp) + endl
+    str_out += level + tab + "cdef uint64_t nbases = " + str(self.nbases) + endl
+    str_out += level + tab + "cdef uint64_t kk, d, c, ed_idx, edd_idx" + endl
     str_out += level + tab + "cdef " + self.type_name + "* res_data = self.arr.p_data" + endl
     str_out += level + tab + "cdef double* ell_ptr = &ell_sq[0]" + endl
     str_out += level + tab + "cdef double ell_d, a_r, a_ed" + endl
+    str_out += level + tab + "cdef double* res_coeffs" + endl
+    str_out += level + tab + "cdef double* diff_coeffs" + endl
+    str_out += level + tab + "cdef uint64_t ed_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef uint64_t edd_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = NULL" + endl
+    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
+    str_out += level + tab + "" + endl
+    for basis_d, ed_idx in enumerate(sparse_ed_indices):
+      str_out += level + tab + "ed_indices[" + str(basis_d) + "] = " + str(ed_idx) + endl
+      str_out += level + tab + "edd_indices[" + str(basis_d) + "] = " + str(sparse_edd_indices[basis_d]) + endl
+    str_out += level + tab + "if active_dim > nbases:" + endl
+    str_out += level + tab + tab + "active_dim = nbases" + endl
+    str_out += level + tab + "alloc_dim = active_dim" + endl
+    str_out += level + tab + "if alloc_dim == 0:" + endl
+    str_out += level + tab + tab + "alloc_dim = 1" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "# Build C array of pointers to diff data" + endl
-    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = <" + self.type_name + "**>malloc(dim * sizeof(" + self.type_name + "*))" + endl
+    str_out += level + tab + "diff_ptrs = <" + self.type_name + "**>malloc(alloc_dim * sizeof(" + self.type_name + "*))" + endl
     str_out += level + tab + "if diff_ptrs == NULL:" + endl
     str_out += level + tab + tab + 'raise MemoryError("Failed to allocate diff pointer array")' + endl
     str_out += level + tab + "" + endl
-    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
-    str_out += level + tab + "for d in range(dim):" + endl
+    str_out += level + tab + "for d in range(active_dim):" + endl
     str_out += level + tab + tab + "diff_arr = <" + self.pytype_name_arr + ">diffs[d]" + endl
     str_out += level + tab + tab + "diff_ptrs[d] = diff_arr.arr.p_data" + endl
     str_out += level + tab + "" + endl
@@ -4144,30 +4197,25 @@ class writer:
     str_out += level + tab + tab + "with nogil:" + endl
     # Zero pass — one sweep over the data
     str_out += level + tab + tab + tab + "for kk in range(size):" + endl
-    for comp in all_comps:
-      str_out += level + tab + tab + tab + tab + "res_data[kk]." + comp + " = 0.0" + endl
+    str_out += level + tab + tab + tab + tab + "res_coeffs = <double*>&res_data[kk]" + endl
+    str_out += level + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[c] = 0.0" + endl
     str_out += level + tab + tab + tab + "" + endl
-    # Per-basis accumulation — each basis gets its own tight kk loop
-    for basis_d in range(self.nbases):
-      nz_a, sq_nz, sq_terms, _ = self._get_sparse_sq_info(basis_d)
-      ed_name = self.name_imdir[1][basis_d]
-      str_out += level + tab + tab + tab + "if dim > " + str(basis_d) + ":" + endl
-      indent = level + tab + tab + tab + tab
-      str_out += indent + "ell_d = ell_ptr[" + str(basis_d) + "]" + endl
-      str_out += indent + "for kk in range(size):" + endl
-      indent2 = indent + tab
-      str_out += indent2 + "a_r = diff_ptrs[" + str(basis_d) + "][kk].r" + endl
-      str_out += indent2 + "a_ed = diff_ptrs[" + str(basis_d) + "][kk]." + ed_name + endl
-      for comp in all_comps:
-        if comp in sq_terms:
-          terms = sq_terms[comp]
-          expr_parts = []
-          for (lhs, rhs) in terms:
-            lhs_var = "a_r" if lhs == "r" else "a_ed"
-            rhs_var = "a_r" if rhs == "r" else "a_ed"
-            expr_parts.append(lhs_var + " * " + rhs_var)
-          expr = " + ".join(expr_parts)
-          str_out += indent2 + "res_data[kk]." + comp + " += ell_d * (" + expr + ")" + endl
+    str_out += level + tab + tab + tab + "for d in range(active_dim):" + endl
+    str_out += level + tab + tab + tab + tab + "ell_d = ell_ptr[d]" + endl
+    str_out += level + tab + tab + tab + tab + "ed_idx = ed_indices[d]" + endl
+    str_out += level + tab + tab + tab + tab + "edd_idx = edd_indices[d]" + endl
+    str_out += level + tab + tab + tab + tab + "if ed_idx == ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + "continue" + endl
+    str_out += level + tab + tab + tab + tab + "for kk in range(size):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs = <double*>&res_data[kk]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "diff_coeffs = <double*>&diff_ptrs[d][kk]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "a_r = diff_coeffs[0]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "a_ed = diff_coeffs[ed_idx]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[0] += ell_d * a_r * a_r" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[ed_idx] += ell_d * (a_r * a_ed + a_ed * a_r)" + endl
+    str_out += level + tab + tab + tab + tab + tab + "if edd_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "res_coeffs[edd_idx] += ell_d * a_ed * a_ed" + endl
     str_out += level + tab + "finally:" + endl
     str_out += level + tab + tab + "free(diff_ptrs)" + endl
     str_out += level + tab + "" + endl
@@ -4187,17 +4235,35 @@ class writer:
     str_out += level + tab + '"""' + endl
     str_out += level + tab + "cdef uint64_t size = self.arr.size" + endl
     str_out += level + tab + "cdef uint64_t dim = <uint64_t>len(diffs)" + endl
-    str_out += level + tab + "cdef uint64_t kk" + endl
+    str_out += level + tab + "cdef uint64_t active_dim = dim" + endl
+    str_out += level + tab + "cdef uint64_t alloc_dim" + endl
+    str_out += level + tab + "cdef uint64_t ncomp = " + str(ncomp) + endl
+    str_out += level + tab + "cdef uint64_t nbases = " + str(self.nbases) + endl
+    str_out += level + tab + "cdef uint64_t kk, d, c, ed_idx, edd_idx" + endl
     str_out += level + tab + "cdef " + self.type_name + "* res_data = self.arr.p_data" + endl
     str_out += level + tab + "cdef double a_r, a_ed" + endl
+    str_out += level + tab + "cdef double* res_coeffs" + endl
+    str_out += level + tab + "cdef double* diff_coeffs" + endl
+    str_out += level + tab + "cdef uint64_t ed_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef uint64_t edd_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = NULL" + endl
+    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
+    str_out += level + tab + "" + endl
+    for basis_d, ed_idx in enumerate(sparse_ed_indices):
+      str_out += level + tab + "ed_indices[" + str(basis_d) + "] = " + str(ed_idx) + endl
+      str_out += level + tab + "edd_indices[" + str(basis_d) + "] = " + str(sparse_edd_indices[basis_d]) + endl
+    str_out += level + tab + "if active_dim > nbases:" + endl
+    str_out += level + tab + tab + "active_dim = nbases" + endl
+    str_out += level + tab + "alloc_dim = active_dim" + endl
+    str_out += level + tab + "if alloc_dim == 0:" + endl
+    str_out += level + tab + tab + "alloc_dim = 1" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "# Build C array of pointers to diff data" + endl
-    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = <" + self.type_name + "**>malloc(dim * sizeof(" + self.type_name + "*))" + endl
+    str_out += level + tab + "diff_ptrs = <" + self.type_name + "**>malloc(alloc_dim * sizeof(" + self.type_name + "*))" + endl
     str_out += level + tab + "if diff_ptrs == NULL:" + endl
     str_out += level + tab + tab + 'raise MemoryError("Failed to allocate diff pointer array")' + endl
     str_out += level + tab + "" + endl
-    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
-    str_out += level + tab + "for d in range(dim):" + endl
+    str_out += level + tab + "for d in range(active_dim):" + endl
     str_out += level + tab + tab + "diff_arr = <" + self.pytype_name_arr + ">diffs[d]" + endl
     str_out += level + tab + tab + "diff_ptrs[d] = diff_arr.arr.p_data" + endl
     str_out += level + tab + "" + endl
@@ -4205,29 +4271,24 @@ class writer:
     str_out += level + tab + tab + "with nogil:" + endl
     # Zero pass
     str_out += level + tab + tab + tab + "for kk in range(size):" + endl
-    for comp in all_comps:
-      str_out += level + tab + tab + tab + tab + "res_data[kk]." + comp + " = 0.0" + endl
+    str_out += level + tab + tab + tab + tab + "res_coeffs = <double*>&res_data[kk]" + endl
+    str_out += level + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[c] = 0.0" + endl
     str_out += level + tab + tab + tab + "" + endl
-    # Per-basis accumulation
-    for basis_d in range(self.nbases):
-      nz_a, sq_nz, sq_terms, _ = self._get_sparse_sq_info(basis_d)
-      ed_name = self.name_imdir[1][basis_d]
-      str_out += level + tab + tab + tab + "if dim > " + str(basis_d) + ":" + endl
-      indent = level + tab + tab + tab + tab
-      str_out += indent + "for kk in range(size):" + endl
-      indent2 = indent + tab
-      str_out += indent2 + "a_r = diff_ptrs[" + str(basis_d) + "][kk].r" + endl
-      str_out += indent2 + "a_ed = diff_ptrs[" + str(basis_d) + "][kk]." + ed_name + endl
-      for comp in all_comps:
-        if comp in sq_terms:
-          terms = sq_terms[comp]
-          expr_parts = []
-          for (lhs, rhs) in terms:
-            lhs_var = "a_r" if lhs == "r" else "a_ed"
-            rhs_var = "a_r" if rhs == "r" else "a_ed"
-            expr_parts.append(lhs_var + " * " + rhs_var)
-          expr = " + ".join(expr_parts)
-          str_out += indent2 + "res_data[kk]." + comp + " += " + expr + endl
+    str_out += level + tab + tab + tab + "for d in range(active_dim):" + endl
+    str_out += level + tab + tab + tab + tab + "ed_idx = ed_indices[d]" + endl
+    str_out += level + tab + tab + tab + tab + "edd_idx = edd_indices[d]" + endl
+    str_out += level + tab + tab + tab + tab + "if ed_idx == ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + "continue" + endl
+    str_out += level + tab + tab + tab + tab + "for kk in range(size):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs = <double*>&res_data[kk]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "diff_coeffs = <double*>&diff_ptrs[d][kk]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "a_r = diff_coeffs[0]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "a_ed = diff_coeffs[ed_idx]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[0] += a_r * a_r" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[ed_idx] += a_r * a_ed + a_ed * a_r" + endl
+    str_out += level + tab + tab + tab + tab + tab + "if edd_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "res_coeffs[edd_idx] += a_ed * a_ed" + endl
     str_out += level + tab + "finally:" + endl
     str_out += level + tab + tab + "free(diff_ptrs)" + endl
     str_out += level + tab + "" + endl
@@ -4245,78 +4306,64 @@ class writer:
     str_out += level + tab + "enabling sparse squaring (3 non-zero) and filtered multiplication." + endl
     str_out += level + tab + '"""' + endl
     str_out += level + tab + "cdef uint64_t size = self.arr.size" + endl
-    str_out += level + tab + "cdef uint64_t kk" + endl
+    str_out += level + tab + "cdef uint64_t ncomp = " + str(ncomp) + endl
+    str_out += level + tab + "cdef uint64_t nbases = " + str(self.nbases) + endl
+    str_out += level + tab + "cdef uint64_t kk, c, out_idx, ed_idx, edd_idx" + endl
     str_out += level + tab + "cdef " + self.type_name + "* res_data = self.arr.p_data" + endl
     str_out += level + tab + "cdef " + self.type_name + "* a_data = a.arr.p_data" + endl
     str_out += level + tab + "cdef " + self.type_name + "* b_data = b.arr.p_data" + endl
     str_out += level + tab + "cdef double a_r, a_ed, sq_r, sq_ed, sq_edd" + endl
+    str_out += level + tab + "cdef double* res_coeffs" + endl
+    str_out += level + tab + "cdef double* a_coeffs" + endl
+    str_out += level + tab + "cdef double* b_coeffs" + endl
+    str_out += level + tab + "cdef uint64_t ed_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef uint64_t edd_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef uint64_t shift_ed[" + str(self.nbases) + "][" + str(ncomp) + "]" + endl
+    str_out += level + tab + "cdef uint64_t shift_edd[" + str(self.nbases) + "][" + str(ncomp) + "]" + endl
+    str_out += level + tab + "" + endl
+    for basis_d, ed_idx in enumerate(sparse_ed_indices):
+      str_out += level + tab + "ed_indices[" + str(basis_d) + "] = " + str(ed_idx) + endl
+      str_out += level + tab + "edd_indices[" + str(basis_d) + "] = " + str(sparse_edd_indices[basis_d]) + endl
+    str_out += level + tab + "for out_idx in range(nbases):" + endl
+    str_out += level + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + "shift_ed[out_idx][c] = ncomp" + endl
+    str_out += level + tab + tab + tab + "shift_edd[out_idx][c] = ncomp" + endl
+    for basis_d in range(self.nbases):
+      for c_idx, out_idx in enumerate(sparse_shift_ed[basis_d]):
+        if out_idx != ncomp:
+          str_out += level + tab + "shift_ed[" + str(basis_d) + "][" + str(c_idx) + "] = " + str(out_idx) + endl
+      for c_idx, out_idx in enumerate(sparse_shift_edd[basis_d]):
+        if out_idx != ncomp:
+          str_out += level + tab + "shift_edd[" + str(basis_d) + "][" + str(c_idx) + "] = " + str(out_idx) + endl
+    str_out += level + tab + "" + endl
+    str_out += level + tab + "if basis_d >= nbases:" + endl
+    str_out += level + tab + tab + "return self" + endl
+    str_out += level + tab + "ed_idx = ed_indices[basis_d]" + endl
+    str_out += level + tab + "edd_idx = edd_indices[basis_d]" + endl
+    str_out += level + tab + "if ed_idx == ncomp:" + endl
+    str_out += level + tab + tab + "return self" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "with nogil:" + endl
-    # Generate one branch per basis — the switch is OUTSIDE the kk loop
-    for basis_d in range(self.nbases):
-      nz_a, sq_nz, sq_terms, mul_terms = self._get_sparse_sq_info(basis_d)
-      ed_name = self.name_imdir[1][basis_d]
-      # Find the 2nd-order component name (e_dd)
-      edd_name = None
-      for comp in sq_nz:
-        if comp != 'r' and comp != ed_name:
-          edd_name = comp
-          break
-
-      if basis_d == 0:
-        str_out += level + tab + tab + "if basis_d == 0:" + endl
-      else:
-        str_out += level + tab + tab + "elif basis_d == " + str(basis_d) + ":" + endl
-
-      indent = level + tab + tab + tab
-      str_out += indent + "for kk in range(size):" + endl
-      indent2 = indent + tab
-      # Extract non-zero components of a into locals
-      str_out += indent2 + "a_r = a_data[kk].r" + endl
-      str_out += indent2 + "a_ed = a_data[kk]." + ed_name + endl
-      # Compute sparse square into locals
-      # sq_r = a_r * a_r  (from sq_terms['r'])
-      str_out += indent2 + "sq_r = a_r * a_r" + endl
-      # sq_ed = terms for the 1st-order component
-      if ed_name in sq_terms:
-        terms = sq_terms[ed_name]
-        expr_parts = []
-        for (lhs, rhs) in terms:
-          lhs_var = "a_r" if lhs == "r" else "a_ed"
-          rhs_var = "a_r" if rhs == "r" else "a_ed"
-          expr_parts.append(lhs_var + " * " + rhs_var)
-        str_out += indent2 + "sq_ed = " + " + ".join(expr_parts) + endl
-      # sq_edd = terms for the 2nd-order component
-      if edd_name and edd_name in sq_terms:
-        terms = sq_terms[edd_name]
-        expr_parts = []
-        for (lhs, rhs) in terms:
-          lhs_var = "a_r" if lhs == "r" else "a_ed"
-          rhs_var = "a_r" if rhs == "r" else "a_ed"
-          expr_parts.append(lhs_var + " * " + rhs_var)
-        str_out += indent2 + "sq_edd = " + " + ".join(expr_parts) + endl
-      str_out += indent2 + "" + endl
-      # Now compute res = scale * sq * b using filtered mul_terms
-      # Map sq component names to local variable names
-      sq_var_map = {'r': 'sq_r'}
-      if ed_name:
-        sq_var_map[ed_name] = 'sq_ed'
-      if edd_name:
-        sq_var_map[edd_name] = 'sq_edd'
-
-      for comp in all_comps:
-        if comp in mul_terms:
-          terms = mul_terms[comp]
-          expr_parts = []
-          for (lhs, rhs) in terms:
-            lhs_var = sq_var_map[lhs]
-            rhs_var = "b_data[kk]." + rhs
-            expr_parts.append(lhs_var + " * " + rhs_var)
-          expr = " + ".join(expr_parts)
-          str_out += indent2 + "res_data[kk]." + comp + " = scale * (" + expr + ")" + endl
-        else:
-          # This component gets zero contribution
-          str_out += indent2 + "res_data[kk]." + comp + " = 0.0" + endl
+    str_out += level + tab + tab + "for kk in range(size):" + endl
+    str_out += level + tab + tab + tab + "res_coeffs = <double*>&res_data[kk]" + endl
+    str_out += level + tab + tab + tab + "a_coeffs = <double*>&a_data[kk]" + endl
+    str_out += level + tab + tab + tab + "b_coeffs = <double*>&b_data[kk]" + endl
+    str_out += level + tab + tab + tab + "a_r = a_coeffs[0]" + endl
+    str_out += level + tab + tab + tab + "a_ed = a_coeffs[ed_idx]" + endl
+    str_out += level + tab + tab + tab + "sq_r = a_r * a_r" + endl
+    str_out += level + tab + tab + tab + "sq_ed = a_r * a_ed + a_ed * a_r" + endl
+    str_out += level + tab + tab + tab + "sq_edd = a_ed * a_ed" + endl
+    str_out += level + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + "res_coeffs[c] = scale * sq_r * b_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + "out_idx = shift_ed[basis_d][c]" + endl
+    str_out += level + tab + tab + tab + tab + "if out_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[out_idx] += scale * sq_ed * b_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + "if edd_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "out_idx = shift_edd[basis_d][c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "if out_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "res_coeffs[out_idx] += scale * sq_edd * b_coeffs[c]" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "return self" + endl
     str_out += level + "" + endl
@@ -4343,22 +4390,25 @@ class writer:
     str_out += level + tab + '"""' + endl
     str_out += level + tab + "cdef uint64_t n1 = real_diffs.shape[0]" + endl
     str_out += level + tab + "cdef uint64_t n2 = real_diffs.shape[1]" + endl
-    str_out += level + tab + "cdef uint64_t i, j, kk" + endl
+    str_out += level + tab + "cdef uint64_t ncomp = " + str(ncomp) + endl
+    str_out += level + tab + "cdef uint64_t i, j, kk, c" + endl
     str_out += level + tab + "cdef " + self.type_name + "* res_data = self.arr.p_data" + endl
     str_out += level + tab + "cdef " + self.type_name + "* p1_data = perturb1.arr.p_data" + endl
     str_out += level + tab + "cdef " + self.type_name + "* p2_data = perturb2.arr.p_data" + endl
+    str_out += level + tab + "cdef double* res_coeffs" + endl
+    str_out += level + tab + "cdef double* p1_coeffs" + endl
+    str_out += level + tab + "cdef double* p2_coeffs" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "with nogil:" + endl
     str_out += level + tab + tab + "for i in range(n1):" + endl
     str_out += level + tab + tab + tab + "for j in range(n2):" + endl
     str_out += level + tab + tab + tab + tab + "kk = i * n2 + j" + endl
-    # Set real part from numpy
-    str_out += level + tab + tab + tab + tab + "res_data[kk].r = real_diffs[i, j]" + endl
-    # Set each imaginary direction: out = perturb1[i] - perturb2[j]
-    for ordi in range(1, self.order + 1):
-      dirs = self.name_imdir[ordi]
-      for d_name in dirs:
-        str_out += level + tab + tab + tab + tab + "res_data[kk]." + d_name + " = p1_data[i]." + d_name + " - p2_data[j]." + d_name + endl
+    str_out += level + tab + tab + tab + tab + "res_coeffs = <double*>&res_data[kk]" + endl
+    str_out += level + tab + tab + tab + tab + "p1_coeffs = <double*>&p1_data[i]" + endl
+    str_out += level + tab + tab + tab + tab + "p2_coeffs = <double*>&p2_data[j]" + endl
+    str_out += level + tab + tab + tab + tab + "res_coeffs[0] = real_diffs[i, j]" + endl
+    str_out += level + tab + tab + tab + tab + "for c in range(1, ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "res_coeffs[c] = p1_coeffs[c] - p2_coeffs[c]" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "return self" + endl
     str_out += level + "" + endl
@@ -4395,115 +4445,108 @@ class writer:
     str_out += level + tab + '"""' + endl
     str_out += level + tab + "cdef uint64_t size = self.arr.size" + endl
     str_out += level + tab + "cdef uint64_t D = <uint64_t>len(diffs)" + endl
-    str_out += level + tab + "cdef uint64_t kk, d_idx" + endl
+    str_out += level + tab + "cdef uint64_t active_D = D" + endl
+    str_out += level + tab + "cdef uint64_t alloc_D" + endl
+    str_out += level + tab + "cdef uint64_t ncomp = " + str(ncomp) + endl
+    str_out += level + tab + "cdef uint64_t nbases = " + str(self.nbases) + endl
+    str_out += level + tab + "cdef uint64_t kk, d_idx, c, out_idx, ed_idx, edd_idx" + endl
     str_out += level + tab + "cdef " + self.type_name + "* phi_data = self.arr.p_data" + endl
     str_out += level + tab + "cdef double* fptr = &factors[0]" + endl
     str_out += level + tab + "cdef double* wptr = &W_proj[0, 0, 0]" + endl
     str_out += level + tab + "cdef double* sptr = &scales[0]" + endl
     str_out += level + tab + "cdef double* gptr = &grad_out[0]" + endl
     str_out += level + tab + "cdef uint64_t ps = <uint64_t>W_proj.shape[1] * <uint64_t>W_proj.shape[2]" + endl
-    str_out += level + tab + "cdef double a_r, a_ed, sq_r, sq_ed, sq_edd, scale, val, dot_val" + endl
+    str_out += level + tab + "cdef double a_r, a_ed, sq_r, sq_ed, sq_edd, scale, dot_val" + endl
     str_out += level + tab + "cdef bint use_fwt = FW_T is not None" + endl
     str_out += level + tab + "cdef double* fwptr = NULL" + endl
     str_out += level + tab + "cdef uint64_t ndir = 0" + endl
     str_out += level + tab + "cdef double[:,:] _fwt_view" + endl
+    str_out += level + tab + "cdef double* diff_coeffs" + endl
+    str_out += level + tab + "cdef double* phi_coeffs" + endl
+    str_out += level + tab + "cdef uint64_t ed_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef uint64_t edd_indices[" + str(self.nbases) + "]" + endl
+    str_out += level + tab + "cdef uint64_t shift_ed[" + str(self.nbases) + "][" + str(ncomp) + "]" + endl
+    str_out += level + tab + "cdef uint64_t shift_edd[" + str(self.nbases) + "][" + str(ncomp) + "]" + endl
+    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = NULL" + endl
+    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
     str_out += level + tab + "if use_fwt:" + endl
     str_out += level + tab + tab + "_fwt_view = FW_T" + endl
     str_out += level + tab + tab + "fwptr = &_fwt_view[0, 0]" + endl
     str_out += level + tab + tab + "ndir = <uint64_t>_fwt_view.shape[1]" + endl
     str_out += level + tab + "" + endl
+    for basis_d, ed_idx in enumerate(sparse_ed_indices):
+      str_out += level + tab + "ed_indices[" + str(basis_d) + "] = " + str(ed_idx) + endl
+      str_out += level + tab + "edd_indices[" + str(basis_d) + "] = " + str(sparse_edd_indices[basis_d]) + endl
+    str_out += level + tab + "for out_idx in range(nbases):" + endl
+    str_out += level + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + "shift_ed[out_idx][c] = ncomp" + endl
+    str_out += level + tab + tab + tab + "shift_edd[out_idx][c] = ncomp" + endl
+    for basis_d in range(self.nbases):
+      for c_idx, out_idx in enumerate(sparse_shift_ed[basis_d]):
+        if out_idx != ncomp:
+          str_out += level + tab + "shift_ed[" + str(basis_d) + "][" + str(c_idx) + "] = " + str(out_idx) + endl
+      for c_idx, out_idx in enumerate(sparse_shift_edd[basis_d]):
+        if out_idx != ncomp:
+          str_out += level + tab + "shift_edd[" + str(basis_d) + "][" + str(c_idx) + "] = " + str(out_idx) + endl
+    str_out += level + tab + "if active_D > nbases:" + endl
+    str_out += level + tab + tab + "active_D = nbases" + endl
+    str_out += level + tab + "alloc_D = active_D" + endl
+    str_out += level + tab + "if alloc_D == 0:" + endl
+    str_out += level + tab + tab + "alloc_D = 1" + endl
+    str_out += level + tab + "" + endl
     str_out += level + tab + "# Build C array of pointers to diff data" + endl
-    str_out += level + tab + "cdef " + self.type_name + "** diff_ptrs = <" + self.type_name + "**>malloc(D * sizeof(" + self.type_name + "*))" + endl
+    str_out += level + tab + "diff_ptrs = <" + self.type_name + "**>malloc(alloc_D * sizeof(" + self.type_name + "*))" + endl
     str_out += level + tab + "if diff_ptrs == NULL:" + endl
     str_out += level + tab + tab + 'raise MemoryError("Failed to allocate diff pointer array")' + endl
     str_out += level + tab + "" + endl
-    str_out += level + tab + "cdef " + self.pytype_name_arr + " diff_arr" + endl
     str_out += level + tab + "for d_idx in range(D):" + endl
+    str_out += level + tab + tab + "gptr[d_idx] = 0.0" + endl
+    str_out += level + tab + "for d_idx in range(active_D):" + endl
     str_out += level + tab + tab + "diff_arr = <" + self.pytype_name_arr + ">diffs[d_idx]" + endl
     str_out += level + tab + tab + "diff_ptrs[d_idx] = diff_arr.arr.p_data" + endl
-    str_out += level + tab + tab + "gptr[d_idx] = 0.0" + endl
     str_out += level + tab + "" + endl
     str_out += level + tab + "try:" + endl
     str_out += level + tab + tab + "with nogil:" + endl
-    str_out += level + tab + tab + tab + "for d_idx in range(D):" + endl
+    str_out += level + tab + tab + tab + "for d_idx in range(active_D):" + endl
     str_out += level + tab + tab + tab + tab + "scale = sptr[d_idx]" + endl
-
-    # Generate one branch per basis — the switch is OUTSIDE the kk loop
-    for basis_d in range(self.nbases):
-      nz_a, sq_nz, sq_terms, mul_terms = self._get_sparse_sq_info(basis_d)
-      ed_name = self.name_imdir[1][basis_d]
-      # Find the 2nd-order component name (e_dd)
-      edd_name = None
-      for comp in sq_nz:
-        if comp != 'r' and comp != ed_name:
-          edd_name = comp
-          break
-
-      if basis_d == 0:
-        str_out += level + tab + tab + tab + tab + "if d_idx == 0:" + endl
-      else:
-        str_out += level + tab + tab + tab + tab + "elif d_idx == " + str(basis_d) + ":" + endl
-
-      indent = level + tab + tab + tab + tab + tab
-
-      # Map sq component names to local variable names
-      sq_var_map = {'r': 'sq_r'}
-      if ed_name:
-        sq_var_map[ed_name] = 'sq_ed'
-      if edd_name:
-        sq_var_map[edd_name] = 'sq_edd'
-
-      # Helper: generate the sq computation lines
-      def _emit_sq_lines(ind2):
-        s = ""
-        s += ind2 + "a_r = diff_ptrs[d_idx][kk].r" + endl
-        s += ind2 + "a_ed = diff_ptrs[d_idx][kk]." + ed_name + endl
-        s += ind2 + "sq_r = a_r * a_r" + endl
-        if ed_name in sq_terms:
-          terms_e = sq_terms[ed_name]
-          ep = [("a_r" if l == "r" else "a_ed") + " * " + ("a_r" if r == "r" else "a_ed") for (l, r) in terms_e]
-          s += ind2 + "sq_ed = " + " + ".join(ep) + endl
-        if edd_name and edd_name in sq_terms:
-          terms_e = sq_terms[edd_name]
-          ep = [("a_r" if l == "r" else "a_ed") + " * " + ("a_r" if r == "r" else "a_ed") for (l, r) in terms_e]
-          s += ind2 + "sq_edd = " + " + ".join(ep) + endl
-        return s
-
-      # ── Transposed FW_T path (cache-friendly stride-1 reads) ──
-      str_out += indent + "if use_fwt:" + endl
-      str_out += indent + tab + "for kk in range(size):" + endl
-      indent2 = indent + tab + tab
-      str_out += _emit_sq_lines(indent2)
-      str_out += indent2 + "dot_val = 0.0" + endl
-      for c_idx, comp in enumerate(all_comps):
-        if comp in mul_terms:
-          terms = mul_terms[comp]
-          expr_parts = []
-          for (lhs, rhs) in terms:
-            lhs_var = sq_var_map[lhs]
-            rhs_var = "phi_data[kk]." + rhs
-            expr_parts.append(lhs_var + " * " + rhs_var)
-          expr = " + ".join(expr_parts)
-          str_out += indent2 + "dot_val += fwptr[kk * ndir + " + str(c_idx) + "] * scale * (" + expr + ")" + endl
-      str_out += indent2 + "gptr[d_idx] += 0.5 * dot_val" + endl
-
-      # ── Original W_proj path (fallback) ──
-      str_out += indent + "else:" + endl
-      str_out += indent + tab + "for kk in range(size):" + endl
-      indent2 = indent + tab + tab
-      str_out += _emit_sq_lines(indent2)
-      str_out += indent2 + "dot_val = 0.0" + endl
-      for c_idx, comp in enumerate(all_comps):
-        if comp in mul_terms:
-          terms = mul_terms[comp]
-          expr_parts = []
-          for (lhs, rhs) in terms:
-            lhs_var = sq_var_map[lhs]
-            rhs_var = "phi_data[kk]." + rhs
-            expr_parts.append(lhs_var + " * " + rhs_var)
-          expr = " + ".join(expr_parts)
-          str_out += indent2 + "dot_val += wptr[" + str(c_idx) + " * ps + kk] * fptr[" + str(c_idx) + "] * scale * (" + expr + ")" + endl
-      str_out += indent2 + "gptr[d_idx] += 0.5 * dot_val" + endl
+    str_out += level + tab + tab + tab + tab + "ed_idx = ed_indices[d_idx]" + endl
+    str_out += level + tab + tab + tab + tab + "edd_idx = edd_indices[d_idx]" + endl
+    str_out += level + tab + tab + tab + tab + "if ed_idx == ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + "continue" + endl
+    str_out += level + tab + tab + tab + tab + "for kk in range(size):" + endl
+    str_out += level + tab + tab + tab + tab + tab + "diff_coeffs = <double*>&diff_ptrs[d_idx][kk]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "phi_coeffs = <double*>&phi_data[kk]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "a_r = diff_coeffs[0]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "a_ed = diff_coeffs[ed_idx]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "sq_r = a_r * a_r" + endl
+    str_out += level + tab + tab + tab + tab + tab + "sq_ed = a_r * a_ed + a_ed * a_r" + endl
+    str_out += level + tab + tab + tab + tab + tab + "sq_edd = a_ed * a_ed" + endl
+    str_out += level + tab + tab + tab + tab + tab + "dot_val = 0.0" + endl
+    str_out += level + tab + tab + tab + tab + tab + "if use_fwt:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "dot_val += fwptr[kk * ndir + c] * scale * sq_r * phi_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "out_idx = shift_ed[d_idx][c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "if out_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + "dot_val += fwptr[kk * ndir + out_idx] * scale * sq_ed * phi_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "if edd_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + "out_idx = shift_edd[d_idx][c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + "if out_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + tab + "dot_val += fwptr[kk * ndir + out_idx] * scale * sq_edd * phi_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "else:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "dot_val += wptr[c * ps + kk] * fptr[c] * scale * sq_r * phi_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "out_idx = shift_ed[d_idx][c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "if out_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + "dot_val += wptr[out_idx * ps + kk] * fptr[out_idx] * scale * sq_ed * phi_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + "if edd_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + "for c in range(ncomp):" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + "out_idx = shift_edd[d_idx][c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + "if out_idx != ncomp:" + endl
+    str_out += level + tab + tab + tab + tab + tab + tab + tab + tab + tab + "dot_val += wptr[out_idx * ps + kk] * fptr[out_idx] * scale * sq_edd * phi_coeffs[c]" + endl
+    str_out += level + tab + tab + tab + tab + tab + "gptr[d_idx] += 0.5 * dot_val" + endl
 
     str_out += level + tab + "finally:" + endl
     str_out += level + tab + tab + "free(diff_ptrs)" + endl
