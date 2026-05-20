@@ -1,0 +1,5123 @@
+{
+  "rows": [
+    {
+      "policy": "CostAware",
+      "nrmse": 0.004672183422955414,
+      "rmse_test": 0.00747131738923865,
+      "cost": 6.0,
+      "sequence": "fddf",
+      "n_function": 8,
+      "n_derivative": 2,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010984546826551509,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.008838854035478192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.010491774570514515,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.00747131738923865,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0013706921771780216,
+      "rmse_test": 0.002191882332428982,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010984546826551509,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008497145402779129,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010066180833983173,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009306876767310429,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.002710298452345797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002191882332428982,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.006180753309264342,
+      "rmse_test": 0.009883680818526308,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010449238786349794,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008338690156756501,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.009883680818526308,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0012383107159983427,
+      "rmse_test": 0.001980190319640041,
+      "cost": 6.0,
+      "sequence": "ddddfd",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010449238786349794,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008338690156756501,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009883680818526308,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.006942197725694876,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0022251360601785075,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.001980190319640041,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0013706921771780216,
+      "rmse_test": 0.002191882332428982,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010984546826551509,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008497145402779129,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010066180833983173,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009306876767310429,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.002710298452345797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002191882332428982,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.002358607381793339,
+      "rmse_test": 0.0037716636421847483,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010449238786349794,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008338690156756501,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009883680818526308,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.006942197725694876,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.008316100325617972,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0037716636421847483,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.000438948564354545,
+      "rmse_test": 0.0007019253622900304,
+      "cost": 6.0,
+      "sequence": "dddddfddddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.010449238786349794,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008338690156756501,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.009883680818526308,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.006942197725694876,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.008316100325617972,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.001953320174448065,
+          "chosen_type": "f"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0007727780158373799,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0007705010390533865,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00075186184992825,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0007060883414788184,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0007019253622900304,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0013706921771780216,
+      "rmse_test": 0.002191882332428982,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010984546826551509,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008497145402779129,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010066180833983173,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009306876767310429,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.002710298452345797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002191882332428982,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0013768307672133017,
+      "rmse_test": 0.0022016985896954797,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.010449238786349794,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008338690156756501,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.009883680818526308,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.006942197725694876,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.008316100325617972,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0037716636421847483,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0024070837751243384,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0019541654658945208,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.002541126116047421,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0024818285850073916,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.002432292339295868,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0022016985896954797,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5000,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0019021475758242365,
+      "rmse_test": 0.003398491125372664,
+      "cost": 6.0,
+      "sequence": "fffdf",
+      "n_function": 10,
+      "n_derivative": 1,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2946771186077258,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.2907908773025181,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010483161781274697,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.008969192751292009,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003398491125372664,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.001907451872427243,
+      "rmse_test": 0.003407968100324963,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2946771186077258,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.2907908773025181,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010483161781274697,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00927856204351883,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003248288276854959,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003407968100324963,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0010831201642905932,
+      "rmse_test": 0.001935167551055405,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.29466762040341504,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.27255903249318897,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.001935167551055405,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.00152728766001197,
+      "rmse_test": 0.0027287438810801694,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.29466762040341504,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.27255903249318897,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.001935167551055405,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00255644841428396,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0028486212832037937,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0027287438810801694,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.001907451872427243,
+      "rmse_test": 0.003407968100324963,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2946771186077258,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.2907908773025181,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010483161781274697,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00927856204351883,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003248288276854959,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003407968100324963,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.00152728766001197,
+      "rmse_test": 0.0027287438810801694,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.29466762040341504,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.27255903249318897,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.001935167551055405,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00255644841428396,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0028486212832037937,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0027287438810801694,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0003613784897941918,
+      "rmse_test": 0.0006456605187081554,
+      "cost": 6.0,
+      "sequence": "ddddddfdddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.29466762040341504,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.27255903249318897,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.001935167551055405,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00255644841428396,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.0028486212832037937,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0027287438810801694,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0011078096290938965,
+          "chosen_type": "f"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0008389335550619933,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0007582382486088264,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0007158117813157387,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0006456605187081554,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.001907451872427243,
+      "rmse_test": 0.003407968100324963,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2946771186077258,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.2907908773025181,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010483161781274697,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00927856204351883,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003248288276854959,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003407968100324963,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0002035719536293831,
+      "rmse_test": 0.0003637138813924297,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.29466762040341504,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.27255903249318897,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.001935167551055405,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00255644841428396,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.0028486212832037937,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0027287438810801694,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0011130243126144478,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0011895069124714262,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.00042027931429132633,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00041076299840684446,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.00039122042004760657,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0003637138813924297,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5001,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0026654927458495173,
+      "rmse_test": 0.004066812504512356,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007779540333769819,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007870292354766058,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004066812504512356,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0014357669387446818,
+      "rmse_test": 0.002190587443595295,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00731480007263152,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007641359112276943,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00468094926798335,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.002440795653814787,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0019337270119260553,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002190587443595295,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0026654927458495173,
+      "rmse_test": 0.004066812504512356,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007779540333769819,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007870292354766058,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004066812504512356,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0010020002213221037,
+      "rmse_test": 0.0015287781352780068,
+      "cost": 6.0,
+      "sequence": "ddddfd",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.007779540333769819,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007870292354766058,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.004066812504512356,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004694861125334756,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.002258514412758504,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0015287781352780068,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0014357669387446818,
+      "rmse_test": 0.002190587443595295,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00731480007263152,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007641359112276943,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00468094926798335,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.002440795653814787,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0019337270119260553,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002190587443595295,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0017059826798668264,
+      "rmse_test": 0.0026028627186350612,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.007779540333769819,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007870292354766058,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.004066812504512356,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004694861125334756,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003997751557466137,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0026028627186350612,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.00029458243038523173,
+      "rmse_test": 0.0004494521747867236,
+      "cost": 6.0,
+      "sequence": "dddddfdfdd",
+      "n_function": 8,
+      "n_derivative": 8,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.007779540333769819,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.007870292354766058,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.004066812504512356,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.004694861125334756,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.003997751557466137,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0012691792411907079,
+          "chosen_type": "f"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0007913112887381178,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0006605042281676628,
+          "chosen_type": "f"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.000591323199166812,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0004494521747867236,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0014357669387446818,
+      "rmse_test": 0.002190587443595295,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00731480007263152,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.007641359112276943,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00468094926798335,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.002440795653814787,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0019337270119260553,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002190587443595295,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.00024950977234637205,
+      "rmse_test": 0.0003806836329816609,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.007779540333769819,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.007870292354766058,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.004066812504512356,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.004694861125334756,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.003997751557466137,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0026028627186350612,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.002565366948962925,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0006880215415686024,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0004970557126370144,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00048095844696752514,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.00045950396010865577,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0003806836329816609,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5002,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.005583808483935821,
+      "rmse_test": 0.00898908226643741,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00862007476596217,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008880634852176517,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.00898908226643741,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0008574987493313571,
+      "rmse_test": 0.001380442546208817,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008231381089493717,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008770349359488451,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009143038924701903,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004609416250476618,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015971877587878916,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.001380442546208817,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.005583808483935821,
+      "rmse_test": 0.00898908226643741,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00862007476596217,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008880634852176517,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.00898908226643741,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0016073608827247554,
+      "rmse_test": 0.0025876065141263445,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00862007476596217,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008880634852176517,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00898908226643741,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004432167472837613,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0036292425371304265,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0025876065141263445,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0008574987493313571,
+      "rmse_test": 0.001380442546208817,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008231381089493717,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008770349359488451,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009143038924701903,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004609416250476618,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015971877587878916,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.001380442546208817,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0016073608827247554,
+      "rmse_test": 0.0025876065141263445,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00862007476596217,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008880634852176517,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00898908226643741,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004432167472837613,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0036292425371304265,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0025876065141263445,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0004203271772268954,
+      "rmse_test": 0.0006766628163881358,
+      "cost": 6.0,
+      "sequence": "ddddddfdddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.00862007476596217,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008880634852176517,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.00898908226643741,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.004432167472837613,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.0036292425371304265,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0025876065141263445,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00252104864695232,
+          "chosen_type": "f"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0007600211703536535,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.000728539211267741,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0006946248797587177,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0006766628163881358,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0008574987493313571,
+      "rmse_test": 0.001380442546208817,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008231381089493717,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008770349359488451,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009143038924701903,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004609416250476618,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015971877587878916,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.001380442546208817,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0007815486903228595,
+      "rmse_test": 0.001258174504507119,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.00862007476596217,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008880634852176517,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.00898908226643741,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.004432167472837613,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.0036292425371304265,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0025876065141263445,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.002521477299025306,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0028878679658084112,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.002776423987185742,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.002673605458553278,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0013689655376635521,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.001258174504507119,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5003,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0012047672947642786,
+      "rmse_test": 0.0020469404859146233,
+      "cost": 6.0,
+      "sequence": "ffdff",
+      "n_function": 10,
+      "n_derivative": 1,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2947021623991071,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012714941868703944,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010867111632361242,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.004515049367820782,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0020469404859146233,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0010287153116615678,
+      "rmse_test": 0.0017478221969267035,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2947021623991071,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012714941868703944,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.014314741833940851,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.005482612317899828,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015300553615065215,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0017478221969267035,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.005746849505092394,
+      "rmse_test": 0.009764092177430534,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.2944253662229025,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.011517825306450508,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.009764092177430534,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.002387514098837295,
+      "rmse_test": 0.004056467411458263,
+      "cost": 6.0,
+      "sequence": "dddfdd",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2944253662229025,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.011517825306450508,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009764092177430534,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004183520058328817,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.004264806516361922,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004056467411458263,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0010287153116615678,
+      "rmse_test": 0.0017478221969267035,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2947021623991071,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012714941868703944,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.014314741833940851,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.005482612317899828,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015300553615065215,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0017478221969267035,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0065887445318776406,
+      "rmse_test": 0.011194500375516683,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2944253662229025,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.011517825306450508,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009764092177430534,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.011244685730464445,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.011452419172830929,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.011194500375516683,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.000512425078334369,
+      "rmse_test": 0.0008706275837657246,
+      "cost": 6.0,
+      "sequence": "dddddfddddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.2944253662229025,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.011517825306450508,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.009764092177430534,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.011244685730464445,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011452419172830929,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.003681267848574593,
+          "chosen_type": "f"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0032214971504909607,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.003013612232457618,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0008870043770434051,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0008697514697409535,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0008706275837657246,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0010287153116615678,
+      "rmse_test": 0.0017478221969267035,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2947021623991071,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012714941868703944,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.014314741833940851,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.005482612317899828,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015300553615065215,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0017478221969267035,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0005620973192011428,
+      "rmse_test": 0.0009550224053202023,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.2944253662229025,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.011517825306450508,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.009764092177430534,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.011244685730464445,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011452419172830929,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011194500375516683,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0033823821613344044,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0031164383399469057,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.00305265786518762,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003007246721856431,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0029602208916907065,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0009550224053202023,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5004,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.004861126040707165,
+      "rmse_test": 0.00973030142454872,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008651232514127923,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008956116089798615,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.00973030142454872,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.001295233633624028,
+      "rmse_test": 0.002592611992537821,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.0087694755486529,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009389687731550677,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010238625378705044,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.012261815507154028,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00646640726247287,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002592611992537821,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.004861126040707165,
+      "rmse_test": 0.00973030142454872,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008651232514127923,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008956116089798615,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.00973030142454872,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.004163735223139119,
+      "rmse_test": 0.008334365008001412,
+      "cost": 6.0,
+      "sequence": "dddddf",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008651232514127923,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008956116089798615,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00973030142454872,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010904889895211036,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.011238982415754198,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.008334365008001412,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.001295233633624028,
+      "rmse_test": 0.002592611992537821,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.0087694755486529,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009389687731550677,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010238625378705044,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.012261815507154028,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00646640726247287,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002592611992537821,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0007566366033672037,
+      "rmse_test": 0.0015145260908599246,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008651232514127923,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.008956116089798615,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00973030142454872,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010904889895211036,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.011238982415754198,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0015145260908599246,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0003038791228475391,
+      "rmse_test": 0.000608261426914963,
+      "cost": 6.0,
+      "sequence": "ddddddddfdd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.008651232514127923,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008956116089798615,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.00973030142454872,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010904889895211036,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011238982415754198,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0015145260908599246,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0012709019481728042,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0010016138751648205,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0008367121891900933,
+          "chosen_type": "f"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0006299587827170459,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.000608261426914963,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.001295233633624028,
+      "rmse_test": 0.002592611992537821,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.0087694755486529,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009389687731550677,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010238625378705044,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.012261815507154028,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00646640726247287,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002592611992537821,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.00019933171026609967,
+      "rmse_test": 0.0003989934858956687,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.008651232514127923,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.008956116089798615,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.00973030142454872,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010904889895211036,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011238982415754198,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.0015145260908599246,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0012709019481728042,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0010016138751648205,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0009794931397566983,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.000950175542327419,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0008265578753393,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0003989934858956687,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5005,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.006406822263562648,
+      "rmse_test": 0.011744539896763563,
+      "cost": 6.0,
+      "sequence": "ffdd",
+      "n_function": 8,
+      "n_derivative": 2,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.30048732353686797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.014090027947065794,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010253767585732213,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.011744539896763563,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.002322043980516451,
+      "rmse_test": 0.004256609134658643,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.30048732353686797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.014090027947065794,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011650465235189249,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004720536691731642,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.006393246613444725,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004256609134658643,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.004874537561201699,
+      "rmse_test": 0.008935662409646945,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.302803812292292,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.01189325247098968,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.008935662409646945,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.002611886908572199,
+      "rmse_test": 0.004787928982831331,
+      "cost": 6.0,
+      "sequence": "dddddf",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.302803812292292,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01189325247098968,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.008935662409646945,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009833873578949246,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.011142901496279283,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004787928982831331,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.002322043980516451,
+      "rmse_test": 0.004256609134658643,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.30048732353686797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.014090027947065794,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011650465235189249,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004720536691731642,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.006393246613444725,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004256609134658643,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.003979973792365548,
+      "rmse_test": 0.00729581047664621,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.302803812292292,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01189325247098968,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.008935662409646945,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009833873578949246,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.011142901496279283,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.00729581047664621,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0014097490160938603,
+      "rmse_test": 0.0025842536101088488,
+      "cost": 6.0,
+      "sequence": "ddddddfdddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.302803812292292,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.01189325247098968,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.008935662409646945,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009833873578949246,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011142901496279283,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00729581047664621,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.005678134819748411,
+          "chosen_type": "f"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0030733623162782584,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.002902552874676323,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0026667537789213836,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0025842536101088488,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.002322043980516451,
+      "rmse_test": 0.004256609134658643,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.30048732353686797,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.014090027947065794,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011650465235189249,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.004720536691731642,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.006393246613444725,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004256609134658643,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0025052037435282213,
+      "rmse_test": 0.004592364842508937,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.302803812292292,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.01189325247098968,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.008935662409646945,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009833873578949246,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011142901496279283,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00729581047664621,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.006771182806123855,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.002979546476561337,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.004642820775797747,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0046248902795818165,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.00459801429226949,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004592364842508937,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5006,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0021823755368013406,
+      "rmse_test": 0.003304357117598221,
+      "cost": 6.0,
+      "sequence": "ffdd",
+      "n_function": 8,
+      "n_derivative": 2,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2900317016317826,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012428212805069639,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008009111189599558,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003304357117598221,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0022751336875763612,
+      "rmse_test": 0.003444803182246621,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2900317016317826,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012428212805069639,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.007424884364933905,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007820849690998513,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.007091363923448257,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003444803182246621,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.004504549162379216,
+      "rmse_test": 0.006820383951010994,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.288862356924748,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010954878376451167,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.006820383951010994,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.001923240249834354,
+      "rmse_test": 0.002911997729641901,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.288862356924748,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010954878376451167,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.006820383951010994,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00281485593806883,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003133514042127409,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002911997729641901,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0022751336875763612,
+      "rmse_test": 0.003444803182246621,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2900317016317826,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012428212805069639,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.007424884364933905,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007820849690998513,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.007091363923448257,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003444803182246621,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.001923240249834354,
+      "rmse_test": 0.002911997729641901,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.288862356924748,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010954878376451167,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.006820383951010994,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.00281485593806883,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.003133514042127409,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002911997729641901,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.00046968427781905053,
+      "rmse_test": 0.0007111537681136669,
+      "cost": 6.0,
+      "sequence": "ddddddfdddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.288862356924748,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010954878376451167,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.006820383951010994,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00281485593806883,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.003133514042127409,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.002911997729641901,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0019028068041292005,
+          "chosen_type": "f"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0010360531440054565,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0006951263434107022,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0007147114150270495,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0007111537681136669,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0022751336875763612,
+      "rmse_test": 0.003444803182246621,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.2900317016317826,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.012428212805069639,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.007424884364933905,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007820849690998513,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.007091363923448257,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.003444803182246621,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0005274848320399747,
+      "rmse_test": 0.0007986701783374398,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.288862356924748,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.010954878376451167,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.006820383951010994,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00281485593806883,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.003133514042127409,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.002911997729641901,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0023759723632243166,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.001071211034757035,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0010543066521578493,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0009629935183670104,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0009250864731089767,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0007986701783374398,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5007,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.005425000778636936,
+      "rmse_test": 0.009625148598252763,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009162538495386592,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009455764927530192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.009625148598252763,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0029440599975284047,
+      "rmse_test": 0.005223412145850862,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009186731975243818,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00985199957114854,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010364844211068867,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008592457192166381,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.004995903576047263,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.005223412145850862,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.005425000778636936,
+      "rmse_test": 0.009625148598252763,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009162538495386592,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.009455764927530192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.009625148598252763,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.003029212290690769,
+      "rmse_test": 0.005374491105764979,
+      "cost": 6.0,
+      "sequence": "ddddfd",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009162538495386592,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009455764927530192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009625148598252763,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010996916832424247,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00542239824673123,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.005374491105764979,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0029440599975284047,
+      "rmse_test": 0.005223412145850862,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009186731975243818,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00985199957114854,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010364844211068867,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008592457192166381,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.004995903576047263,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.005223412145850862,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.004396466809457305,
+      "rmse_test": 0.007800302354785114,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009162538495386592,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009455764927530192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.009625148598252763,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.010996916832424247,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.011107943294946973,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.007800302354785114,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0008325659007486376,
+      "rmse_test": 0.0014771556428342589,
+      "cost": 6.0,
+      "sequence": "ddddfdddddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.009162538495386592,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009455764927530192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.009625148598252763,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010996916832424247,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.00542239824673123,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.005374491105764979,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0023139506278224914,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0019596576195405426,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.001894071449678076,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0018369732922101135,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0014771556428342589,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0029440599975284047,
+      "rmse_test": 0.005223412145850862,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009186731975243818,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.00985199957114854,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.010364844211068867,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.008592457192166381,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.004995903576047263,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.005223412145850862,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.00016930784156555845,
+      "rmse_test": 0.0003003894746587273,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.009162538495386592,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009455764927530192,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.009625148598252763,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.010996916832424247,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.011107943294946973,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.007800302354785114,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.005393901176887299,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.0012037930788160033,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.00041867092035788675,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00040579665813541687,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0004427250788447029,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0003003894746587273,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5008,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.006108332509050168,
+      "rmse_test": 0.011156323978555507,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009742183793082275,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.01022300773388701,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.011156323978555507,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0026466446417907252,
+      "rmse_test": 0.004833860146967781,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00910316362280189,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01043070401520279,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011263130379600578,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007635834756308128,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00537835938589262,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004833860146967781,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.006108332509050168,
+      "rmse_test": 0.011156323978555507,
+      "cost": 6.0,
+      "sequence": "ddd",
+      "n_function": 6,
+      "n_derivative": 3,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.009742183793082275,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.01022300773388701,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.011156323978555507,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_central",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 2.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.001895510834495491,
+      "rmse_test": 0.0034619813088371163,
+      "cost": 6.0,
+      "sequence": "dddddf",
+      "n_function": 7,
+      "n_derivative": 5,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009742183793082275,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01022300773388701,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011156323978555507,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.005428345000217775,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00576228455101282,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0034619813088371163,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0026466446417907252,
+      "rmse_test": 0.004833860146967781,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00910316362280189,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01043070401520279,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011263130379600578,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007635834756308128,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00537835938589262,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004833860146967781,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0014684432561914605,
+      "rmse_test": 0.002681980505469299,
+      "cost": 6.0,
+      "sequence": "dddddd",
+      "n_function": 6,
+      "n_derivative": 6,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.009742183793082275,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01022300773388701,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011156323978555507,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.005428345000217775,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00576228455101282,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.002681980505469299,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "fd_forward",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 1.0,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "CostAware",
+      "nrmse": 0.0002290786577889793,
+      "rmse_test": 0.0004183917164103274,
+      "cost": 6.0,
+      "sequence": "dddddddfddd",
+      "n_function": 7,
+      "n_derivative": 10,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.009742183793082275,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.01022300773388701,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.011156323978555507,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.005428345000217775,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.00576228455101282,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.002681980505469299,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0016547194777789182,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0015550687161076664,
+          "chosen_type": "f"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00045298954365828397,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.00043480098596753396,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0004183917164103274,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "FunctionOnly",
+      "nrmse": 0.0026466446417907252,
+      "rmse_test": 0.004833860146967781,
+      "cost": 6.0,
+      "sequence": "ffffff",
+      "n_function": 12,
+      "n_derivative": 0,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.00910316362280189,
+          "chosen_type": "f"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.01043070401520279,
+          "chosen_type": "f"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.011263130379600578,
+          "chosen_type": "f"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.007635834756308128,
+          "chosen_type": "f"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.00537835938589262,
+          "chosen_type": "f"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.004833860146967781,
+          "chosen_type": "f"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    },
+    {
+      "policy": "DerivativeOnly",
+      "nrmse": 0.0005021108150226186,
+      "rmse_test": 0.0009170605754073368,
+      "cost": 6.0,
+      "sequence": "dddddddddddd",
+      "n_function": 6,
+      "n_derivative": 12,
+      "trajectory": [
+        {
+          "step": 1,
+          "cumulative_cost": 0.5,
+          "rmse_test": 0.009742183793082275,
+          "chosen_type": "d"
+        },
+        {
+          "step": 2,
+          "cumulative_cost": 1.0,
+          "rmse_test": 0.01022300773388701,
+          "chosen_type": "d"
+        },
+        {
+          "step": 3,
+          "cumulative_cost": 1.5,
+          "rmse_test": 0.011156323978555507,
+          "chosen_type": "d"
+        },
+        {
+          "step": 4,
+          "cumulative_cost": 2.0,
+          "rmse_test": 0.005428345000217775,
+          "chosen_type": "d"
+        },
+        {
+          "step": 5,
+          "cumulative_cost": 2.5,
+          "rmse_test": 0.00576228455101282,
+          "chosen_type": "d"
+        },
+        {
+          "step": 6,
+          "cumulative_cost": 3.0,
+          "rmse_test": 0.002681980505469299,
+          "chosen_type": "d"
+        },
+        {
+          "step": 7,
+          "cumulative_cost": 3.5,
+          "rmse_test": 0.0016547194777789182,
+          "chosen_type": "d"
+        },
+        {
+          "step": 8,
+          "cumulative_cost": 4.0,
+          "rmse_test": 0.001602904501223342,
+          "chosen_type": "d"
+        },
+        {
+          "step": 9,
+          "cumulative_cost": 4.5,
+          "rmse_test": 0.0015476974574549047,
+          "chosen_type": "d"
+        },
+        {
+          "step": 10,
+          "cumulative_cost": 5.0,
+          "rmse_test": 0.0015046094205189635,
+          "chosen_type": "d"
+        },
+        {
+          "step": 11,
+          "cumulative_cost": 5.5,
+          "rmse_test": 0.0013758201128326424,
+          "chosen_type": "d"
+        },
+        {
+          "step": 12,
+          "cumulative_cost": 6.0,
+          "rmse_test": 0.0009170605754073368,
+          "chosen_type": "d"
+        }
+      ],
+      "regime": "ad",
+      "seed": 5009,
+      "c_f": 1.0,
+      "c1": 0.5,
+      "budget": 6.0,
+      "nominal_budget": 6.0
+    }
+  ],
+  "args": {
+    "n_seeds": 10,
+    "seed_base": 5000,
+    "case": 1,
+    "time": 1.0,
+    "n_init": 6,
+    "n_iter": 20,
+    "n_val": 400,
+    "pop_size": 20,
+    "n_generations": 20,
+    "budget_scale": 1.0,
+    "out": "data/hypad_learning_curves.json"
+  }
+}

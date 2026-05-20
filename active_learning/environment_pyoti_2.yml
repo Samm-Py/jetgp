@@ -1,0 +1,29 @@
+name: pyoti_2
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - cython=0.29
+  - cmake
+  - make
+  - pip
+  - ipykernel
+  - pyvista
+  - gmsh
+  - python-gmsh
+  - vtk
+  - scikit-sparse
+  - scikit-umfpack
+  - conda-build
+  - line_profiler
+  - pip:
+      - numba
+      - torch
+      - scikit-learn
+      - pytest
+      - pytest-cov

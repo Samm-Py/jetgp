@@ -1,0 +1,173 @@
+{
+  "naive": [
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.24848299989358696,
+      "seed": 5000
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.2124127208479353,
+      "seed": 5001
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.12573014919470382,
+      "seed": 5002
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.14957975578128987,
+      "seed": 5003
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.3146235731559493,
+      "seed": 5004
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.1754200531966714,
+      "seed": 5005
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.30734733947971216,
+      "seed": 5006
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.293372281120012,
+      "seed": 5007
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.32872839329128284,
+      "seed": 5008
+    },
+    {
+      "n": 2,
+      "cost": 9.0,
+      "rmse": 0.19032683004473622,
+      "seed": 5009
+    }
+  ],
+  "costaware": [
+    {
+      "seed": 5000,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.0025218945311240317,
+      "sequence": "dddddfdddfdfddd",
+      "n_init": 2
+    },
+    {
+      "seed": 5001,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.001005250000383587,
+      "sequence": "dddddfdddddfdddd",
+      "n_init": 2
+    },
+    {
+      "seed": 5002,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.002101363344156597,
+      "sequence": "dddddfdddfdddddd",
+      "n_init": 2
+    },
+    {
+      "seed": 5003,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.002244227713689988,
+      "sequence": "ddddddfdfdffdd",
+      "n_init": 2
+    },
+    {
+      "seed": 5004,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.006832718652604041,
+      "sequence": "dddddfdddddddfdd",
+      "n_init": 2
+    },
+    {
+      "seed": 5005,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.0018664380390067698,
+      "sequence": "dddddfdddddddfdd",
+      "n_init": 2
+    },
+    {
+      "seed": 5006,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.01154849429096063,
+      "sequence": "ddddddfffdfddd",
+      "n_init": 2
+    },
+    {
+      "seed": 5007,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.0002491395058005815,
+      "sequence": "dddddfdddddddddf",
+      "n_init": 2
+    },
+    {
+      "seed": 5008,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.0004848776972720084,
+      "sequence": "dddddfdddddddddf",
+      "n_init": 2
+    },
+    {
+      "seed": 5009,
+      "n_naive_equivalent": 2,
+      "target_budget": 9.0,
+      "cumulative_cost": 9.0,
+      "rmse": 0.0007304237547621329,
+      "sequence": "ddddfdfddfddddd",
+      "n_init": 2
+    }
+  ],
+  "args": {
+    "n_seeds": 10,
+    "seed_base": 5000,
+    "ns": [
+      2
+    ],
+    "case": 1,
+    "time": 1.0,
+    "n_val": 400,
+    "pop_size": 20,
+    "n_generations": 20,
+    "n_init_costaware": 2,
+    "inline_costaware": true,
+    "n_iter": 30,
+    "learning_curves": "data/hypad_learning_curves.json",
+    "out": "data/hypad_naive_vs_costaware.json"
+  }
+}

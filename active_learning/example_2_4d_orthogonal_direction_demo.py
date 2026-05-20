@@ -160,7 +160,7 @@ if __name__ == "__main__":
         grad_func=ackley4_grad,
         bounds=ACKLEY4_BOUNDS,
         n_init=5 * d,
-        tau=0.0,
+        rel_tol=0.0,
         n_iter=1,
         kernel="SE",
         kernel_type="anisotropic",
@@ -180,7 +180,8 @@ if __name__ == "__main__":
 
     print("\nLocal derivative covariance eigenvalues:")
     print(f"  lambda = {format_vector(eigvals)}")
-    print(f"  lambda_j/lambda_1 = {format_vector(rec['variance_ratios'])}")
+    print(f"  rho = {format_vector(rec['rho'])}")
+    print(f"  rel_tol = {rec['rel_tol']:.4f}")
 
     print("\nEigen-directions selected by AdaptiveDirectionalGP:")
     for idx, (direction, variance) in enumerate(

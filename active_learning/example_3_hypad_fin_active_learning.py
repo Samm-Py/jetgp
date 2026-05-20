@@ -1,10 +1,10 @@
 """
-Example 5 - Active learning on the HYPAD-UQ heated fin.
+Example 3 - Active learning on the HYPAD-UQ heated fin.
 
 Starting from a small LHS design (plus the mean point), iteratively enrich
 three GP surrogates (function-only, full-gradient DEGP, eigenbasis directional
 GDDEGP) by adaptive MPV infill. After a few iterations, propagate the selected
-input distribution through the analytical steady-state fin model and through
+input distribution through the analytical transient fin model and through
 each GP surrogate, and compare output distributions.
 
 Training, prediction and hyperparameter optimization are all performed in
@@ -13,6 +13,8 @@ from Table 1 of Balcer et al. (2023). The GPs also use normalize=True.
 """
 
 import argparse
+import csv
+import json
 from pathlib import Path
 
 import numpy as np
@@ -25,15 +27,10 @@ import matplotlib.pyplot as plt
 
 from scipy.optimize import minimize
 
-from adaptive_doe import (
-    find_next_point_mpv,
-    fit_directional_gp,
-    fit_function_only_gp,
-    lhs_design,
-    make_as_basis_provider,
-    query_function_posterior,
-    select_derivatives_at_observed_point,
-)
+from doe_utils import lhs_design
+from gp_builders import fit_directional_gp, fit_function_only_gp
+from posterior_queries import query_function_posterior
+from selection import select_derivatives_at_observed_point
 from jetgp.full_degp.degp import degp
 
 
@@ -54,11 +51,17 @@ L_DEPTH = 1.0
 D = 7
 
 DEFAULT_ACTIVE_CASE = 2
-DEFAULT_TIMES = [10.0, 100.0, 200.0]
-DEFAULT_DERIVATIVE_VARIANCE_TOL = 1e-8
-DEFAULT_REL_TOL = 0.05  # prior-relative gate: keep vⱼ if λⱼ_post / vⱼᵀ K_prior vⱼ > REL_TOL
+DEFAULT_TIMES = [1.0, 100.0, 1000.0]
+DEFAULT_REL_TOL = 0.05  # keep local eigenvector if rho_j > REL_TOL
 REL_TOL = DEFAULT_REL_TOL
 TRANSIENT_SERIES_TERMS = 100
+
+# Order-selection settings for the eigenbasis directional GP. The second-order
+# upgrade gate uses rho2 = Var[d²f/dv² | data] / (C2 · λ_max_prior_H).
+ACQUIRE_SECOND_ORDER = True
+C1 = 1.0
+C2 = 2.0
+MAX_DIRECTIONS = 7  # = D for this problem; bounds n_bases = 2·min(D, MAX_DIRECTIONS)
 # The paper assumes the fin starts at ambient temperature, so
 # h_0 = (T_0 - T_infinity) / (T_W - T_infinity) = 0.
 NORMALIZED_INITIAL_TEMPERATURE = 0.0
@@ -67,7 +70,6 @@ CASE_LABEL = None
 SIGMAS = None
 BOUNDS_Z = None
 ACTIVE_TIME_SECONDS = None
-DERIVATIVE_VARIANCE_TOL = DEFAULT_DERIVATIVE_VARIANCE_TOL
 
 
 def z_to_x(z):
@@ -124,6 +126,37 @@ def T_tip_vec(z_array):
     return np.array([T_tip_real(x[i]) for i in range(x.shape[0])])
 
 
+def T_tip_second_directional_z(z, v):
+    """
+    Evaluate (value, df/dv, d²f/dv²) at standardized z along unit direction v.
+
+    Uses a single order-2 OTI basis e(1) carrying the direction v in z-space.
+    One OTI propagation gives both the first directional derivative and the
+    pure second directional derivative — the order-1 part is a free byproduct.
+    """
+    z = np.asarray(z, dtype=float).reshape(-1)
+    v = np.asarray(v, dtype=float).reshape(-1)
+    x = MEANS + SIGMAS * z
+    eps = oti.e(1, order=2)
+    k_o  = x[0] + eps * SIGMAS[0] * v[0]
+    Cp_o = x[1] + eps * SIGMAS[1] * v[1]
+    rh_o = x[2] + eps * SIGMAS[2] * v[2]
+    hU_o = x[3] + eps * SIGMAS[3] * v[3]
+    Ti_o = x[4] + eps * SIGMAS[4] * v[4]
+    TW_o = x[5] + eps * SIGMAS[5] * v[5]
+    b_o  = x[6] + eps * SIGMAS[6] * v[6]
+    omega = ((2.0 * hU_o * b_o * b_o) / (k_o * DELTA_THICK * L_DEPTH)) ** 0.5
+    tau = ACTIVE_TIME_SECONDS * k_o / (b_o * b_o * rh_o * Cp_o)
+    h = 1.0 / oti.cosh(omega)
+    for j in range(1, TRANSIENT_SERIES_TERMS + 1):
+        kj = np.pi * (2 * j - 1) / 2.0
+        denom = omega ** 2 + kj ** 2
+        coeff = NORMALIZED_INITIAL_TEMPERATURE / kj - kj / denom
+        h = h + 2.0 * ((-1.0) ** (j + 1)) * coeff * oti.exp(-denom * tau)
+    T = Ti_o + (TW_o - Ti_o) * h
+    return float(T.real), float(T.get_deriv([1])), float(T.get_deriv([1, 1]))
+
+
 # ---------------------------------------------------------------------------
 # GP fitting helpers (mirror example 3 conventions)
 # ---------------------------------------------------------------------------
@@ -177,12 +210,6 @@ def configure_active_time(time_seconds):
     ACTIVE_TIME_SECONDS = float(time_seconds)
 
 
-def configure_derivative_variance_tol(tol):
-    """Configure the absolute leading-eigenvalue gate for derivative selection."""
-    global DERIVATIVE_VARIANCE_TOL
-    DERIVATIVE_VARIANCE_TOL = float(tol)
-
-
 def format_time_label(time_seconds):
     return f"{time_seconds:g}s"
 
@@ -228,21 +255,26 @@ def fit_full_gradient_degp(X_train, y_train, gradient_observations,
 
 
 def fit_directional_model(X_train, y_train, directional_observations,
+                          second_order_observations=None,
                           kernel="SE", kernel_type="anisotropic",
-                          initial_params=None):
-    if len(directional_observations) == 0:
+                          initial_params=None,
+                          max_directions=MAX_DIRECTIONS):
+    if len(directional_observations) == 0 and not second_order_observations:
         return fit_function_only_gp(
-            X_train, y_train, n_dir_types=X_train.shape[1],
+            X_train, y_train,
             kernel=kernel, kernel_type=kernel_type,
             optimizer_kwargs=OPTIMIZER_KWARGS,
             normalize=True,
             initial_params=initial_params,
+            max_directions=max_directions,
         )
     return fit_directional_gp(
         X_train, y_train, directional_observations,
+        second_order_observations=second_order_observations or None,
         kernel=kernel, kernel_type=kernel_type,
         optimizer_kwargs=OPTIMIZER_KWARGS,
         initial_params=initial_params,
+        max_directions=max_directions,
     )
 
 
@@ -379,21 +411,113 @@ def compare_distributions(analytic, gp_predictions):
 
 
 # ---------------------------------------------------------------------------
+# Cost model
+# ---------------------------------------------------------------------------
+
+def load_derivative_cost_model(path):
+    """
+    Load benchmarked derivative-evaluation costs.
+
+    Expected input is the JSON or CSV written by
+    ``benchmark_example_5_derivative_costs.py``. Costs are normalized by the
+    mean real-valued function evaluation time, so 1.0 means one ordinary
+    function evaluation.
+    """
+    if path is None:
+        return None
+
+    path = Path(path)
+    if path.suffix.lower() == ".json":
+        with path.open() as f:
+            payload = json.load(f)
+        rows = payload["rows"]
+        source = str(path)
+    elif path.suffix.lower() == ".csv":
+        with path.open(newline="") as f:
+            rows = list(csv.DictReader(f))
+        source = str(path)
+    else:
+        raise ValueError("cost model must be a benchmark JSON or CSV file.")
+
+    batch_cost = {}
+    for row in rows:
+        if row.get("basis", "") == "coordinate-full-gradient":
+            continue
+        n_dir = int(row["n_directional_derivatives"])
+        if "relative_to_real_mean" in row and row["relative_to_real_mean"] != "":
+            cost = float(row["relative_to_real_mean"])
+        else:
+            mean = float(row["mean_seconds"])
+            real = float(row["real_mean_seconds"])
+            cost = mean / real
+        batch_cost[n_dir] = cost
+
+    missing = [n for n in range(1, D + 1) if n not in batch_cost]
+    if missing:
+        raise ValueError(f"cost model is missing n_directional_derivatives={missing}")
+
+    return {
+        "source": source,
+        "case": int(rows[0]["case"]) if "case" in rows[0] else None,
+        "time_seconds": (
+            float(rows[0]["time_seconds"])
+            if "time_seconds" in rows[0] else None
+        ),
+        "function_cost": 1.0,
+        "directional_batch_cost": batch_cost,
+    }
+
+
+def _group_direction_counts(direction_observations):
+    counts = {}
+    for obs in direction_observations:
+        idx = int(obs["x_index"])
+        counts[idx] = counts.get(idx, 0) + 1
+    return counts
+
+
+def _actual_cost_arrays(history, cost_model):
+    """
+    Wall-clock-equivalent cost arrays in units of ordinary function evals.
+
+    Full DEGP is charged as one D-direction derivative batch per gradient site.
+    GDDEGP sites with acquired directions are charged as one derivative batch
+    by the number of simultaneous directions acquired at that site; sites
+    without derivatives are charged as ordinary function evaluations.
+    """
+    batch = cost_model["directional_batch_cost"]
+    f_cost = float(cost_model.get("function_cost", 1.0))
+
+    n_func_func = np.array([h["X_func"].shape[0] for h in history])
+    n_func_full = np.array([_h_n_func(h, "Full-gradient DEGP") for h in history])
+    n_func_dir = np.array([_h_n_func(h, "Eigenbasis GDDEGP") for h in history])
+
+    cost_func = f_cost * n_func_func
+    cost_full = np.array([
+        h["n_full_grads"] * batch[D] for h in history
+    ], dtype=float)
+
+    cost_dir = []
+    for h, n_f in zip(history, n_func_dir):
+        direction_counts = _group_direction_counts(
+            h.get("directional_observations", []))
+        n_directional_sites = len(direction_counts)
+        total = f_cost * (n_f - n_directional_sites)
+        for n_dir in direction_counts.values():
+            total += batch[int(n_dir)]
+        cost_dir.append(total)
+    return cost_func, cost_full, np.asarray(cost_dir, dtype=float)
+
+
+# ---------------------------------------------------------------------------
 # Active learning
 # ---------------------------------------------------------------------------
 
-def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
-                        n_as_sample=200):
-    rng = np.random.default_rng(seed)
-
-    # Z_AS: fixed Monte-Carlo sample from the active input distribution used
-    # by the GDDEGP direction selector to estimate the GP's active subspace.
-    # Drawn once and reused at every selection call so the basis is stable.
-    rng_as = np.random.default_rng(seed + 991)
-    Z_AS = sample_active_case_z(n_as_sample, rng_as)
-    as_basis_provider = make_as_basis_provider(Z_AS)
+def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True):
     if verbose:
-        print(f"AS-basis Monte-Carlo sample: M = {n_as_sample}")
+        print("Directional derivative selection: local derivative-covariance "
+              "principal directions")
+        print("Directional infill acquisition: weighted MPV")
 
     # Training data (z-space). Mean point + (n_init - 1) LHS points.
     if n_init < 2:
@@ -420,6 +544,7 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
     y_dir = Y0.copy()
 
     directional_observations = []
+    second_order_observations = []
 
     history = []
 
@@ -435,6 +560,7 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
             initial_params=full_initial)
         dir_model, dir_params = fit_directional_model(
             X_dir, y_dir, directional_observations,
+            second_order_observations=second_order_observations,
             initial_params=dir_initial)
         if verbose:
             print(f"  [fit@{iter_label}] "
@@ -452,42 +578,60 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
      full_model, full_params,
      dir_model, dir_params) = fit_all("init")
 
-    # Initial derivative enrichment: at each DOE point, pick eigenbasis
-    # directions from the current posterior, append the real projected
-    # directional derivatives, refit, and then move to the next point.
+    # Initial derivative enrichment: at each DOE point, eigendecompose the
+    # local posterior derivative covariance, append the real projected
+    # directional derivatives, refit, and move to the next point. With
+    # ACQUIRE_SECOND_ORDER, each selected direction is additionally checked
+    # for a 2nd-order upgrade (rho2 gate) and the pure d²f/dv² is appended.
     for i in range(n_init):
-        as_basis = as_basis_provider(dir_model, dir_params)
         selection = select_derivatives_at_observed_point(
             dir_model, dir_params, x_point=Z0[i], rel_tol=REL_TOL,
-            as_basis=as_basis,
+            acquire_second_order=ACQUIRE_SECOND_ORDER,
+            c1=C1, c2=C2,
+            max_directions=MAX_DIRECTIONS,
+            iterative=True,
         )
         n_picked = 0
-        for slot, direction in enumerate(selection["selected_directions"]):
-            d_val = float(grads0[i] @ direction)
+        n_picked_2 = 0
+        for slot, dec in enumerate(selection["order_decisions"]):
+            v = dec["direction"]
+            d_val = float(grads0[i] @ v)
             directional_observations.append({
-                "x_index": i,
-                "direction": direction.copy(),
-                "value": d_val,
-                "slot": slot,
+                "x_index": i, "direction": v.copy(),
+                "value": d_val, "slot": slot,
             })
             n_picked += 1
+            if dec["order"] == 2:
+                _, _, d2_val = T_tip_second_directional_z(Z0[i], v)
+                second_order_observations.append({
+                    "x_index": i, "direction": v.copy(),
+                    "value": d2_val, "slot": slot,
+                })
+                n_picked_2 += 1
         if verbose:
             rho_arr = np.round(selection["rho"], 3)
-            print(f"  [init] point {i}: picked {n_picked} directions  "
+            print(f"  [init] point {i}: picked {n_picked} dir(s) "
+                  f"({n_picked_2} as order 2)  "
                   f"[{selection['basis_source']} basis]  "
                   f"(rho={rho_arr}, rel_tol={REL_TOL})  "
-                  f"cumulative={len(directional_observations)}")
-            for k, v in enumerate(selection["selected_directions"]):
-                print(f"           v{k+1} = {np.round(v, 4)}")
+                  f"cumulative={len(directional_observations)} 1st, "
+                  f"{len(second_order_observations)} 2nd")
+            for k, dec in enumerate(selection["order_decisions"]):
+                r2 = "-" if dec["rho2"] is None else f"{dec['rho2']:.3f}"
+                print(f"           v{k+1} = {np.round(dec['direction'], 4)}  "
+                      f"order={dec['order']}  rho1={dec['rho1']:.3f}  rho2={r2}")
         if directional_observations and i < n_init - 1:
             dir_model, dir_params = fit_directional_model(
                 X_dir, y_dir, directional_observations,
+                second_order_observations=second_order_observations,
                 initial_params=dir_params)
     if verbose:
-        print(f"  [init] seeded {len(directional_observations)} "
-              f"directional derivatives; final enrichment refit")
+        print(f"  [init] seeded {len(directional_observations)} 1st-order "
+              f"and {len(second_order_observations)} 2nd-order "
+              f"observations; final enrichment refit")
     dir_model, dir_params = fit_directional_model(
         X_dir, y_dir, directional_observations,
+        second_order_observations=second_order_observations,
         initial_params=dir_params)
 
     history.append(dict(
@@ -498,6 +642,7 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
         dir_model=dir_model, dir_params=dir_params,
         n_full_grads=len(full_gradient_observations),
         n_dir_obs=len(directional_observations),
+        n_2nd_order_obs=len(second_order_observations),
         n_func_full=X_full.shape[0],
         n_func_dir=X_dir.shape[0],
     ))
@@ -565,35 +710,50 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
         y_dir = np.vstack([y_dir, [[f_dir_new]]])
         dir_model, dir_params = fit_directional_model(
             X_dir, y_dir, directional_observations,
+            second_order_observations=second_order_observations,
             initial_params=dir_params)
-        as_basis = as_basis_provider(dir_model, dir_params)
         selection = select_derivatives_at_observed_point(
             dir_model, dir_params, x_point=z_dir_new, rel_tol=REL_TOL,
-            as_basis=as_basis,
+            acquire_second_order=ACQUIRE_SECOND_ORDER,
+            c1=C1, c2=C2,
+            max_directions=MAX_DIRECTIONS,
+            iterative=True,
         )
         if verbose:
             rho_arr = np.round(selection["rho"], 3)
-            print(f"  [dir]   selected {len(selection['selected_directions'])} direction(s)  "
+            n_sel = len(selection["order_decisions"])
+            n_sel_2 = sum(1 for d in selection["order_decisions"] if d["order"] == 2)
+            print(f"  [dir]   selected {n_sel} direction(s) "
+                  f"({n_sel_2} as order 2)  "
                   f"[{selection['basis_source']} basis]  "
                   f"rho={rho_arr}  rel_tol={REL_TOL}")
-            for k, v in enumerate(selection["selected_directions"]):
-                print(f"          v{k+1} = {np.round(v, 4)}")
-        for slot, direction in enumerate(selection["selected_directions"]):
-            d_val = float(g_dir_new @ direction)
+            for k, dec in enumerate(selection["order_decisions"]):
+                r2 = "-" if dec["rho2"] is None else f"{dec['rho2']:.3f}"
+                print(f"          v{k+1} = {np.round(dec['direction'], 4)}  "
+                      f"order={dec['order']}  rho1={dec['rho1']:.3f}  rho2={r2}")
+        for slot, dec in enumerate(selection["order_decisions"]):
+            v = dec["direction"]
+            d_val = float(g_dir_new @ v)
             directional_observations.append({
-                "x_index": new_idx_dir,
-                "direction": direction.copy(),
-                "value": d_val,
-                "slot": slot,
+                "x_index": new_idx_dir, "direction": v.copy(),
+                "value": d_val, "slot": slot,
             })
+            if dec["order"] == 2:
+                _, _, d2_val = T_tip_second_directional_z(z_dir_new, v)
+                second_order_observations.append({
+                    "x_index": new_idx_dir, "direction": v.copy(),
+                    "value": d2_val, "slot": slot,
+                })
         dir_model, dir_params = fit_directional_model(
             X_dir, y_dir, directional_observations,
+            second_order_observations=second_order_observations,
             initial_params=dir_params)
 
         if verbose:
             print(f"  [sizes] func={X_func.shape[0]}  "
                   f"full={X_full.shape[0]} (+{len(full_gradient_observations)} grads)  "
-                  f"dir={X_dir.shape[0]} (+{len(directional_observations)} dir-obs)")
+                  f"dir={X_dir.shape[0]} (+{len(directional_observations)} 1st-obs, "
+                  f"{len(second_order_observations)} 2nd-obs)")
 
         history.append(dict(
             iteration=it,
@@ -603,6 +763,7 @@ def run_active_learning(n_iter=5, n_init=2, seed=2026, verbose=True,
             dir_model=dir_model, dir_params=dir_params,
             n_full_grads=len(full_gradient_observations),
             n_dir_obs=len(directional_observations),
+            n_2nd_order_obs=len(second_order_observations),
             n_func_full=X_full.shape[0],
             n_func_dir=X_dir.shape[0],
         ))
@@ -942,18 +1103,21 @@ def plot_learning_curves(history, Z_val, y_val, outdir, case_label=None):
 
 
 def plot_learning_curves_vs_cost(history, Z_val, y_val, outdir,
-                                 case_label="Case 1"):
+                                 case_label="Case 1", cost_model=None):
     """
-    Cost-normalized learning curve: NRMSE vs total information budget per
-    method, where the cost is the number of scalar observations ingested
-    (function values + derivative components).
+    Cost-normalized learning curve: NRMSE vs total information budget.
+
+    By default, cost is the number of scalar observations ingested:
 
         Function-only GP   : cost = N_f
         Full-gradient DEGP : cost = N_f + D * N_f_with_grads
         Eigenbasis GDDEGP  : cost = N_f + N_directional_observations
 
-    Each method gets its own x-axis (total scalar observations); all three
-    curves share the same y-axis (validation NRMSE).
+    If ``cost_model`` is supplied, cost is instead wall-clock-equivalent
+    function evaluations loaded from ``benchmark_example_5_derivative_costs``.
+
+    Each method gets its own x-axis; all three curves share the same y-axis
+    (validation NRMSE).
     """
     d = history[0]["X_func"].shape[1]
 
@@ -967,30 +1131,46 @@ def plot_learning_curves_vs_cost(history, Z_val, y_val, outdir,
     dir_nrmse = np.array([gp_nrmse(h["dir_model"], h["dir_params"], Z_val, y_val)
                           for h in history])
 
-    cost_func = n_func_func
-    cost_full = n_func_full + d * np.array([h["n_full_grads"] for h in history])
-    cost_dir  = n_func_dir  + np.array([h["n_dir_obs"] for h in history])
+    if cost_model is None:
+        cost_func = n_func_func
+        cost_full = n_func_full + d * np.array([h["n_full_grads"] for h in history])
+        cost_dir = n_func_dir + np.array([h["n_dir_obs"] for h in history])
+        x_label = "# function evaluations + # derivative observations"
+        table_title = "Cost-normalized learning curve (NRMSE vs N_f + N_deriv)"
+        value_fmt = "{:>12d}"
+        filename = "learning_curves_vs_cost.png"
+    else:
+        cost_func, cost_full, cost_dir = _actual_cost_arrays(history, cost_model)
+        x_label = "wall-clock equivalent function evaluations"
+        table_title = (
+            "Cost-normalized learning curve "
+            "(NRMSE vs benchmarked wall-clock-equivalent cost)"
+        )
+        value_fmt = "{:>12.3f}"
+        filename = "learning_curves_vs_actual_cost.png"
 
     fig, ax = plt.subplots(figsize=(7, 4.2))
     ax.semilogy(cost_full, full_nrmse, "s-", label="Full-gradient DEGP")
     ax.semilogy(cost_dir, dir_nrmse, "^-", label="Eigenbasis GDDEGP")
-    ax.set_xlabel("# function evaluations + # derivative observations")
+    ax.set_xlabel(x_label)
     ax.set_ylabel("Validation NRMSE")
     ax.set_title(f"{case_label}: cost-normalized learning curve")
     ax.grid(True, which="both", alpha=0.3)
     ax.legend()
     fig.tight_layout()
-    fig.savefig(outdir / "learning_curves_vs_cost.png", dpi=180)
+    fig.savefig(outdir / filename, dpi=180)
     plt.close(fig)
 
-    print("\nCost-normalized learning curve (NRMSE vs N_f + N_deriv):")
+    print(f"\n{table_title}:")
+    if cost_model is not None:
+        print(f"  cost model: {cost_model['source']}")
     print(f"  {'iter':>4s} {'func (cost, NRMSE)':>26s} "
           f"{'DEGP (cost, NRMSE)':>26s} {'GDDEGP (cost, NRMSE)':>26s}")
     for i, h in enumerate(history):
         print(f"  {h['iteration']:>4d} "
-              f"{cost_func[i]:>12d}, {func_nrmse[i]:>10.4g}  "
-              f"{cost_full[i]:>12d}, {full_nrmse[i]:>10.4g}  "
-              f"{cost_dir[i]:>12d}, {dir_nrmse[i]:>10.4g}")
+              f"{value_fmt.format(cost_func[i])}, {func_nrmse[i]:>10.4g}  "
+              f"{value_fmt.format(cost_full[i])}, {full_nrmse[i]:>10.4g}  "
+              f"{value_fmt.format(cost_dir[i])}, {dir_nrmse[i]:>10.4g}")
 
     return dict(cost_func=cost_func, cost_full=cost_full, cost_dir=cost_dir,
                 func_nrmse=func_nrmse, full_nrmse=full_nrmse, dir_nrmse=dir_nrmse)
@@ -1443,39 +1623,48 @@ def parse_args():
         help="Random seed used for DOE, validation, and Monte Carlo diagnostics.",
     )
     parser.add_argument(
-        "--deriv-var-tol",
-        type=float,
-        default=DEFAULT_DERIVATIVE_VARIANCE_TOL,
-        help=(
-            "Absolute tolerance on the leading local derivative-variance "
-            "eigenvalue. If lambda_1 is below this value, no directional "
-            "derivatives are acquired at that point."
-        ),
-    )
-    parser.add_argument(
         "--rel-tol",
         type=float,
         default=DEFAULT_REL_TOL,
         help=(
-            "Prior-relative gate threshold: keep eigenvector vⱼ if "
-            "ρⱼ = λⱼ_post / vⱼᵀ K_prior vⱼ exceeds this value. "
-            "ρⱼ ∈ [0, 1] reads as 'fraction of prior gradient variance "
-            "in direction vⱼ still unexplained by the data.'"
+            "Prior-relative gate threshold for local derivative-covariance "
+            "eigenvectors: keep v_j if rho_j = lambda_j_post / "
+            "lambda_max(K_prior) "
+            "exceeds this value."
+        ),
+    )
+    parser.add_argument(
+        "--cost-json",
+        type=Path,
+        default=None,
+        help=(
+            "Optional JSON or CSV from benchmark_example_5_derivative_costs.py. "
+            "When supplied, the cost-normalized learning curve uses measured "
+            "wall-clock-equivalent function-evaluation cost."
         ),
     )
     return parser.parse_args()
 
 
-def run_complete_study(n_iter=20, n_init=2, seed=42, verbose=True):
+def run_complete_study(n_iter=20, n_init=2, seed=42, verbose=True,
+                       cost_model=None):
     label = study_label()
     print("=" * 72)
-    print(f"Example 5 - HYPAD-UQ fin ({label}): active learning from two points")
-    print(f"Directional derivative variance tolerance: {DERIVATIVE_VARIANCE_TOL:.1e}")
+    print(f"Example 3 - HYPAD-UQ fin ({label}): active learning from two points")
+    if cost_model is not None:
+        print(f"Actual-cost model: {cost_model['source']}")
+        model_case = cost_model.get("case")
+        model_time = cost_model.get("time_seconds")
+        if (model_case is not None and model_case != ACTIVE_CASE) or (
+                model_time is not None and
+                not np.isclose(model_time, ACTIVE_TIME_SECONDS)):
+            print("  WARNING: cost benchmark case/time does not match "
+                  f"this study ({CASE_LABEL}, t={ACTIVE_TIME_SECONDS:g} s).")
     print("=" * 72)
 
     case_tag = CASE_LABEL.lower().replace(" ", "_")
     time_tag = format_time_label(ACTIVE_TIME_SECONDS).replace(".", "p")
-    outdir = Path(__file__).parent / f"example_5_{case_tag}_t{time_tag}_figures"
+    outdir = Path(__file__).parent / f"example_3_{case_tag}_t{time_tag}_figures"
     outdir.mkdir(exist_ok=True)
 
     history, directional_observations = run_active_learning(
@@ -1497,7 +1686,8 @@ def run_complete_study(n_iter=20, n_init=2, seed=42, verbose=True):
               f"GDDEGP N_f={ng:2d} NRMSE={curves['dir'][i]:.4g}")
 
     plot_learning_curves_vs_cost(history, Z_val, y_val, outdir,
-                                 case_label=label)
+                                 case_label=label,
+                                 cost_model=cost_model)
 
     print(f"\nPropagating {label} input distribution through each surrogate (N=5000):")
     result = propagate_and_summarize(history, n_mc=5000, seed=seed)
@@ -1542,9 +1732,10 @@ def run_complete_study(n_iter=20, n_init=2, seed=42, verbose=True):
 if __name__ == "__main__":
     args = parse_args()
     configure_active_case(args.case)
-    configure_derivative_variance_tol(args.deriv_var_tol)
+    cost_model = load_derivative_cost_model(args.cost_json)
     REL_TOL = args.rel_tol
     for time_seconds in args.times:
         configure_active_time(time_seconds)
         run_complete_study(n_iter=args.n_iter, n_init=args.n_init,
-                           seed=args.seed, verbose=True)
+                           seed=args.seed, verbose=True,
+                           cost_model=cost_model)

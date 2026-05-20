@@ -377,24 +377,24 @@ def save_iteration_figures(al, history, figure_dir, resolution=40):
             plt.close(fig)
 
 
-def save_eigen_spectrum_figures(history, tau, figure_dir):
-    """Save one eigenvalue-ratio bar chart per iteration."""
+def save_eigen_spectrum_figures(history, rel_tol, figure_dir):
+    """Save one prior-relative rho bar chart per iteration."""
     for rec in history:
-        ratios = rec["variance_ratios"]
-        indices = np.arange(1, len(ratios) + 1)
+        rho = rec["rho"]
+        indices = np.arange(1, len(rho) + 1)
         selected = set(rec["selected_indices"])
         colors = ["#ff4fa3" if i in selected else "#4c78a8"
-                  for i in range(len(ratios))]
+                  for i in range(len(rho))]
 
         fig, ax = plt.subplots(figsize=(7.2, 4.6))
-        ax.bar(indices, ratios, color=colors, edgecolor="black", linewidth=0.7)
-        ax.axhline(tau, color="black", linestyle="--", linewidth=1.3,
-                   label=rf"$\tau = {tau:g}$")
+        ax.bar(indices, rho, color=colors, edgecolor="black", linewidth=0.7)
+        ax.axhline(rel_tol, color="black", linestyle="--", linewidth=1.3,
+                   label=rf"$\rho_{{\mathrm{{tol}}}} = {rel_tol:g}$")
         ax.set_xlabel("Eigen-direction index")
-        ax.set_ylabel(r"$\lambda_j / \lambda_1$")
-        ax.set_title(f"Iteration {rec['step']}: derivative covariance spectrum")
+        ax.set_ylabel(r"$\rho_j$")
+        ax.set_title(f"Iteration {rec['step']}: prior-relative derivative spectrum")
         ax.set_xticks(indices)
-        ax.set_ylim(bottom=0.0, top=max(1.05, float(np.nanmax(ratios)) * 1.1))
+        ax.set_ylim(bottom=0.0, top=max(1.05, float(np.nanmax(rho)) * 1.1))
         ax.legend(frameon=False)
         fig.tight_layout()
         fig.savefig(figure_dir / f"iter_{rec['step']:02d}_eigen_spectrum.png",

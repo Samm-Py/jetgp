@@ -13,6 +13,7 @@ Gaussian Processes
    derivative_screening
    weighted_gp
    directional_degp
+   active_learning
    mogp
    gemogp
    observation_noise

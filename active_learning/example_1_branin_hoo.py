@@ -57,13 +57,13 @@ def branin_grad(X):
 def print_summary(history):
     print("\nIteration summary:")
     print(f"  {'step':>4}  {'x1':>8}  {'x2':>8}  {'sigma2_f':>10}  "
-          f"{'n_derivs':>8}  {'lambda_2/lambda_1':>17}")
+          f"{'n_derivs':>8}  {'rho_2':>10}")
     for rec in history:
-        ratios = rec["variance_ratios"]
-        second_ratio = ratios[1] if len(ratios) > 1 else np.nan
+        rho = rec["rho"]
+        second_rho = rho[1] if len(rho) > 1 else np.nan
         print(f"  {rec['step']:>4}  {rec['x_new'][0]:8.3f}  "
               f"{rec['x_new'][1]:8.3f}  {rec['mpv']:10.5f}  "
-              f"{rec['n_selected']:>8}  {second_ratio:17.4f}")
+              f"{rec['n_selected']:>8}  {second_rho:10.4f}")
 
 
 if __name__ == "__main__":
@@ -75,7 +75,7 @@ if __name__ == "__main__":
         grad_func=branin_grad,
         bounds=BRANIN_BOUNDS,
         n_init=8,
-        tau=0.05,
+        rel_tol=0.001,
         n_iter=15,
         kernel="SE",
         kernel_type="anisotropic",
@@ -92,6 +92,6 @@ if __name__ == "__main__":
     save_initial_enrichment_figure(al, figure_dir)
     save_post_enrichment_figure(al, figure_dir)
     save_iteration_figures(al, history, figure_dir)
-    save_eigen_spectrum_figures(history, al.tau, figure_dir)
+    save_eigen_spectrum_figures(history, al.rel_tol, figure_dir)
     save_final_design_figure(al, history, figure_dir, true_func=branin)
     print(f"\nSaved project figures to: {figure_dir.resolve()}")
