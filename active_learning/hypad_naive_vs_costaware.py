@@ -9,10 +9,9 @@ For HYPAD-UQ Case 1 in the AD regime (c_f = 1, c_d = 0.5, d = 7), each LHS
 point with a full gradient costs c_f + d * c_d = 4.5 cost units. So
 n = budget / 4.5 LHS points exhaust a budget B.
 
-The cost-aware result at the matching cumulative budget is read directly from
-the existing data/hypad_learning_curves.json (no re-run). If the requested
-budget exceeds the trajectory's final cumulative cost, the cost-aware result
-at the final point is used instead.
+The cost-aware comparison is run fresh per (seed, n) with a matching total
+budget and a matching starting design size (--n-init-costaware), so the two
+methods are evaluated under the same total resource.
 
 Output: data/hypad_naive_vs_costaware.json
 """
@@ -93,33 +92,6 @@ def run_costaware_inline(seed, n_init, budget, c_f, c1, case, time, n_val,
     return result
 
 
-def extract_costaware_at_budget(learning_curves_path, budget,
-                                 regime="ad", policy="CostAware"):
-    """Per-seed RMSE from the cost-aware trajectory at cumulative_cost <= budget.
-
-    Returns a list of dicts keyed by seed with the last-trajectory-point at or
-    below the requested budget.
-    """
-    payload = json.load(open(learning_curves_path))
-    out = []
-    for row in payload["rows"]:
-        if row["regime"] != regime or row["policy"] != policy:
-            continue
-        traj = row["trajectory"]
-        rec_at_budget = None
-        for rec in traj:
-            if rec["cumulative_cost"] <= budget + 1e-9:
-                rec_at_budget = rec
-        if rec_at_budget is None:
-            continue
-        out.append({
-            "seed": row["seed"],
-            "cumulative_cost": rec_at_budget["cumulative_cost"],
-            "rmse": rec_at_budget["rmse_test"],
-        })
-    return out
-
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--n-seeds", type=int, default=10)
@@ -137,15 +109,8 @@ def main():
                         help="Initial-DOE size for the inline CostAware run. "
                              "Set to match naive's training-set size for an "
                              "apples-to-apples comparison.")
-    parser.add_argument("--inline-costaware", action="store_true",
-                        default=True,
-                        help="Run CostAware fresh per (seed,n) with matching "
-                             "budget and n_init instead of reading from the "
-                             "learning-curves JSON.")
     parser.add_argument("--n-iter", type=int, default=30,
                         help="Iteration cap for the inline CostAware run.")
-    parser.add_argument("--learning-curves",
-                        default="data/hypad_learning_curves.json")
     parser.add_argument("--out",
                         default="data/hypad_naive_vs_costaware.json")
     args = parser.parse_args()
@@ -170,45 +135,29 @@ def main():
                   f"RMSE={res['rmse']:.4e}")
 
     costaware_rows = []
-    if args.inline_costaware:
-        for seed in seeds:
-            for n in args.ns:
-                budget = float(n) * 4.5
-                result = run_costaware_inline(
-                    seed, args.n_init_costaware, budget,
-                    c_f=1.0, c1=0.5,
-                    case=args.case, time=args.time, n_val=args.n_val,
-                    n_iter=args.n_iter,
-                    optimizer_kwargs=optimizer_kwargs,
-                )
-                row = {
-                    "seed": seed,
-                    "n_naive_equivalent": n,
-                    "target_budget": budget,
-                    "cumulative_cost": result["cost"],
-                    "rmse": result["rmse_test"],
-                    "sequence": result["sequence"],
-                    "n_init": args.n_init_costaware,
-                }
-                costaware_rows.append(row)
-                print(f"[costaware seed={seed} n={n} n_init={args.n_init_costaware} "
-                      f"budget={budget:5.1f}] "
-                      f"RMSE={row['rmse']:.4e} seq={row['sequence']}")
-    elif os.path.exists(args.learning_curves):
+    for seed in seeds:
         for n in args.ns:
             budget = float(n) * 4.5
-            rows = extract_costaware_at_budget(
-                args.learning_curves, budget,
-                regime="ad", policy="CostAware")
-            for r in rows:
-                r["target_budget"] = budget
-                r["n_naive_equivalent"] = n
-                costaware_rows.append(r)
-            print(f"[costaware target_budget={budget:5.1f}] "
-                  f"got {len(rows)} seeds from trajectory")
-    else:
-        print(f"warning: {args.learning_curves} not found; "
-              f"cost-aware comparison rows are empty")
+            result = run_costaware_inline(
+                seed, args.n_init_costaware, budget,
+                c_f=1.0, c1=0.5,
+                case=args.case, time=args.time, n_val=args.n_val,
+                n_iter=args.n_iter,
+                optimizer_kwargs=optimizer_kwargs,
+            )
+            row = {
+                "seed": seed,
+                "n_naive_equivalent": n,
+                "target_budget": budget,
+                "cumulative_cost": result["cost"],
+                "rmse": result["rmse_test"],
+                "sequence": result["sequence"],
+                "n_init": args.n_init_costaware,
+            }
+            costaware_rows.append(row)
+            print(f"[costaware seed={seed} n={n} n_init={args.n_init_costaware} "
+                  f"budget={budget:5.1f}] "
+                  f"RMSE={row['rmse']:.4e} seq={row['sequence']}")
 
     os.makedirs(os.path.dirname(args.out), exist_ok=True)
     with open(args.out, "w") as f:

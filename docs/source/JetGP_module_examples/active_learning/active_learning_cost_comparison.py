@@ -96,7 +96,7 @@ def run_policy(policy_cls, c_f, c1, budget, n_iter):
         grad_func=branin_grad,
         bounds=BOUNDS,
         n_init=5,
-        rel_tol=0.001,
+        rel_tol=0.0,
         n_iter=n_iter,
         seed=5,
         c_f=c_f,
@@ -125,20 +125,24 @@ def run_policy(policy_cls, c_f, c1, budget, n_iter):
 
 
 def run_comparison():
+    # n_iter is sized so the cost budget is the binding stopping condition,
+    # not the iteration cap. With B=20 and a minimum per-step cost of 1,
+    # n_iter=20 suffices for any policy to fully spend its budget.
+    n_iter = 20
     return {
         "Derivatives cheap": {
             "cost_model": "c_f=10, c1=1, B=20",
             "Cost-aware": run_policy(
-                AdaptiveDirectionalGP, c_f=10.0, c1=1.0, budget=20.0, n_iter=10),
+                AdaptiveDirectionalGP, c_f=10.0, c1=1.0, budget=20.0, n_iter=n_iter),
             "Function-only": run_policy(
-                FunctionOnlyAdaptiveGP, c_f=10.0, c1=1.0, budget=20.0, n_iter=10),
+                FunctionOnlyAdaptiveGP, c_f=10.0, c1=1.0, budget=20.0, n_iter=n_iter),
         },
         "Functions cheap": {
             "cost_model": "c_f=1, c1=10, B=20",
             "Cost-aware": run_policy(
-                AdaptiveDirectionalGP, c_f=1.0, c1=10.0, budget=20.0, n_iter=10),
+                AdaptiveDirectionalGP, c_f=1.0, c1=10.0, budget=20.0, n_iter=n_iter),
             "Derivative-only": run_policy(
-                DerivativeOnlyAdaptiveGP, c_f=1.0, c1=10.0, budget=20.0, n_iter=10),
+                DerivativeOnlyAdaptiveGP, c_f=1.0, c1=10.0, budget=20.0, n_iter=n_iter),
         },
     }
 

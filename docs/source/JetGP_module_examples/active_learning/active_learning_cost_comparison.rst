@@ -103,9 +103,9 @@ The generated run produced the following table:
      - Grid RMSE
    * - Derivatives cheap (c_f=10, c1=1, B=20)
      - Cost-aware
-     - ``ddddfddddd``
-     - 19.0
-     - 27.96
+     - ``ddddfdddddd``
+     - 20.0
+     - 22.10
    * - Derivatives cheap (c_f=10, c1=1, B=20)
      - Function-only
      - ``ff``
@@ -113,9 +113,9 @@ The generated run produced the following table:
      - 57.26
    * - Functions cheap (c_f=1, c1=10, B=20)
      - Cost-aware
-     - ``ffffffffff``
-     - 10.0
-     - 27.83
+     - ``ffffffffffffffffffff``
+     - 20.0
+     - 1.80
    * - Functions cheap (c_f=1, c1=10, B=20)
      - Derivative-only
      - ``dd``

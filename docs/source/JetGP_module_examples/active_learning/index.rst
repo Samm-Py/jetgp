@@ -10,5 +10,4 @@ examples is described in :doc:`/theory/active_learning`.
 
    active_learning_branin_hoo
    active_learning_cost_comparison
-   hypad_learning_curves
    hypad_naive_vs_costaware
