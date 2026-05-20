@@ -50,8 +50,6 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/ddegp_sparse_getting_started';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)" href="gddegp_sparse_getting_started.html" />
-    <link rel="prev" title="Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)" href="degp_sparse_getting_started.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -113,6 +111,8 @@
     <div class="bd-container__inner bd-page-width">
       
       
+      
+        
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -178,6 +178,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/active_learning.html">Cost-Aware Active Learning with Directional Derivatives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
@@ -206,8 +207,8 @@
 </ul>
 </details></li>
 </ul>
-<ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">JetGP Module Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="index.html">JetGP Module Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="degp_kernel_comparison.html">1D DEGP Kernel Comparison</a></li>
 
@@ -218,9 +219,12 @@
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="active_learning/index.html">Active Learning Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="active_learning/active_learning_branin_hoo.html">Cost-Aware Active Learning on the 2D Branin-Hoo Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="active_learning/active_learning_cost_comparison.html">Budgeted Cost-Aware Policy Comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="active_learning/hypad_naive_vs_costaware.html">Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
@@ -781,9 +785,7 @@ Predictions use exact dense Cholesky for full accuracy. The NRMSE quantifies pre
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Maximum absolute function value error at training points: 4.65e-13
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+
 Prediction with derivatives shape: (4, 16)
 Ray 1 (45 deg) max derivative error: 3.85e-13
 Ray 2 (90 deg) max derivative error: 2.53e-13
@@ -888,24 +890,6 @@ The visualization is identical to the dense DDEGP. The directional rays (arrows)
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="degp_sparse_getting_started.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="gddegp_sparse_getting_started.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               

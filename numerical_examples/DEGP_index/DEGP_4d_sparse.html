@@ -178,6 +178,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/active_learning.html">Cost-Aware Active Learning with Directional Derivatives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
@@ -218,9 +219,12 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../JetGP_module_examples/active_learning/index.html">Active Learning Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../JetGP_module_examples/active_learning/active_learning_branin_hoo.html">Cost-Aware Active Learning on the 2D Branin-Hoo Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../JetGP_module_examples/active_learning/active_learning_cost_comparison.html">Budgeted Cost-Aware Policy Comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../JetGP_module_examples/active_learning/hypad_naive_vs_costaware.html">Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
@@ -796,10 +800,10 @@ New best for swarm at iteration 6: [-0.42355832 -0.58898204 -0.4120302  -0.50087
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 6: [-0.96324501 -0.63163179 -0.9774898  -0.7407199   3.70552312 -4.90592171] 337.4133683572934
+Best after iteration 6: [-0.96324501 -0.63163179 -0.9774898  -0.7407199   3.70552312 -4.90592171] 337.4133683572934
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 6: [-0.96324501 -0.63163179 -0.9774898  -0.7407199   3.70552312 -4.90592171] 337.4133683572934
-New best for swarm at iteration 7: [-0.74712778 -0.7286189  -0.63433269 -0.7614569   3.20941561 -4.93808471] 208.63870628688335
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 7: [-0.74712778 -0.7286189  -0.63433269 -0.7614569   3.20941561 -4.93808471] 208.63870628688335
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 7: [-0.74712778 -0.7286189  -0.63433269 -0.7614569   3.20941561 -4.93808471] 208.63870628688335
@@ -824,9 +828,7 @@ New best for swarm at iteration 12: [-0.88311934 -0.96414665 -0.90999153 -0.9074
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>New best for swarm at iteration 12: [-0.88732138 -0.89684952 -0.92591259 -0.90168838  3.70264262 -4.978146  ] -36.847928938178654
 New best for swarm at iteration 12: [-0.90741169 -0.91571044 -0.89118043 -0.90647772  3.73516103 -4.95239336] -45.37493426394627
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 12: [-0.90741169 -0.91571044 -0.89118043 -0.90647772  3.73516103 -4.95239336] -45.37493426394627
+Best after iteration 12: [-0.90741169 -0.91571044 -0.89118043 -0.90647772  3.73516103 -4.95239336] -45.37493426394627
 </pre></div>
 </div>
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Best after iteration 13: [-0.90741169 -0.91571044 -0.89118043 -0.90647772  3.73516103 -4.95239336] -45.37493426394627
@@ -894,7 +896,7 @@ Best after iteration 25: [-0.93659587 -0.93653128 -0.92491753 -0.92548683  3.809
 Stopping: maximum iterations reached --&gt; 30
 </pre></div>
 </div>
-<img alt="../../_images/DEGP_4d_sparse_8_34.png" src="../../_images/DEGP_4d_sparse_8_34.png" />
+<img alt="../../_images/DEGP_4d_sparse_8_33.png" src="../../_images/DEGP_4d_sparse_8_33.png" />
 </div>
 </div>
 </section>

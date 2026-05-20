@@ -179,6 +179,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/active_learning.html">Cost-Aware Active Learning with Directional Derivatives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
@@ -219,9 +220,12 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../JetGP_module_examples/active_learning/index.html">Active Learning Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../JetGP_module_examples/active_learning/active_learning_branin_hoo.html">Cost-Aware Active Learning on the 2D Branin-Hoo Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../JetGP_module_examples/active_learning/active_learning_cost_comparison.html">Budgeted Cost-Aware Policy Comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../JetGP_module_examples/active_learning/hypad_naive_vs_costaware.html">Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
@@ -613,13 +617,13 @@ the original cluster assignments directly.</p>
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Number of submodels: 3
-Points per cluster: [15, 10, 11]
+Points per cluster: [8, 13, 15]
 Derivatives per submodel: 8
 
 submodel_indices structure (one entry per derivative):
-  Submodel 0: 8 derivatives, point indices = [0, 1, 3, 4, 11, 12, 14, 15, 16, 19, 20, 23, 24, 31, 32]
-  Submodel 1: 8 derivatives, point indices = [5, 7, 9, 21, 25, 27, 28, 30, 33, 35]
-  Submodel 2: 8 derivatives, point indices = [2, 6, 8, 10, 13, 17, 18, 22, 26, 29, 34]
+  Submodel 0: 8 derivatives, point indices = [3, 7, 8, 15, 17, 19, 29, 31]
+  Submodel 1: 8 derivatives, point indices = [1, 4, 6, 10, 12, 16, 18, 20, 24, 26, 30, 32, 34]
+  Submodel 2: 8 derivatives, point indices = [0, 2, 5, 9, 11, 13, 14, 21, 22, 23, 25, 27, 28, 33, 35]
 </pre></div>
 </div>
 </div>
@@ -740,15 +744,17 @@ Derivative specs structure:
 Submodel 0 data structure:
   Total arrays: 9 (1 func + 2 derivs)
     [0] Function values: shape (36, 1)
-    [1] Order 1, dim 1: shape (15, 1)
-    [2] Order 1, dim 2: shape (15, 1)
-    [3] Order 1, dim 3: shape (15, 1)
-    [4] Order 1, dim 4: shape (15, 1)
-    [5] Order 2, dim 1: shape (15, 1)
-    [6] Order 2, dim 2: shape (15, 1)
-    [7] Order 2, dim 3: shape (15, 1)
-    [8] Order 2, dim 4: shape (15, 1)
-
+    [1] Order 1, dim 1: shape (8, 1)
+    [2] Order 1, dim 2: shape (8, 1)
+    [3] Order 1, dim 3: shape (8, 1)
+    [4] Order 1, dim 4: shape (8, 1)
+    [5] Order 2, dim 1: shape (8, 1)
+    [6] Order 2, dim 2: shape (8, 1)
+    [7] Order 2, dim 3: shape (8, 1)
+    [8] Order 2, dim 4: shape (8, 1)
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
 Number of submodels: 3
 </pre></div>
 </div>
@@ -809,35 +815,35 @@ Number of submodels: 3
 Optimizing hyperparameters...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=646.8818899891094
-Gen 2: best f=646.8818899891094
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=837.9652025474687
+Gen 2: best f=837.2001087748184
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=646.8818899891094
-Gen 4: best f=646.8818899891094
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=803.7612748261656
+Gen 4: best f=803.7612748261656
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=646.8818899891094
-Gen 6: best f=636.9258738495339
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 5: best f=764.3796069577861
+Gen 6: best f=764.3796069577861
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=636.9258738495339
-Gen 8: best f=636.9258738495339
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=726.7633976588703
+Gen 8: best f=726.7633976588703
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=636.9258738495339
-Gen 10: best f=636.9258738495339
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=726.7633976588703
+Gen 10: best f=726.7633976588703
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=636.9258738495339
-Gen 12: best f=636.9258738495339
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=726.7633976588703
+Gen 12: best f=726.7633976588703
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=625.19874912712
-Gen 14: best f=625.19874912712
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=726.7633976588703
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=619.1744766347801
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=726.7633976588703
+Gen 15: best f=726.7633976588703
 
 GP model built and optimized.
 </pre></div>
@@ -870,9 +876,9 @@ GP model built and optimized.
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Test set size: 5000
-RMSE: 45.223824
-NRMSE: 0.100514
-MAE: 16.203220
+RMSE: 32.195512
+NRMSE: 0.074782
+MAE: 11.430528
 </pre></div>
 </div>
 </div>

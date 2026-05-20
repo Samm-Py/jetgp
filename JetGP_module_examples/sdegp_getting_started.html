@@ -51,7 +51,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/sdegp_getting_started';</script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)" href="degp_sparse_getting_started.html" />
+    <link rel="next" title="Active Learning Examples" href="active_learning/index.html" />
     <link rel="prev" title="Weighted Derivative-Enhanced Gaussian Process (WDEGP)" href="wdegp_getting_started.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -179,6 +179,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/active_learning.html">Cost-Aware Active Learning with Directional Derivatives</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
@@ -219,9 +220,12 @@
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="active_learning/index.html">Active Learning Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="active_learning/active_learning_branin_hoo.html">Cost-Aware Active Learning on the 2D Branin-Hoo Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="active_learning/active_learning_cost_comparison.html">Budgeted Cost-Aware Policy Comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="active_learning/hypad_naive_vs_costaware.html">Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 </ul>
@@ -851,9 +855,9 @@ The full DEGP kernel matrix has size <span class="math notranslate nohighlight">
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP optimized params: [-0.12593045 -1.26034937  1.91192303 -6.52818931]  (0.35s)
-DEGP  optimized params: [ -0.10727728  -1.26674476   2.00706718 -10.98302403]   (0.28s)
-Speedup: 0.80x
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP optimized params: [-0.12593045 -1.26034937  1.91192303 -6.52818931]  (0.33s)
+DEGP  optimized params: [ -0.10727728  -1.26674476   2.00706718 -10.98302403]   (0.34s)
+Speedup: 1.05x
 </pre></div>
 </div>
 </div>
@@ -1211,9 +1215,9 @@ The SDEGP constructor accepts all derivative observations stacked column-wise: f
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP optimized: [-0.0746347  -1.47775576  2.12755829 -5.48526309]  (0.38s)
-DEGP  optimized: [-0.05831031 -0.9681591   1.29464257 -6.32879712]   (0.29s)
-Speedup: 0.78x
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>SDEGP optimized: [-0.0746347  -1.47775576  2.12755829 -5.48526309]  (0.59s)
+DEGP  optimized: [-0.05831031 -0.9681591   1.29464257 -6.32879712]   (0.51s)
+Speedup: 0.87x
 </pre></div>
 </div>
 </div>
@@ -1405,11 +1409,11 @@ The second-order likelihood surfaces confirm the same behavior: the sliced appro
       </div>
     </a>
     <a class="right-next"
-       href="degp_sparse_getting_started.html"
+       href="active_learning/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</p>
+        <p class="prev-next-title">Active Learning Examples</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
