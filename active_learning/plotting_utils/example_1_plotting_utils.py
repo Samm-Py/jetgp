@@ -9,7 +9,6 @@ from adaptive_doe import query_function_posterior
 
 
 DIRECTION_COLORS = ["#ff4fa3", "#00a6d6", "#58a55c"]
-INITIAL_ENRICHMENT_GREY = "#ffffff"
 PREVIOUS_INFILl_GREY = "#7f7f7f"
 
 
@@ -125,98 +124,6 @@ def add_direction_history(ax, history_subset, arrow_scale=1.1, grey=False):
                      label=label, clip_on=False)
 
 
-def add_initial_enrichment_directions(ax, initial_derivative_history, arrow_scale=1.1):
-    """Overlay enrichment directions selected on the initial DOE."""
-    used_labels = set()
-    for rec in initial_derivative_history:
-        x_point = rec["x_point"]
-        for idx, direction in enumerate(rec["selected_directions"], start=1):
-            v = np.asarray(direction)
-            color = DIRECTION_COLORS[(idx - 1) % len(DIRECTION_COLORS)]
-            label = rf"$v_{idx}$" if idx not in used_labels else "_nolegend_"
-            used_labels.add(idx)
-            ax.arrow(x_point[0], x_point[1],
-                     arrow_scale * v[0], arrow_scale * v[1],
-                     width=0.028, head_width=0.22, head_length=0.28,
-                     length_includes_head=True, facecolor=color,
-                     edgecolor="black", linewidth=0.5, zorder=8,
-                     label=label, clip_on=False)
-
-
-def add_initial_enrichment_history(ax, initial_derivative_history, arrow_scale=1.1,
-                                   grey=False):
-    """Overlay all initial-enrichment directions, optionally greyed out."""
-    used_labels = set()
-    for rec in initial_derivative_history:
-        x_point = rec["x_point"]
-        for idx, direction in enumerate(rec["selected_directions"], start=1):
-            v = np.asarray(direction)
-            if grey:
-                color = INITIAL_ENRICHMENT_GREY
-                label = ("Initial enrichment direction"
-                         if "initial" not in used_labels else "_nolegend_")
-                used_labels.add("initial")
-            else:
-                color = DIRECTION_COLORS[(idx - 1) % len(DIRECTION_COLORS)]
-                label = rf"$v_{idx}$" if idx not in used_labels else "_nolegend_"
-                used_labels.add(idx)
-            ax.arrow(x_point[0], x_point[1],
-                     arrow_scale * v[0], arrow_scale * v[1],
-                     width=0.028, head_width=0.22, head_length=0.28,
-                     length_includes_head=True, facecolor=color,
-                     edgecolor="black", linewidth=0.5, zorder=7,
-                     label=label, clip_on=False)
-
-
-def save_initial_enrichment_figure(al, figure_dir, resolution=40):
-    """Save GP mean/variance with initial enrichment directions over the DOE."""
-    if not getattr(al, "initial_derivative_history", None):
-        return
-    if getattr(al, "initial_function_gp_model", None) is None:
-        return
-
-    X1, X2, X_grid = make_grid(al.bounds, resolution)
-    mean_f, var_f = query_function_posterior_batched(
-        al.initial_function_gp_model,
-        al.initial_function_params,
-        X_grid,
-    )
-    gp_mean = mean_f.reshape(resolution, resolution)
-    f_var = var_f.reshape(resolution, resolution)
-
-    fig, axes = plt.subplots(1, 2, figsize=(13.8, 5.8), sharex=True, sharey=True)
-    panels = [
-        (axes[0], gp_mean, r"GP mean $\mu_f(x)$", r"$\mu_f(x)$"),
-        (axes[1], f_var, r"Predictive variance $\sigma_f^2(x)$", r"$\sigma_f^2(x)$"),
-    ]
-
-    for ax, Z, panel_title, cbar_label in panels:
-        cp = ax.contourf(X1, X2, Z, levels=40, cmap="viridis")
-        cbar = fig.colorbar(cp, ax=ax)
-        cbar.set_label(cbar_label)
-        cbar.locator = MaxNLocator(nbins=7)
-        cbar.update_ticks()
-
-        ax.scatter(al.X_train[:al.n_init, 0], al.X_train[:al.n_init, 1],
-                   c="white", edgecolor="black", s=38, linewidth=0.8,
-                   label="Initial DOE", zorder=5)
-        add_initial_enrichment_directions(ax, al.initial_derivative_history)
-        ax.set_xlabel(r"$x_1$")
-        ax.set_ylabel(r"$x_2$")
-        ax.set_title(panel_title)
-        ax.set_xlim(al.bounds[0])
-        ax.set_ylim(al.bounds[1])
-
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False)
-    fig.suptitle("Initial DOE enrichment: selected directional derivatives")
-    fig.tight_layout()
-    fig.subplots_adjust(bottom=0.18)
-    fig.savefig(figure_dir / "initial_enrichment_directions.png",
-                dpi=220, bbox_inches="tight")
-    plt.close(fig)
-
-
 def save_initial_doe_figure(al, figure_dir, resolution=40):
     """Save GP mean/variance after the initial DOE, without direction overlays."""
     if getattr(al, "initial_function_gp_model", None) is None:
@@ -263,56 +170,6 @@ def save_initial_doe_figure(al, figure_dir, resolution=40):
     plt.close(fig)
 
 
-def save_post_enrichment_figure(al, figure_dir, resolution=40):
-    """Save GP mean/variance after the initial enrichment refit."""
-    if not getattr(al, "initial_derivative_history", None):
-        return
-    if (getattr(al, "post_enrichment_gp_model", None) is None or
-            getattr(al, "post_enrichment_params", None) is None):
-        return
-
-    X1, X2, X_grid = make_grid(al.bounds, resolution)
-    mean_f, var_f = query_function_posterior_batched(
-        al.post_enrichment_gp_model,
-        al.post_enrichment_params,
-        X_grid,
-    )
-    gp_mean = mean_f.reshape(resolution, resolution)
-    f_var = var_f.reshape(resolution, resolution)
-
-    fig, axes = plt.subplots(1, 2, figsize=(13.8, 5.8), sharex=True, sharey=True)
-    panels = [
-        (axes[0], gp_mean, r"GP mean $\mu_f(x)$", r"$\mu_f(x)$"),
-        (axes[1], f_var, r"Predictive variance $\sigma_f^2(x)$", r"$\sigma_f^2(x)$"),
-    ]
-
-    for ax, Z, panel_title, cbar_label in panels:
-        cp = ax.contourf(X1, X2, Z, levels=40, cmap="viridis")
-        cbar = fig.colorbar(cp, ax=ax)
-        cbar.set_label(cbar_label)
-        cbar.locator = MaxNLocator(nbins=7)
-        cbar.update_ticks()
-
-        ax.scatter(al.X_train[:al.n_init, 0], al.X_train[:al.n_init, 1],
-                   c="white", edgecolor="black", s=38, linewidth=0.8,
-                   label="Initial DOE", zorder=5)
-        add_initial_enrichment_directions(ax, al.initial_derivative_history)
-        ax.set_xlabel(r"$x_1$")
-        ax.set_ylabel(r"$x_2$")
-        ax.set_title(panel_title)
-        ax.set_xlim(al.bounds[0])
-        ax.set_ylim(al.bounds[1])
-
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=4, frameon=False)
-    fig.suptitle("Post-enrichment GP mean and predictive variance")
-    fig.tight_layout()
-    fig.subplots_adjust(bottom=0.18)
-    fig.savefig(figure_dir / "post_enrichment_mean_variance.png",
-                dpi=220, bbox_inches="tight")
-    plt.close(fig)
-
-
 def save_iteration_figures(al, history, figure_dir, resolution=40):
     """Save three slide-ready GP mean/variance figures per iteration."""
     X1, X2, X_grid = make_grid(al.bounds, resolution)
@@ -351,9 +208,6 @@ def save_iteration_figures(al, history, figure_dir, resolution=40):
                 cbar.update_ticks()
 
                 add_design_points(ax, rec["pre_update_X_train"], al.n_init)
-                if getattr(al, "initial_derivative_history", None):
-                    add_initial_enrichment_history(
-                        ax, al.initial_derivative_history, grey=True)
                 if previous_history:
                     add_direction_history(ax, previous_history, grey=True)
                 if show_current_point:
@@ -440,9 +294,6 @@ def save_final_design_figure(al, history, figure_dir, true_func, resolution=200)
                    c="#ff4fa3", edgecolor="black", s=95, marker="*",
                    linewidth=0.8, label="Adaptive infill", zorder=6,
                    clip_on=False)
-        if getattr(al, "initial_derivative_history", None):
-            add_initial_enrichment_history(ax, al.initial_derivative_history,
-                                           grey=True)
         add_direction_history(ax, history)
         ax.set_xlabel(r"$x_1$")
         ax.set_ylabel(r"$x_2$")

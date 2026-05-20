@@ -16,6 +16,7 @@ def bare_runner():
     runner.params = np.array([1.0, 2.0])
     runner.test_set = None
     runner.verbose = True
+    runner.log_weight_fn = None
     return runner
 
 

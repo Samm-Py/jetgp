@@ -195,45 +195,67 @@ perturbs the observation set.
 Algorithm Summary
 -----------------
 
-The complete adaptive procedure has two phases: an initial enrichment of the
-LHS design with directional derivatives, and a budget-constrained
-sequential design loop.
+The adaptive procedure has two stages: an initial design-and-fit, then a
+single budget-constrained sequential loop with a unified candidate set.
+Unlike classical two-stage schemes that pick a function point first and
+*then* choose directions at that point, the cost-aware implementation
+rebuilds one mixed candidate set every iteration and picks the single best
+candidate across modalities and anchors.
 
 .. code-block:: text
 
-    Inputs:  initial DOE size n0; cost budget B; per-modality costs c_f, c_d;
-             max_directions cap m; tolerance rho_tol; input density p(x).
+    Inputs:  initial DOE size n0; cost budget B; iteration cap n_iter;
+             per-modality costs c_f, c_d, (c_d2 if 2nd-order is enabled);
+             max_directions cap m; tolerance rho_tol; input density p(x);
+             acquire_second_order flag.
     Output:  a directional-derivative-enhanced GP surrogate.
 
-    1. Sample initial DOE X_0 (LHS over the input bounds), evaluate f(X_0),
-       and fit a function-only GP by maximising the MLL.
+    1. Initialise.
+         a. Sample (or accept) an initial DOE X_0 of n0 points.
+         b. Evaluate f(X_0).
+         c. Fit the GP by maximising the marginal log-likelihood.
 
-    2. Initial derivative enrichment.
-       For each anchor x_i in X_0:
-         a. Form C_d(x_i) under the current GP.
-         b. Extract the top-k eigenpairs via Lanczos
-            (k = min(m, d) - q_i).
-         c. Compute prior-relative ratios rho_j.
-         d. Retain directions with rho_j > rho_tol.
-         e. Evaluate the retained directional derivatives and refit the GP.
+    2. Sequential design loop. Set cumulative_cost = 0. While
+       cumulative_cost < B and step < n_iter:
 
-    3. Sequential design (cost-budget loop).
-       While the budget is not exhausted:
-         a. Build the candidate set: one function candidate via wMPV, and
-            all admissible directional-derivative candidates at existing
-            anchors (Lanczos top-k, filtered by max_directions cap).
-         b. Score every candidate as s = rho * p(x) / c.
-         c. Discard candidates whose remaining cost would exceed the
-            remaining budget.
-         d. Pick the candidate with the largest score.
-         e. Evaluate the chosen observation, update the training data,
-            and refit the GP with warm-started hyperparameter optimisation.
-         f. Update cumulative cost; stop if the budget is reached.
+         a. Build the unified candidate set:
+              i.  One function candidate at x_new = argmax of the wMPV
+                  log-objective over the input bounds.
+              ii. For each existing anchor x_i:
+                  - extract the top-k eigenpairs of C_d(x_i) via Lanczos,
+                    where k = min(m, d) - q_i and q_i is the number of
+                    directional observations already taken at x_i,
+                  - keep eigenvector v_j iff rho_j > rho_tol,
+                  - emit a 1st-order derivative candidate (kind=d, order=1,
+                    cost=c_d) for each surviving (x_i, v_j),
+                  - if acquire_second_order is enabled, also emit a 2nd-order
+                    derivative candidate (kind=d, order=2, cost=c_d2) for
+                    each surviving (x_i, v_j) whose 2nd-order rho clears the
+                    tolerance.
 
-The loop also terminates early if no admissible candidate clears
-:math:`\rho_{\mathrm{tol}}`. The number of new directional derivatives at any
-anchor is capped by ``max_directions``, which prevents pathological stacking
-of derivative observations at a single point.
+         b. Score every candidate as s = rho * p(x_eval) / c, where x_eval
+            is x_new for function candidates and x_i for derivative
+            candidates.
+
+         c. Drop candidates whose cost would exceed the remaining budget
+            (B - cumulative_cost).
+
+         d. If no candidate survives, exit the loop (no admissible
+            candidate above rho_tol).
+
+         e. Pick the candidate with the largest score; evaluate it; update
+            the training data; refit the GP (warm-started from the
+            previous hyperparameters); update cumulative_cost.
+
+The loop terminates on the earliest of three conditions: (i) the iteration
+cap ``n_iter`` is reached, (ii) the cost budget is exhausted, or
+(iii) no affordable candidate clears the tolerance. The ``max_directions``
+cap ``m`` is enforced at Lanczos extraction time — only ``m - q_i``
+additional directions are even *considered* at an anchor that already has
+``q_i`` directional observations — which prevents pathological stacking of
+derivative observations at a single point. When a function candidate is
+chosen mid-loop, the new training point immediately becomes a valid anchor
+for derivative candidates on subsequent iterations.
 
 ---
 

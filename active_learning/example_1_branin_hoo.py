@@ -17,8 +17,6 @@ from plotting_utils.example_1_plotting_utils import (
     save_eigen_spectrum_figures,
     save_final_design_figure,
     save_initial_doe_figure,
-    save_initial_enrichment_figure,
-    save_post_enrichment_figure,
     save_iteration_figures,
 )
 
@@ -81,16 +79,12 @@ if __name__ == "__main__":
         kernel_type="anisotropic",
         seed=42,
     )
-    al.enable_initial_derivative_enrichment(True)
-
     history = al.run()
     print_summary(history)
 
     figure_dir = Path("example_1_figures")
     figure_dir.mkdir(parents=True, exist_ok=True)
     save_initial_doe_figure(al, figure_dir)
-    save_initial_enrichment_figure(al, figure_dir)
-    save_post_enrichment_figure(al, figure_dir)
     save_iteration_figures(al, history, figure_dir)
     save_eigen_spectrum_figures(history, al.rel_tol, figure_dir)
     save_final_design_figure(al, history, figure_dir, true_func=branin)

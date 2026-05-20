@@ -46,7 +46,6 @@ from lanczos_selection import (
     select_eigenpairs as select_eigenpairs_iterative,
 )
 import posterior_queries
-import selection
 
 
 # ---------------------------------------------------------------------------
@@ -153,9 +152,6 @@ class AdaptiveDirectionalGP:
         self.history = []
         self.initial_function_gp_model = None
         self.initial_function_params = None
-        self.post_enrichment_gp_model = None
-        self.post_enrichment_params = None
-        self.initial_derivative_history = []
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -234,86 +230,10 @@ class AdaptiveDirectionalGP:
         self._refit()
         self.initial_function_gp_model = self.gp_model
         self.initial_function_params = self.params.copy()
-        self.post_enrichment_gp_model = self.gp_model
-        self.post_enrichment_params = self.params.copy()
 
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
-
-    def enable_initial_derivative_enrichment(self, enabled=True):
-        """Toggle derivative acquisition on the initial DOE sites."""
-        self.enrich_initial_doe = bool(enabled)
-
-    def _initial_derivative_enrichment(self):
-        """
-        Acquire directional derivatives at the existing initial DOE sites.
-
-        Points are processed sequentially. At each DOE site:
-          Stage 4a: first-order directions selected, evaluated, model refit.
-          Stage 4b: (if acquire_second_order) Hessian covariance checked under
-                    updated posterior; second-order derivatives acquired if
-                    informative, model refit again before next DOE point.
-        """
-        self._log("\n" + "=" * 60)
-        self._log("Stage 1.5 - Initial directional enrichment")
-        if self.acquire_second_order:
-            self._log("         (first- and second-order)")
-        self._log("=" * 60)
-
-        (self.directional_observations,
-         self.second_order_observations,
-         selection_records) = selection.sequential_initial_derivative_enrichment(
-            self.gp_model,
-            self.params,
-            self.X_train,
-            self.y_train,
-            self.grad_func,
-            rel_tol=self.rel_tol,
-            kernel=self.kernel,
-            kernel_type=self.kernel_type,
-            lambda_abs_tol=self.lambda_abs_tol,
-            hess_func=self.hess_func,
-            acquire_second_order=self.acquire_second_order,
-            c1=self.c1, c2=self.c2,
-            max_directions=self.max_directions,
-            iterative=self.iterative,
-            optimizer_kwargs=self.optimizer_kwargs,
-            as_basis_provider=self.as_basis_provider,
-        )
-
-        total_first = len(self.directional_observations)
-        total_second = len(self.second_order_observations)
-        for record in selection_records:
-            rho = np.round(record["rho"], 4)
-            n_sel1 = len(record["selected_directions"])
-            n_sel2 = len(record["second_order_selected_directions"])
-            k_active = record.get("k_active", 0)
-            self._log(
-                f"  x_{record['x_index']:03d} = "
-                f"{np.round(record['x_point'], 4)}")
-            self._log(f"    1st: rho = {rho}  "
-                      f"(rel_tol={self.rel_tol}, k_active={k_active})  "
-                      f"->  {n_sel1} dir(s)")
-            for k, v in enumerate(record["selected_directions"]):
-                self._log(f"          v{k+1} = {np.round(v, 4)}")
-            if n_sel2 > 0:
-                vars2 = np.round(record["second_order_selected_variances"], 5)
-                self._log(f"    2nd: Var[d²f/dv²] = {vars2}  "
-                          f"(tol={self.lambda_abs_tol:g})  ->  "
-                          f"{n_sel2} dir(s)")
-
-        self._log(f"  Added {total_first} first-order, {total_second} "
-                  f"second-order observations across "
-                  f"{self.X_train.shape[0]} initial DOE point(s)")
-
-        if total_first > 0 or total_second > 0:
-            self._refit()
-            self._log(f"  params = {self.params}")
-
-        self.post_enrichment_gp_model = self.gp_model
-        self.post_enrichment_params = self.params.copy()
-        self.initial_derivative_history = selection_records
 
     def run(self):
         """
