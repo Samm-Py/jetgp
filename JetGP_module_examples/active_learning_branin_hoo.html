@@ -1,0 +1,773 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Cost-Aware Active Learning on the 2D Branin-Hoo Function &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/thebelab-helper.js"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/active_learning_branin_hoo';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Directional Derivative-Enhanced Gaussian Process (DDEGP)" href="ddegp_getting_started.html" />
+    <link rel="prev" title="1D DEGP Kernel Comparison" href="degp_kernel_comparison.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/otilib_setup.html">otilib Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">JetGP Module Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_kernel_comparison.html">1D DEGP Kernel Comparison</a></li>
+
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Cost-Aware Active Learning on the 2D Branin-Hoo Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/JetGP_module_examples/active_learning_branin_hoo.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/JetGP_module_examples/active_learning_branin_hoo.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Cost-Aware Active Learning on the 2D Branin-Hoo Function</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-define-the-branin-hoo-function">Step 1: Define the Branin-Hoo Function</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-configure-the-active-learning-run">Step 2: Configure the Active-Learning Run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-inspect-the-sequential-design">Step 3: Inspect the Sequential Design</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-inspect-the-final-surrogate">Step 4: Inspect the Final Surrogate</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducing-the-figures">Reproducing the Figures</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cost-aware-active-learning-on-the-2d-branin-hoo-function">
+<h1>Cost-Aware Active Learning on the 2D Branin-Hoo Function<a class="headerlink" href="#cost-aware-active-learning-on-the-2d-branin-hoo-function" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>This tutorial demonstrates a cost-aware sequential design workflow on the
+2D Branin-Hoo function. The surrogate starts from an initial Latin hypercube
+design of 10 function evaluations. At each active-learning step, the algorithm
+chooses the next observation from one shared candidate set:</p>
+<ul class="simple">
+<li><p>a new function evaluation,</p></li>
+<li><p>a first-order directional derivative at an existing function site, or</p></li>
+<li><p>a second-order directional derivative at an existing function site.</p></li>
+</ul>
+<p>The candidate score is a prior-relative uncertainty reduction per unit cost.
+This lets inexpensive derivative observations compete directly with more
+expensive function evaluations.</p>
+<p>In this example, the model is allowed to acquire both first- and second-order
+directional derivatives. The figures below show how the design evolves over a
+few sequential steps and what the final surrogate looks like.</p>
+<p>—</p>
+</section>
+<section id="step-1-define-the-branin-hoo-function">
+<h2>Step 1: Define the Branin-Hoo Function<a class="headerlink" href="#step-1-define-the-branin-hoo-function" title="Link to this heading">#</a></h2>
+<p>The Branin-Hoo function is a standard 2D test function on
+<span class="math notranslate nohighlight">\(x_1 \in [-5, 10]\)</span> and <span class="math notranslate nohighlight">\(x_2 \in [0, 15]\)</span>:</p>
+<div class="math notranslate nohighlight">
+\[f(x_1, x_2) =
+\left(x_2 - \frac{5.1}{4\pi^2}x_1^2 + \frac{5}{\pi}x_1 - 6\right)^2
++ 10\left(1 - \frac{1}{8\pi}\right)\cos(x_1) + 10.\]</div>
+<p>For derivative-enhanced active learning, we provide the analytical gradient
+and Hessian. The gradient supplies first-order directional derivatives,
+and the Hessian supplies pure second directional derivatives
+<span class="math notranslate nohighlight">\(v^T H(x) v\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">B</span> <span class="o">=</span> <span class="mf">5.1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="mf">5.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mf">6.0</span>
+<span class="n">S</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">T</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">8.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+
+<span class="n">BOUNDS</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">15.0</span><span class="p">]])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">branin</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">B</span> <span class="o">*</span> <span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">R</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">A</span> <span class="o">*</span> <span class="n">term</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">S</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span> <span class="o">+</span> <span class="n">S</span>
+    <span class="k">return</span> <span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">branin_grad</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">B</span> <span class="o">*</span> <span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">R</span>
+    <span class="n">df_dx1</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">term</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">C</span><span class="p">)</span> <span class="o">-</span> <span class="n">S</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
+    <span class="n">df_dx2</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">term</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">df_dx1</span><span class="p">,</span> <span class="n">df_dx2</span><span class="p">])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">branin_hess</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">term</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">B</span> <span class="o">*</span> <span class="n">x1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">C</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">R</span>
+    <span class="n">dterm_dx1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">+</span> <span class="n">C</span>
+    <span class="n">d2term_dx1</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">B</span>
+    <span class="n">h11</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="n">dterm_dx1</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">term</span> <span class="o">*</span> <span class="n">d2term_dx1</span><span class="p">)</span> <span class="o">-</span> <span class="n">S</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">T</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x1</span><span class="p">)</span>
+    <span class="n">h12</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span> <span class="o">*</span> <span class="n">dterm_dx1</span>
+    <span class="n">h22</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">A</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">h11</span><span class="p">,</span> <span class="n">h12</span><span class="p">],</span> <span class="p">[</span><span class="n">h12</span><span class="p">,</span> <span class="n">h22</span><span class="p">]])</span>
+</pre></div>
+</div>
+<p>—</p>
+</section>
+<section id="step-2-configure-the-active-learning-run">
+<h2>Step 2: Configure the Active-Learning Run<a class="headerlink" href="#step-2-configure-the-active-learning-run" title="Link to this heading">#</a></h2>
+<p>The active-learning driver is <code class="docutils literal notranslate"><span class="pre">AdaptiveDirectionalGP</span></code>. Here we start
+with 10 initial function observations and run 6 active-learning steps.</p>
+<p>The cost model in this tutorial is:</p>
+<ul class="simple">
+<li><p>function value: <code class="docutils literal notranslate"><span class="pre">c_f</span> <span class="pre">=</span> <span class="pre">1.0</span></code></p></li>
+<li><p>first directional derivative: <code class="docutils literal notranslate"><span class="pre">c1</span> <span class="pre">=</span> <span class="pre">0.25</span></code></p></li>
+<li><p>second directional derivative: <code class="docutils literal notranslate"><span class="pre">c2</span> <span class="pre">=</span> <span class="pre">0.35</span></code></p></li>
+</ul>
+<p>This intentionally makes derivative observations cheaper than function
+evaluations, while still allowing the acquisition function to pick a new
+function value when its uncertainty-per-cost score is better.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">adaptive_doe</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptiveDirectionalGP</span>
+
+<span class="n">al</span> <span class="o">=</span> <span class="n">AdaptiveDirectionalGP</span><span class="p">(</span>
+    <span class="n">func</span><span class="o">=</span><span class="n">branin</span><span class="p">,</span>
+    <span class="n">grad_func</span><span class="o">=</span><span class="n">branin_grad</span><span class="p">,</span>
+    <span class="n">hess_func</span><span class="o">=</span><span class="n">branin_hess</span><span class="p">,</span>
+    <span class="n">acquire_second_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">bounds</span><span class="o">=</span><span class="n">BOUNDS</span><span class="p">,</span>
+    <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">rel_tol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">11</span><span class="p">,</span>
+    <span class="n">c_f</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">c1</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span>
+    <span class="n">c2</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span>
+    <span class="n">max_directions</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">optimizer_kwargs</span><span class="o">=</span><span class="p">{</span>
+        <span class="s2">&quot;pop_size&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+        <span class="s2">&quot;n_generations&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="s2">&quot;local_opt_every&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+        <span class="s2">&quot;debug&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">},</span>
+<span class="p">)</span>
+
+<span class="n">history</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If this code is run outside the <code class="docutils literal notranslate"><span class="pre">active_learning</span></code> directory, add that
+directory to <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> first. The figure-generation script at the end of
+this tutorial does that path setup automatically.</p>
+<p><strong>Explanation:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">acquire_second_order=True</span></code> allows second-order directional derivatives
+to enter the candidate set.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">max_directions=2</span></code> allows up to two derivative directions per function site.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rel_tol=0.01</span></code> discards candidates whose prior-relative uncertainty is too
+small to be useful.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">history</span></code> records the selected candidate type, score, cumulative cost, and
+training-set counts after each step.</p></li>
+</ul>
+<p>—</p>
+</section>
+<section id="step-3-inspect-the-sequential-design">
+<h2>Step 3: Inspect the Sequential Design<a class="headerlink" href="#step-3-inspect-the-sequential-design" title="Link to this heading">#</a></h2>
+<p>The following figure shows the design after a few active-learning steps.
+White circles are function-evaluation sites. Red arrows show acquired
+first-order directional derivatives. Cyan square markers/arrows indicate
+locations and directions where second-order directional information was also
+selected.</p>
+<a class="reference internal image-reference" href="../_images/active_learning_branin_sequence.png"><img alt="Sequential cost-aware active-learning design for the Branin-Hoo function" src="../_images/active_learning_branin_sequence.png" style="width: 100%;" />
+</a>
+<p>In this run, the algorithm starts by spending budget on derivative information
+at existing sites. This is typical when gradients are relatively cheap: a
+directional derivative can sharply reduce local uncertainty without paying for
+a new function solve. When the function-evaluation candidate becomes more
+valuable per unit cost, it can still be selected by the same scoring rule.</p>
+<p>—</p>
+</section>
+<section id="step-4-inspect-the-final-surrogate">
+<h2>Step 4: Inspect the Final Surrogate<a class="headerlink" href="#step-4-inspect-the-final-surrogate" title="Link to this heading">#</a></h2>
+<p>After the active-learning loop, query the GP posterior on a grid:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">posterior_queries</span><span class="w"> </span><span class="kn">import</span> <span class="n">query_function_posterior_batched</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">make_grid</span><span class="p">(</span><span class="n">n_per_axis</span><span class="p">):</span>
+    <span class="n">x1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">BOUNDS</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">BOUNDS</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">n_per_axis</span><span class="p">)</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">BOUNDS</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">BOUNDS</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">n_per_axis</span><span class="p">)</span>
+    <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">X1</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="n">X2</span><span class="o">.</span><span class="n">ravel</span><span class="p">()])</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span>
+
+<span class="n">X_grid</span><span class="p">,</span> <span class="n">X1</span><span class="p">,</span> <span class="n">X2</span> <span class="o">=</span> <span class="n">make_grid</span><span class="p">(</span><span class="mi">75</span><span class="p">)</span>
+<span class="n">mean</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">query_function_posterior_batched</span><span class="p">(</span>
+    <span class="n">al</span><span class="o">.</span><span class="n">gp_model</span><span class="p">,</span> <span class="n">al</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">X_grid</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The final surrogate can then be compared against the true Branin-Hoo function.
+The posterior variance panel highlights where the model remains least certain
+after the sequential design.</p>
+<a class="reference internal image-reference" href="../_images/active_learning_branin_surrogate.png"><img alt="Final Branin-Hoo surrogate mean and posterior variance" src="../_images/active_learning_branin_surrogate.png" style="width: 100%;" />
+</a>
+<p>For the figure-generation run used in this tutorial, the final design contains:</p>
+<ul class="simple">
+<li><p>10 function-evaluation sites,</p></li>
+<li><p>6 first-order directional derivative observations,</p></li>
+<li><p>2 second-order directional derivative observations.</p></li>
+</ul>
+<p>The final grid RMSE recorded on a 25 by 25 test grid was approximately
+<code class="docutils literal notranslate"><span class="pre">25.89</span></code>. The exact value can vary slightly with optimizer settings and
+random seed.</p>
+<p>—</p>
+</section>
+<section id="reproducing-the-figures">
+<h2>Reproducing the Figures<a class="headerlink" href="#reproducing-the-figures" title="Link to this heading">#</a></h2>
+<p>The figures on this page are generated by:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>docs/source/JetGP_module_examples/active_learning_branin_hoo.py
+</pre></div>
+</div>
+<p>The script writes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">docs/source/_static/active_learning_branin_sequence.png</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">docs/source/_static/active_learning_branin_surrogate.png</span></code></p></li>
+</ul>
+</section>
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>This tutorial shows how cost-aware active learning can combine function values,
+first-order directional derivatives, and second-order directional derivatives
+inside a single sequential design loop. On the Branin-Hoo function, the method
+uses cheap derivative observations to enrich an initial 10-point design before
+forming the final GDDEGP surrogate.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="degp_kernel_comparison.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">1D DEGP Kernel Comparison</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="ddegp_getting_started.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Directional Derivative-Enhanced Gaussian Process (DDEGP)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-define-the-branin-hoo-function">Step 1: Define the Branin-Hoo Function</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-configure-the-active-learning-run">Step 2: Configure the Active-Learning Run</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-3-inspect-the-sequential-design">Step 3: Inspect the Sequential Design</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-4-inspect-the-final-surrogate">Step 4: Inspect the Final Surrogate</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducing-the-figures">Reproducing the Figures</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

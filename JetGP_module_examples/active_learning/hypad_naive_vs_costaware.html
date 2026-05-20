@@ -1,0 +1,726 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning &#8212; JetGP 0.0.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../_static/jupyter-sphinx.css?v=572af1d6" />
+    <link rel="stylesheet" type="text/css" href="../../_static/thebelab.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../_static/documentation_options.js?v=e645c8fa"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/thebelab-helper.js"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="../../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'JetGP_module_examples/active_learning/hypad_naive_vs_costaware';</script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Numerical Examples" href="../../numerical_examples/index.html" />
+    <link rel="prev" title="HYPAD-UQ Learning Curves Under Three Differentiation-Cost Regimes" href="hypad_learning_curves.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/JetGP_logo.png" class="logo__image only-light" alt=""/>
+    <script>document.write(`<img src="../../_static/JetGP_logo.png" class="logo__image only-dark" alt=""/>`);</script>
+  
+  
+    <p class="title logo__title">0.0.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    JetGP
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../theory/index.html">Theory Manual</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gaussian_processes.html">Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_enhanced_gaussian_processes.html">Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/derivative_screening.html">Derivative Screening</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/weighted_gp.html">Weighted Gradient Enchanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/directional_degp.html">Directional Derivative-Enhanced Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/active_learning.html">Cost-Aware Active Learning with Directional Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/mogp.html">Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/gemogp.html">Gradient Enhanced Multi-output Gaussian Processes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../theory/observation_noise.html">Note on Observation Noise</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_degp.html">Full DEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_degp.html">Weighted DEGP (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_ddegp.html">Full DDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/full_gddegp.html">Full GDDEGP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/weighted_ddegp.html">Weighted DDEGP (WDDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/hyperparameter_optimizers.html">Hyperparameter Optimizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/utilities_and_helpers.html">Utilities and Helpers</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../getting_started/index.html">Getting Started with JetGP</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/module_overview.html">JetGP Modules Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/otilib_setup.html">otilib Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/Initializing_JetGP_Modules.html">Initializing JetGP Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/hyperparameter_optimization.html">Hyperparameter Optimization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../getting_started/making_predictions.html">Making Predictions</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">JetGP Module Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../degp_getting_started.html">Derivative-Enhanced Gaussian Process (DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../degp_kernel_comparison.html">1D DEGP Kernel Comparison</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../ddegp_getting_started.html">Directional Derivative-Enhanced Gaussian Process (DDEGP)</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../gddegp_getting_started.html">Generalized Directional Derivative-Enhanced Gaussian Process (GDDEGP)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="../wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="index.html">Active Learning Examples</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="active_learning_branin_hoo.html">Cost-Aware Active Learning on the 2D Branin-Hoo Function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="active_learning_cost_comparison.html">Budgeted Cost-Aware Policy Comparison</a></li>
+<li class="toctree-l3"><a class="reference internal" href="hypad_learning_curves.html">HYPAD-UQ Learning Curves Under Three Differentiation-Cost Regimes</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../numerical_examples/index.html">Numerical Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../numerical_examples/DEGP_index/index.html">DEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/DEGP_index/DEGP.html">1D Arbitrary Order Derivative-Enhanced Gaussian Process Numerical Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/DEGP_index/DEGP_4d_sparse.html">High-Dimensional DEGP Tutorial: 4D Function Approximation with 2D Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/DEGP_index/DEGP_chain.html">Cycling Spatial Derivative Strategy for DEGP</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../numerical_examples/WDEGP_index/index.html">WDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/WDEGP_index/DEGP_2d_sparse_hybrid.html">Sparse Derivative-Enhanced GP Tutorial: 2D Example</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/WDEGP_index/4d_WDEGP_sparse_ders.html">4D Derivative-Enhanced GP with KMeans Submodel Clustering</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../numerical_examples/DDEGP_index/index.html">DDEGP Examples</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/DDEGP_index/DDEGP_3d.html">DEGP Tutorial: 3D Function Approximation with 2D Slice Visualization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../numerical_examples/DDEGP_index/GDDEGP_3d.html">3D Example: GDDEGP on Hartmann3 Function with Multiple Directional Derivatives</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../help_and_reference/index.html">Help &amp; Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../help_and_reference/changelog.html">Changelog</a></li>
+</ul>
+</details></li>
+</ul>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../coverage/coverage.html">Coverage Report</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/Samm-Py/jetgp/blob/dev/docs/source/JetGP_module_examples/active_learning/hypad_naive_vs_costaware.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/JetGP_module_examples/active_learning/hypad_naive_vs_costaware.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cost-accounting">Cost Accounting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#methods">Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#result">Result</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-the-gap-is-so-large">Why the gap is so large</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#takeaways">Takeaways</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducing-the-figure">Reproducing the Figure</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="naive-gradient-enhanced-baseline-vs-cost-aware-active-learning">
+<h1>Naive Gradient-Enhanced Baseline vs. Cost-Aware Active Learning<a class="headerlink" href="#naive-gradient-enhanced-baseline-vs-cost-aware-active-learning" title="Link to this heading">#</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
+<p>The <a class="reference internal" href="hypad_learning_curves.html"><span class="doc">HYPAD-UQ Learning Curves Under Three Differentiation-Cost Regimes</span></a> example shows that the cost-aware policy
+outperforms function-only and derivative-only baselines in the AD regime
+(automatic differentiation, <span class="math notranslate nohighlight">\(c_d = 0.5\,c_f\)</span>). A natural follow-up
+question is: <em>if automatic differentiation makes derivatives cheap, why not
+just take the</em> full <em>gradient at every initial-design point and skip the
+adaptive loop altogether?</em></p>
+<p>This example tests that idea. The “naive” baseline is the textbook
+gradient-enhanced GP: pick <span class="math notranslate nohighlight">\(n\)</span> Latin-hypercube points, evaluate the
+function <em>and</em> the full <span class="math notranslate nohighlight">\(d\)</span>-dimensional gradient at each, fit the GP
+once, and report test RMSE. No active learning, no iteration. The cost-aware
+policy is run head-to-head with the same starting design size and the same
+total budget.</p>
+<p>—</p>
+</section>
+<section id="cost-accounting">
+<h2>Cost Accounting<a class="headerlink" href="#cost-accounting" title="Link to this heading">#</a></h2>
+<p>For the HYPAD-UQ Case 1 fin in 7 dimensions, the AD regime uses
+<span class="math notranslate nohighlight">\(c_f = 1\)</span> and <span class="math notranslate nohighlight">\(c_d = 0.5\)</span>. A single LHS point with a full
+gradient therefore costs</p>
+<div class="math notranslate nohighlight">
+\[c_f + d\,c_d \;=\; 1 + 7 \times 0.5 \;=\; 4.5 \text{ cost units},\]</div>
+<p>so <span class="math notranslate nohighlight">\(n\)</span> naive LHS points exhaust a budget <span class="math notranslate nohighlight">\(B = 4.5\,n\)</span>. To match,
+the cost-aware policy is run with the same starting LHS design (size
+<span class="math notranslate nohighlight">\(n_{\text{init}}\)</span>) and a sequential-design budget of <span class="math notranslate nohighlight">\(B\)</span>, so the
+two methods spend the same total resource.</p>
+<p>For this comparison we choose <span class="math notranslate nohighlight">\(n = 2\)</span>, so <span class="math notranslate nohighlight">\(B = 9\)</span> cost units —
+small enough that the naive method’s full-gradient bias is exposed but large
+enough that the cost-aware policy can take a meaningful number of
+observations.</p>
+<p>—</p>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Link to this heading">#</a></h2>
+<p><strong>Naive (fresh LHS + full gradient).</strong>
+Draw 2 Latin-hypercube points <span class="math notranslate nohighlight">\(\mathbf{x}_1,\mathbf{x}_2\)</span>. At each
+point, evaluate the function value and all 7 partial derivatives — i.e. the
+full gradient as 7 directional observations along the standard basis. Fit a
+directional-derivative GP on the resulting (2 function + 14 directional)
+training set. No further observations are taken.</p>
+<p><strong>Cost-aware active learning.</strong>
+Same 2-point initial design. The sequential design loop then spends up to
+<span class="math notranslate nohighlight">\(B = 9\)</span> cost units of additional observations, choosing each one by
+maximising the unified score
+<span class="math notranslate nohighlight">\(s = \rho(\mathbf{x})\,p(\mathbf{x})/c\)</span> over the joint set of
+candidate function evaluations and directional derivatives (see
+<a class="reference internal" href="../../theory/active_learning.html"><span class="doc">Cost-Aware Active Learning with Directional Derivatives</span></a>).</p>
+<p>Both methods are evaluated on the same 400-point validation set sampled from
+the Case 1 input distribution. Ten random seeds are used.</p>
+<p>—</p>
+</section>
+<section id="result">
+<h2>Result<a class="headerlink" href="#result" title="Link to this heading">#</a></h2>
+<a class="reference internal image-reference" href="../../_images/hypad_naive_vs_costaware.png"><img alt="Naive vs. cost-aware comparison on HYPAD-UQ Case 1, AD regime" src="../../_images/hypad_naive_vs_costaware.png" style="width: 95%;" />
+</a>
+<div class="pst-scrollable-table-container"><table class="table" id="id1">
+<caption><span class="caption-text">Final RMSE under matched total budget (10 seeds, AD regime)</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Median RMSE</p></th>
+<th class="head"><p>IQR</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Naive (n=2 LHS + full ∇f)</p></td>
+<td><p>2.30e-1</p></td>
+<td><p>[1.79e-1, 3.04e-1]</p></td>
+</tr>
+<tr class="row-odd"><td><p>CostAware (n_init=2, B=9)</p></td>
+<td><p>1.98e-3</p></td>
+<td><p>[8.00e-4, 2.45e-3]</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The cost-aware policy is <strong>roughly 116× more accurate</strong> on the median, under
+the same total cost and the same initial-design size.</p>
+<p>—</p>
+</section>
+<section id="why-the-gap-is-so-large">
+<h2>Why the gap is so large<a class="headerlink" href="#why-the-gap-is-so-large" title="Link to this heading">#</a></h2>
+<p>The naive method has only <strong>2 spatial points</strong> in a <strong>7-dimensional space</strong>.
+Even with the full gradient at both points (16 total observations: 2
+function values and 14 partial derivatives), the GP has almost no
+information about the response surface away from those two anchors. Densely
+gradient-enhancing two points cannot substitute for spatial spread when the
+input space is high-dimensional.</p>
+<p>The cost-aware policy uses its budget very differently. Inspection of the
+selected observation sequences shows that nearly every cost-aware run takes
+<strong>two to three function evaluations</strong> to create new anchor points,
+interspersed with <strong>ten to thirteen directional derivatives</strong> at the
+expanded anchor set. Representative sequences from individual seeds:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>seed 5000: dddddfdddfdfddd       (12 d + 3 f)
+seed 5001: dddddfdddddfdddd      (13 d + 3 f)
+seed 5007: dddddfdddddddddf      (14 d + 2 f)
+seed 5008: dddddfdddddddddf      (14 d + 2 f)
+</pre></div>
+</div>
+<p>The cost-aware policy in effect <em>discovers</em> that adding even one or two new
+anchors is far more valuable than continuing to take directional derivatives
+at the same two starting points. This is precisely the “structural
+bottleneck” the cost-aware framework was designed to navigate: once an
+anchor’s local gradient covariance has been informed by a few derivatives,
+the marginal information return on more derivatives there drops, and the
+score for a <em>new</em> function-anchor candidate overtakes the score for <em>more</em>
+derivatives at the existing anchors.</p>
+<p>—</p>
+</section>
+<section id="takeaways">
+<h2>Takeaways<a class="headerlink" href="#takeaways" title="Link to this heading">#</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Dense gradient information at a single point does not substitute for
+spatial coverage.</strong> Naive gradient-enhanced GPs work well in low
+dimensions but degrade quickly as <span class="math notranslate nohighlight">\(d\)</span> grows because the anchor
+count needed for adequate coverage grows accordingly.</p></li>
+<li><p><strong>Cost-aware active learning automatically navigates the
+spread-vs.-density tradeoff</strong> under any cost model. In the AD regime it
+spends most of its budget on cheap derivatives but reserves a few
+expensive function evaluations to expand the anchor set when the
+marginal information from more derivatives at existing anchors becomes
+small.</p></li>
+<li><p><strong>The cost-aware policy is robust to small starting designs.</strong> Even with
+only two initial LHS points, it recovers a 100×-better surrogate than
+the textbook gradient-enhanced approach with the same total cost.</p></li>
+</ol>
+<p>—</p>
+</section>
+<section id="reproducing-the-figure">
+<h2>Reproducing the Figure<a class="headerlink" href="#reproducing-the-figure" title="Link to this heading">#</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>active_learning/hypad_naive_vs_costaware.py<span class="w"> </span>--ns<span class="w"> </span><span class="m">2</span><span class="w"> </span>--n-seeds<span class="w"> </span><span class="m">10</span>
+python<span class="w"> </span>active_learning/plot_hypad_naive_vs_costaware.py
+</pre></div>
+</div>
+<p>Outputs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">active_learning/data/hypad_naive_vs_costaware.json</span></code> — per-seed RMSE for
+both methods.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">docs/source/_static/hypad_naive_vs_costaware.png</span></code> — headline figure.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="hypad_learning_curves.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">HYPAD-UQ Learning Curves Under Three Differentiation-Cost Regimes</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../numerical_examples/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Numerical Examples</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cost-accounting">Cost Accounting</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#methods">Methods</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#result">Result</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#why-the-gap-is-so-large">Why the gap is so large</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#takeaways">Takeaways</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproducing-the-figure">Reproducing the Figure</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Samuel Roberts
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Samuel Roberts.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

@@ -219,6 +219,9 @@
 
 <li class="toctree-l2"><a class="reference internal" href="wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -692,7 +695,7 @@ derivative_locations: [[0, 1, 2]]
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimized hyperparameters: [-0.79586486  0.75094428 -8.16923897]
+Optimized hyperparameters: [-0.79537443  0.7510649  -8.16923897]
 </pre></div>
 </div>
 </div>
@@ -721,8 +724,8 @@ Hyperparameters of the kernel (length scale, variance, noise, etc.) are optimize
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [7.65731922e-12 6.47271126e-12 8.43836112e-12]
-Absolute error (derivative) at training points: [1.26565425e-14 3.25850458e-13 4.36872760e-13]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [7.61446461e-13 4.57633931e-12 9.74176295e-12]
+Absolute error (derivative) at training points: [7.55173701e-13 9.01723141e-13 2.44237963e-12]
 </pre></div>
 </div>
 </div>
@@ -915,11 +918,12 @@ Best after iteration 10: [-0.81607734  0.7460245  -7.69656239] -43.0715872700297
 New best for swarm at iteration 11: [-0.80531935  0.75522924 -7.72478244] -43.26614776936601
 Best after iteration 11: [-0.80531935  0.75522924 -7.72478244] -43.26614776936601
 Best after iteration 12: [-0.80531935  0.75522924 -7.72478244] -43.26614776936601
-New best for swarm at iteration 13: [-0.79362909  0.73641304 -7.55431982] -43.4944505453347
 New best for swarm at iteration 13: [-0.79154023  0.7365577  -7.79007198] -43.65821673281952
 Best after iteration 13: [-0.79154023  0.7365577  -7.79007198] -43.65821673281952
 Best after iteration 14: [-0.79154023  0.7365577  -7.79007198] -43.65821673281952
-Local optimization did not improve:
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local optimization did not improve:
 Best after iteration 15: [-0.79154023  0.7365577  -7.79007198] -43.65821673281952
 Stopping: maximum iterations reached --&gt; 15
 Optimized hyperparameters: [-0.79154023  0.7365577  -7.79007198]
@@ -1159,7 +1163,7 @@ Here, (<code class="docutils literal notranslate"><span class="pre">n_bases=2</s
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimized hyperparameters: [ -0.67299461  -0.73795566   0.68550916 -11.73930474]
+Optimized hyperparameters: [ -0.6730514   -0.73774335   0.68510178 -11.73930474]
 </pre></div>
 </div>
 </div>
@@ -1187,13 +1191,13 @@ Hyperparameter optimization for 2D problems may take longer due to increased dim
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions at training points (function): [1.19472376e-10 4.79425539e-01 8.41470985e-01 2.59452682e-10
- 4.20735493e-01 7.38460263e-01 2.08452089e-10 2.59034724e-01
- 4.54648714e-01]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Predictions at training points (function): [-1.81648085e-10  4.79425538e-01  8.41470985e-01 -1.55333968e-10
+  4.20735492e-01  7.38460262e-01 -4.98061592e-11  2.59034724e-01
+  4.54648713e-01]
 Predictions at training points (deriv x): [1.         0.87758256 0.54030231 0.87758256 0.77015115 0.47415988
  0.54030231 0.47415988 0.29192658]
-Predictions at training points (deriv y): [ 3.92053119e-11  1.46189298e-11  2.39218852e-11 -6.64496811e-13
- -2.29848847e-01 -4.03422680e-01 -1.06319490e-11 -4.03422680e-01
+Predictions at training points (deriv y): [-3.75440698e-11 -2.05994011e-11 -1.92704075e-11  0.00000000e+00
+ -2.29848847e-01 -4.03422680e-01  1.02997006e-11 -4.03422680e-01
  -7.08073418e-01]
 </pre></div>
 </div>
@@ -1218,15 +1222,15 @@ Predictions are split into function values and derivatives for each dimension.</
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [1.19472376e-10 3.43725548e-10 1.26905264e-10 2.59452682e-10
- 3.20137861e-10 1.06238573e-10 2.08452089e-10 2.80223955e-10
- 1.44115719e-10]
-Absolute error (deriv x) at training points: [2.85447221e-11 3.88011845e-11 2.10897966e-12 9.87321336e-12
- 1.11699539e-11 6.02018435e-11 1.83891791e-11 4.69119188e-11
- 2.72353251e-11]
-Absolute error (deriv y) at training points: [3.92053119e-11 1.46189298e-11 2.39218852e-11 6.64496811e-13
- 5.65927860e-12 6.34214903e-12 1.06319490e-11 6.93944902e-13
- 1.29382061e-11]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at training points: [1.81648085e-10 1.34269262e-10 1.29725342e-10 1.55333968e-10
+ 2.95124480e-10 1.09971365e-10 4.98061592e-11 1.06604947e-10
+ 9.97113503e-12]
+Absolute error (deriv x) at training points: [6.78246348e-12 4.86631846e-11 3.97543110e-11 2.78976842e-11
+ 4.04908329e-11 3.88912236e-11 1.35067513e-11 3.23293059e-11
+ 4.71883088e-11]
+Absolute error (deriv y) at training points: [3.75440698e-11 2.05994011e-11 1.92704075e-11 0.00000000e+00
+ 9.85711512e-13 1.63096203e-11 1.02997006e-11 2.18989826e-11
+ 1.89186444e-11]
 </pre></div>
 </div>
 </div>
@@ -1458,7 +1462,7 @@ Setting <code class="docutils literal notranslate"><span class="pre">n_order=2</
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimized hyperparameters: [ -0.70634323  -0.62284778   0.43479241 -13.39296226]
+Optimized hyperparameters: [ -0.71504959  -0.62163186   0.47312255 -13.49141819]
 </pre></div>
 </div>
 </div>
@@ -1513,21 +1517,21 @@ Predictions are organized by derivative order and type.</p>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function)       : [3.08066306e-08 1.75401449e-08 2.80416923e-08 5.50698858e-08
- 6.25310252e-08 8.22862856e-08 8.00589683e-09 4.82251107e-08
- 5.38535634e-08]
-Absolute error (derivative x)  : [1.34297662e-09 5.37512590e-09 2.81797363e-10 5.11198517e-09
- 7.35768058e-09 4.05989409e-10 7.75595610e-09 2.22807600e-09
- 8.44142617e-09]
-Absolute error (derivative y)  : [2.61545945e-09 3.33843198e-09 1.02173030e-08 2.26460513e-09
- 3.68364911e-09 1.09708718e-08 2.29650098e-09 5.62193736e-10
- 1.90361529e-08]
-Absolute error (second x-x)    : [1.69343632e-08 1.29474607e-08 6.08333861e-09 1.86206377e-09
- 1.54682863e-08 3.33966532e-09 8.72435474e-10 4.66290928e-09
- 1.18592303e-10]
-Absolute error (second y-y)    : [8.74388688e-09 2.16262405e-08 8.43370584e-09 2.67329855e-08
- 1.23747756e-08 1.46552837e-08 3.48974190e-09 7.32253536e-09
- 7.18271537e-09]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function)       : [8.02325872e-09 3.64032783e-08 2.22009933e-09 4.84190915e-09
+ 1.92130847e-08 7.42265160e-09 3.34758041e-08 4.27561123e-08
+ 1.94596396e-08]
+Absolute error (derivative x)  : [1.11309575e-08 5.29669286e-09 1.28120048e-09 5.42905165e-10
+ 9.40555633e-10 1.16753907e-09 4.84280205e-09 2.61211880e-09
+ 3.40256495e-09]
+Absolute error (derivative y)  : [1.99880641e-09 1.48847286e-10 5.27344669e-09 1.01109835e-08
+ 2.15459658e-08 2.69921546e-09 1.13974493e-08 1.22397370e-09
+ 6.61803645e-09]
+Absolute error (second x-x)    : [2.10133246e-09 1.07222345e-08 2.31873587e-09 4.63562729e-09
+ 1.56561747e-08 5.49825074e-10 6.18517687e-11 1.19998733e-09
+ 7.44965456e-09]
+Absolute error (second y-y)    : [4.62260587e-09 2.23552082e-09 1.24772359e-09 4.42728449e-10
+ 9.82257636e-09 1.68695862e-08 6.01589834e-09 3.72862202e-09
+ 2.88345461e-08]
 </pre></div>
 </div>
 </div>
@@ -1812,7 +1816,7 @@ The <code class="docutils literal notranslate"><span class="pre">derivative_loca
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Stopping: maximum iterations reached --&gt; 15
-Optimized hyperparameters: [-0.01303369  0.59015597 -7.50053068]
+Optimized hyperparameters: [ 7.55263286e-03  4.90302759e-01 -1.03214170e+01]
 </pre></div>
 </div>
 </div>
@@ -1850,16 +1854,16 @@ Optimized hyperparameters: [-0.01303369  0.59015597 -7.50053068]
 </div>
 <div class="cell_output docutils container">
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Absolute error (function) at all training points:
-  [1.07417277e-08 2.08765512e-08 2.22707858e-09 3.15459214e-10
- 2.92090152e-09 8.82968287e-09 4.17514934e-09]
+  [1.60962860e-08 3.50554212e-08 4.89616629e-08 2.94773028e-08
+ 1.44707036e-08 2.23552643e-08 4.43216819e-09]
 
 Absolute error (1st derivative) at all training points:
-  [8.11195533e-09 1.92728382e-08 9.92677562e-09 4.04264577e-09
- 5.67615333e-09 9.54120249e-09 5.78210972e-10]
+  [4.22494661e-09 1.76664707e-08 1.89608906e-09 9.32233157e-09
+ 1.36437359e-08 4.85184959e-09 4.85123790e-08]
 
 Absolute error (2nd derivative) at interior points only:
-  [2.81402670e-08 1.36673783e-08 3.11893196e-08 2.41998599e-09
- 3.68995394e-08]
+  [4.82239360e-09 1.82180944e-07 5.12367855e-08 1.36003031e-08
+ 6.05728356e-09]
 </pre></div>
 </div>
 </div>
@@ -2032,7 +2036,7 @@ Function prediction:
   Interior region: 0.000000
 
 Second derivative prediction:
-  Boundary region: 0.000008
+  Boundary region: 0.000013
   Interior region: 0.000000
 </pre></div>
 </div>
@@ -2198,7 +2202,7 @@ derivative_locations : 1 entry covering all 49 points
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-1.12365041 -1.03156485  1.36278007 -5.93478145]
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Optimized hyperparameters: [-1.11774389 -0.47564307  1.56659597 -5.81155055]
 </pre></div>
 </div>
 </div>
@@ -2238,8 +2242,8 @@ derivative_locations : 1 entry covering all 49 points
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function RMSE            : 3.1303e-07
-df/dx2 RMSE (untrained)  : 4.5380e-06
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Function RMSE            : 3.1101e-06
+df/dx2 RMSE (untrained)  : 3.9832e-05
 df/dx2 correlation       : 1.0000
 </pre></div>
 </div>

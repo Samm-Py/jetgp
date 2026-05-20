@@ -22,19 +22,20 @@ The setup script always performs steps 1–2, then optionally step 3:
 
 1. **Copies patched source files** from ``otilib_mods/`` into otilib-master. The patches add:
 
-   - OpenMP support to the static module compile flags (``src/CMakeLists.txt``)
+   - OpenMP support and ``-O1`` optimization for the static module compile flags (``src/CMakeLists.txt``)
    - ``python3`` Cython build command (``src/python/pyoti/CMakeLists.txt``)
    - ``oti.empty()`` uninitialized array allocator (``creators.pxi``)
    - OpenMP thread query imports (``include.pxi``)
    - ``{arr_get_all_derivs}`` expansion to the array base template (``array_base.pxi``)
    - JetGP's ``cmod_writer.py`` to both otilib locations (``build/pyoti/`` and ``src/python/pyoti/python/``)
-   - The ``regenerate_all_c.py`` and ``build_static.py`` build scripts (``build/``)
+   - The ``regenerate_all_c.py`` and ``build_static.py`` build scripts (``build/``), with static Cython extension builds using ``-O1``
 
 2. **Rewrites hardcoded absolute paths** in the otilib build scripts
    (``regenerate_all_c.py``, ``build_static.py``, ``rebuild_all_static.py``,
    ``rebuild_all_static.sh``) to match your machine's otilib location and active Python
-   executable. Also saves the otilib path to ``~/.config/jetgp/otilib_path`` for
-   runtime auto-detection.
+   executable. It also patches otilib's top-level release C flags and Cython
+   ``setup.py.in`` template from ``-O3`` to ``-O1`` and saves the otilib path to
+   ``~/.config/jetgp/otilib_path`` for runtime auto-detection.
 
 3. **Full build** (only when ``--build`` is passed):
 

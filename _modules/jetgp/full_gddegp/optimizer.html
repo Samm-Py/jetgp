@@ -217,6 +217,9 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -524,7 +527,7 @@ document.write(`
             <span class="k">if</span> <span class="s1">&#39;row_offsets_abs&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span><span class="p">[</span><span class="s1">&#39;row_offsets_abs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span><span class="p">[</span><span class="s1">&#39;row_offsets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">n_rows_func</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span><span class="p">[</span><span class="s1">&#39;col_offsets_abs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_plan</span><span class="p">[</span><span class="s1">&#39;col_offsets&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">n_rows_func</span>
-
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_K</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">phi_exp</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Build kernel matrix using fast path if available.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ensure_kernel_plan</span><span class="p">(</span><span class="n">n_bases</span><span class="p">)</span>
@@ -568,10 +571,11 @@ document.write(`
             <span class="n">phi_exp</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">real</span>
             <span class="n">phi_exp</span> <span class="o">=</span> <span class="n">phi_exp</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">active</span> <span class="o">=</span> <span class="n">phi</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()</span>
-            <span class="n">n_bases</span> <span class="o">=</span> <span class="n">active</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">active</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_bases</span>
+            <span class="n">n_bases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_bases</span>
 
-        <span class="c1"># Extract ALL derivative components</span>
+            <span class="c1"># Extract ALL derivative components using the configured number of</span>
+            <span class="c1"># directional slots, not the ambient active basis count implied by</span>
+            <span class="c1"># dense rays.</span>
             <span class="n">deriv_order</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_order</span>
             <span class="n">phi_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_expand_derivs</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">,</span> <span class="n">deriv_order</span><span class="p">)</span>
         <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_build_K</span><span class="p">(</span><span class="n">phi_exp</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">n_bases</span><span class="p">)</span>
@@ -589,7 +593,7 @@ document.write(`
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_L</span> <span class="o">=</span> <span class="n">L</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_low</span> <span class="o">=</span> <span class="n">low</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">alpha</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_n_bases</span> <span class="o">=</span> <span class="n">n_bases</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_n_bases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_bases</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_params</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
             <span class="n">data_fit</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">y_train</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
@@ -860,6 +864,7 @@ document.write(`
 
 <div class="viewcode-block" id="Optimizer.nll_and_grad">
 <a class="viewcode-back" href="../../../api/full_gddegp.html#jetgp.full_gddegp.optimizer.Optimizer.nll_and_grad">[docs]</a>
+    <span class="nd">@profile</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">nll_and_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute NLL and its gradient in a single pass, sharing one Cholesky.&quot;&quot;&quot;</span>
         <span class="n">ln10</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
@@ -907,7 +912,9 @@ document.write(`
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_L</span> <span class="o">=</span> <span class="n">L</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_low</span> <span class="o">=</span> <span class="n">low</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_alpha</span> <span class="o">=</span> <span class="n">alpha_v</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_n_bases</span> <span class="o">=</span> <span class="n">n_bases</span>
+        <span class="c1"># Preserve any explicitly-set n_bases (e.g. function-only training</span>
+        <span class="c1"># with n_order=0 but n_bases&gt;0 reserved for derivative prediction).</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_n_bases</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">n_bases</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">n_bases</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">_cached_params</span> <span class="o">=</span> <span class="n">x0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># --- gradient from W (no second kernel build / Cholesky) ---</span>

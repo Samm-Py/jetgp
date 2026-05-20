@@ -218,6 +218,9 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -481,20 +484,21 @@ arithmetic backend. A small set of patches are required before building the libr
 <ol class="arabic simple">
 <li><p><strong>Copies patched source files</strong> from <code class="docutils literal notranslate"><span class="pre">otilib_mods/</span></code> into otilib-master. The patches add:</p>
 <ul class="simple">
-<li><p>OpenMP support to the static module compile flags (<code class="docutils literal notranslate"><span class="pre">src/CMakeLists.txt</span></code>)</p></li>
+<li><p>OpenMP support and <code class="docutils literal notranslate"><span class="pre">-O1</span></code> optimization for the static module compile flags (<code class="docutils literal notranslate"><span class="pre">src/CMakeLists.txt</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">python3</span></code> Cython build command (<code class="docutils literal notranslate"><span class="pre">src/python/pyoti/CMakeLists.txt</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">oti.empty()</span></code> uninitialized array allocator (<code class="docutils literal notranslate"><span class="pre">creators.pxi</span></code>)</p></li>
 <li><p>OpenMP thread query imports (<code class="docutils literal notranslate"><span class="pre">include.pxi</span></code>)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">{arr_get_all_derivs}</span></code> expansion to the array base template (<code class="docutils literal notranslate"><span class="pre">array_base.pxi</span></code>)</p></li>
 <li><p>JetGP’s <code class="docutils literal notranslate"><span class="pre">cmod_writer.py</span></code> to both otilib locations (<code class="docutils literal notranslate"><span class="pre">build/pyoti/</span></code> and <code class="docutils literal notranslate"><span class="pre">src/python/pyoti/python/</span></code>)</p></li>
-<li><p>The <code class="docutils literal notranslate"><span class="pre">regenerate_all_c.py</span></code> and <code class="docutils literal notranslate"><span class="pre">build_static.py</span></code> build scripts (<code class="docutils literal notranslate"><span class="pre">build/</span></code>)</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">regenerate_all_c.py</span></code> and <code class="docutils literal notranslate"><span class="pre">build_static.py</span></code> build scripts (<code class="docutils literal notranslate"><span class="pre">build/</span></code>), with static Cython extension builds using <code class="docutils literal notranslate"><span class="pre">-O1</span></code></p></li>
 </ul>
 </li>
 <li><p><strong>Rewrites hardcoded absolute paths</strong> in the otilib build scripts
 (<code class="docutils literal notranslate"><span class="pre">regenerate_all_c.py</span></code>, <code class="docutils literal notranslate"><span class="pre">build_static.py</span></code>, <code class="docutils literal notranslate"><span class="pre">rebuild_all_static.py</span></code>,
 <code class="docutils literal notranslate"><span class="pre">rebuild_all_static.sh</span></code>) to match your machine’s otilib location and active Python
-executable. Also saves the otilib path to <code class="docutils literal notranslate"><span class="pre">~/.config/jetgp/otilib_path</span></code> for
-runtime auto-detection.</p></li>
+executable. It also patches otilib’s top-level release C flags and Cython
+<code class="docutils literal notranslate"><span class="pre">setup.py.in</span></code> template from <code class="docutils literal notranslate"><span class="pre">-O3</span></code> to <code class="docutils literal notranslate"><span class="pre">-O1</span></code> and saves the otilib path to
+<code class="docutils literal notranslate"><span class="pre">~/.config/jetgp/otilib_path</span></code> for runtime auto-detection.</p></li>
 <li><p><strong>Full build</strong> (only when <code class="docutils literal notranslate"><span class="pre">--build</span></code> is passed):</p>
 <ul class="simple">
 <li><p>Regenerates all C/Cython sources from templates</p></li>

@@ -218,6 +218,9 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -715,57 +718,274 @@ how to analyze the performance of a 3D model by taking a <strong>2D slice</stron
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=-599.2026331557621
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Module &#39;pyoti.static.onumm3n8&#39; not found. Attempting to compile...
+Compiling OTI module: m3n8
+  otilib_path: /home/sam/research_head/Research/github_oti_gp/otilib-master
+  build_dir: /home/sam/research_head/Research/github_oti_gp/otilib-master/build
+Step 1/4: Generating C code for m=3, n=8...
+Processing:  include/oti/static/number.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8.h
+Processing:  include/oti/static/number/array/gauss.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/gauss.h
+Processing:  include/oti/static/number/array/algebra_matops.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/algebra_matops.h
+Processing:  include/oti/static/number/array/base.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/base.h
+Processing:  include/oti/static/number/array/utils.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/utils.h
+Processing:  include/oti/static/number/array/algebra_elementwise.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/algebra_elementwise.h
+Processing:  include/oti/static/number/array/structures.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/structures.h
+Processing:  include/oti/static/number/array/functions.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/functions.h
+Processing:  include/oti/static/number/array/gauss/base.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/gauss/base.h
+Processing:  include/oti/static/number/array/gauss/utils.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/gauss/utils.h
+Processing:  include/oti/static/number/array/gauss/algebra.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/gauss/algebra.h
+Processing:  include/oti/static/number/array/gauss/structures.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/gauss/structures.h
+Processing:  include/oti/static/number/array/gauss/functions.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/array/gauss/functions.h
+Processing:  include/oti/static/number/scalar/gauss.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/gauss.h
+Processing:  include/oti/static/number/scalar/base.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/base.h
+Processing:  include/oti/static/number/scalar/utils.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/utils.h
+Processing:  include/oti/static/number/scalar/algebra.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/algebra.h
+Processing:  include/oti/static/number/scalar/structures.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/structures.h
+Processing:  include/oti/static/number/scalar/functions.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/functions.h
+Processing:  include/oti/static/number/scalar/gauss/base.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/gauss/base.h
+Processing:  include/oti/static/number/scalar/gauss/utils.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/gauss/utils.h
+Processing:  include/oti/static/number/scalar/gauss/algebra.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/gauss/algebra.h
+Processing:  include/oti/static/number/scalar/gauss/structures.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/gauss/structures.h
+Processing:  include/oti/static/number/scalar/gauss/functions.h
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/oti/static/onumm3n8/scalar/gauss/functions.h
+Processing:  include/pyoti/static/number.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8.pxd
+Processing:  include/pyoti/static/number/array.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/array.pxd
+Processing:  include/pyoti/static/number/sparse_array.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/sparse_array.pxd
+Processing:  include/pyoti/static/number/dependencies.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/dependencies.pxd
+Processing:  include/pyoti/static/number/algebra.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/algebra.pxd
+Processing:  include/pyoti/static/number/utils.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/utils.pxd
+Processing:  include/pyoti/static/number/gauss.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/gauss.pxd
+Processing:  include/pyoti/static/number/fem.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/fem.pxd
+Processing:  include/pyoti/static/number/math.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/math.pxd
+Processing:  include/pyoti/static/number/scalar.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/scalar.pxd
+Processing:  include/pyoti/static/number/gauss/array.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/gauss/array.pxd
+Processing:  include/pyoti/static/number/gauss/scalar.pxd
+/home/sam/research_head/Research/github_oti_gp/otilib-master/include/pyoti/static/onumm3n8/gauss/scalar.pxd
+Processing:  src/python/pyoti/cython/static/number.pyx
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8.pyx
+Processing:  src/python/pyoti/cython/static/number/linalg.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/linalg.pxi
+Processing:  src/python/pyoti/cython/static/number/math.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/math.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra.pxi
+Processing:  src/python/pyoti/cython/static/number/include.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/include.pxi
+Processing:  src/python/pyoti/cython/static/number/utils.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/utils.pxi
+Processing:  src/python/pyoti/cython/static/number/creators.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/creators.pxi
+Processing:  src/python/pyoti/cython/static/number/sprarray/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/sprarray/base.pxi
+Processing:  src/python/pyoti/cython/static/number/sprarray/lil/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/sprarray/lil/base.pxi
+Processing:  src/python/pyoti/cython/static/number/sprarray/csc/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/sprarray/csc/base.pxi
+Processing:  src/python/pyoti/cython/static/number/sprarray/csr/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/sprarray/csr/base.pxi
+Processing:  src/python/pyoti/cython/static/number/fem/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/fem/base.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/cross_product.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/cross_product.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/dot.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/dot.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/sub.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/sub.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/add_old.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/add_old.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/mul.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/mul.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/inv.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/inv.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/add.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/add.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/dot_product.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/dot_product.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/div.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/div.pxi
+Processing:  src/python/pyoti/cython/static/number/algebra_utils/solve.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/algebra_utils/solve.pxi
+Processing:  src/python/pyoti/cython/static/number/array/gauss.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/gauss.pxi
+Processing:  src/python/pyoti/cython/static/number/array/math.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/math.pxi
+Processing:  src/python/pyoti/cython/static/number/array/utils.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/utils.pxi
+Processing:  src/python/pyoti/cython/static/number/array/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/base.pxi
+Processing:  src/python/pyoti/cython/static/number/array/math_to.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/math_to.pxi
+Processing:  src/python/pyoti/cython/static/number/array/gauss/utils.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/gauss/utils.pxi
+Processing:  src/python/pyoti/cython/static/number/array/gauss/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/array/gauss/base.pxi
+Processing:  src/python/pyoti/cython/static/number/scalar/gauss.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/scalar/gauss.pxi
+Processing:  src/python/pyoti/cython/static/number/scalar/math.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/scalar/math.pxi
+Processing:  src/python/pyoti/cython/static/number/scalar/utils.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/scalar/utils.pxi
+Processing:  src/python/pyoti/cython/static/number/scalar/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/scalar/base.pxi
+Processing:  src/python/pyoti/cython/static/number/scalar/gauss/utils.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/scalar/gauss/utils.pxi
+Processing:  src/python/pyoti/cython/static/number/scalar/gauss/base.pxi
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8/scalar/gauss/base.pxi
+Processing:  src/c/static/number.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8.c
+Processing:  src/c/static/number/array/functions_to.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/functions_to.c
+Processing:  src/c/static/number/array/functions.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/functions.c
+Processing:  src/c/static/number/array/utils.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/utils.c
+Processing:  src/c/static/number/array/base.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/base.c
+Processing:  src/c/static/number/array/algebra_matops_to.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/algebra_matops_to.c
+Processing:  src/c/static/number/array/algebra_matops.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/algebra_matops.c
+Processing:  src/c/static/number/array/algebra_elementwise.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/algebra_elementwise.c
+Processing:  src/c/static/number/array/gauss.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/gauss.c
+Processing:  src/c/static/number/array/algebra_elementwise_to.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/algebra_elementwise_to.c
+Processing:  src/c/static/number/array/gauss/functions.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/gauss/functions.c
+Processing:  src/c/static/number/array/gauss/utils.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/gauss/utils.c
+Processing:  src/c/static/number/array/gauss/base.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/gauss/base.c
+Processing:  src/c/static/number/array/gauss/algebra_matops.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/gauss/algebra_matops.c
+Processing:  src/c/static/number/array/gauss/algebra_elementwise.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/array/gauss/algebra_elementwise.c
+Processing:  src/c/static/number/scalar/algebra.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/algebra.c
+Processing:  src/c/static/number/scalar/functions_to.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/functions_to.c
+Processing:  src/c/static/number/scalar/functions.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/functions.c
+Processing:  src/c/static/number/scalar/utils.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/utils.c
+Processing:  src/c/static/number/scalar/base.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/base.c
+Processing:  src/c/static/number/scalar/algebra_to.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/algebra_to.c
+Processing:  src/c/static/number/scalar/gauss.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/gauss.c
+Processing:  src/c/static/number/scalar/gauss/algebra.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/gauss/algebra.c
+Processing:  src/c/static/number/scalar/gauss/functions.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/gauss/functions.c
+Processing:  src/c/static/number/scalar/gauss/utils.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/gauss/utils.c
+Processing:  src/c/static/number/scalar/gauss/base.c
+/home/sam/research_head/Research/github_oti_gp/otilib-master/src/c/static/onumm3n8/scalar/gauss/base.c
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=-1028.7956488154352
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Step 2/4: Running cmake...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=-1028.7956488154352
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Step 3/4: Compiling m3n8...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=-1036.5167847815726
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Step 4/4: Building Python module...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 5: nit=9, nfev=46, f=-1.733198e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
-Gen 5: best f=-1733.1976023909367
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Compiling /home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8.pyx because it changed.
+[1/1] Cythonizing /home/sam/research_head/Research/github_oti_gp/otilib-master/src/python/pyoti/cython/static/onumm3n8.pyx
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=-1733.1976023909367
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>
+Done! onumm3n8 installed to /home/sam/research_head/Research/github_oti_gp/otilib-master/build/pyoti/static/
+Successfully compiled m3n8
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=-1733.1976023909367
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=-599.2026349460674
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=-1733.1976023909367
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 2: best f=-1028.6912292593872
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=-1733.1976023909367
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 3: best f=-1028.6912292593872
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 10: nit=2, nfev=16, f=-1.755006e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
-Gen 10: best f=-1755.0061718341
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 4: best f=-1036.5167748196861
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=-1755.0061718341
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 5: nit=9, nfev=41, f=-1.873376e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
+Gen 5: best f=-1873.3756221258557
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=-1755.0061718341
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 6: best f=-1873.3756221258557
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=-1755.0061718341
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 7: best f=-1873.3756221258557
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=-1765.2322981344057
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=-1873.3756221258557
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Local refinement at gen 15: nit=6, nfev=47, f=-1.799772e+03, success=True, message=CONVERGENCE: REL_REDUCTION_OF_F_&lt;=_FACTR*EPSMCH
-Gen 15: best f=-1799.771875056472
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=-1873.3756221258557
 </pre></div>
 </div>
-<img alt="../../_images/DDEGP_3d_7_15.png" src="../../_images/DDEGP_3d_7_15.png" />
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 10: best f=-1873.3756221258557
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 11: best f=-1873.3756221258557
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 12: best f=-1873.3756221258557
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 13: best f=-1873.3756221258557
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 14: best f=-1873.3756221258557
+</pre></div>
+</div>
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=-1873.3756221258557
+</pre></div>
+</div>
+<img alt="../../_images/DDEGP_3d_7_24.png" src="../../_images/DDEGP_3d_7_24.png" />
 <div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>  Visualization of slice at x₃=0.5 created.
-Final NRMSE on slice (x₃=0.5): 0.000002
+Final NRMSE on slice (x₃=0.5): 0.000009
 </pre></div>
 </div>
 </div>

@@ -217,6 +217,9 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -520,7 +523,8 @@ document.write(`
 <div class="viewcode-block" id="gddegp.predict">
 <a class="viewcode-back" href="../../../api/full_gddegp.html#jetgp.full_gddegp.gddegp.gddegp.predict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">rays_predict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">calc_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">derivs_to_predict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">return_deriv</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">derivs_to_predict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">return_full_cov</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Predict posterior mean and optional variance at test points.</span>
 
@@ -542,6 +546,10 @@ document.write(`
 <span class="sd">            and does not require the requested derivative to have been observed during</span>
 <span class="sd">            training. Each entry must be a valid derivative spec within n_bases and n_order.</span>
 <span class="sd">            If None, defaults to all derivatives used in training.</span>
+<span class="sd">        return_full_cov : bool, default=False</span>
+<span class="sd">            If True, return the full posterior covariance matrix in addition to the</span>
+<span class="sd">            reshaped marginal variances. Requires calc_cov=True. This is opt-in to</span>
+<span class="sd">            preserve the existing predict return contract.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -584,12 +592,16 @@ document.write(`
 
         <span class="c1"># Validate rays_predict structure when predicting derivatives</span>
         <span class="k">if</span> <span class="n">return_deriv</span> <span class="ow">and</span> <span class="n">rays_predict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Check number of rays doesn&#39;t exceed training rays</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">):</span>
+            <span class="c1"># Check number of requested prediction directions does not exceed</span>
+            <span class="c1"># the reserved OTI direction capacity. Prediction derivatives do not</span>
+            <span class="c1"># need to have been observed in training; function-only and sparse</span>
+            <span class="c1"># directional models can reserve extra bases for this purpose.</span>
+            <span class="n">max_prediction_rays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_prediction_rays</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Number of prediction rays (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span><span class="si">}</span><span class="s2">) exceeds the number of &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;training rays (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">)</span><span class="si">}</span><span class="s2">). rays_predict must have at most &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rays_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> ray array(s).&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Number of prediction rays (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rays_predict</span><span class="p">)</span><span class="si">}</span><span class="s2">) exceeds the reserved &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;direction capacity (</span><span class="si">{</span><span class="n">max_prediction_rays</span><span class="si">}</span><span class="s2">). Increase n_bases when &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;constructing the model to predict more derivative directions.&quot;</span>
                 <span class="p">)</span>
 
             <span class="c1"># Check shape of each ray array</span>
@@ -668,28 +680,30 @@ document.write(`
             <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_L</span>
             <span class="n">low</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_low</span>
             <span class="n">alpha</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_alpha</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_n_bases</span>
             <span class="n">cho_solve_failed</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Build training kernel matrix</span>
             <span class="n">phi_train</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kernel_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">differences_by_dim</span><span class="p">,</span> <span class="n">length_scales</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="c1"># Use a local variable so self.n_bases (which may have been set</span>
+                <span class="c1"># explicitly for derivative *prediction*) is never overwritten.</span>
+                <span class="n">train_n_bases</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">real</span>
                 <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_exp_train</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">,:,:]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Take the max so that an explicitly-set n_bases (e.g. for function-only</span>
-                <span class="c1"># training or for predicting more directions than were observed) is never</span>
-                <span class="c1"># silently reduced to the number of bases active in the training kernel.</span>
-                <span class="n">active</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_active_bases</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="n">active</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">active</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
+                <span class="c1"># Respect the configured GDDEGP directional slot count. The OTI</span>
+                <span class="c1"># kernel algebra may report many active scalar basis tags when a</span>
+                <span class="c1"># direction is dense in the ambient coordinates, but that should</span>
+                <span class="c1"># not expand the model beyond the number of trained directional</span>
+                <span class="c1"># slots.</span>
+                <span class="n">train_n_bases</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span>
+                <span class="n">phi_exp_train</span> <span class="o">=</span> <span class="n">phi_train</span><span class="o">.</span><span class="n">get_all_derivs</span><span class="p">(</span><span class="n">train_n_bases</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">)</span>
 
             <span class="c1"># Placeholder for powers (GDDEGP doesn&#39;t use sign powers like DEGP/DDEGP)</span>
             <span class="n">powers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="n">K</span> <span class="o">=</span> <span class="n">gddegp_utils</span><span class="o">.</span><span class="n">rbf_kernel</span><span class="p">(</span>
-                <span class="n">phi_train</span><span class="p">,</span> <span class="n">phi_exp_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_bases</span><span class="p">,</span>
+                <span class="n">phi_train</span><span class="p">,</span> <span class="n">phi_exp_train</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_order</span><span class="p">,</span> <span class="n">train_n_bases</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">flattened_der_indices</span><span class="p">,</span>
                 <span class="n">index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">derivative_locations</span>
             <span class="p">)</span>
@@ -766,6 +780,9 @@ document.write(`
         <span class="n">num_derivs</span> <span class="o">=</span> <span class="n">m</span> <span class="o">//</span> <span class="n">n</span>
         <span class="n">reshaped_mean</span> <span class="o">=</span> <span class="n">f_mean</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_derivs</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">return_full_cov</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">calc_cov</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;return_full_cov=True requires calc_cov=True.&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="n">calc_cov</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">reshaped_mean</span>
 
@@ -808,12 +825,17 @@ document.write(`
                 <span class="n">f_var</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">transform_cov_directional</span><span class="p">(</span>
                     <span class="n">f_cov</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigmas_x</span><span class="p">,</span>
                     <span class="n">common_derivs</span><span class="p">,</span> <span class="n">X_test</span><span class="p">)</span>
+                <span class="n">f_cov_full</span> <span class="o">=</span> <span class="n">f_cov</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="o">**</span><span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">f_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
+                <span class="n">f_cov_full</span> <span class="o">=</span> <span class="n">f_cov</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma_y</span><span class="o">**</span><span class="mi">2</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">f_var</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">f_cov</span><span class="p">))</span>
+            <span class="n">f_cov_full</span> <span class="o">=</span> <span class="n">f_cov</span>
 
         <span class="n">reshaped_var</span> <span class="o">=</span> <span class="n">f_var</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">num_derivs</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">return_full_cov</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">reshaped_mean</span><span class="p">,</span> <span class="n">reshaped_var</span><span class="p">,</span> <span class="n">f_cov_full</span>
         <span class="k">return</span> <span class="n">reshaped_mean</span><span class="p">,</span> <span class="n">reshaped_var</span></div>
 </div>
 

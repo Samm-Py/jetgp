@@ -219,6 +219,9 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/wdegp_getting_started.html">Weighted Derivative-Enhanced Gaussian Process (WDEGP)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/sdegp_getting_started.html">Sliced Derivative-Enhanced Gaussian Process (SDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/degp_sparse_getting_started.html">Sparse Derivative-Enhanced Gaussian Process (Sparse DEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/ddegp_sparse_getting_started.html">Sparse Directional Derivative-Enhanced Gaussian Process (Sparse DDEGP)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../JetGP_module_examples/gddegp_sparse_getting_started.html">Sparse Generalized Directional Derivative-Enhanced Gaussian Process (Sparse GDDEGP)</a></li>
 </ul>
 </details></li>
 </ul>
@@ -797,28 +800,26 @@ Arrays per submodel: 5
 Optimizing hyperparameters...
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=47.913859211931495
-Gen 2: best f=17.870936820874626
-Gen 3: best f=17.870936820874626
-Gen 4: best f=17.870936820874626
-Gen 5: best f=15.219681394872431
-Gen 6: best f=15.219681394872431
-Gen 7: best f=15.219681394872431
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 1: best f=47.913859211931836
+Gen 2: best f=17.8709368207942
+Gen 3: best f=17.8709368207942
+Gen 4: best f=17.8709368207942
+Gen 5: best f=15.308158509842858
+Gen 6: best f=15.308158509842858
+Gen 7: best f=15.308158509842858
+Gen 8: best f=14.270516223847423
 </pre></div>
 </div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 8: best f=15.219681394872431
-Gen 9: best f=11.138607906101043
-Gen 10: best f=11.138607906101043
-Gen 11: best f=10.557442597242236
-Gen 12: best f=10.557442597242236
-Gen 13: best f=10.557442597242236
-Gen 14: best f=9.83082728571297
-</pre></div>
-</div>
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 15: best f=9.83082728571297
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>Gen 9: best f=14.270516223847423
+Gen 10: best f=14.270516223847423
+Gen 11: best f=14.01253367512765
+Gen 12: best f=11.548241853310515
+Gen 13: best f=11.09427131642159
+Gen 14: best f=11.09427131642159
+Gen 15: best f=11.09427131642159
 
 Optimized parameters:
-[ -0.28531738  -0.07126233   0.83273116 -12.55158341]
+[ -0.27927303  -0.02803917   0.90304423 -14.48441069]
 </pre></div>
 </div>
 </div>
@@ -856,9 +857,9 @@ Optimized parameters:
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.012436
-RMSE:  0.053031
-MAE:   0.034330
+<div class="output stream highlight-none notranslate"><div class="highlight"><pre><span></span>NRMSE: 0.014192
+RMSE:  0.060519
+MAE:   0.039910
 </pre></div>
 </div>
 </div>
@@ -960,16 +961,16 @@ Prediction shape: (6, 4)
   Row 4: d²f/dx2² (2nd order, dim 2)
 
 1st order derivatives (df/dx1):
-  Point 5: Pred=-2.697119, True=-2.697119, RelErr=1.59e-13
-  Point 6: Pred=-2.030453, True=-2.030453, RelErr=4.57e-12
-  Point 9: Pred=2.030453, True=2.030453, RelErr=4.02e-14
-  Point 10: Pred=2.697119, True=2.697119, RelErr=2.59e-12
+  Point 5: Pred=-2.697119, True=-2.697119, RelErr=8.28e-12
+  Point 6: Pred=-2.030453, True=-2.030453, RelErr=7.28e-12
+  Point 9: Pred=2.030453, True=2.030453, RelErr=1.51e-12
+  Point 10: Pred=2.697119, True=2.697119, RelErr=2.08e-12
 
 1st order derivatives (df/dx2):
-  Point 5: Pred=1.740741, True=1.740741, RelErr=2.96e-12
-  Point 6: Pred=-2.407407, True=-2.407407, RelErr=4.95e-12
-  Point 9: Pred=2.407407, True=2.407407, RelErr=2.83e-12
-  Point 10: Pred=-1.740741, True=-1.740741, RelErr=4.77e-12
+  Point 5: Pred=1.740741, True=1.740741, RelErr=5.07e-12
+  Point 6: Pred=-2.407407, True=-2.407407, RelErr=3.55e-12
+  Point 9: Pred=2.407407, True=2.407407, RelErr=6.89e-12
+  Point 10: Pred=-1.740741, True=-1.740741, RelErr=2.82e-12
 </pre></div>
 </div>
 </div>
