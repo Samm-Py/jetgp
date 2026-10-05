@@ -888,12 +888,9 @@ class KernelFactory:
         # Compute scaled squared distance using fused op if available
         self._compute_sqdist_aniso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
-        # r = sqrt(sqdist + eps²) — regularise r directly (not each diff)
-        # so that r.e([d]) = 0 at training-point diagonals, preserving
-        # correct OTI derivative structure for the covariance blocks.
-        _eps = 1e-10
-        r = self.oti.sqrt(self.oti.sum(sqdist, _eps ** 2))
-        return sigma_f_sq * self.matern_kernel_prebuild(r)
+        # k(r) with r = sqrt(sqdist); exact at coincident points (jetgp.utils.matern_from_sqdist)
+        return sigma_f_sq * jetgp.utils.matern_from_sqdist(
+            self.oti, sqdist, self.matern_kernel_prebuild, self.nu)
 
     def SI_kernel_anisotropic(self, differences_by_dim, length_scales):
         """
@@ -1029,10 +1026,9 @@ class KernelFactory:
         # Compute scaled squared distance using fused op if available
         self._compute_sqdist_iso(differences_by_dim, ell, sqdist, tmp1, tmp2)
 
-        # r = sqrt(sqdist + eps²) — regularise r directly
-        _eps = 1e-10
-        r = self.oti.sqrt(self.oti.sum(sqdist, _eps ** 2))
-        return sigma_f_sq * self.matern_kernel_prebuild(r)
+        # k(r) with r = sqrt(sqdist); exact at coincident points (jetgp.utils.matern_from_sqdist)
+        return sigma_f_sq * jetgp.utils.matern_from_sqdist(
+            self.oti, sqdist, self.matern_kernel_prebuild, self.nu)
 
     def SI_kernel_isotropic(self, differences_by_dim, length_scales):
         """

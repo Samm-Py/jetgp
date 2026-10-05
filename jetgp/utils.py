@@ -1,4 +1,5 @@
 import numpy as np
+from functools import lru_cache
 import pyoti.core as coti
 import pyoti.sparse as oti
 import sympy as sp
@@ -1055,6 +1056,96 @@ def matern_kernel_grad_builder(nu, oti_module=None):
         return sp.lambdify(r, dk_dr, modules=[custom_dict, "numpy"])
     else:
         return sp.lambdify(r, dk_dr, modules=["numpy"])
+
+
+# Scaled squared distances at or below this are treated as coincident points.
+MATERN_COINCIDENT_SQDIST = 1e-20
+
+
+@lru_cache(maxsize=None)
+def matern_even_coefficients(nu, max_power):
+    """
+    Coefficients e_j of r^(2j), j = 0..max_power, in the Taylor expansion at r = 0 of the
+    unit-variance half-integer Matérn kernel k(r) of scaled distance r.
+
+    For nu = n + 1/2 the expansion is even through r^(2n); its first odd term is r^(2n+1).
+    """
+    r = sp.symbols('r', positive=True)
+    nu = sp.Rational(int(round(2 * nu)), 2)
+    z = sp.sqrt(2 * nu) * r
+    k_r = sp.simplify((2 ** (1 - nu)) / sp.gamma(nu) * z**nu * sp.besselk(nu, z))
+    series = sp.series(k_r, r, 0, 2 * max_power + 1).removeO()
+    return tuple(float(series.coeff(r, 2 * j)) for j in range(max_power + 1))
+
+
+def matern_from_sqdist(oti_module, sqdist, closed_form, nu, gradient=False):
+    """
+    Matérn kernel k (gradient=False) or f'(r)/r (gradient=True, with f'(r) = dk/dr) as a
+    function of the scaled squared distance s = r^2, an OTI array.
+
+    The closed forms are evaluated at r = sqrt(s), which is accurate for distinct points but not
+    for coincident ones: there s has no real part, the OTI coefficients of sqrt(s) are singular,
+    and regularizing with sqrt(s + eps^2) leaves coefficients of order eps^(1-2k) that cancel in
+    floating point only through second order, which corrupts the covariances of derivative data
+    of order two and higher. At coincident points s holds only perturbation terms of order two
+    and higher, so the even Taylor series of k in s, truncated at the OTI order, is exact: the
+    first odd term, r^(2n+1) for nu = n + 1/2, lies beyond the order 2p that order-p derivative
+    data need when nu > p (and f'(r)/r is always multiplied by a squared difference). Distinct
+    points keep the closed form; coincident points take the series.
+
+    Parameters
+    ----------
+    oti_module : module
+        The PyOTI module of `sqdist`.
+    sqdist : OTI array
+        Scaled squared distances.
+    closed_form : callable
+        k(r) from matern_kernel_builder, or dk/dr from matern_kernel_grad_builder.
+    nu : float
+        Smoothness parameter (half-integer).
+    gradient : bool, optional
+        If True, return f'(r)/r = 2 dk/ds instead of k.
+    """
+    order = int(getattr(sqdist, 'order', 0) or 0)
+    if order == 0:
+        # Real arrays (no derivative data): the regularized closed form is accurate.
+        r = oti_module.sqrt(oti_module.sum(sqdist, 1e-20))
+        return oti_module.mul(closed_form(r), oti_module.pow(r, -1)) if gradient else closed_form(r)
+
+    def closed(s):
+        r = oti_module.sqrt(s)
+        return oti_module.mul(closed_form(r), oti_module.pow(r, -1)) if gradient else closed_form(r)
+
+    coincident = np.asarray(sqdist.real) <= MATERN_COINCIDENT_SQDIST
+    if not coincident.any():
+        return closed(sqdist)
+
+    terms = matern_even_coefficients(float(nu), order // 2 + 1)
+    coeffs = [2 * j * terms[j] for j in range(1, len(terms))] if gradient else list(terms)
+
+    def series(s):
+        out = oti_module.mul(coeffs[-1], s)
+        for c in reversed(coeffs[1:-1]):
+            out = oti_module.mul(s, oti_module.sum(out, c))
+        return oti_module.sum(out, coeffs[0])
+
+    index = np.argwhere(coincident).tolist()     # plain ints: pyoti rejects numpy integers
+    if coincident.ndim == 2 and len(index) <= 4 * max(coincident.shape):
+        # Few coincident pairs (e.g. the diagonal of a training matrix): move them to s = 1 so
+        # the closed form stays finite, then overwrite them with the series entry by entry.
+        shifted = oti_module.sum(sqdist, 0.0)
+        for i, j in index:
+            shifted[i, j] = oti_module.sum(sqdist[i, j], 1.0)
+        result = closed(shifted)
+        for i, j in index:
+            result[i, j] = series(sqdist[i, j])
+        return result
+
+    # Many coincident pairs: the same with a real mask over the whole array.
+    mask = oti_module.array(coincident.astype(np.float64))
+    distinct = closed(oti_module.sum(sqdist, mask))
+    exact = series(oti_module.mul(mask, sqdist))
+    return oti_module.sum(distinct, oti_module.mul(mask, oti_module.sub(exact, distinct)))
 
 
 
