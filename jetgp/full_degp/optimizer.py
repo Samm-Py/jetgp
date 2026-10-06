@@ -5,7 +5,7 @@ from jetgp.full_degp import degp_utils as utils
 from line_profiler import profile
 import jetgp.utils as gen_utils
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
-from jetgp.utils import matern_kernel_grad_builder
+from jetgp.utils import matern_kernel_grad_builder, matern_from_sqdist
 
 
 @numba.jit(nopython=True, parallel=True, cache=True)
@@ -533,7 +533,6 @@ class Optimizer:
                 ell = np.full(D, 10.0 ** float(x0[0]))
 
             sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
-            _eps = 1e-10   # regularise r, not each diff (matches kernel_funcs.py)
 
             # Recompute r in OTI (matches matern_kernel_anisotropic/isotropic)
             if hasattr(phi, 'fused_sqdist_sparse'):
@@ -550,13 +549,13 @@ class Optimizer:
                 for d in range(1, D):
                     td = oti.mul(ell[d], diffs[d])
                     r2 = oti.sum(r2, oti.mul(td, td))
-            r_oti = oti.sqrt(oti.sum(r2, _eps ** 2))
-            f_prime_r = kf._matern_grad_prebuild(r_oti)   # df/dr (OTI)
-            inv_r     = oti.pow(r_oti, -1)
+            # f'(r)/r, exact at coincident points (see gen_utils.matern_from_sqdist)
+            grad_over_r = matern_from_sqdist(oti, r2, kf._matern_grad_prebuild,
+                                             getattr(kf, "nu", 1.5), gradient=True)
 
             # Precompute base = sigma_f² * f'(r) * 1/r for length-scale gradients
             # grad[d] = _gc(base * ln10 * ell_d² * diff_d²)
-            base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
+            base_matern = oti.mul(sigma_f_sq, grad_over_r)
             if kernel_type == 'anisotropic':
                 if _use_vdot_fused and hasattr(phi, 'fused_grad_all_dims'):
                     scales = np.array([ln10 * ell[d] ** 2 for d in range(D)])

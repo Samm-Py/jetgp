@@ -6,7 +6,7 @@ import jetgp.utils as gen_utils
 from scipy.linalg import cho_solve, cho_factor
 from jetgp.hyperparameter_optimizers import OPTIMIZERS
 from line_profiler import profile
-from jetgp.utils import matern_kernel_grad_builder
+from jetgp.utils import matern_kernel_grad_builder, matern_from_sqdist
 
 
 @numba.jit(nopython=True, parallel=True, cache=True)
@@ -442,7 +442,6 @@ class Optimizer:
             ell = (10.0 ** x0[:D] if kernel_type == 'anisotropic'
                    else np.full(D, 10.0 ** float(x0[0])))
             sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
-            _eps = 1e-10
             if hasattr(phi, 'fused_sqdist'):
                 r2 = oti.zeros(phi.shape)
                 ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
@@ -451,10 +450,10 @@ class Optimizer:
                 r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
                 for d in range(1, D):
                     td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
-            r_oti = oti.sqrt(oti.sum(r2, _eps ** 2))
-            f_prime_r = kf._matern_grad_prebuild(r_oti)
-            inv_r = oti.pow(r_oti, -1)
-            base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
+            # f'(r)/r, exact at coincident points (see gen_utils.matern_from_sqdist)
+            grad_over_r = matern_from_sqdist(oti, r2, kf._matern_grad_prebuild,
+                                             getattr(kf, "nu", 1.5), gradient=True)
+            base_matern = oti.mul(sigma_f_sq, grad_over_r)
             if kernel_type == 'anisotropic':
                 if hasattr(phi, 'fused_scale_sq_mul'):
                     dphi_buf = oti.zeros(phi.shape)
@@ -695,7 +694,6 @@ class Optimizer:
             ell = (10.0 ** x0[:D] if kernel_type == 'anisotropic'
                    else np.full(D, 10.0 ** float(x0[0])))
             sigma_f_sq = (10.0 ** float(x0[-2])) ** 2
-            _eps = 1e-10
             if hasattr(phi, 'fused_sqdist'):
                 r2 = oti.zeros(phi.shape)
                 ell_sq = np.ascontiguousarray(ell ** 2, dtype=np.float64)
@@ -704,10 +702,10 @@ class Optimizer:
                 r2 = oti.mul(ell[0], diffs[0]); r2 = oti.mul(r2, r2)
                 for d in range(1, D):
                     td = oti.mul(ell[d], diffs[d]); r2 = oti.sum(r2, oti.mul(td, td))
-            r_oti = oti.sqrt(oti.sum(r2, _eps ** 2))
-            f_prime_r = kf._matern_grad_prebuild(r_oti)
-            inv_r = oti.pow(r_oti, -1)
-            base_matern = oti.mul(sigma_f_sq, oti.mul(f_prime_r, inv_r))
+            # f'(r)/r, exact at coincident points (see gen_utils.matern_from_sqdist)
+            grad_over_r = matern_from_sqdist(oti, r2, kf._matern_grad_prebuild,
+                                             getattr(kf, "nu", 1.5), gradient=True)
+            base_matern = oti.mul(sigma_f_sq, grad_over_r)
             if kernel_type == 'anisotropic':
                 if hasattr(phi, 'fused_scale_sq_mul'):
                     dphi_buf = oti.zeros(phi.shape)
